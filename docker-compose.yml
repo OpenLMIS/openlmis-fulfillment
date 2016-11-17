@@ -1,0 +1,26 @@
+version: "2"
+services:
+
+  order:
+    image: openlmis/order
+    links:
+      - db
+      - log
+    env_file: .env
+
+  db:
+    image: openlmis/postgres
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        syslog-facility: "local1"
+    depends_on: [log]
+    env_file: .env
+
+  log:
+    image: openlmis/rsyslog
+    ports:
+      - "514:514"
+    volumes:
+      - '../logs/order:/var/log'
