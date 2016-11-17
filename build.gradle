@@ -239,6 +239,5 @@ build {
     // TODO: uncomment when RAML will be added
     //dependsOn ramlToHtml
     //dependsOn copyRamlHtmlToBuild
-    // TODO: uncomment when demo data will be added
-    // dependsOn demoDataSeed
+    dependsOn demoDataSeed
 }
