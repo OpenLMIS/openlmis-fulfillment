@@ -138,22 +138,21 @@ task generateMigration << {
     migrationFile.createNewFile()
 }
 
-// TODO: uncomment when RAML will be added
-//task checkApiIsRaml(type:Exec) {
-//    executable "raml-cop"
-//    args "src/main/resources/api-definition.yaml"
-//}
+
+task checkApiIsRaml(type:Exec) {
+    executable "raml-cop"
+    args "src/main/resources/api-definition.yaml"
+}
 
 task demoDataSeed(type:Exec) {
     executable "./demo-data/demo_seed.sh"
     args "./demo-data", "node ./demo-data/seed_generator.js"
 }
 
-// TODO: uncomment when RAML will be added
-//configure(checkApiIsRaml) {
-//    group = JavaBasePlugin.VERIFICATION_GROUP
-//    description = 'Verify that the api-specification is valid RAML'
-//}
+configure(checkApiIsRaml) {
+    group = JavaBasePlugin.VERIFICATION_GROUP
+    description = 'Verify that the api-specification is valid RAML'
+}
 
 jacocoTestReport {
     group = "reporting"
@@ -211,16 +210,14 @@ test {
     }
 }
 
-// TODO: uncomment when RAML will be added
-//apply from: "documentation.gradle"
-//integrationTest {
-//    dependsOn ramlToSwagger
-//}
+apply from: "documentation.gradle"
+integrationTest {
+    dependsOn ramlToSwagger
+}
 
 processResources {
     // we want the generated swagger spec file included in the output jar
-    // TODO: uncomment when RAML will be added
-    // finalizedBy ramlToSwagger
+    finalizedBy ramlToSwagger
     // update version information in build
     filesMatching('**/version.properties') {
         expand(project.properties)
@@ -228,16 +225,14 @@ processResources {
 }
 
 check {
-    // TODO: uncomment when RAML will be added
-    //dependsOn checkApiIsRaml
+    dependsOn checkApiIsRaml
     dependsOn integrationTest
 }
 
 build {
     dependsOn jacocoTestReport
     dependsOn check
-    // TODO: uncomment when RAML will be added
-    //dependsOn ramlToHtml
-    //dependsOn copyRamlHtmlToBuild
+    dependsOn ramlToHtml
+    dependsOn copyRamlHtmlToBuild
     dependsOn demoDataSeed
 }

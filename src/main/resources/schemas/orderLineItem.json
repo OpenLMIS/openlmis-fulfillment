@@ -1,0 +1,33 @@
+{ "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "title": "OrderLineItem",
+  "description": "A single orderLineItem",
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true,
+      "title": "id"
+    },
+    "orderableProductId": {
+      "type": "string",
+      "required": true,
+      "title": "orderableProductId"
+    },
+    "orderedQuantity": {
+      "type": "integer",
+      "required": true,
+      "title": "orderedQuantity"
+    },
+    "order": {
+      "type": "object",
+      "$ref": "order.json",
+      "required": false,
+      "title": "order"
+    },
+    "filledQuantity": {
+      "type": "integer",
+      "required": true,
+      "title": "filledQuantity"
+    }
+  }
+}

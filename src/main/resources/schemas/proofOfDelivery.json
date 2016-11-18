@@ -1,0 +1,57 @@
+{ "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "title": "ProofOfDelivery",
+  "description": "A single proofOfDelivery",
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true,
+      "title": "id"
+    },
+    "order": {
+      "type": "object",
+      "$ref": "order.json",
+      "required": true
+    },
+    "proofOfDeliveryLineItems": {
+      "type": "array",
+      "required": false,
+      "title": "proofOfDeliveryLineItems",
+      "items": {
+        "type": "object",
+        "$ref": "proofOfDeliveryLineItem.json"
+      },
+      "uniqueItems": false
+    },
+    "totalShippedPacks": {
+      "type": "integer",
+      "required": false,
+      "title": "totalShippedPacks"
+    },
+    "totalReceivedPacks": {
+      "type": "integer",
+      "required": false,
+      "title": "totalReceivedPacks"
+    },
+    "totalReturnedPacks": {
+      "type": "integer",
+      "required": false,
+      "title": "totalReturnedPacks"
+    },
+    "deliveredBy": {
+      "type": "string",
+      "required": false,
+      "title": "deliveredBy"
+    },
+    "receivedBy": {
+      "type": "string",
+      "required": false,
+      "title": "receivedBy"
+    },
+    "receivedDate": {
+      "type": "string",
+      "required": false,
+      "title": "receivedDate"
+    }
+  }
+}

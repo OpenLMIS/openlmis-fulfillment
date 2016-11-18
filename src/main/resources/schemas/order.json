@@ -1,0 +1,75 @@
+{ "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "title": "Order",
+  "description": "A single order",
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true,
+      "title": "id"
+    },
+    "requisition": {
+      "type": "object",
+      "$ref": "#/schemas/requisition",
+      "required": false,
+      "title": "requisitionCode"
+    },
+    "createdDate": {
+      "type": "string",
+      "required": false,
+      "title": "createdDate"
+    },
+    "createdById": {
+      "type": "object",
+      "$ref": "#/schemas/user",
+      "required": true,
+      "title": "createdBy"
+    },
+    "programId": {
+      "type": "string",
+      "required": true,
+      "title": "programId"
+    },
+    "requestingFacilityId": {
+      "type": "string",
+      "required": true,
+      "title": "requestingFacilityId"
+    },
+    "receivingFacilityId": {
+      "type": "string",
+      "required": true,
+      "title": "receivingFacilityId"
+    },
+    "supplyingFacilityId": {
+      "type": "string",
+      "required": true,
+      "title": "supplyingFacilityId"
+    },
+    "orderCode": {
+      "type": "string",
+      "required": true,
+      "title": "orderCode"
+    },
+    "status": {
+      "type": "object",
+      "$ref": "#/schemas/orderStatus",
+      "required": true,
+      "title": "status"
+    },
+    "quotedCost": {
+      "type": "number",
+      "required": true,
+      "title": "quotedCost"
+    },
+    "orderLineItems": {
+      "type": "array",
+      "required": false,
+      "title": "orderLineItems",
+      "items": {
+        "type": "object",
+        "$ref": "orderLineItem.json"
+      },
+      "uniqueItems": false
+    }
+  }
+}

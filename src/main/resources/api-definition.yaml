@@ -1,0 +1,811 @@
+#%RAML 0.8
+---
+title: OpenLMIS Fulfillment API
+version: "@version@"
+baseUri: "@baseUrl@@prefix@/api"
+
+documentation:
+    - title: Getting Started
+      content: Welcont to the OpenLMIS fulfillment-service documentation.
+
+schemas:
+  - order: !include schemas/order.json
+  - orderLineItem: !include schemas/orderLineItem.json
+  - orderFileColumn: !include schemas/orderFileColumn.json
+  - orderFileTemplate: !include schemas/orderFileTamplate.json
+  - proofOfDelivery: !include schemas/proofOfDelivery.json
+  - proofOfDeliveryLineItem: !include schemas/proofOfDeliveryLineItem.json
+  - orderNumberConfiguration: !include schemas/orderNumberConfiguration.json
+traits:
+    - secured:
+          queryParameters:
+              access_token:
+                  displayName: access_token
+                  description: OAutn2 access token
+                  type: string
+                  required: true
+                  repeat: false
+
+resourceTypes:
+    - collection:
+        get:
+            is: [ secured ]
+            responses:
+                200:
+                  description: Collection retrieved succesfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XXS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+                404:
+                  description: Collection is empty.
+                  headers:
+                    X-Content-Type-Options:
+                    X-XXS-Protection:
+        post:
+            is: [ secured ]
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                201:
+                  description: Item created succesfully
+                  headers:
+                    X-Content-Type-Options:
+                    X-XXS-Protection:
+                  body:
+                      application/json:
+                          schema: <<schema>>
+    - member:
+        get:
+            is: [ secured ]
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        post:
+            is: [ secured ]
+            body:
+                application/json:
+                    schema: <<schema>>
+            responses:
+                200:
+                    body:
+                        application/json:
+                            schema: <<schema>>
+        delete:
+            is: [ secured ]
+            responses:
+                200:
+
+/orders:
+    displayName: Order
+    get:
+        is: [ secured ]
+        description: Get all orders.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new order.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen order.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen order.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing order.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        /export:
+            get:
+                is: [ secured ]
+                description: Export Order to csv.
+                queryParameters:
+                    type:
+                        displayName: type
+                        type: string
+                        required: false
+                        default: "csv"
+                        repeat: false
+                responses:
+                  200:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                      Content-Disposition:
+                    body:
+                      text/csv:
+                  400:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                  404:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                  500:
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+    /search:
+            get:
+                is: [ secured ]
+                description: Find Orders with matched parameters.
+                queryParameters:
+                    supplyingFacility:
+                        displayName: supplyingFacility
+                        description: supplyingFacility ID
+                        type: string
+                        required: true
+                        repeat: false
+                    requestingFacility:
+                        displayName: requestingFacility
+                        description: requestingFacility ID
+                        type: string
+                        required: false
+                        repeat: false
+                    program:
+                        displayName: program
+                        description: program ID
+                        type: string
+                        required: false
+                        repeat: false
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                        body:
+                          application/json:
+                    "404":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "500":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+    /{id}/print:
+        uriParameters:
+            id:
+                displayName: orderId
+                type: string
+                required: true
+                repeat: false
+        get:
+            is: [ secured ]
+            description: Print all order line items from an order to a csv or pdf file.
+            queryParameters:
+                format:
+                    displayName: format
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                      Content-Disposition:
+                    body:
+                      application/pdf:
+                      text/csv:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+    /{id}/finalize:
+            uriParameters:
+                id:
+                    displayName: orderId
+                    type: string
+                    required: true
+                    repeat: false
+            put:
+                is: [ secured ]
+                description: Finalize chosen order.
+                responses:
+                    "200":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+                    "400":
+                        headers:
+                          X-Content-Type-Options:
+                          X-XSS-Protection:
+    /requisitions:
+        post:
+            is: [ secured ]
+            description: Convert Requisition list to orders.
+            body:
+              application/json:
+            responses:
+                "201":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/orderLineItems:
+    displayName: Order Line Items
+    get:
+        is: [ secured ]
+        description: Get all orderLineItems.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new orderLineItem.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen orderLineItem.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen orderLineItem.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing orderLineItem.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/orderNumberConfigurations:
+    displayName: OrderNumberConfiguration
+    get:
+        is: [ secured ]
+        description: Get OrderNumberConfiguration.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Create or Update OrderNumberConfiguration.
+        body:
+            application/json:
+        responses:
+          200:
+            headers:
+              X-Content-Type-Options:
+              X-XSS-Protection:
+            body:
+              application/json:
+          400:
+            headers:
+              X-Content-Type-Options:
+              X-XSS-Protection:
+            body:
+              application/json:
+
+/proofOfDeliveries:
+    displayName: Proof Of Delivery
+    get:
+        is: [ secured ]
+        description: Get all proofOfDeliveries.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new proofOfDelivery.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen proofOfDelivery.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen proofOfDelivery.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing proofOfDelivery.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+    /{id}/print:
+        uriParameters:
+              id:
+                  displayName: proofOfDeliveryId
+                  type: string
+                  required: true
+                  repeat: false
+        get:
+            is: [ secured ]
+            description: Print proof of delivery to a pdf file.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/pdf:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/proofOfDeliveryLineItems:
+    displayName: Proof Of Delivery Line Items
+    get:
+        is: [ secured ]
+        description: Get all proofOfDeliveryLineItems.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Creates new proofOfDeliveryLineItem.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen proofOfDeliveryLineItem.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen proofOfDeliveryLineItem.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing proofOfDeliveryLineItem.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+
+/orderFileTemplates:
+    displayName: OrderFileTemplate
+    get:
+        is: [ secured ]
+        description: Get OrderFileTemplate.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    post:
+        is: [ secured ]
+        description: Create or update orderFileTemplate.
+        body:
+            application/json:
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "400":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+
+/proofOfDeliveryTemplates:
+    displayName: Proof of delivery report template.
+    post:
+          is: [ secured ]
+          description: Save Proof Of Delivery report template in database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with ".jrxml" format
+                         type: file
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+    get:
+          is: [ secured ]
+          description: Download Proof Of Delivery report template with jrxml format.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/xml:
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+
+/templates:
+    displayName: Report Template
+    post:
+          is: [ secured ]
+          description: Add report template to database.
+          body:
+              multipart/form-data:
+                formParameters:
+                    file:
+                         displayName: Template with ".jrxml" format
+                         type: file
+                         required: false
+                         repeat: false
+                    name:
+                         displayName: Name of Template in database
+                         type: string
+                         required: false
+                         repeat: false
+                    description:
+                         displayName: Descryption of Template
+                         type: string
+                         required: false
+                         repeat: false
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+              "500":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+    get:
+        is: [ secured ]
+        description: Get all templates.
+        responses:
+            "200":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+            "404":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen template.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen template.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing template.
+            body:
+                application/json:
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                "400":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
