@@ -84,7 +84,7 @@ public class OrderServiceTest {
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
     Order order = new Order();
-    order.setRequisitionId(UUID.randomUUID());
+    order.setExternalId(UUID.randomUUID());
     order.setEmergency(true);
     order.setProgramId(program.getId());
     order.setStatus(OrderStatus.ORDERED);
@@ -195,7 +195,7 @@ public class OrderServiceTest {
 
   private void validateCreatedOrder(Order actual, Order expected) {
     assertEquals(OrderStatus.ORDERED, actual.getStatus());
-    assertEquals(actual.getRequisitionId(), expected.getRequisitionId());
+    assertEquals(actual.getExternalId(), expected.getExternalId());
     assertEquals(actual.getReceivingFacilityId(), expected.getReceivingFacilityId());
     assertEquals(actual.getRequestingFacilityId(), expected.getRequestingFacilityId());
     assertEquals(actual.getProgramId(), expected.getProgramId());

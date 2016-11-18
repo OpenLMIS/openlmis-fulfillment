@@ -87,7 +87,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
 
-    order.setRequisitionId(UUID.randomUUID());
+    order.setExternalId(UUID.randomUUID());
     order.setEmergency(false);
     order.setFacilityId(facility.getId());
     order.setProcessingPeriodId(period.getId());

@@ -102,7 +102,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
     Order order = new Order();
-    order.setRequisitionId(UUID.randomUUID());
+    order.setExternalId(UUID.randomUUID());
     order.setProgramId(program.getId());
     order.setFacilityId(facility.getId());
     order.setProcessingPeriodId(period.getId());

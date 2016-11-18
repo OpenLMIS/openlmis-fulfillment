@@ -43,7 +43,7 @@ public class Order extends BaseEntity {
   @Getter
   @Setter
   @Type(type = UUID)
-  private UUID requisitionId;
+  private UUID externalId;
 
   @Getter
   @Setter
@@ -128,7 +128,7 @@ public class Order extends BaseEntity {
    * @param order Order with new values.
    */
   public void updateFrom(Order order) {
-    this.requisitionId = order.requisitionId;
+    this.externalId = order.externalId;
     this.emergency = order.emergency;
     this.facilityId = order.facilityId;
     this.processingPeriodId = order.processingPeriodId;

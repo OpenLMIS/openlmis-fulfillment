@@ -186,7 +186,7 @@ public class OrderCsvHelperTest {
     Order order = new Order();
     order.setOrderCode("code");
     order.setCreatedDate(LocalDateTime.of(2016, Month.JANUARY, 1, 0, 0));
-    order.setRequisitionId(UUID.randomUUID());
+    order.setExternalId(UUID.randomUUID());
     order.setProcessingPeriodId(UUID.randomUUID());
     order.setFacilityId(UUID.randomUUID());
     order.setOrderLineItems(Collections.singletonList(orderLineItem));

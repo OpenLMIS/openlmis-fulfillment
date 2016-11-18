@@ -90,7 +90,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     List<OrderLineItem> orderLineItems = new ArrayList<>();
     orderLineItems.add(orderLineItem);
     firstOrder.setOrderLineItems(orderLineItems);
-    firstOrder.setRequisitionId(secondOrder.getRequisitionId());
+    firstOrder.setExternalId(secondOrder.getExternalId());
 
     firstOrder = orderRepository.save(firstOrder);
   }
@@ -100,7 +100,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
                          UUID requestingFacility, UUID receivingFacility,
                          UUID supplyingFacility, OrderStatus orderStatus, BigDecimal cost) {
     Order order = new Order();
-    order.setRequisitionId(requisition);
+    order.setExternalId(requisition);
     order.setEmergency(false);
     order.setFacilityId(facility);
     order.setProcessingPeriodId(processingPeriod);

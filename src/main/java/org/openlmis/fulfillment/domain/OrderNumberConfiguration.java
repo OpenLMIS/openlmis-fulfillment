@@ -61,7 +61,7 @@ public class OrderNumberConfiguration extends BaseEntity {
       orderNumber.append(getTruncatedProgramCode(program.getCode()));
     }
 
-    orderNumber.append(order.getRequisitionId().toString());
+    orderNumber.append(order.getExternalId().toString());
 
     if (includeTypeSuffix) {
       orderNumber.append(order.getEmergency() ? "E" : "R");

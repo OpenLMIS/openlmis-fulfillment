@@ -23,7 +23,7 @@ public class OrderNumberConfigurationTest {
   @Before
   public void setUp() {
     order = new Order();
-    order.setRequisitionId(UUID.fromString(UUID_STRING));
+    order.setExternalId(UUID.fromString(UUID_STRING));
     order.setEmergency(true);
 
     program = new ProgramDto();

@@ -1,7 +1,7 @@
 [
   {
     "id": "35e5059a-fd92-4078-a448-b00402b3fb5b",
-    "requisitionId": "f152b9bb-c1e2-40b6-b381-28d739208662",
+    "externalId": "f152b9bb-c1e2-40b6-b381-28d739208662",
     "emergency": "false",
     "createdDate": "2016-04-30T16:45:22",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
@@ -17,7 +17,7 @@
   },
   {
     "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6",
-    "requisitionId": "89bd3422-9ada-4369-8ee3-5747fa79c92d",
+    "externalId": "89bd3422-9ada-4369-8ee3-5747fa79c92d",
     "emergency": "false",
     "createdDate": "2016-06-13T12:22:20",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
@@ -33,7 +33,7 @@
   },
   {
     "id": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3",
-    "requisitionId": "276353fb-970f-4638-8ead-3e97c9450aa3",
+    "externalId": "276353fb-970f-4638-8ead-3e97c9450aa3",
     "emergency": "false",
     "createdDate": "2016-06-15T12:00:00",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
@@ -49,7 +49,7 @@
   },
   {
     "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2",
-    "requisitionId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a",
+    "externalId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a",
     "emergency": "false",
     "createdDate": "2016-06-21T17:17:17",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
