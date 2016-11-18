@@ -37,31 +37,36 @@ public class OrderNumberConfiguration extends BaseEntity {
   @Getter
   @Setter
   @Column(nullable = false)
-  private Boolean includeRequisitionTypeSuffix;
+  private Boolean includeTypeSuffix;
 
   /**
    * Generates order number for given parameters.
    *
-   * @param requisition Requisition from which order have been converted.
-   * @param program     Program associated with the order.
+   * @param order   order instance.
+   * @param program Program associated with the order.
    * @return Generated orderNumber.
    */
-  public String generateOrderNumber(Requisition requisition, ProgramDto program)
-      throws OrderNumberException {
-    StringBuilder orderNumber = new StringBuilder();
-    if (requisition == null) {
-      throw new OrderNumberException("Requisition cannot be empty");
+  public String generateOrderNumber(Order order, ProgramDto program) throws OrderNumberException {
+    if (order == null) {
+      throw new OrderNumberException("Order cannot be empty");
     }
+
+    StringBuilder orderNumber = new StringBuilder();
+
     if (includeOrderNumberPrefix && orderNumberPrefix != null) {
       orderNumber.append(getOrderNumberPrefix());
     }
+
     if (includeProgramCode && program != null) {
       orderNumber.append(getTruncatedProgramCode(program.getCode()));
     }
-    orderNumber.append(requisition.getId().toString());
-    if (includeRequisitionTypeSuffix) {
-      orderNumber.append(requisition.getEmergency() ? "E" : "R");
+
+    orderNumber.append(order.getRequisitionId().toString());
+
+    if (includeTypeSuffix) {
+      orderNumber.append(order.getEmergency() ? "E" : "R");
     }
+
     return orderNumber.toString();
   }
 

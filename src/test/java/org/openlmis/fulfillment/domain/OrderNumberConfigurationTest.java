@@ -17,14 +17,14 @@ public class OrderNumberConfigurationTest {
   private static final String NOT_EMERGENCY = "R";
 
 
-  private Requisition requisition;
+  private Order order;
   private ProgramDto program;
 
   @Before
   public void setUp() {
-    requisition = new Requisition();
-    requisition.setId(UUID.fromString(UUID_STRING));
-    requisition.setEmergency(true);
+    order = new Order();
+    order.setRequisitionId(UUID.fromString(UUID_STRING));
+    order.setEmergency(true);
 
     program = new ProgramDto();
     program.setCode(PROGRAM_CODE);
@@ -36,7 +36,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, true, true, true);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(requisition, program);
+        orderNumberConfiguration.generateOrderNumber(order, program);
 
     StringBuilder stringBuilder = new StringBuilder(PREFIX);
     stringBuilder.append(PROGRAM_CODE)
@@ -52,7 +52,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, false, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(requisition, null);
+        orderNumberConfiguration.generateOrderNumber(order, null);
 
     String expectedResult = UUID_STRING;
 
@@ -65,7 +65,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(null, true, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(requisition, program);
+        orderNumberConfiguration.generateOrderNumber(order, program);
 
     String expectedResult = UUID_STRING;
 
@@ -73,13 +73,13 @@ public class OrderNumberConfigurationTest {
   }
 
   @Test
-  public void shouldGenerateCorrectSuffixForNotEmergencyRequisition() {
+  public void shouldGenerateCorrectSuffixForNotEmergencyOrder() {
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(null, true, false, true);
-    requisition.setEmergency(false);
+    order.setEmergency(false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(requisition, program);
+        orderNumberConfiguration.generateOrderNumber(order, program);
 
     String expectedResult = UUID_STRING + NOT_EMERGENCY;
 
@@ -87,7 +87,7 @@ public class OrderNumberConfigurationTest {
   }
 
   @Test(expected = OrderNumberException.class)
-  public void shouldThrowExceptionWhenGeneratingNumberFromNullRequisition() {
+  public void shouldThrowExceptionWhenGeneratingNumberFromNullOrder() {
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, true, false, false);

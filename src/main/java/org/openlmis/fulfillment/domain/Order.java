@@ -11,7 +11,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
-import org.openlmis.fulfillment.referencedata.model.UserDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,9 +28,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
@@ -44,11 +40,24 @@ public class Order extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
-  @OneToOne
-  @JoinColumn(name = "requisitionId")
   @Getter
   @Setter
-  private Requisition requisition;
+  @Type(type = UUID)
+  private UUID requisitionId;
+
+  @Getter
+  @Setter
+  private Boolean emergency;
+
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID facilityId;
+
+  @Getter
+  @Setter
+  @Type(type = UUID)
+  private UUID processingPeriodId;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -108,47 +117,6 @@ public class Order extends BaseEntity {
   @Setter
   private List<OrderLineItem> orderLineItems;
 
-  /**
-   * Static factory method for constructing new Order based on Requisition.
-   *
-   * @param requisition Requisition to create instance from.
-   */
-  public static Order newOrder(Requisition requisition) {
-    Order order = new Order();
-    order.setRequisition(requisition);
-    order.setStatus(OrderStatus.ORDERED);
-    order.setQuotedCost(BigDecimal.ZERO);
-
-    order.setReceivingFacilityId(requisition.getFacilityId());
-    order.setRequestingFacilityId(requisition.getFacilityId());
-
-    order.setSupplyingFacilityId(requisition.getSupplyingFacilityId());
-    order.setProgramId(requisition.getProgramId());
-
-    List<OrderLineItem> orderLineItems = requisition
-        .getRequisitionLineItems()
-        .stream()
-        .map(lineItem -> OrderLineItem.newOrderLineItem(lineItem, order))
-        .collect(Collectors.toList());
-
-    order.setOrderLineItems(orderLineItems);
-
-    return order;
-  }
-
-  /**
-   * Static factory method for constructing new Order based on Requisition and User.
-   *
-   * @param requisition Requisition to create instance from.
-   * @param user        User details
-   */
-  public static Order newOrder(Requisition requisition, UserDto user) {
-    Order order = Order.newOrder(requisition);
-    order.setCreatedById(user.getId());
-
-    return order;
-  }
-
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
@@ -160,7 +128,10 @@ public class Order extends BaseEntity {
    * @param order Order with new values.
    */
   public void updateFrom(Order order) {
-    this.requisition = order.requisition;
+    this.requisitionId = order.requisitionId;
+    this.emergency = order.emergency;
+    this.facilityId = order.facilityId;
+    this.processingPeriodId = order.processingPeriodId;
     this.createdById = order.createdById;
     this.programId = order.programId;
     this.requestingFacilityId = order.requestingFacilityId;

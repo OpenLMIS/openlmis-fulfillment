@@ -10,8 +10,6 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.Requisition;
-import org.openlmis.fulfillment.domain.RequisitionStatus;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
 import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
@@ -20,7 +18,6 @@ import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.RequisitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -46,9 +43,6 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private RequisitionRepository requisitionRepository;
 
   private OrderLineItem orderLineItem = new OrderLineItem();
   private Order order = new Order();
@@ -88,21 +82,15 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
-    Requisition requisition = new Requisition();
-    requisition.setProgramId(program.getId());
-    requisition.setFacilityId(facility.getId());
-    requisition.setProcessingPeriodId(period.getId());
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setEmergency(false);
-    requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisitionRepository.save(requisition);
-
     orderLineItem.setOrder(order);
     orderLineItem.setOrderableProductId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
 
-    order.setRequisition(requisition);
+    order.setRequisitionId(UUID.randomUUID());
+    order.setEmergency(false);
+    order.setFacilityId(facility.getId());
+    order.setProcessingPeriodId(period.getId());
     order.setOrderCode("O");
     order.setQuotedCost(new BigDecimal("10.00"));
     order.setStatus(OrderStatus.ORDERED);

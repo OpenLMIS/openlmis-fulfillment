@@ -7,12 +7,11 @@ import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCES
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.Requisition;
-import org.openlmis.fulfillment.domain.RequisitionStatus;
 import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
-import org.openlmis.fulfillment.repository.RequisitionRepository;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -29,9 +28,9 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Autowired
-  private RequisitionRepository requisitionRepository;
+  private OrderRepository orderRepository;
 
-  private Requisition requisition;
+  private Order order;
   private ProgramDto programDto;
   private UUID facility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
@@ -42,13 +41,12 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     programDto.setId(UUID.fromString("35316636-6264-6331-2d34-3933322d3462"));
     programDto.setCode("code");
 
-    requisition = new Requisition();
-    requisition.setEmergency(true);
-    requisition.setStatus(RequisitionStatus.APPROVED);
-    requisition.setProgramId(programDto.getId());
-    requisition.setFacilityId(facility);
-    requisition.setProcessingPeriodId(UUID.fromString("a510d22f-f370-46c7-88e2-981573c427f5"));
-    requisition = requisitionRepository.save(requisition);
+    order = new Order();
+    order.setEmergency(true);
+    order.setProgramId(programDto.getId());
+    order.setFacilityId(facility);
+    order.setProcessingPeriodId(UUID.fromString("a510d22f-f370-46c7-88e2-981573c427f5"));
+    order = orderRepository.save(order);
   }
 
   @Test

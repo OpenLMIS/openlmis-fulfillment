@@ -13,8 +13,6 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.domain.Requisition;
-import org.openlmis.fulfillment.domain.RequisitionStatus;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
@@ -25,7 +23,6 @@ import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.RequisitionRepository;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -68,9 +65,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-  @Autowired
-  private RequisitionRepository requisitionRepository;
-
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
 
@@ -107,16 +101,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
-    Requisition requisition = new Requisition();
-    requisition.setProgramId(program.getId());
-    requisition.setFacilityId(facility.getId());
-    requisition.setProcessingPeriodId(period.getId());
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setEmergency(false);
-    requisition.setSupervisoryNodeId(supervisoryNode.getId());
-    requisitionRepository.save(requisition);
-
     Order order = new Order();
+    order.setRequisitionId(UUID.randomUUID());
+    order.setProgramId(program.getId());
+    order.setFacilityId(facility.getId());
+    order.setProcessingPeriodId(period.getId());
+    order.setEmergency(false);
     order.setStatus(OrderStatus.SHIPPED);
     order.setCreatedDate(LocalDateTime.now());
     order.setCreatedById(UUID.randomUUID());

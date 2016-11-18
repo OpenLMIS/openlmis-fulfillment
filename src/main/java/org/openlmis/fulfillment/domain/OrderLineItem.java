@@ -43,20 +43,10 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long filledQuantity;
 
-  /**
-   * Static factory method for constructing new OrderLineItem based on RequisitionLineItem.
-   *
-   * @param lineItem RequisitionLineItem to create instance from.
-   */
-  public static OrderLineItem newOrderLineItem(RequisitionLineItem lineItem, Order order) {
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setOrder(order);
-    orderLineItem.setOrderableProductId(lineItem.getOrderableProductId());
-    orderLineItem.setFilledQuantity(0L);
-    orderLineItem.setOrderedQuantity(lineItem.getRequestedQuantity().longValue());
-
-    return orderLineItem;
-  }
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Long approvedQuantity;
 
   /**
    * Copy values of attributes into new or updated OrderLineItem.
@@ -68,5 +58,6 @@ public class OrderLineItem extends BaseEntity {
     this.orderableProductId = orderLineItem.getOrderableProductId();
     this.orderedQuantity = orderLineItem.getOrderedQuantity();
     this.filledQuantity = orderLineItem.getFilledQuantity();
+    this.approvedQuantity = orderLineItem.getApprovedQuantity();
   }
 }

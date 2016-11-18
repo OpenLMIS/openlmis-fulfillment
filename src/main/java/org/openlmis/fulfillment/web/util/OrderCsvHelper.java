@@ -8,13 +8,13 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.domain.RequisitionLineItem;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
+import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
+import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.referencedata.service.PeriodReferenceDataService;
-import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,8 +58,7 @@ public class OrderCsvHelper {
       writeHeader(orderFileColumns, writer);
     }
 
-    writeLineItems(order, order.getRequisition().getRequisitionLineItems(),
-        orderFileColumns, writer);
+    writeLineItems(order, order.getOrderLineItems(), orderFileColumns, writer);
   }
 
   private void removeExcludedColumns(List<OrderFileColumn> orderFileColumns) {
@@ -87,21 +86,21 @@ public class OrderCsvHelper {
     }
   }
 
-  private void writeLineItems(Order order, List<RequisitionLineItem> requisitionLineItems,
+  private void writeLineItems(Order order, List<OrderLineItem> orderLineItems,
                               List<OrderFileColumn> orderFileColumns, Writer writer)
       throws IOException {
     int counter = 1;
-    for (RequisitionLineItem requisitionLineItem : requisitionLineItems) {
-      writeCsvLineItem(order, requisitionLineItem, orderFileColumns, writer, counter++);
+    for (OrderLineItem orderLineItem : orderLineItems) {
+      writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
       writer.write(LINE_SEPARATOR);
     }
   }
 
-  private void writeCsvLineItem(Order order, RequisitionLineItem requisitionLineItem,
+  private void writeCsvLineItem(Order order, OrderLineItem orderLineItem,
                                 List<OrderFileColumn> orderFileColumns, Writer writer, int counter)
       throws IOException {
     JXPathContext orderContext = JXPathContext.newContext(order);
-    JXPathContext lineItemContext = JXPathContext.newContext(requisitionLineItem);
+    JXPathContext lineItemContext = JXPathContext.newContext(orderLineItem);
     for (OrderFileColumn orderFileColumn : orderFileColumns) {
       if (orderFileColumn.getNested() == null || orderFileColumn.getNested().isEmpty()) {
         if (orderFileColumns.indexOf(orderFileColumn) < orderFileColumns.size() - 1) {

@@ -4,7 +4,6 @@ import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.RequisitionRepository;
 import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +17,6 @@ public class CleanRepositoryHelper {
 
   public static final UUID INITIAL_USER_ID =
       UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
-
-  @Autowired
-  private RequisitionRepository requisitionRepository;
 
   @Autowired
   private OrderLineItemRepository orderLineItemRepository;
@@ -50,7 +46,6 @@ public class CleanRepositoryHelper {
     proofOfDeliveryLineItemRepository.deleteAll();
     proofOfDeliveryRepository.deleteAll();
     orderLineItemRepository.deleteAll();
-    requisitionRepository.deleteAll();
     orderRepository.deleteAll();
   }
 }

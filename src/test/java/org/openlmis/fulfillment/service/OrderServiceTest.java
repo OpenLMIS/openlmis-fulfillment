@@ -8,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,9 +20,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.Requisition;
-import org.openlmis.fulfillment.domain.RequisitionLineItem;
-import org.openlmis.fulfillment.domain.RequisitionStatus;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
 import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
@@ -84,15 +83,25 @@ public class OrderServiceTest {
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
-    Requisition requisition = generateRequisition();
-    Order order = Order.newOrder(requisition);
+    Order order = new Order();
+    order.setRequisitionId(UUID.randomUUID());
+    order.setEmergency(true);
+    order.setProgramId(program.getId());
+    order.setStatus(OrderStatus.ORDERED);
+    order.setQuotedCost(BigDecimal.ZERO);
+    order.setSupplyingFacilityId(UUID.randomUUID());
+
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setOrderedQuantity(1000L);
+
+    order.setOrderLineItems(Lists.newArrayList(orderLineItem));
     order.setCreatedById(UUID.randomUUID());
 
     // when
     Order created = orderService.save(order);
 
     // then
-    validateOrderBasedOnRequisition(created, requisition);
+    validateCreatedOrder(created, order);
     verify(orderRepository).save(any(Order.class));
   }
 
@@ -167,20 +176,6 @@ public class OrderServiceTest {
     return order;
   }
 
-  private Requisition generateRequisition() {
-    Requisition requisition = new Requisition();
-    requisition.setId(UUID.randomUUID());
-    requisition.setProgramId(program.getId());
-    requisition.setCreatedDate(LocalDateTime.now());
-    requisition.setStatus(RequisitionStatus.INITIATED);
-    requisition.setEmergency(true);
-    requisition.setSupplyingFacilityId(UUID.randomUUID());
-    List<RequisitionLineItem> requisitionLineItems = new ArrayList<>();
-    requisitionLineItems.add(generateRequisitionLineItem());
-    requisition.setRequisitionLineItems(requisitionLineItems);
-    return requisition;
-  }
-
   private OrderLineItem generateOrderLineItem(Order order) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setId(UUID.randomUUID());
@@ -188,12 +183,6 @@ public class OrderServiceTest {
     orderLineItem.setOrder(order);
     orderLineItem.setOrderedQuantity(1000L);
     return orderLineItem;
-  }
-
-  private RequisitionLineItem generateRequisitionLineItem() {
-    RequisitionLineItem requisitionLineItem = new RequisitionLineItem();
-    requisitionLineItem.setRequestedQuantity(1000);
-    return requisitionLineItem;
   }
 
   private String prepareExpectedCsvOutput(Order order, List<String> header)
@@ -204,23 +193,21 @@ public class OrderServiceTest {
     return new String(encoded, Charset.defaultCharset());
   }
 
-  private void validateOrderBasedOnRequisition(Order order, Requisition requisition) {
-    assertEquals(OrderStatus.ORDERED, order.getStatus());
-    assertEquals(order.getRequisition().getId(), requisition.getId());
-    assertEquals(order.getReceivingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getRequestingFacilityId(), requisition.getFacilityId());
-    assertEquals(order.getProgramId(), requisition.getProgramId());
-    assertEquals(order.getSupplyingFacilityId(), requisition.getSupplyingFacilityId());
-    assertEquals(1, order.getOrderLineItems().size());
-    assertEquals(1, requisition.getRequisitionLineItems().size());
+  private void validateCreatedOrder(Order actual, Order expected) {
+    assertEquals(OrderStatus.ORDERED, actual.getStatus());
+    assertEquals(actual.getRequisitionId(), expected.getRequisitionId());
+    assertEquals(actual.getReceivingFacilityId(), expected.getReceivingFacilityId());
+    assertEquals(actual.getRequestingFacilityId(), expected.getRequestingFacilityId());
+    assertEquals(actual.getProgramId(), expected.getProgramId());
+    assertEquals(actual.getSupplyingFacilityId(), expected.getSupplyingFacilityId());
+    assertEquals(1, actual.getOrderLineItems().size());
+    assertEquals(1, expected.getOrderLineItems().size());
 
-    OrderLineItem orderLineItem = order.getOrderLineItems().iterator().next();
-    RequisitionLineItem requisitionLineItem =
-        requisition.getRequisitionLineItems().iterator().next();
-    assertEquals(requisitionLineItem.getRequestedQuantity().longValue(),
-        orderLineItem.getOrderedQuantity().longValue());
-    assertEquals(requisitionLineItem.getOrderableProductId(),
-        orderLineItem.getOrderableProductId());
+    OrderLineItem actualLineItem = actual.getOrderLineItems().iterator().next();
+    OrderLineItem expectedLineItem = expected.getOrderLineItems().iterator().next();
+
+    assertEquals(expectedLineItem.getOrderedQuantity(), actualLineItem.getOrderedQuantity());
+    assertEquals(expectedLineItem.getOrderableProductId(), actualLineItem.getOrderableProductId());
   }
 
   private void generateMocks() {

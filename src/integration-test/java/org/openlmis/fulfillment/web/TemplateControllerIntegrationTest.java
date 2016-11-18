@@ -101,7 +101,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldUpdateRequisitionTemplate() {
+  public void shouldUpdateTemplate() {
 
     template.setDescription(TEMPLATE_CONTROLLER_TEST);
 
@@ -121,7 +121,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldCreateNewRequisitionTemplateIfDoesNotExist() {
+  public void shouldCreateNewTemplateIfDoesNotExist() {
 
     templateRepository.delete(template);
     template.setDescription(TEMPLATE_CONTROLLER_TEST);
@@ -142,7 +142,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldGetAllRequisitionTemplates() {
+  public void shouldGetAllTemplates() {
 
     Template[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -159,7 +159,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldGetChosenRequisitionTemplate() {
+  public void shouldGetChosenTemplate() {
 
     Template response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -176,7 +176,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldNotGetNonexistentRequisitionTemplate() {
+  public void shouldNotGetNonexistentTemplate() {
 
     templateRepository.delete(template);
 
