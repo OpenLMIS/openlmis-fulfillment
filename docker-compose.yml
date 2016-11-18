@@ -1,8 +1,8 @@
 version: "2"
 services:
 
-  order:
-    image: openlmis/order
+  fulfillment:
+    image: openlmis/fulfillment
     links:
       - db
       - log
@@ -23,4 +23,4 @@ services:
     ports:
       - "514:514"
     volumes:
-      - '../logs/order:/var/log'
+      - '../logs/fulfillment:/var/log'

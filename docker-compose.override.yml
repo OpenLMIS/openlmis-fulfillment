@@ -1,7 +1,7 @@
 version: "2"
 services:
 
-  order:
+  fulfillment:
     image: openlmis/dev
     ports:
       - "8080:8080"

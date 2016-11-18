@@ -10,10 +10,10 @@ var query = "INSERT INTO %s (SELECT * FROM json_populate_recordset(NULL::%s, '%s
 // This presents the order that must be kept for proper data insertion.
 // Tables not included here are populated in random order
 var filesOrdered = [
-    "olmis_order.requisitions",
-    "olmis_order.orders",
-    "olmis_order.order_line_items",
-    "olmis_order.proof_of_deliveries"
+    "fulfillment.requisitions",
+    "fulfillment.orders",
+    "fulfillment.order_line_items",
+    "fulfillment.proof_of_deliveries"
 ]
 
 // Detects if the given key/value pair represents a foreign key.

@@ -9,7 +9,7 @@
     <context:annotation-config/>
     <context:spring-configured/>
 
-    <context:component-scan base-package="org.openlmis.order"/>
+    <context:component-scan base-package="org.openlmis.fulfillment"/>
 
     <bean id="localeResolver"
           class="org.springframework.web.servlet.i18n.SessionLocaleResolver">

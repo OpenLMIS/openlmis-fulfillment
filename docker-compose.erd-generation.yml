@@ -1,8 +1,8 @@
 version: "2"
 services:
 
-  order:
-    image: openlmis/order
+  fulfillment:
+    image: openlmis/fulfillment
     links:
       - db
       - log
@@ -17,4 +17,4 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/order:/var/log'
+      - '../logs/fulfillment:/var/log'

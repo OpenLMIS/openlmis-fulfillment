@@ -43,7 +43,7 @@ services:
 
   image:
     build: .
-    image: openlmis/order
+    image: openlmis/fulfillment
 
   db:
     image: openlmis/postgres
@@ -52,5 +52,5 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/order:/var/log'
+      - '../logs/fulfillment:/var/log'
 

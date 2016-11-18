@@ -1,1 +1,1 @@
-CREATE SCHEMA IF NOT EXISTS olmis_order;
+CREATE SCHEMA IF NOT EXISTS fulfillment;

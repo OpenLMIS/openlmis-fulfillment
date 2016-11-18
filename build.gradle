@@ -88,7 +88,7 @@ flyway {
     url = "$System.env.DATABASE_URL"
     user = "$System.env.POSTGRES_USER"
     password = "$System.env.POSTGRES_PASSWORD"
-    schemas = ['order']
+    schemas = ['fulfillment']
     sqlMigrationPrefix = ''
     placeholderPrefix = '#['
     placeholderSuffix = ']'
@@ -174,8 +174,8 @@ checkstyle {
 //Usage: gradle sonarqube
 sonarqube {
     properties {
-        property "sonar.projectName", "OpenLMIS Order"
-        property "sonar.projectKey", "org.sonarqube:openlmis-order"
+        property "sonar.projectName", "OpenLMIS Fulfillment"
+        property "sonar.projectKey", "org.sonarqube:openlmis-fulfillment"
         property "sonar.host.url", "http://sonar.openlmis.org"
         property "sonar.projectVersion", version
         property "sonar.java.coveragePlugin", "jacoco"
