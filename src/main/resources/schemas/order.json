@@ -1,75 +1,83 @@
 { "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "title": "Order",
-  "description": "A single order",
+  "description": "A single order created from requisition",
   "properties": {
     "id": {
       "type": "string",
-      "required": true,
       "title": "id"
     },
-    "requisition": {
-      "type": "object",
-      "$ref": "#/schemas/requisition",
-      "required": false,
-      "title": "requisitionCode"
+    "externalId": {
+      "type": "string",
+      "title": "externalId"
+    },
+    "emergency": {
+      "type": "boolean",
+      "title": "emergency"
+    },
+    "facilityId": {
+      "type": "string",
+      "title": "facilityId"
+    },
+    "processingPeriodId": {
+      "type": "string",
+      "title": "processingPeriodId"
     },
     "createdDate": {
       "type": "string",
-      "required": false,
       "title": "createdDate"
     },
     "createdById": {
-      "type": "object",
-      "$ref": "#/schemas/user",
-      "required": true,
+      "type": "string",
       "title": "createdBy"
     },
     "programId": {
       "type": "string",
-      "required": true,
       "title": "programId"
     },
     "requestingFacilityId": {
       "type": "string",
-      "required": true,
       "title": "requestingFacilityId"
     },
     "receivingFacilityId": {
       "type": "string",
-      "required": true,
       "title": "receivingFacilityId"
     },
     "supplyingFacilityId": {
       "type": "string",
-      "required": true,
       "title": "supplyingFacilityId"
     },
     "orderCode": {
       "type": "string",
-      "required": true,
       "title": "orderCode"
     },
     "status": {
-      "type": "object",
-      "$ref": "#/schemas/orderStatus",
-      "required": true,
+      "type": "string",
       "title": "status"
     },
     "quotedCost": {
       "type": "number",
-      "required": true,
       "title": "quotedCost"
     },
     "orderLineItems": {
       "type": "array",
-      "required": false,
       "title": "orderLineItems",
       "items": {
         "type": "object",
         "$ref": "orderLineItem.json"
       },
       "uniqueItems": false
-    }
+    },
+    "required": [
+      "id",
+      "emergency",
+      "createdById",
+      "programId",
+      "requestingFacilityId",
+      "receivingFacilityId",
+      "supplyingFacilityId",
+      "status",
+      "quotedCost"
+    ]
   }
 }

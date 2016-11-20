@@ -1,67 +1,58 @@
 { "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "title": "OrderFileColumn",
   "description": "A single orderFileColumn",
   "properties": {
     "id": {
       "type": "string",
-      "required": true,
       "title": "id"
     },
     "openLmisField": {
       "type": "boolean",
-      "required": false,
       "title": "openLmisField"
     },
     "dataFieldLabel": {
       "type": "string",
-      "required": false,
       "title": "dataFieldLabel"
     },
     "columnLabel": {
       "type": "string",
-      "required": false,
       "title": "columnLabel"
     },
     "include": {
       "type": "boolean",
-      "required": false,
       "title": "include"
     },
     "position": {
       "type": "integer",
-      "required": false,
       "title": "position"
     },
     "format": {
       "type": "string",
-      "required": false,
       "title": "format"
     },
     "nested": {
       "type": "string",
-      "required": false,
       "title": "nested"
     },
     "keyPath": {
       "type": "string",
-      "required": false,
       "title": "keyPath"
     },
     "related": {
       "type": "string",
-      "required": false,
       "title": "related"
     },
     "relatedKeyPath": {
       "type": "string",
-      "required": false,
       "title": "relatedKeyPath"
     },
     "orderFileTemplate": {
       "type": "object",
-      "$ref": "orderFileTemplate.json",
-      "required": true
-    }
+      "$ref": "orderFileTemplate.json"
+    },
+    "required": [
+      "orderFileTemplate"
+    ]
   }
 }

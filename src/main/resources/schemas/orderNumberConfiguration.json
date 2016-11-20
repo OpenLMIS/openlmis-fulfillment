@@ -1,33 +1,34 @@
 {
   "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "title": "OrderNumberConfiguration",
-  "description": "A single orderNumberConfiguration",
+  "description": "A single orderNumberConfiguration describing how orders number will look like",
   "properties": {
     "id": {
       "type": "string",
-      "required": true,
       "title": "id"
     },
     "orderNumberPrefix": {
       "type": "string",
-      "required": false,
       "title": "orderNumberPrefix"
     },
     "includeOrderNumberPrefix": {
       "type": "boolean",
-      "required": true,
       "title": "includeOrderNumberPrefix"
     },
     "includeProgramCode": {
       "type": "boolean",
-      "required": true,
       "title": "includeProgramCode"
     },
     "includeRequisitionTypeSuffix": {
       "type": "boolean",
-      "required": true,
       "title": "includeRequisitionTypeSuffix"
-    }
+    },
+    "required": [
+      "id",
+      "includeOrderNumberPrefix",
+      "includeProgramCode",
+      "includeRequisitionTypeSuffix"
+    ]
   }
 }

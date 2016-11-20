@@ -1,52 +1,50 @@
 {   "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "title": "ProofOfDeliveryLineItem",
-  "description": "A single proofOfDeliveryLineItem",
+  "description": "A single proofOfDeliveryLineItem ",
   "properties": {
     "id": {
       "type": "string",
-      "required": true,
       "title": "id"
     },
     "orderLineItem": {
       "type": "object",
       "$ref": "orderLineItem.json",
-      "required": true
+      "title": "orderLineItem"
     },
     "proofOfDelivery": {
       "type": "object",
       "$ref": "proofOfDelivery.json",
-      "required": true
+      "title": "proofOfDelivery"
     },
     "packToShip": {
       "type": "integer",
-      "required": false,
       "title": "packToShip"
     },
     "quantityShipped": {
       "type": "integer",
-      "required": false,
       "title": "quantityShipped"
     },
     "quantityReceived": {
       "type": "integer",
-      "required": false,
       "title": "quantityReceived"
     },
     "quantityReturned": {
       "type": "integer",
-      "required": false,
       "title": "quantityReturned"
     },
     "replacedProductCode": {
       "type": "string",
-      "required": false,
       "title": "replacedProductCode"
     },
     "notes": {
       "type": "string",
-      "required": false,
       "title": "notes"
-    }
+    },
+    "requisition": [
+      "id",
+      "orderLineItem",
+      "proofOfDelivery"
+    ]
   }
 }

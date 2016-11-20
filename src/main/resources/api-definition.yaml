@@ -6,16 +6,48 @@ baseUri: "@baseUrl@@prefix@/api"
 
 documentation:
     - title: Getting Started
-      content: Welcont to the OpenLMIS fulfillment-service documentation.
+      content: Welcome to the OpenLMIS fulfillment-service documentation.
 
 schemas:
   - order: !include schemas/order.json
+  - orderArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/order.json" }
+      }
   - orderLineItem: !include schemas/orderLineItem.json
+  - orderLineItemArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/orderLineItem.json" }
+      }
   - orderFileColumn: !include schemas/orderFileColumn.json
   - orderFileTemplate: !include schemas/orderFileTamplate.json
   - proofOfDelivery: !include schemas/proofOfDelivery.json
+  - proofOfDeliveryArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/proofOfDelivery.json" }
+      }
   - proofOfDeliveryLineItem: !include schemas/proofOfDeliveryLineItem.json
+  - proofOfDeliveryLineItemArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/proofOfDeliveryLineItem.json" }
+      }
   - orderNumberConfiguration: !include schemas/orderNumberConfiguration.json
+  - template: !include schemas/template.json
+  - templateArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/template.json" }
+      }
+  - templateParameter: !include schemas/templateParameter.json
+  - templateParameterArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/templateParameter.json" }
+      }
 traits:
     - secured:
           queryParameters:
@@ -93,15 +125,13 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "404":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
+                    schema: orderArray
     post:
         is: [ secured ]
         description: Creates new order.
         body:
             application/json:
+              schema: order
         responses:
             "201":
                 headers:
@@ -109,12 +139,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+                    schema: order
     /{id}:
         uriParameters:
             id:
@@ -148,6 +173,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: order
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -157,6 +183,7 @@ resourceTypes:
             description: Update existing order.
             body:
                 application/json:
+                  schema: order
             responses:
                 "200":
                     headers:
@@ -164,6 +191,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: order
                 "400":
                     headers:
                       X-Content-Type-Options:
@@ -192,13 +220,13 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                     body:
-                      application/json:
+                      text/html:
                   404:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                     body:
-                      application/json:
+                      text/html:
                   500:
                     headers:
                       X-Content-Type-Options:
@@ -234,6 +262,7 @@ resourceTypes:
                           X-XSS-Protection:
                         body:
                           application/json:
+                            schema: orderArray
                     "404":
                         headers:
                           X-Content-Type-Options:
@@ -294,21 +323,6 @@ resourceTypes:
                         headers:
                           X-Content-Type-Options:
                           X-XSS-Protection:
-    /requisitions:
-        post:
-            is: [ secured ]
-            description: Convert Requisition list to orders.
-            body:
-              application/json:
-            responses:
-                "201":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
 
 /orderLineItems:
     displayName: Order Line Items
@@ -322,15 +336,13 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "404":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
+                    schema: orderLineItemArray
     post:
         is: [ secured ]
         description: Creates new orderLineItem.
         body:
             application/json:
+              schema: orderLineItem
         responses:
             "201":
                 headers:
@@ -338,12 +350,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+                    schema: orderLineItem
     /{id}:
         uriParameters:
             id:
@@ -359,11 +366,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: orderLineItem
                 "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "409":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -377,6 +383,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: orderLineItem
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -386,6 +393,7 @@ resourceTypes:
             description: Update existing orderLineItem.
             body:
                 application/json:
+                  schema: orderLineItem
             responses:
                 "200":
                     headers:
@@ -393,6 +401,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: orderLineItem
                 "400":
                     headers:
                       X-Content-Type-Options:
@@ -410,6 +419,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+                    schema: orderNumberConfiguration
             "404":
                 headers:
                   X-Content-Type-Options:
@@ -419,6 +429,7 @@ resourceTypes:
         description: Create or Update OrderNumberConfiguration.
         body:
             application/json:
+              schema: orderNumberConfiguration
         responses:
           200:
             headers:
@@ -426,6 +437,7 @@ resourceTypes:
               X-XSS-Protection:
             body:
               application/json:
+                schema: orderNumberConfiguration
           400:
             headers:
               X-Content-Type-Options:
@@ -445,6 +457,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+                    schema: proofOfDeliveryArray
             "404":
                 headers:
                   X-Content-Type-Options:
@@ -454,6 +467,7 @@ resourceTypes:
         description: Creates new proofOfDelivery.
         body:
             application/json:
+              schema: proofOfDelivery
         responses:
             "201":
                 headers:
@@ -461,12 +475,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+                    schema: proofOfDelivery
     /{id}:
         uriParameters:
             id:
@@ -482,11 +491,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: proofOfDelivery
                 "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "409":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -500,6 +508,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: proofOfDelivery
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -509,6 +518,7 @@ resourceTypes:
             description: Update existing proofOfDelivery.
             body:
                 application/json:
+                  schema: proofOfDelivery
             responses:
                 "200":
                     headers:
@@ -516,10 +526,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                        schema: proofOfDelivery
     /{id}/print:
         uriParameters:
               id:
@@ -537,10 +544,6 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/pdf:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
                 "500":
                     headers:
                       X-Content-Type-Options:
@@ -558,15 +561,13 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "404":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
+                    schema: proofOfDeliveryLineItemArray
     post:
         is: [ secured ]
         description: Creates new proofOfDeliveryLineItem.
         body:
             application/json:
+              schema: proofOfDeliveryLineItem
         responses:
             "201":
                 headers:
@@ -574,12 +575,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
-                body:
-                  application/json:
+                    schema: proofOfDeliveryLineItem
     /{id}:
         uriParameters:
             id:
@@ -595,11 +591,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: proofOfDeliveryLineItem
                 "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "409":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -613,6 +608,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: proofOfDeliveryLineItem
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -622,6 +618,7 @@ resourceTypes:
             description: Update existing proofOfDeliveryLineItem.
             body:
                 application/json:
+                  schema: proofOfDeliveryLineItem
             responses:
                 "200":
                     headers:
@@ -629,10 +626,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                        schema: proofOfDeliveryLineItem
 
 /orderFileTemplates:
     displayName: OrderFileTemplate
@@ -646,6 +640,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+                    schema: orderFileTemplate
             "404":
                 headers:
                   X-Content-Type-Options:
@@ -655,6 +650,7 @@ resourceTypes:
         description: Create or update orderFileTemplate.
         body:
             application/json:
+              schema: orderFileTemplate
         responses:
             "201":
                 headers:
@@ -662,6 +658,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+                    schema: orderFileTemplate
             "400":
                 headers:
                   X-Content-Type-Options:
@@ -752,6 +749,7 @@ resourceTypes:
                   X-XSS-Protection:
                 body:
                   application/json:
+                    schema: templateArray
             "404":
                 headers:
                   X-Content-Type-Options:
@@ -775,10 +773,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                "409":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
         get:
             is: [ secured ]
             description: Get chosen template.
@@ -789,6 +783,7 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
+                        schema: template
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -798,6 +793,7 @@ resourceTypes:
             description: Update existing template.
             body:
                 application/json:
+                  schema: template
             responses:
                 "200":
                     headers:
@@ -805,7 +801,4 @@ resourceTypes:
                       X-XSS-Protection:
                     body:
                       application/json:
-                "400":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                        schema: template

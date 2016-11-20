@@ -1,32 +1,29 @@
 {   "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "title": "OrderFileTemplate",
   "description": "A single orderFileTemplate",
   "properties": {
     "id": {
       "type": "string",
-      "required": true,
       "title": "id"
     },
     "filePrefix": {
       "type": "string",
-      "required": false,
       "title": "filePrefix"
     },
     "headerInFile": {
       "type": "boolean",
-      "required": false,
       "title": "headerInFile"
     },
     "orderFileColumns": {
       "type": "array",
-      "required": false,
       "title": "orderFileColumns",
       "items": {
         "type": "object",
         "$ref": "orderFileColumn.json"
       },
       "uniqueItems": false
-    }
+    },
+    "required": []
   }
 }

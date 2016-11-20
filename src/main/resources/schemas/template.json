@@ -1,0 +1,45 @@
+{ "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Template",
+  "description": "A single template",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "name": {
+      "type": "string",
+      "title": "name"
+    },
+    "data": {
+      "type": "array",
+      "title": "data",
+      "items": {
+        "type": "byte"
+      },
+      "uniqueItems": false
+    },
+    "templateParameters": {
+      "type": "array",
+      "required": false,
+      "title": "templateParameters",
+      "items": {
+        "type": "object",
+        "$ref": "templateParameter.json"
+      },
+      "uniqueItems": false
+    },
+    "type": {
+      "type": "string",
+      "title": "type"
+    },
+    "description": {
+      "type": "string",
+      "title": "description"
+    },
+    "required": [
+      "id",
+      "name"
+    ]
+  }
+}
