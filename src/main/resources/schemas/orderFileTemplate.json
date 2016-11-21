@@ -24,6 +24,9 @@
       },
       "uniqueItems": false
     },
-    "required": []
+    "required": [
+      "filePrefix",
+      "headerInFile"
+    ]
   }
 }

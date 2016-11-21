@@ -40,11 +40,13 @@ public class Order extends BaseEntity {
 
   private static final String UUID = "pg-uuid";
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID externalId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   private Boolean emergency;
@@ -66,26 +68,31 @@ public class Order extends BaseEntity {
   @Setter
   private LocalDateTime createdDate;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID createdById;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID programId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID requestingFacilityId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)
   private UUID receivingFacilityId;
 
+  @Column(nullable = false)
   @Getter
   @Setter
   @Type(type = UUID)

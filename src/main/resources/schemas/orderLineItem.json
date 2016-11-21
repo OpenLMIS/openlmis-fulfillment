@@ -24,11 +24,16 @@
       "type": "integer",
       "title": "filledQuantity"
     },
+    "approvedQuantity": {
+      "type": "integer",
+      "title": "approvedQuantity"
+    },
     "required": [
       "id",
       "orderableProductId",
       "orderedQuantity",
-      "filledQuantity"
+      "filledQuantity",
+      "approvedQuantity"
     ]
   }
 }

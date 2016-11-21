@@ -20,15 +20,15 @@
       "type": "boolean",
       "title": "includeProgramCode"
     },
-    "includeRequisitionTypeSuffix": {
+    "includeTypeSuffix": {
       "type": "boolean",
-      "title": "includeRequisitionTypeSuffix"
+      "title": "includeTypeSuffix"
     },
     "required": [
       "id",
       "includeOrderNumberPrefix",
       "includeProgramCode",
-      "includeRequisitionTypeSuffix"
+      "includeTypeSuffix"
     ]
   }
 }

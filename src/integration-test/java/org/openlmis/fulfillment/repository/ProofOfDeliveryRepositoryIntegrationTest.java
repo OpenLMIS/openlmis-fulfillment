@@ -26,6 +26,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   @Before
   public void setUp() {
     order.setOrderCode(CODE);
+    order.setExternalId(UUID.randomUUID());
+    order.setEmergency(false);
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgramId(UUID.randomUUID());

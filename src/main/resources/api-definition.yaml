@@ -22,7 +22,7 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/orderLineItem.json" }
       }
   - orderFileColumn: !include schemas/orderFileColumn.json
-  - orderFileTemplate: !include schemas/orderFileTamplate.json
+  - orderFileTemplate: !include schemas/orderFileTemplate.json
   - proofOfDelivery: !include schemas/proofOfDelivery.json
   - proofOfDeliveryArray: |
       {
