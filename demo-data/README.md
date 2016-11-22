@@ -7,7 +7,8 @@ Each .json file contains demo data that corresponds to one database table.
 
 ## Orders
 
-In fulfillment.orders.json and .order_line_items.json.
+The orders listed below are defined in the following files:
+fulfillment.orders.json and fulfillment.order_line_items.json.
 
 1. ORDER-00000000-0000-0000-0000-000000000006R
   * program: Family Planning
@@ -42,9 +43,13 @@ In fulfillment.orders.json and .order_line_items.json.
   * supplying facility: HC01/Comfort Health Clinic
   * status: ORDERED
 
+The orders also contain line items and other fields not listed here (see the JSON files for the
+complete data).
+
 ## Proof of Delivery
 
-In fulfillment.proof_of_deliveries.json and .proof_of_delivery_line_items.json.
+The PoDs listed below are defined in the following files:
+In fulfillment.proof_of_deliveries.json and fulfillment.proof_of_delivery_line_items.json.
 
 1. PoD for ORDER-00000000-0000-0000-0000-000000000006R
   * it has 3 line items for quantities received
