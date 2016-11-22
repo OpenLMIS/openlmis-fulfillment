@@ -1,11 +1,13 @@
 package org.openlmis.fulfillment.web;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -18,7 +20,7 @@ import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Ignore
 public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderLineItems";
@@ -38,10 +39,10 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
   private static final String ACCESS_TOKEN = "access_token";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
-  @Autowired
+  @MockBean
   private OrderLineItemRepository orderLineItemRepository;
 
-  @Autowired
+  @MockBean
   private OrderRepository orderRepository;
 
   private OrderLineItem orderLineItem = new OrderLineItem();
@@ -49,6 +50,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Before
   public void setUp() {
+    this.setUpBootstrapData();
 
     OrderableProductDto product = new OrderableProductDto();
     product.setId(UUID.randomUUID());
@@ -83,10 +85,13 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
     orderLineItem.setOrder(order);
+    orderLineItem.setId(UUID.randomUUID());
     orderLineItem.setOrderableProductId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
+    orderLineItem.setApprovedQuantity(0L);
 
+    order.setId(UUID.randomUUID());
     order.setExternalId(UUID.randomUUID());
     order.setEmergency(false);
     order.setFacilityId(facility.getId());
@@ -101,13 +106,21 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
     order.setSupplyingFacilityId(facility.getId());
     order.setOrderLineItems(new ArrayList<>());
     order.getOrderLineItems().add(orderLineItem);
-    orderRepository.save(order);
+
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(orderLineItem);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(true);
+
+    given(orderLineItemRepository.save(any(OrderLineItem.class)))
+        .willAnswer(new SaveAnswer<OrderLineItem>());
+
+    given(orderRepository.findOne(order.getId())).willReturn(order);
+    given(orderRepository.exists(order.getId())).willReturn(true);
   }
 
   @Test
   public void shouldCreateOrder() {
-
-    orderLineItemRepository.delete(orderLineItem);
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(null);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -123,6 +136,7 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldGetAllOrders() {
+    given(orderLineItemRepository.findAll()).willReturn(Lists.newArrayList(orderLineItem));
 
     OrderLineItem[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -160,8 +174,9 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldCreateNewOrderLineItemIfDoesNotExist() {
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(null);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(false);
 
-    orderLineItemRepository.delete(orderLineItem);
     orderLineItem.setOrderedQuantity(100L);
 
     OrderLineItem response = restAssured.given()
@@ -198,8 +213,8 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldNotGetNonexistentOrderLineItem() {
-
-    orderLineItemRepository.delete(orderLineItem);
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(null);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -215,7 +230,6 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldDeleteOrderLineItem() {
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -225,14 +239,13 @@ public class OrderLineItemControllerIntegrationTest extends BaseWebIntegrationTe
         .then()
         .statusCode(204);
 
-    assertFalse(orderLineItemRepository.exists(orderLineItem.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotDeleteNonexistentOrderLineItem() {
-
-    orderLineItemRepository.delete(orderLineItem);
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(null);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

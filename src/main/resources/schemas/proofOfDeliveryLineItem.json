@@ -7,16 +7,6 @@
       "type": "string",
       "title": "id"
     },
-    "orderLineItem": {
-      "type": "object",
-      "$ref": "orderLineItem.json",
-      "title": "orderLineItem"
-    },
-    "proofOfDelivery": {
-      "type": "object",
-      "$ref": "proofOfDelivery.json",
-      "title": "proofOfDelivery"
-    },
     "packToShip": {
       "type": "integer",
       "title": "packToShip"
@@ -40,11 +30,65 @@
     "notes": {
       "type": "string",
       "title": "notes"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "proofOfDelivery": {
+          "type": ["string", "null"],
+          "title": "proofOfDelivery"
+        },
+        "orderLineItem": {
+          "type": ["string", "null"],
+          "title": "orderLineItem"
+        }
+      }
     },
-    "requisition": [
-      "id",
-      "orderLineItem",
-      "proofOfDelivery"
-    ]
-  }
+    {
+      "properties": {
+        "proofOfDelivery": {
+          "type": "object",
+          "$ref": "proofOfDelivery.json",
+          "title": "proofOfDelivery"
+        },
+        "orderLineItem": {
+          "type": "object",
+          "$ref": "orderLineItem.json",
+          "title": "orderLineItem"
+        }
+      }
+    },
+    {
+      "properties": {
+        "proofOfDelivery": {
+          "type": "object",
+          "$ref": "proofOfDelivery.json",
+          "title": "proofOfDelivery"
+        },
+        "orderLineItem": {
+          "type": "string",
+          "title": "orderLineItem"
+        }
+      }
+    },
+    {
+      "properties": {
+        "proofOfDelivery": {
+          "type": ["string", "null"],
+          "title": "proofOfDelivery"
+        },
+        "orderLineItem": {
+          "type": "object",
+          "$ref": "orderLineItem.json",
+          "title": "orderLineItem"
+        }
+      }
+    }
+  ],
+  "required": [
+    "id",
+    "orderLineItem",
+    "proofOfDelivery"
+  ]
 }

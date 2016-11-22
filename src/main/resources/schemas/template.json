@@ -12,16 +12,15 @@
       "title": "name"
     },
     "data": {
-      "type": "array",
+      "type": ["array", "null"],
       "title": "data",
       "items": {
-        "type": "byte"
+        "type": "integer"
       },
       "uniqueItems": false
     },
     "templateParameters": {
-      "type": "array",
-      "required": false,
+      "type": ["array", "null"],
       "title": "templateParameters",
       "items": {
         "type": "object",
@@ -30,16 +29,16 @@
       "uniqueItems": false
     },
     "type": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "type"
     },
     "description": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "description"
-    },
-    "required": [
-      "id",
-      "name"
-    ]
-  }
+    }
+  } ,
+  "required": [
+    "id",
+    "name"
+  ]
 }

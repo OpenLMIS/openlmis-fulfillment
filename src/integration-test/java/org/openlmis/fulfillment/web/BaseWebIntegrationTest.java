@@ -6,19 +6,30 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.mockito.BDDMockito.given;
+
+import com.google.common.collect.Lists;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
 
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
-import org.openlmis.fulfillment.Application;
-import org.openlmis.fulfillment.CleanRepositoryHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.openlmis.fulfillment.domain.BaseEntity;
+import org.openlmis.fulfillment.domain.OrderFileColumn;
+import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.repository.OrderFileColumnRepository;
+import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
+import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
@@ -26,11 +37,14 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 
 import java.util.UUID;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
+import javax.annotation.PostConstruct;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
 public abstract class BaseWebIntegrationTest {
-  protected static final UUID INITIAL_USER_ID = CleanRepositoryHelper.INITIAL_USER_ID;
+  protected static final UUID INITIAL_USER_ID =
+      UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
 
@@ -38,7 +52,6 @@ public abstract class BaseWebIntegrationTest {
   protected static final String REFERENCEDATA_API_RIGHTS = "/referencedata/api/rights/";
   protected static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-  protected static final String BASE_URL = System.getenv("BASE_URL");
   protected static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
   protected static final String CONTENT_TYPE = "Content-Type";
@@ -50,7 +63,8 @@ public abstract class BaseWebIntegrationTest {
       + "    \"example\",\n"
       + "    \"requisition\",\n"
       + "    \"notification\",\n"
-      + "    \"referencedata\"\n"
+      + "    \"referencedata\",\n"
+      + "    \"fulfillment\"\n"
       + "  ],\n"
       + "  \"user_name\": \"admin\",\n"
       + "  \"referenceDataUserId\": \"35316636-6264-6331-2d34-3933322d3462\",\n"
@@ -121,7 +135,7 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_FIND_PRODUCT_RESULT = "{"
       + " \"id\":\"cd9e1412-8703-11e6-ae22-56b6b6499611\",\n"
       + " \"productCode\":\"Product Code\",\n"
-      + " \"productName\":\"Product Name\",\n"
+      + " \"name\":\"Product Name\",\n"
       + " \"packSize\":10,\n"
       + " \"packRoundingThreshold\":5,\n"
       + " \"roundToZero\":false\n"
@@ -142,8 +156,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"name\":\"Period Name\","
       + " \"description\":\"Period Description\","
       + "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
-      + " \"startDate\":\"2016-03-01\","
-      + " \"endDate\":\"2017-03-01\""
+      + " \"startDate\":[2016,3,1],"
+      + " \"endDate\":[2017,3,1]"
       + " }";
 
   private static final String MOCK_FIND_FACILITY_TYPE = "{"
@@ -198,19 +212,38 @@ public abstract class BaseWebIntegrationTest {
       + "]";
 
   private static final String MOCK_HAS_RIGHT = "{ \"result\":\"true\" }";
+  private static final String ORDER = "order";
+
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
+
+  @LocalServerPort
+  private int randomPort;
+
   protected RestAssuredClient restAssured;
-  @Autowired
-  private CleanRepositoryHelper cleanRepositoryHelper;
+
+  protected static final String BASE_URL;
+
+  static {
+    String baseUrl = System.getenv("BASE_URL");
+    BASE_URL = baseUrl.lastIndexOf(':') != -1
+        ? baseUrl.substring(0, baseUrl.lastIndexOf(':'))
+        : baseUrl;
+  }
+
+  @MockBean
+  protected OrderNumberConfigurationRepository orderNumberConfigurationRepository;
+
+  @MockBean
+  protected OrderFileTemplateRepository orderFileTemplateRepository;
+
+  @MockBean
+  protected OrderFileColumnRepository orderFileColumnRepository;
 
   /**
    * Constructor for test.
    */
   public BaseWebIntegrationTest() {
-    RestAssured.baseURI = BASE_URL;
-    restAssured = ramlDefinition.createRestAssured();
-
     // This mocks the auth check to always return valid admin credentials.
     wireMockRule.stubFor(post(urlEqualTo("/auth/oauth/check_token"))
         .willReturn(aResponse()
@@ -362,9 +395,110 @@ public abstract class BaseWebIntegrationTest {
     );
   }
 
-  @After
-  public void cleanRepositories() {
-    cleanRepositoryHelper.cleanAll();
+  /**
+   * Initialize the REST Assured client. Done here and not in the constructor, so that randomPort is
+   * available.
+   */
+  @PostConstruct
+  public void init() {
+    RestAssured.baseURI = BASE_URL;
+    RestAssured.port = randomPort;
+    restAssured = ramlDefinition.createRestAssured();
+  }
+
+  @Before
+  public void setUpBootstrapData() {
+    // data from bootstrap.sql
+    OrderFileTemplate template = addOrderFileTemplate();
+    OrderFileColumn column1 = addOrderFileColumn(
+        "33b2d2e9-3167-46b0-95d4-1295be9afc21", true, "fulfillment.header.order.number",
+        "Order number", true, 1, null, ORDER, "orderCode", null, null, template
+    );
+    OrderFileColumn column2 = addOrderFileColumn(
+        "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f6", true, "fulfillment.header.facility.code",
+        "Facility code", true, 2, null, ORDER, "facilityId", "Facility", "code", template
+    );
+    OrderFileColumn column3 = addOrderFileColumn(
+        "752cda76-0db5-4b6e-bb79-0f531ab78e2e", true, "fulfillment.header.product.code",
+        "Product code", true, 3, null, "lineItem", "orderableProductId", "OrderableProduct",
+        "productCode", template
+    );
+    OrderFileColumn column4 = addOrderFileColumn(
+        "9e825396-269d-4873-baa4-89054e2722f5", true, "fulfillment.header.product.name",
+        "Product name", true, 4, null, "lineItem", "orderableProductId", "OrderableProduct",
+        "name", template
+    );
+    OrderFileColumn column5 = addOrderFileColumn(
+        "cd57f329-f549-4717-882e-ecbf98122c39", true, "fulfillment.header.approved.quantity",
+        "Approved quantity", true, 5, null, "lineItem", "approvedQuantity", null, null, template
+    );
+    OrderFileColumn column6 = addOrderFileColumn(
+        "d0e1aec7-1556-4dc1-8e21-d80a2d76b678", true, "fulfillment.header.period", "Period", true,
+        6, "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", template
+    );
+    OrderFileColumn column7 = addOrderFileColumn(
+        "dab6eec0-4cb4-4d4c-94b7-820308da73ff", true, "fulfillment.header.order.date", "Order date",
+        true, 7, "dd/MM/yy", ORDER, "createdDate", null, null, template
+    );
+
+    given(orderFileColumnRepository.findAll()).willReturn(Lists.newArrayList(
+        column1, column2, column3, column4, column5, column6, column7
+    ));
+
+    addOrderNumberConfiguration();
+  }
+
+  private OrderNumberConfiguration addOrderNumberConfiguration() {
+    OrderNumberConfiguration configuration = new OrderNumberConfiguration(
+        "ORDER-", true, false, true
+    );
+    configuration.setId(UUID.fromString("70543032-b131-4219-b44d-7781d29db330"));
+
+    given(orderNumberConfigurationRepository.findOne(configuration.getId()))
+        .willReturn(configuration);
+    given(orderNumberConfigurationRepository.findAll())
+        .willReturn(Lists.newArrayList(configuration));
+
+    return configuration;
+  }
+
+  private OrderFileTemplate addOrderFileTemplate() {
+    OrderFileTemplate template = new OrderFileTemplate();
+    template.setId(UUID.fromString("457ed5b0-80d7-4cb6-af54-e3f6138c8128"));
+    template.setFilePrefix("O");
+    template.setHeaderInFile(true);
+    template.setOrderFileColumns(Lists.newArrayList());
+
+    given(orderFileTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(orderFileTemplateRepository.findAll()).willReturn(Lists.newArrayList(template));
+
+    return template;
+  }
+
+  private OrderFileColumn addOrderFileColumn(String id, boolean openLmisField,
+                                             String dataFieldLabel, String columnLabel,
+                                             boolean include, int position, String format,
+                                             String nested, String keyPath, String related,
+                                             String relatedKeyPath, OrderFileTemplate template) {
+    OrderFileColumn column = new OrderFileColumn();
+    column.setId(UUID.fromString(id));
+    column.setOpenLmisField(openLmisField);
+    column.setDataFieldLabel(dataFieldLabel);
+    column.setColumnLabel(columnLabel);
+    column.setInclude(include);
+    column.setPosition(position);
+    column.setFormat(format);
+    column.setNested(nested);
+    column.setKeyPath(keyPath);
+    column.setRelated(related);
+    column.setRelatedKeyPath(relatedKeyPath);
+    column.setOrderFileTemplate(template);
+
+    template.getOrderFileColumns().add(column);
+
+    given(orderFileColumnRepository.findOne(column.getId())).willReturn(column);
+
+    return column;
   }
 
   protected String getToken() {
@@ -374,4 +508,30 @@ public abstract class BaseWebIntegrationTest {
   public UUID getSharedFacilityId() {
     return UUID.fromString("aaf12a5a-8b16-11e6-ae22-56b6b6499611");
   }
+
+  static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
+
+    @Override
+    public T answer(InvocationOnMock invocation) throws Throwable {
+      T obj = (T) invocation.getArguments()[0];
+
+      if (null == obj) {
+        return null;
+      }
+
+      if (null == obj.getId()) {
+        obj.setId(UUID.randomUUID());
+      }
+
+      extraSteps(obj);
+
+      return obj;
+    }
+
+    void extraSteps(T obj) {
+      // should be overriden if extra steps are required.
+    }
+
+  }
+
 }

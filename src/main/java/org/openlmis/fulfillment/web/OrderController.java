@@ -148,7 +148,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<Order> searchOrders(
-      @RequestParam(value = "supplyingFacility", required = true) UUID supplyingFacility,
+      @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
       @RequestParam(value = "requestingFacility", required = false)
           UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program) {
@@ -231,19 +231,23 @@ public class OrderController extends BaseController {
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
 
     if (!"csv".equals(type)) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Export type: " + type
-          + " not allowed");
+      String msg = "Export type: " + type + " not allowed";
+      LOGGER.warn(msg);
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
       return;
     }
 
     if (order == null) {
-      response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order does not exist.");
+      String msg = "Order does not exist.";
+      LOGGER.warn(msg);
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
       return;
     }
 
     if (orderFileTemplate == null) {
-      response.sendError(HttpServletResponse.SC_NOT_FOUND,
-          "Could not export Order, because Order Template File not found");
+      String msg = "Could not export Order, because Order Template File not found";
+      LOGGER.warn(msg);
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
       return;
     }
 

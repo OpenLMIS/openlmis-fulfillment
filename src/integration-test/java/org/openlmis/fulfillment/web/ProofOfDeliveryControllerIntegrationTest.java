@@ -1,8 +1,11 @@
 package org.openlmis.fulfillment.web;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
+
+import com.google.common.collect.Lists;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -22,9 +25,10 @@ import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.TemplateService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -42,7 +46,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
-@Ignore
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/proofOfDeliveries";
@@ -53,17 +56,20 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String ACCESS_TOKEN = "access_token";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
-  @Autowired
+  @MockBean
   private TemplateService templateService;
 
-  @Autowired
+  @MockBean
   private OrderRepository orderRepository;
 
-  @Autowired
+  @MockBean
   private OrderLineItemRepository orderLineItemRepository;
 
-  @Autowired
+  @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @MockBean
+  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
@@ -73,6 +79,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
    */
   @Before
   public void setUp() {
+    this.setUpBootstrapData();
+
     OrderableProductDto product = new OrderableProductDto();
     product.setId(UUID.randomUUID());
 
@@ -102,6 +110,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
     Order order = new Order();
+    order.setId(UUID.randomUUID());
     order.setExternalId(UUID.randomUUID());
     order.setProgramId(program.getId());
     order.setFacilityId(facility.getId());
@@ -116,17 +125,22 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     order.setSupplyingFacilityId(facility.getId());
     order.setRequestingFacilityId(facility.getId());
     order.setReceivingFacilityId(facility.getId());
-    orderRepository.save(order);
+
+    given(orderRepository.findOne(order.getId())).willReturn(order);
+    given(orderRepository.exists(order.getId())).willReturn(true);
 
     OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setOrder(order);
+    orderLineItem.setId(UUID.randomUUID());
     orderLineItem.setOrderableProductId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
-    orderLineItemRepository.save(orderLineItem);
+    orderLineItem.setApprovedQuantity(0L);
 
+    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(orderLineItem);
+    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(true);
+
+    proofOfDeliveryLineItem.setId(UUID.randomUUID());
     proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
-    proofOfDeliveryLineItem.setProofOfDelivery(proofOfDelivery);
     proofOfDeliveryLineItem.setQuantityShipped(100L);
     proofOfDeliveryLineItem.setQuantityReturned(100L);
     proofOfDeliveryLineItem.setQuantityReceived(100L);
@@ -134,6 +148,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
     proofOfDeliveryLineItem.setNotes("Notes");
 
+    given(proofOfDeliveryLineItemRepository.findOne(proofOfDeliveryLineItem.getId()))
+        .willReturn(proofOfDeliveryLineItem);
+    given(proofOfDeliveryLineItemRepository.exists(proofOfDeliveryLineItem.getId()))
+        .willReturn(true);
+
+    proofOfDelivery.setId(UUID.randomUUID());
     proofOfDelivery.setOrder(order);
     proofOfDelivery.setTotalShippedPacks(100);
     proofOfDelivery.setTotalReceivedPacks(100);
@@ -143,7 +163,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
     proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
-    proofOfDeliveryRepository.save(proofOfDelivery);
+
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId()))
+        .willReturn(proofOfDelivery);
+    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId()))
+        .willReturn(true);
+
+    given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
+        .willAnswer(new SaveAnswer<ProofOfDelivery>());
   }
 
   @Ignore
@@ -170,7 +197,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldDeleteProofOfDelivery() {
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -180,15 +206,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(204);
 
-    assertFalse(proofOfDeliveryRepository.exists(proofOfDelivery.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldUpdateProofOfDelivery() {
-
-    proofOfDeliveryRepository.delete(proofOfDelivery);
-    proofOfDeliveryRepository.save(proofOfDelivery);
     proofOfDelivery.setTotalReceivedPacks(2);
 
     ProofOfDelivery response = restAssured.given()
@@ -208,6 +230,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldCreateNewProofOfDeliveryIfDoesNotExist() {
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
+    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
     proofOfDelivery.setTotalReceivedPacks(2);
 
@@ -228,6 +252,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetAllProofOfDeliveries() {
+    given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
 
     ProofOfDelivery[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -262,8 +287,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldNotGetNonexistentProofOfDelivery() {
-
-    proofOfDeliveryRepository.delete(proofOfDelivery);
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
+    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -280,7 +305,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldCreateProofOfDelivery() {
     proofOfDelivery.getProofOfDeliveryLineItems().clear();
-    proofOfDeliveryRepository.delete(proofOfDelivery);
+
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
+    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

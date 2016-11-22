@@ -23,10 +23,10 @@
         "$ref": "orderFileColumn.json"
       },
       "uniqueItems": false
-    },
-    "required": [
-      "filePrefix",
-      "headerInFile"
-    ]
-  }
+    }
+  },
+  "required": [
+    "filePrefix",
+    "headerInFile"
+  ]
 }

@@ -36,10 +36,10 @@
     "description": {
       "type": "string",
       "title": "description"
-    },
-    "required": [
-      "id",
-      "template"
-    ]
-  }
+    }
+  },
+  "required": [
+    "id",
+    "template"
+  ]
 }

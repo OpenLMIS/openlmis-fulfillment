@@ -200,7 +200,7 @@ public class OrderService {
         orderNumberConfiguration.generateOrderNumber(order, program)
     );
 
-    orderRepository.save(order);
+    order = orderRepository.save(order);
 
     return order;
   }

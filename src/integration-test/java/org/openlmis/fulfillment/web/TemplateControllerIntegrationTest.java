@@ -1,17 +1,19 @@
 package org.openlmis.fulfillment.web;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
@@ -21,7 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Ignore
+@SuppressWarnings({"PMD.UnusedPrivateField"})
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/templates";
@@ -30,17 +32,29 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
-  @Autowired
+  @MockBean
   private TemplateRepository templateRepository;
+
+  @MockBean
+  private TemplateParameterRepository templateParameterRepository;
 
   private Template template = new Template();
   private Integer currentInstanceNumber;
 
   @Before
   public void setUp() {
+    this.setUpBootstrapData();
+
     currentInstanceNumber = 0;
+
+    template.setId(UUID.randomUUID());
     template.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
-    templateRepository.save(template);
+
+    given(templateRepository.findOne(template.getId())).willReturn(template);
+    given(templateRepository.exists(template.getId())).willReturn(true);
+
+    given(templateRepository.save(any(Template.class))).willAnswer(new SaveAnswer<Template>());
+    given(templateRepository.findAll()).willReturn(Lists.newArrayList(template));
   }
 
   private Integer generateInstanceNumber() {
@@ -63,13 +77,11 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(200);
 
-    assertNotNull(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldDeleteTemplate() {
-
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -79,14 +91,13 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(204);
 
-    assertFalse(templateRepository.exists(template.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotDeleteNonexistentTemplate() {
-
-    templateRepository.delete(template);
+    given(templateRepository.findOne(template.getId())).willReturn(null);
+    given(templateRepository.exists(template.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -122,8 +133,9 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateNewTemplateIfDoesNotExist() {
+    given(templateRepository.findOne(template.getId())).willReturn(template);
+    given(templateRepository.exists(template.getId())).willReturn(true);
 
-    templateRepository.delete(template);
     template.setDescription(TEMPLATE_CONTROLLER_TEST);
 
     Template response = restAssured.given()
@@ -143,7 +155,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetAllTemplates() {
-
     Template[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -171,14 +182,14 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(200)
         .extract().as(Template.class);
 
-    assertTrue(templateRepository.exists(response.getId()));
+    assertEquals(template.getId(), response.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotGetNonexistentTemplate() {
-
-    templateRepository.delete(template);
+    given(templateRepository.findOne(template.getId())).willReturn(null);
+    given(templateRepository.exists(template.getId())).willReturn(false);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

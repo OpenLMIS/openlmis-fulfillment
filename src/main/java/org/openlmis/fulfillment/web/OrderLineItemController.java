@@ -104,9 +104,11 @@ public class OrderLineItemController extends BaseController {
   public ResponseEntity<?> deleteOrderLineItem(@PathVariable("id") UUID orderLineItemId) {
     OrderLineItem orderLineItem = orderLineItemRepository.findOne(orderLineItemId);
     if (orderLineItem == null) {
+      LOGGER.warn("Cannot find order line item with ID: " + orderLineItemId);
       return new ResponseEntity(HttpStatus.NOT_FOUND);
     } else {
       orderLineItemRepository.delete(orderLineItem);
+      LOGGER.info("Deleted order line item with ID: " + orderLineItemId);
       return new ResponseEntity<OrderLineItem>(HttpStatus.NO_CONTENT);
     }
   }

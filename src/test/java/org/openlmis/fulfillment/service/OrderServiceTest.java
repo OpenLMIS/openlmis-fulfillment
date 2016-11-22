@@ -98,6 +98,7 @@ public class OrderServiceTest {
     order.setCreatedById(UUID.randomUUID());
 
     // when
+    when(orderRepository.save(any(Order.class))).thenReturn(order);
     Order created = orderService.save(order);
 
     // then

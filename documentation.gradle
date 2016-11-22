@@ -4,10 +4,7 @@ def ramlToCopy = copySpec {
     from('src/main/resources') {
         include 'api-definition.yaml'
         rename { 'api-definition-raml.yaml' }
-        filter(ReplaceTokens, tokens: [
-                baseUrl: System.env.BASE_URL,
-                prefix: System.env.VIRTUAL_LOCATION ? "/" + System.env.VIRTUAL_LOCATION : "",
-                version: version])
+        filter(ReplaceTokens, tokens: [baseUrl: System.env.BASE_URL ?: "localhost", version: version])
     }
     from('src/main/resources/schemas') {
         include '*.json'

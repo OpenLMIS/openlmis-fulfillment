@@ -2,7 +2,7 @@
 ---
 title: OpenLMIS Fulfillment API
 version: "@version@"
-baseUri: "@baseUrl@@prefix@/api"
+baseUri: "@baseUrl@/api"
 
 documentation:
     - title: Getting Started
@@ -140,6 +140,10 @@ resourceTypes:
                 body:
                   application/json:
                     schema: order
+            "409":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
     /{id}:
         uriParameters:
             id:
@@ -196,6 +200,10 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
         /export:
             get:
                 is: [ secured ]
@@ -220,7 +228,7 @@ resourceTypes:
                       X-Content-Type-Options:
                       X-XSS-Protection:
                     body:
-                      text/html:
+                      application/json:
                   404:
                     headers:
                       X-Content-Type-Options:
@@ -366,9 +374,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: orderLineItem
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -491,9 +496,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: proofOfDelivery
                 "404":
                     headers:
                       X-Content-Type-Options:
@@ -591,9 +593,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: proofOfDeliveryLineItem
                 "404":
                     headers:
                       X-Content-Type-Options:

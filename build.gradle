@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.3.3.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE"
     }
 }
 
@@ -36,9 +36,10 @@ repositories {
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
-    compile "org.projectlombok:lombok:1.16.8"
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
+    compile "org.projectlombok:lombok:1.16.8"
     compile "org.postgresql:postgresql:9.4.1208"
+    compile "com.github.tomakehurst:wiremock:1.58"
     compile "org.springframework:spring-test"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:2.4.0"
@@ -65,7 +66,6 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.+"
     testCompile "org.powermock:powermock-api-mockito:1.6.5"
     testCompile "org.powermock:powermock-module-junit4:1.6.5"
-    testCompile "com.github.tomakehurst:wiremock:1.58"
 }
 
 idea {
@@ -138,7 +138,6 @@ task generateMigration << {
     migrationFile.createNewFile()
 }
 
-
 task checkApiIsRaml(type:Exec) {
     executable "raml-cop"
     args "src/main/resources/api-definition.yaml"
@@ -158,7 +157,7 @@ jacocoTestReport {
     group = "reporting"
     description = "Generate Jacoco coverage reports after running tests."
     reports {
-        xml.enabled true
+        xml.enabled false
         html.enabled true
         csv.enabled false
     }
@@ -167,7 +166,7 @@ jacocoTestReport {
 }
 
 checkstyle {
-    toolVersion = "6.19"
+    toolVersion = "7.1"
 }
 
 //Usage: gradle sonarqube
@@ -184,8 +183,14 @@ sonarqube {
         property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
         //Tells SonarQube where the integration tests code coverage report is
         property "sonar.jacoco.itReportPath", "build/jacoco/integrationTest.exec"
-	properties["sonar.tests"] += sourceSets.integrationTest.java
+        properties["sonar.tests"] += sourceSets.integrationTest.java
     }
+}
+
+build {
+    dependsOn check
+    dependsOn jacocoTestReport
+    dependsOn demoDataSeed
 }
 
 pmd {
@@ -211,13 +216,12 @@ test {
 }
 
 apply from: "documentation.gradle"
-integrationTest {
-    dependsOn ramlToSwagger
-}
+integrationTest.dependsOn copyRamlToBuild
 
 processResources {
-    // we want the generated swagger spec file included in the output jar
+    // we want the generated Swagger spec file included in the output jar
     finalizedBy ramlToSwagger
+
     // update version information in build
     filesMatching('**/version.properties') {
         expand(project.properties)
@@ -225,14 +229,8 @@ processResources {
 }
 
 check {
-    dependsOn checkApiIsRaml
-    dependsOn integrationTest
-}
-
-build {
-    dependsOn jacocoTestReport
-    dependsOn check
     dependsOn ramlToHtml
+    dependsOn ramlToSwagger
     dependsOn copyRamlHtmlToBuild
-    dependsOn demoDataSeed
+    dependsOn integrationTest
 }

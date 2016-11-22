@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@Import({MethodSecurityConfiguration.class})
+@Import({ MethodSecurityConfiguration.class })
 @EnableResourceServer
 public class ResourceServerSecurityConfiguration implements ResourceServerConfigurer {
 
@@ -76,10 +76,9 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
 
   /**
    * RemoteTokenServices bean initializer.
-   *
    * @param checkTokenUrl url to check tokens against
-   * @param clientId      client's id
-   * @param clientSecret  client's secret
+   * @param clientId client's id
+   * @param clientSecret client's secret
    * @return token services
    */
   @Bean

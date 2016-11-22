@@ -16,20 +16,24 @@
       "title": "emergency"
     },
     "facilityId": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "facilityId"
     },
     "processingPeriodId": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "processingPeriodId"
     },
     "createdDate": {
-      "type": "string",
-      "title": "createdDate"
+      "type": ["array", "null"],
+      "title": "createdDate",
+      "items": {
+        "type": "number"
+      },
+      "uniqueItems": false
     },
     "createdById": {
       "type": "string",
-      "title": "createdBy"
+      "title": "createdById"
     },
     "programId": {
       "type": "string",
@@ -48,7 +52,7 @@
       "title": "supplyingFacilityId"
     },
     "orderCode": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "orderCode"
     },
     "status": {
@@ -60,25 +64,25 @@
       "title": "quotedCost"
     },
     "orderLineItems": {
-      "type": "array",
+      "type": ["array", "null"],
       "title": "orderLineItems",
       "items": {
         "type": "object",
         "$ref": "orderLineItem.json"
       },
       "uniqueItems": false
-    },
-    "required": [
-      "id",
-      "externalId",
-      "emergency",
-      "createdById",
-      "programId",
-      "requestingFacilityId",
-      "receivingFacilityId",
-      "supplyingFacilityId",
-      "status",
-      "quotedCost"
-    ]
-  }
+    }
+  },
+  "required": [
+    "id",
+    "externalId",
+    "emergency",
+    "createdById",
+    "programId",
+    "requestingFacilityId",
+    "receivingFacilityId",
+    "supplyingFacilityId",
+    "status",
+    "quotedCost"
+  ]
 }
