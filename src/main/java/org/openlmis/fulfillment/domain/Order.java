@@ -19,7 +19,9 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +32,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 @Entity
@@ -127,6 +130,12 @@ public class Order extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
+    forEachLine(line -> line.setOrder(this));
+  }
+
+  @PreUpdate
+  private void preUpdate() {
+    forEachLine(line -> line.setOrder(this));
   }
 
   /**
@@ -147,5 +156,10 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
+  }
+
+  public void forEachLine(Consumer<OrderLineItem> consumer) {
+    Optional.ofNullable(orderLineItems)
+        .ifPresent(list -> list.forEach(consumer));
   }
 }
