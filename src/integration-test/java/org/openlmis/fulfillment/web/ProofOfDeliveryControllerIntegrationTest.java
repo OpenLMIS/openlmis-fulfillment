@@ -23,9 +23,7 @@ import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
 import org.openlmis.fulfillment.referencedata.model.ProcessingScheduleDto;
 import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryLineItemRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -63,13 +61,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private OrderRepository orderRepository;
 
   @MockBean
-  private OrderLineItemRepository orderLineItemRepository;
-
-  @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @MockBean
-  private ProofOfDeliveryLineItemRepository proofOfDeliveryLineItemRepository;
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
@@ -136,9 +128,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLineItem.setFilledQuantity(100L);
     orderLineItem.setApprovedQuantity(0L);
 
-    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(orderLineItem);
-    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(true);
-
     proofOfDeliveryLineItem.setId(UUID.randomUUID());
     proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
     proofOfDeliveryLineItem.setQuantityShipped(100L);
@@ -147,11 +136,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLineItem.setPackToShip(100L);
     proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
     proofOfDeliveryLineItem.setNotes("Notes");
-
-    given(proofOfDeliveryLineItemRepository.findOne(proofOfDeliveryLineItem.getId()))
-        .willReturn(proofOfDeliveryLineItem);
-    given(proofOfDeliveryLineItemRepository.exists(proofOfDeliveryLineItem.getId()))
-        .willReturn(true);
 
     proofOfDelivery.setId(UUID.randomUUID());
     proofOfDelivery.setOrder(order);

@@ -1,21 +1,15 @@
 package org.openlmis.fulfillment.repository;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openlmis.fulfillment.Application;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.repository.CrudRepository;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@Transactional
-public class TemplateParameterRepositoryIntegrationTest {
+import java.util.UUID;
+
+public class TemplateParameterRepositoryIntegrationTest
+    extends BaseCrudRepositoryIntegrationTest<TemplateParameter> {
 
   @Autowired
   private TemplateRepository templateRepository;
@@ -34,12 +28,16 @@ public class TemplateParameterRepositoryIntegrationTest {
     templateRepository.save(template);
   }
 
-  @Test
-  public void testCreate() {
+  @Override
+  CrudRepository<TemplateParameter, UUID> getRepository() {
+    return templateParameterRepository;
+  }
+
+  @Override
+  TemplateParameter generateInstance() {
     TemplateParameter templateParameter = new TemplateParameter();
     templateParameter.setTemplate(template);
-    Assert.assertNull(templateParameter.getId());
-    templateParameter = templateParameterRepository.save(templateParameter);
-    Assert.assertNotNull(templateParameter.getId());
+
+    return templateParameter;
   }
 }

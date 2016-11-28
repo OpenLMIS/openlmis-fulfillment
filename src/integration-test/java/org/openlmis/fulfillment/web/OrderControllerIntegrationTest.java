@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -52,9 +51,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID period2 = UUID.randomUUID();
   private UUID product1 = UUID.randomUUID();
   private UUID product2 = UUID.randomUUID();
-
-  @MockBean
-  private OrderLineItemRepository orderLineItemRepository;
 
   @MockBean
   private OrderRepository orderRepository;
@@ -144,9 +140,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderLineItem.setApprovedQuantity(3L);
 
     order.getOrderLineItems().add(orderLineItem);
-
-    given(orderLineItemRepository.findOne(orderLineItem.getId())).willReturn(orderLineItem);
-    given(orderLineItemRepository.exists(orderLineItem.getId())).willReturn(true);
 
     return orderLineItem;
   }
