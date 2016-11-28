@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
-import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,9 +38,6 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
 
   @MockBean
   private TemplateRepository templateRepository;
-
-  @MockBean
-  private TemplateParameterRepository templateParameterRepository;
 
   @Before
   public void setUp() throws IOException {

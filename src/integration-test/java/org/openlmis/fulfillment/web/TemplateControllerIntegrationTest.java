@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
@@ -34,9 +33,6 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private TemplateRepository templateRepository;
-
-  @MockBean
-  private TemplateParameterRepository templateParameterRepository;
 
   private Template template = new Template();
   private Integer currentInstanceNumber;

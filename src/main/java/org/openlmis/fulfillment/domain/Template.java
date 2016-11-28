@@ -3,6 +3,9 @@ package org.openlmis.fulfillment.domain;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +16,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -35,7 +39,12 @@ public class Template extends BaseEntity {
   @Setter
   private byte[] data;
 
-  @OneToMany(mappedBy = "template", cascade = CascadeType.REMOVE)
+  @OneToMany(
+      mappedBy = "template",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
+  @Fetch(FetchMode.SELECT)
   @Getter
   @Setter
   private List<TemplateParameter> templateParameters;

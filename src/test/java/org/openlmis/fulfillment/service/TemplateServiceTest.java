@@ -2,8 +2,6 @@ package org.openlmis.fulfillment.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,8 +26,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.domain.TemplateParameter;
-import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -48,9 +44,6 @@ public class TemplateServiceTest {
 
   @Mock
   private TemplateRepository templateRepository;
-
-  @Mock
-  private TemplateParameterRepository templateParameterRepository;
 
   @InjectMocks
   private TemplateService templateService;
@@ -212,7 +205,6 @@ public class TemplateServiceTest {
     templateService.validateFileAndInsertTemplate(template, file);
 
     verify(templateRepository).save(template);
-    verify(templateParameterRepository, atLeast(1)).save(any(TemplateParameter.class));
 
     assertThat(template.getTemplateParameters().get(0).getDisplayName(),
         is(PARAM_DISPLAY_NAME));

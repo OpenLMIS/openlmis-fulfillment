@@ -12,7 +12,6 @@ import net.sf.jasperreports.engine.JasperReport;
 import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
-import org.openlmis.fulfillment.repository.TemplateParameterRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,9 +32,6 @@ public class TemplateService {
 
   @Autowired
   private TemplateRepository templateRepository;
-
-  @Autowired
-  private TemplateParameterRepository templateParameterRepository;
 
   public Template getByName(String name) {
     return templateRepository.findByName(name);
@@ -70,10 +66,6 @@ public class TemplateService {
    */
   public void saveWithParameters(Template template) {
     templateRepository.save(template);
-    for (TemplateParameter parameter : template.getTemplateParameters()) {
-      parameter.setTemplate(template);
-      templateParameterRepository.save(parameter);
-    }
   }
 
   /**
