@@ -3,12 +3,16 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.referencedata.service.InvalidOrderFacilityException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.OrderStorageException;
+import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.web.util.OrderCsvHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +51,9 @@ public class OrderController extends BaseController {
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
 
+  @Autowired
+  private PermissionService permissionService;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -57,12 +64,24 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public Order createOrder(@RequestBody Order order) throws OrderSaveException {
+
+  public ResponseEntity<?> createOrder(@RequestBody Order order) throws IOException,
+      OrderFileException, OrderStorageException, OrderSaveException{
+
+    LOGGER.debug("Checking rights to create order");
+    try {
+      permissionService.canConvertToOrder(order);
+    } catch (MissingPermissionException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    } catch (InvalidOrderFacilityException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     LOGGER.debug("Creating new order");
     order.setId(null);
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return newOrder;
+    return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
   }
 
   /**
