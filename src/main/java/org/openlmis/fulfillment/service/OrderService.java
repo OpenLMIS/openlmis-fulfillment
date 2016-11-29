@@ -2,6 +2,8 @@ package org.openlmis.fulfillment.service;
 
 import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
 
+import com.google.common.collect.ImmutableMap;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -16,10 +18,10 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
-import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.ProgramDto;
+import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
+import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.referencedata.service.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -29,9 +31,8 @@ import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.time.LocalDateTime;
@@ -123,28 +124,31 @@ public class OrderService {
     }
   }
 
-  //TODO: fix this temporary method after JasperTemplate class is finished
   private void writePdf(List<Map<String, Object>> data, String[] chosenColumns,
                         OutputStream out) throws JRException, IOException {
+    String filePath = "jasperTemplates/ordersJasperTemplate.jrxml";
     ClassLoader classLoader = getClass().getClassLoader();
-    File template = new File(
-        classLoader.getResource(
-            "jasperTemplates/ordersJasperTemplate.jrxml").getFile());
 
-    try (FileInputStream fis = new FileInputStream(template)) {
+    try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
       JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
-      HashMap<String, Object>[] params = new HashMap[data.size()];
-      int index = 0;
-      for (Map<String, Object> dataRow : data) {
-        params[index] = new HashMap<>();
-        params[index].put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]));
-        params[index].put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]));
-        params[index].put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]));
-        index++;
+      Object[] params = new Object[data.size()];
+
+      for (int index = 0; index < data.size(); ++index) {
+        Map<String, Object> dataRow = data.get(index);
+
+        params[index] = ImmutableMap
+            .<String, Object>builder()
+            .put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]))
+            .put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]))
+            .put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]))
+            .build();
       }
+
       JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
-      JasperPrint jasperPrint = JasperFillManager.fillReport(pdfTemplate, new HashMap<>(),
-          dataSource);
+      JasperPrint jasperPrint = JasperFillManager.fillReport(
+          pdfTemplate, new HashMap<>(), dataSource
+      );
+
       JRPdfExporter exporter = new JRPdfExporter();
       exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
       exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
