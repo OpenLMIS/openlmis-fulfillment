@@ -35,8 +35,10 @@ repositories {
 }
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-starter-web"
-    compile "org.springframework.boot:spring-boot-starter-data-jpa"
+    compile "org.springframework.boot:spring-boot-starter-web:1.4.1.RELEASE"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa:1.4.1.RELEASE"
+    compile "org.springframework.boot:spring-boot-starter-integration:1.4.1.RELEASE"
+    compile "org.springframework.integration:spring-integration-ftp:4.3.5.RELEASE"
     compile "org.projectlombok:lombok:1.16.8"
     compile "org.postgresql:postgresql:9.4.1208"
     compile "com.github.tomakehurst:wiremock:1.58"

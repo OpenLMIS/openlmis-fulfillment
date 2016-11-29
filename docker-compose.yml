@@ -6,7 +6,10 @@ services:
     links:
       - db
       - log
+      - ftp
     env_file: .env
+    volumes:
+      - '../files/fulfillment:/var/files/fulfillment'
 
   db:
     image: openlmis/postgres
@@ -16,6 +19,13 @@ services:
         syslog-address: "tcp://localhost:514"
         syslog-facility: "local1"
     depends_on: [log]
+    env_file: .env
+
+  ftp:
+    image: hauptmedia/proftpd
+    ports:
+      - "21:21"
+      - "20:20"
     env_file: .env
 
   log:
