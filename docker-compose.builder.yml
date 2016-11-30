@@ -9,7 +9,6 @@ services:
       - ftp
     volumes:
       - '.:/app'
-      - '../files/fulfillment:/var/files/fulfillment'
     command:
       - './build.sh'
     environment:
