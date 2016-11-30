@@ -15,7 +15,6 @@ import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
@@ -26,27 +25,16 @@ import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceD
 import org.openlmis.fulfillment.referencedata.service.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.web.util.OrderCsvHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Service;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,13 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
-
 @Service
 public class OrderService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
-
-  public static final String LOCAL_DIR = "/var/files/fulfillment";
 
   public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
       "productName", "productCode", "orderedQuantity", "filledQuantity"};
@@ -81,20 +64,7 @@ public class OrderService {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Autowired
-  private OrderCsvHelper csvHelper;
-
-  @Autowired
-  private OrderFileTemplateService orderFileTemplateService;
-
-  @Autowired
-  @Qualifier("toFtpChannel")
-  private MessageChannel toFtpChannel;
-
-
-  @PostConstruct
-  public void init() throws IOException {
-    Files.createDirectories(Paths.get(LOCAL_DIR));
-  }
+  private OrderStorage orderStorage;
 
   /**
    * Finds orders matching all of provided parameters.
@@ -233,7 +203,7 @@ public class OrderService {
    * @param order instance
    * @return passed instance after save.
    */
-  public Order save(Order order) throws IOException, OrderFileException {
+  public Order save(Order order) throws OrderStorageException {
     ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
@@ -243,23 +213,7 @@ public class OrderService {
     );
 
     order = orderRepository.save(order);
-    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
-    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
-
-    Path path = Paths.get(LOCAL_DIR, fileName);
-
-    try (Writer writer = Files.newBufferedWriter(path)) {
-      csvHelper.writeCsvFile(order, template, writer);
-    } catch (IOException exp) {
-      throw new OrderCsvWriteException("I/O while creating the order CSV file", exp);
-    }
-
-    try {
-      Message<File> message = MessageBuilder.withPayload(path.toFile()).build();
-      toFtpChannel.send(message);
-    } catch (Exception exp) {
-      LOGGER.error("Can't transfer CSV file for order {} to the FTP server", order.getId(), exp);
-    }
+    orderStorage.store(order);
 
     return order;
   }

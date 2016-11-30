@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.web.errorhandler;
 
 import org.openlmis.fulfillment.referencedata.service.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.service.OrderFileException;
+import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,13 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
     return logErrorAndRespond("Error fetching from reference data", ex);
+  }
+
+  @ExceptionHandler(OrderStorageException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public ErrorResponse handleOrderStorageException(OrderStorageException ex) {
+    return logErrorAndRespond("Unable to storage the order", ex);
   }
 
 }

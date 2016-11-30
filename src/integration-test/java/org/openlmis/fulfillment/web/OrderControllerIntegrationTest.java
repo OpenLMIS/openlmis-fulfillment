@@ -9,32 +9,24 @@ import static org.mockito.Matchers.any;
 
 import com.google.common.collect.Lists;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.PollableChannel;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.io.File;
 import java.math.BigDecimal;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,8 +56,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private OrderRepository orderRepository;
 
-  @MockBean(name = "toFtpChannel")
-  private PollableChannel toFtpChannel;
+  @MockBean
+  private OrderFileStorage orderStorage;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -112,14 +104,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           }
 
         });
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    Files.walk(Paths.get(OrderService.LOCAL_DIR), FileVisitOption.FOLLOW_LINKS)
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
   }
 
   private Order addOrder(UUID requisition, UUID facility, UUID processingPeriod,
