@@ -9,7 +9,7 @@ services:
       - ftp
     env_file: .env
     volumes:
-      - '../files/fulfillment:/var/files/fulfillment'
+      - '../files/fulfillment:/var/lib/openlmis/fulfillment/orders'
 
   db:
     image: openlmis/postgres
