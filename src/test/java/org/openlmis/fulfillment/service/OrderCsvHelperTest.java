@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.web.util;
+package org.openlmis.fulfillment.service;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

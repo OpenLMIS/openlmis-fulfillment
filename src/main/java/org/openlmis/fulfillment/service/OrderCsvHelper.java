@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.web.util;
+package org.openlmis.fulfillment.service;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.apache.commons.collections.CollectionUtils.filter;
