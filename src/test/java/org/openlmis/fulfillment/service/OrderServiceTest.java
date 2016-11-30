@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.service;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,26 +15,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
-import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
+import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
 import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
+import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.service.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.web.util.OrderCsvHelper;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.messaging.MessageChannel;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -43,7 +36,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -54,8 +46,7 @@ import java.util.Random;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({OrderService.class})
+@RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
 
   @Mock
@@ -77,26 +68,14 @@ public class OrderServiceTest {
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Mock
-  private OrderCsvHelper csvHelper;
-
-  @Mock
-  private OrderFileTemplateService orderFileTemplateService;
-
-  @Mock
-  private MessageChannel toFtpChannel;
-
-  @Mock
-  private BufferedWriter writer;
+  private OrderStorage orderStorage;
 
   @InjectMocks
   private OrderService orderService;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     generateMocks();
-
-    PowerMockito.mockStatic(Files.class);
-    when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
   }
 
   @Test
@@ -121,9 +100,6 @@ public class OrderServiceTest {
     order.setOrderLineItems(Lists.newArrayList(orderLineItem));
     order.setCreatedById(UUID.randomUUID());
 
-    OrderFileTemplate template = new OrderFileTemplate();
-    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(template);
-
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);
     Order created = orderService.save(order);
@@ -131,7 +107,7 @@ public class OrderServiceTest {
     // then
     validateCreatedOrder(created, order);
     verify(orderRepository).save(any(Order.class));
-    verify(csvHelper).writeCsvFile(any(Order.class), any(OrderFileTemplate.class), eq(writer));
+    verify(orderStorage).store(any(Order.class));
   }
 
   @Test
@@ -216,8 +192,6 @@ public class OrderServiceTest {
 
   private String prepareExpectedCsvOutput(Order order, List<String> header)
       throws IOException, URISyntaxException {
-    when(Files.readAllBytes(any(Path.class))).thenCallRealMethod();
-
     URL url =
         Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
     byte[] encoded = Files.readAllBytes(Paths.get(url.getPath()));
