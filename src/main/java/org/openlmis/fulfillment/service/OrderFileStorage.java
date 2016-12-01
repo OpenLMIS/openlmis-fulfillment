@@ -23,9 +23,6 @@ public class OrderFileStorage implements OrderStorage {
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
 
-  @Autowired
-  private OrderFtpSender orderFtpSender;
-
   @PostConstruct
   public void init() throws IOException {
     Files.createDirectories(Paths.get(LOCAL_DIR));
@@ -46,12 +43,20 @@ public class OrderFileStorage implements OrderStorage {
     } catch (IOException exp) {
       throw new OrderStorageException("I/O while creating the order CSV file", exp);
     }
+  }
 
+  @Override
+  public <T> T get(Order order) {
+    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
+    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
+
+    return (T) Paths.get(LOCAL_DIR, fileName);
+  }
+
+  @Override
+  public void delete(Order order) throws OrderStorageException {
     try {
-      // send CSV file over FTP
-      orderFtpSender.send(order, path);
-      // if everything is OK delete local file
-      Files.deleteIfExists(path);
+      Files.deleteIfExists(get(order));
     } catch (IOException exp) {
       throw new OrderStorageException("I/O while deleting the order CSV file", exp);
     }

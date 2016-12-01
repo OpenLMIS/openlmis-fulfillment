@@ -66,6 +66,9 @@ public class OrderService {
   @Autowired
   private OrderStorage orderStorage;
 
+  @Autowired
+  private OrderSender orderSender;
+
   /**
    * Finds orders matching all of provided parameters.
    *
@@ -203,7 +206,7 @@ public class OrderService {
    * @param order instance
    * @return passed instance after save.
    */
-  public Order save(Order order) throws OrderStorageException {
+  public Order save(Order order) throws OrderStorageException, OrderSenderException {
     ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
@@ -213,7 +216,13 @@ public class OrderService {
     );
 
     order = orderRepository.save(order);
+
     orderStorage.store(order);
+    boolean success = orderSender.send(order);
+
+    if (success) {
+      orderStorage.delete(order);
+    }
 
     return order;
   }

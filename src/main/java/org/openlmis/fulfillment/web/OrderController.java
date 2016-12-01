@@ -7,6 +7,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvWriteException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderPdfWriteException;
+import org.openlmis.fulfillment.service.OrderSenderException;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
@@ -58,7 +59,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public Order createOrder(@RequestBody Order order) throws OrderStorageException {
+  public Order createOrder(@RequestBody Order order)
+      throws OrderStorageException, OrderSenderException {
     LOGGER.debug("Creating new order");
     order.setId(null);
     Order newOrder = orderService.save(order);

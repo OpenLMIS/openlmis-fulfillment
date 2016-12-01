@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -21,10 +23,10 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
-import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.referencedata.model.ProgramDto;
+import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
+import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.referencedata.service.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -70,6 +72,9 @@ public class OrderServiceTest {
   @Mock
   private OrderStorage orderStorage;
 
+  @Mock
+  private OrderSender orderSender;
+
   @InjectMocks
   private OrderService orderService;
 
@@ -102,12 +107,17 @@ public class OrderServiceTest {
 
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);
+    when(orderSender.send(any(Order.class))).thenReturn(true);
     Order created = orderService.save(order);
 
     // then
     validateCreatedOrder(created, order);
-    verify(orderRepository).save(any(Order.class));
-    verify(orderStorage).store(any(Order.class));
+
+    InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
+    inOrder.verify(orderRepository).save(any(Order.class));
+    inOrder.verify(orderStorage).store(any(Order.class));
+    inOrder.verify(orderSender).send(any(Order.class));
+    inOrder.verify(orderStorage).delete(any(Order.class));
   }
 
   @Test
