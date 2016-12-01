@@ -6,6 +6,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,17 +108,54 @@ public class OrderServiceTest {
 
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);
-    when(orderSender.send(any(Order.class))).thenReturn(true);
+    when(orderSender.send(order)).thenReturn(true);
     Order created = orderService.save(order);
 
     // then
     validateCreatedOrder(created, order);
 
     InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
-    inOrder.verify(orderRepository).save(any(Order.class));
-    inOrder.verify(orderStorage).store(any(Order.class));
-    inOrder.verify(orderSender).send(any(Order.class));
-    inOrder.verify(orderStorage).delete(any(Order.class));
+    inOrder.verify(orderRepository).save(order);
+    inOrder.verify(orderStorage).store(order);
+    inOrder.verify(orderSender).send(order);
+    inOrder.verify(orderStorage).delete(order);
+  }
+
+  @Test
+  public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
+    // given
+    OrderNumberConfiguration orderNumberConfiguration =
+        new OrderNumberConfiguration("prefix", true, true, true);
+    when(orderNumberConfigurationRepository.findAll())
+        .thenReturn(Collections.singletonList(orderNumberConfiguration));
+
+    Order order = new Order();
+    order.setExternalId(UUID.randomUUID());
+    order.setEmergency(true);
+    order.setProgramId(program.getId());
+    order.setStatus(OrderStatus.ORDERED);
+    order.setQuotedCost(BigDecimal.ZERO);
+    order.setSupplyingFacilityId(UUID.randomUUID());
+
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setOrderedQuantity(1000L);
+
+    order.setOrderLineItems(Lists.newArrayList(orderLineItem));
+    order.setCreatedById(UUID.randomUUID());
+
+    // when
+    when(orderRepository.save(any(Order.class))).thenReturn(order);
+    when(orderSender.send(order)).thenReturn(false);
+    Order created = orderService.save(order);
+
+    // then
+    validateCreatedOrder(created, order);
+
+    InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
+    inOrder.verify(orderRepository).save(order);
+    inOrder.verify(orderStorage).store(order);
+    inOrder.verify(orderSender).send(order);
+    inOrder.verify(orderStorage, never()).delete(order);
   }
 
   @Test

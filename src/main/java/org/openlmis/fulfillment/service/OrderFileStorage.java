@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class OrderFileStorage implements OrderStorage {
-  private static final String LOCAL_DIR = "/var/lib/openlmis/fulfillment/orders";
+  static final String LOCAL_DIR = "/var/lib/openlmis/fulfillment/orders";
 
   @Autowired
   private OrderCsvHelper csvHelper;
@@ -46,20 +46,20 @@ public class OrderFileStorage implements OrderStorage {
   }
 
   @Override
-  public <T> T get(Order order) {
-    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
-    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
-
-    return (T) Paths.get(LOCAL_DIR, fileName);
-  }
-
-  @Override
   public void delete(Order order) throws OrderStorageException {
     try {
-      Files.deleteIfExists(get(order));
+      Files.deleteIfExists(getOrderAsPath(order));
     } catch (IOException exp) {
       throw new OrderStorageException("I/O while deleting the order CSV file", exp);
     }
+  }
+
+  @Override
+  public Path getOrderAsPath(Order order) {
+    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
+    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
+
+    return Paths.get(LOCAL_DIR, fileName);
   }
 
 }

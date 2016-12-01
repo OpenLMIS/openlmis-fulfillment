@@ -21,16 +21,20 @@ public class OrderFtpSender implements OrderSender {
   private MessageChannel toFtpChannel;
 
   @Autowired
-  private OrderFileStorage orderFileStorage;
+  private OrderStorage orderStorage;
 
   @Override
   public boolean send(Order order) throws OrderSenderException {
-    Path path = orderFileStorage.get(order);
+    Path path = orderStorage.getOrderAsPath(order);
 
     try {
       toFtpChannel.send(withPayload(path).build());
     } catch (Exception exp) {
-      LOGGER.error("Can't transfer CSV file {} to the FTP server", path, exp);
+      LOGGER.error(
+          "Can't transfer CSV file {} related with order {} to the FTP server",
+          path, order.getId(), exp
+      );
+
       return false;
     }
 
