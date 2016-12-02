@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -98,19 +97,5 @@ public class FacilityFtpSettingController extends BaseController {
       facilityFtpSettingRepository.delete(setting);
       return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
-  }
-
-  /**
-   * Finds facility ftp settings matching all of provided parameters.
-   *
-   * @param facility  supplyingFacility of searched facility ftp settings.
-   * @return ResponseEntity with list of facility ftp settings matching parameters and OK status.
-   */
-  @RequestMapping(value = "/facilityFtpSettings/search", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public Iterable<FacilityFtpSetting> searchSetting(
-      @RequestParam(value = "facility") UUID facility) {
-    return facilityFtpSettingRepository.searchFacilityFtpSettings(facility);
   }
 }

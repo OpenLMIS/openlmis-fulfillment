@@ -16,7 +16,7 @@
       "title": "serverHost"
     },
     "serverPort": {
-      "type": "string",
+      "type": "number",
       "title": "serverPort"
     },
     "path": {

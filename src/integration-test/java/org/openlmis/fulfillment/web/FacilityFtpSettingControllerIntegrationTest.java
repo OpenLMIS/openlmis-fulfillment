@@ -6,8 +6,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
-
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.domain.Order;
@@ -23,8 +21,6 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/facilityFtpSettings";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
-  private static final String SEARCH_FACILITY_PARAM = "facility";
 
   @MockBean
   private FacilityFtpSettingRepository facilityFtpSettingRepository;
@@ -144,34 +140,6 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
-  public void shouldFindBySupplyingFacility() {
-    // given
-    FacilityFtpSetting setting = generateSetting();
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(setting.getFacilityId()))
-        .thenReturn(Lists.newArrayList(setting));
-
-    // when
-    FacilityFtpSetting[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .queryParam(SEARCH_FACILITY_PARAM, setting.getFacilityId())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(FacilityFtpSetting[].class);
-
-    // then
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertEquals(response.length, 1);
-
-    for (FacilityFtpSetting responseSetting : response) {
-      assertEquals(
-          responseSetting.getFacilityId(),
-          setting.getFacilityId());
-    }
-  }
-
-  @Test
   public void shouldNotGetNonexistentSetting() {
     // given
     FacilityFtpSetting setting = generateSetting();
@@ -193,11 +161,11 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
     FacilityFtpSetting setting = new FacilityFtpSetting();
     setting.setId(UUID.randomUUID());
     setting.setFacilityId(UUID.randomUUID());
-    setting.setServerHost("host");
-    setting.setServerPort("9000");
-    setting.setPath("path");
-    setting.setUsername("username");
-    setting.setPassword("password");
+    setting.setServerHost("ftp");
+    setting.setServerPort(21);
+    setting.setPath("/orders/files/csv");
+    setting.setUsername("admin");
+    setting.setPassword("p@ssw0rd");
     return setting;
   }
 }

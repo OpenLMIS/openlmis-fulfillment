@@ -24,15 +24,15 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
    * Retrieve an instance of repository for entity type.
    * @return repository
    */
-  protected abstract CrudRepository<T, UUID> getRepository();
+  abstract CrudRepository<T, UUID> getRepository();
 
   /**
    * Generate a unique instance of given type.
    * @return generated instance
    */
-  protected abstract T generateInstance();
+  abstract T generateInstance();
 
-  protected int getNextInstanceNumber() {
+  int getNextInstanceNumber() {
     return this.instanceNumber.incrementAndGet();
   }
 

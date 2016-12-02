@@ -32,7 +32,7 @@ public class FacilityFtpSetting extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  private String serverPort;
+  private Integer serverPort;
 
   @Column(nullable = false)
   @Getter
@@ -51,7 +51,7 @@ public class FacilityFtpSetting extends BaseEntity {
   private String password;
 
   /**
-   * Copy values of attributes into new or updated Order.
+   * Copy values of attributes into new or updated Facility FTP Setting.
    *
    * @param setting setting with new values.
    */

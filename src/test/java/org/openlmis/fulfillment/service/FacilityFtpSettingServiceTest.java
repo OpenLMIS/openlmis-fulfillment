@@ -117,7 +117,7 @@ public class FacilityFtpSettingServiceTest {
     setting.setId(UUID.randomUUID());
     setting.setFacilityId(UUID.randomUUID());
     setting.setServerHost(RandomStringUtils.random(10));
-    setting.setServerPort(String.valueOf(new Random().nextInt(9000) + 1000));
+    setting.setServerPort(new Random().nextInt(1000));
     setting.setPath(RandomStringUtils.random(10));
     setting.setUsername(RandomStringUtils.random(10));
     setting.setPassword(RandomStringUtils.random(10));
