@@ -12,11 +12,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-public class ReportUtils {
+public final class ReportUtils {
 
   private static final String REPORTS_RESOURCE = "reports";
 
   private static final String IMAGES_RESOURCE = "images";
+
+  private ReportUtils() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Set parameters of rendered pdf report.
