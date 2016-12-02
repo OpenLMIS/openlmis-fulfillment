@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.service;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.apache.commons.collections.CollectionUtils.filter;
 
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
@@ -62,12 +61,7 @@ public class OrderCsvHelper {
   }
 
   private void removeExcludedColumns(List<OrderFileColumn> orderFileColumns) {
-    filter(orderFileColumns, new Predicate() {
-      @Override
-      public boolean evaluate(Object object) {
-        return ((OrderFileColumn) object).getInclude();
-      }
-    });
+    filter(orderFileColumns, object -> ((OrderFileColumn) object).getInclude());
   }
 
   private void writeHeader(List<OrderFileColumn> orderFileColumns, Writer writer)
