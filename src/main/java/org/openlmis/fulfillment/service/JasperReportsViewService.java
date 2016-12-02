@@ -4,7 +4,6 @@ import static java.io.File.createTempFile;
 import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
 
@@ -38,10 +37,14 @@ public class JasperReportsViewService {
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
    * Set 'Jasper' exporter parameters, data source, web application context, url to file.
+   * @param template template that will be used to create a view
+   * @param request it is used to take web application context
+   * @return created jasper view.
+   * @throws JasperReportViewException if there will be any problem with creating the view.
    */
   public JasperReportsMultiFormatView getJasperReportsView(Template template,
                                                            HttpServletRequest request)
-      throws IOException, ClassNotFoundException, JRException {
+      throws JasperReportViewException {
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);
     jasperView.setJdbcDataSource(replicationDataSource);
@@ -74,17 +77,31 @@ public class JasperReportsViewService {
    *
    * @return Url to ".jasper" file.
    */
-  private String getReportUrlForReportData(Template template)
-      throws IOException, ClassNotFoundException, JRException {
+  private String getReportUrlForReportData(Template template) throws JasperReportViewException {
+    File tmpFile;
 
-    File tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
-    ObjectInputStream inputStream = new ObjectInputStream(
-        new ByteArrayInputStream(template.getData()));
-    JasperReport jasperReport = (JasperReport) inputStream.readObject();
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream out = new ObjectOutputStream(bos);
-    out.writeObject(jasperReport);
-    writeByteArrayToFile(tmpFile, bos.toByteArray());
-    return tmpFile.toURI().toURL().toString();
+    try {
+      tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
+    } catch (IOException exp) {
+      throw new JasperReportViewException("a file could not be created", exp);
+    }
+
+    try (ObjectInputStream inputStream =
+             new ObjectInputStream(new ByteArrayInputStream(template.getData()))) {
+      JasperReport jasperReport = (JasperReport) inputStream.readObject();
+
+      try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+           ObjectOutputStream out = new ObjectOutputStream(bos)) {
+
+        out.writeObject(jasperReport);
+        writeByteArrayToFile(tmpFile, bos.toByteArray());
+
+        return tmpFile.toURI().toURL().toString();
+      }
+    } catch (IOException exp) {
+      throw new JasperReportViewException("an I/O error occurs", exp);
+    } catch (ClassNotFoundException exp) {
+      throw new JasperReportViewException("Class of a serialized object cannot be found.", exp);
+    }
   }
 }

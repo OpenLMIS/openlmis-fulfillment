@@ -1,10 +1,9 @@
 package org.openlmis.fulfillment.web;
 
-import net.sf.jasperreports.engine.JRException;
-
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.web.util.ReportUtils;
@@ -145,7 +144,7 @@ public class ProofOfDeliveryController extends BaseController {
   @ResponseBody
   public ModelAndView print(HttpServletRequest request,
                             @PathVariable("id") UUID proofOfDeliveryId)
-      throws JRException, IOException, ClassNotFoundException {
+      throws JasperReportViewException, IOException {
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
 
