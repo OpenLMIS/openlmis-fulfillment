@@ -201,7 +201,7 @@ public class OrderService {
    * @param order instance
    * @return passed instance after save.
    */
-  public Order save(Order order) throws OrderStorageException, OrderSenderException {
+  public Order save(Order order) throws OrderSaveException {
     ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
@@ -210,16 +210,22 @@ public class OrderService {
         orderNumberConfiguration.generateOrderNumber(order, program)
     );
 
-    order = orderRepository.save(order);
+    Order saved = orderRepository.save(order);
 
-    orderStorage.store(order);
-    boolean success = orderSender.send(order);
+    try {
+      orderStorage.store(saved);
+      boolean success = orderSender.send(saved);
 
-    if (success) {
-      orderStorage.delete(order);
+      if (success) {
+        orderStorage.delete(saved);
+      }
+    } catch (OrderStorageException exp) {
+      throw new OrderSaveException("Unable to storage the order", exp);
+    } catch (OrderSenderException exp) {
+      throw new OrderSaveException("Unable to send the order", exp);
     }
 
-    return order;
+    return saved;
   }
 
 }

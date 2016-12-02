@@ -4,13 +4,12 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderCsvWriteException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderPdfWriteException;
-import org.openlmis.fulfillment.service.OrderSenderException;
+import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.fulfillment.service.OrderStorageException;
-import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +58,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public Order createOrder(@RequestBody Order order)
-      throws OrderStorageException, OrderSenderException {
+  public Order createOrder(@RequestBody Order order) throws OrderSaveException {
     LOGGER.debug("Creating new order");
     order.setId(null);
     Order newOrder = orderService.save(order);
