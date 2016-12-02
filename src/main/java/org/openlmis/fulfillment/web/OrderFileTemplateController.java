@@ -43,7 +43,7 @@ public class OrderFileTemplateController extends BaseController {
    * @return ResponseEntity containing saved orderFileTemplate
    */
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.POST)
-  public ResponseEntity<?> savedOrderFileTemplate(
+  public ResponseEntity<Object> savedOrderFileTemplate(
       @RequestBody @Valid OrderFileTemplate orderFileTemplate, BindingResult bindingResult) {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
