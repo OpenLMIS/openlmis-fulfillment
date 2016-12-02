@@ -45,7 +45,7 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-  public static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
+  static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
       "productName", "productCode", "orderedQuantity", "filledQuantity"};
 
   @Autowired
