@@ -40,7 +40,7 @@ public class OrderNumberConfigurationController extends BaseController {
    * @return Response entity with Http status code.
    */
   @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.POST)
-  public ResponseEntity<?> saveOrderNumberConfigurations(
+  public ResponseEntity<Object> saveOrderNumberConfigurations(
       @RequestBody @Valid OrderNumberConfiguration orderNumberConfigurationDto,
       BindingResult bindingResult) {
 
