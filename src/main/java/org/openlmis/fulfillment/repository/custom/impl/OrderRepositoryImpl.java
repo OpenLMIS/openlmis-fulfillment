@@ -26,6 +26,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param program            program of searched Orders.
    * @return List of Orders with matched parameters.
    */
+  @Override
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
                                   UUID program) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
