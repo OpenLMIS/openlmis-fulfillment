@@ -56,7 +56,7 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(value = "/templates", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<?> getAllTemplates() {
+  public ResponseEntity<Iterable<Template>> getAllTemplates() {
     Iterable<Template> templates = templateRepository.findAll();
     return new ResponseEntity<>(templates, HttpStatus.OK);
   }
@@ -69,7 +69,7 @@ public class TemplateController extends BaseController {
    * @return ResponseEntity containing the updated template
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateTemplate(@RequestBody Template template,
+  public ResponseEntity<Template> updateTemplate(@RequestBody Template template,
                                           @PathVariable("id") UUID templateId) {
 
     Template templateToUpdate = templateRepository.findOne(templateId);
@@ -94,7 +94,7 @@ public class TemplateController extends BaseController {
    * @return Template.
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getTemplate(@PathVariable("id") UUID templateId) {
+  public ResponseEntity<Template> getTemplate(@PathVariable("id") UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);
     if (template == null) {
@@ -111,12 +111,12 @@ public class TemplateController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteTemplate(@PathVariable("id")
+  public ResponseEntity<Template> deleteTemplate(@PathVariable("id")
                                               UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);
     if (template == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       templateRepository.delete(template);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
