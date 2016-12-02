@@ -2,8 +2,6 @@ package org.openlmis.fulfillment.service;
 
 import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
 
-import com.google.common.collect.ImmutableMap;
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -40,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class OrderService {
@@ -146,12 +146,8 @@ public class OrderService {
       for (int index = 0; index < data.size(); ++index) {
         Map<String, Object> dataRow = data.get(index);
 
-        params[index] = ImmutableMap
-            .<String, Object>builder()
-            .put(DEFAULT_COLUMNS[3], dataRow.get(DEFAULT_COLUMNS[3]))
-            .put(DEFAULT_COLUMNS[6], dataRow.get(DEFAULT_COLUMNS[6]))
-            .put(DEFAULT_COLUMNS[5], dataRow.get(DEFAULT_COLUMNS[5]))
-            .build();
+        params[index] = Stream.of(chosenColumns)
+            .collect(Collectors.toMap(column -> column, dataRow::get));
       }
 
       JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
