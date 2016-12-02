@@ -45,8 +45,9 @@ public class OrderNumberConfiguration extends BaseEntity {
    * @param order   order instance.
    * @param program Program associated with the order.
    * @return Generated orderNumber.
+   * @throws OrderNumberException if the order parameter is {@code null}
    */
-  public String generateOrderNumber(Order order, ProgramDto program) throws OrderNumberException {
+  public String generateOrderNumber(Order order, ProgramDto program) {
     if (order == null) {
       throw new OrderNumberException("Order cannot be empty");
     }
