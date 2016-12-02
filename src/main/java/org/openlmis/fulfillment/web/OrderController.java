@@ -5,9 +5,8 @@ import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
-import org.openlmis.fulfillment.service.OrderCsvWriteException;
+import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
-import org.openlmis.fulfillment.service.OrderPdfWriteException;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
 import org.slf4j.Logger;
@@ -112,10 +111,10 @@ public class OrderController extends BaseController {
    * @return Order.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<Order> getOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       return new ResponseEntity<>(order, HttpStatus.OK);
     }
@@ -128,13 +127,13 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<Order> deleteOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       orderRepository.delete(order);
-      return new ResponseEntity(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -165,19 +164,19 @@ public class OrderController extends BaseController {
    *         containing the error description and "#400 Bad Request" status
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<?> finalizeOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<Order> finalizeOrder(@PathVariable("id") UUID orderId) {
 
     Order order = orderRepository.findOne(orderId);
 
     if (order == null || order.getStatus() != OrderStatus.ORDERED) {
-      return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     LOGGER.debug("Finalizing the order with id: {}", order);
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
-    return new ResponseEntity(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**
@@ -191,8 +190,8 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   public void printOrder(@PathVariable("id") UUID orderId,
                          @RequestParam("format") String format,
-                         HttpServletResponse response) throws IOException,
-      OrderCsvWriteException, OrderPdfWriteException {
+                         HttpServletResponse response)
+      throws IOException, OrderFileException {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
