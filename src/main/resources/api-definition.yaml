@@ -48,6 +48,13 @@ schemas:
           "type": "array",
           "items": { "type": "object", "$ref": "schemas/templateParameter.json" }
       }
+  - facilityFtpSetting: !include schemas/facilityFtpSetting.json
+  - facilityFtpSettingArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/facilityFtpSetting.json" }
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -645,3 +652,103 @@ resourceTypes:
                     body:
                       application/json:
                         schema: template
+
+/facilityFtpSettings:
+    displayName: FTP settings for facilities.
+    post:
+        is: [ secured ]
+        description: Creates new facility FTP setting.
+        body:
+            application/json:
+              schema: facilityFtpSetting
+        responses:
+            "201":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+                body:
+                  application/json:
+                    schema: facilityFtpSetting
+            "409":
+                headers:
+                  X-Content-Type-Options:
+                  X-XSS-Protection:
+    /{id}:
+        uriParameters:
+            id:
+                displayName: id
+                type: string
+                required: true
+                repeat: false
+        delete:
+            is: [ secured ]
+            description: Delete chosen facility FTP setting.
+            responses:
+                "204":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "409":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        get:
+            is: [ secured ]
+            description: Get chosen facility FTP setting.
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: facilityFtpSetting
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+        put:
+            is: [ secured ]
+            description: Update existing facility FTP setting.
+            body:
+                application/json:
+                  schema: facilityFtpSetting
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: facilityFtpSetting
+    /search:
+        get:
+            is: [ secured ]
+            description: Find facility FTP settings with matched parameters.
+            queryParameters:
+                facility:
+                    displayName: facility
+                    description: Facility ID
+                    type: string
+                    required: true
+                    repeat: false
+            responses:
+                "200":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                    body:
+                      application/json:
+                        schema: facilityFtpSettingArray
+                "404":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:
+                "500":
+                    headers:
+                      X-Content-Type-Options:
+                      X-XSS-Protection:

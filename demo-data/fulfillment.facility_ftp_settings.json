@@ -1,0 +1,11 @@
+[
+  {
+    "id": "5f028911-2683-4343-83e7-48434cd6b7a2",
+    "externalId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
+    "serverHost": "ftp",
+    "serverPort": "21",
+    "path": "/orders/files/csv",
+    "username": "admin",
+    "password": "p@ssw0rd"
+  }
+]

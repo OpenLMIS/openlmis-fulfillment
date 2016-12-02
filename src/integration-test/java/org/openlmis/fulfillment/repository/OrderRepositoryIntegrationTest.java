@@ -24,12 +24,12 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   private OrderRepository orderRepository;
 
   @Override
-  CrudRepository<Order, UUID> getRepository() {
+  protected CrudRepository<Order, UUID> getRepository() {
     return orderRepository;
   }
 
   @Override
-  Order generateInstance() {
+  protected Order generateInstance() {
     Order order = new Order();
     order.setExternalId(UUID.randomUUID());
     order.setEmergency(false);

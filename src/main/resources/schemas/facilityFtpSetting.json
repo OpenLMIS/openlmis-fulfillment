@@ -1,0 +1,43 @@
+{ "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "FacilityFtpSetting",
+  "description": "A single setting for facility's external fulfillment",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "facilityId": {
+      "type": "string",
+      "title": "facilityId"
+    },
+    "serverHost": {
+      "type": "string",
+      "title": "serverHost"
+    },
+    "serverPort": {
+      "type": "string",
+      "title": "serverPort"
+    },
+    "path": {
+      "type": "string",
+      "title": "path"
+    },
+    "username": {
+      "type": "string",
+      "title": "username"
+    },
+    "password": {
+      "type": "string",
+      "title": "password"
+    }
+  },
+  "required": [
+    "id",
+    "facilityId",
+    "serverHost",
+    "serverPort",
+    "path",
+    "username"
+  ]
+}

@@ -20,15 +20,19 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
 
   private AtomicInteger instanceNumber = new AtomicInteger(0);
 
-  abstract CrudRepository<T, UUID> getRepository();
+  /**
+   * Retrieve an instance of repository for entity type.
+   * @return repository
+   */
+  protected abstract CrudRepository<T, UUID> getRepository();
 
-  /*
+  /**
    * Generate a unique instance of given type.
    * @return generated instance
    */
-  abstract T generateInstance();
+  protected abstract T generateInstance();
 
-  int getNextInstanceNumber() {
+  protected int getNextInstanceNumber() {
     return this.instanceNumber.incrementAndGet();
   }
 

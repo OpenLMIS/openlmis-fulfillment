@@ -19,7 +19,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   private OrderRepository orderRepository;
   private Order order = new Order();
 
-  ProofOfDeliveryRepository getRepository() {
+  protected ProofOfDeliveryRepository getRepository() {
     return this.proofOfDeliveryRepository;
   }
 
@@ -38,7 +38,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     orderRepository.save(order);
   }
 
-  ProofOfDelivery generateInstance() {
+  protected ProofOfDelivery generateInstance() {
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
     proofOfDelivery.setOrder(order);
     return proofOfDelivery;

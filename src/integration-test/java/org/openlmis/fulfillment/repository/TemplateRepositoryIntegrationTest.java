@@ -9,12 +9,12 @@ public class TemplateRepositoryIntegrationTest extends
   @Autowired
   private TemplateRepository templateRepository;
 
-  TemplateRepository getRepository() {
+  protected TemplateRepository getRepository() {
     return this.templateRepository;
   }
 
   @Override
-  Template generateInstance() {
+  protected Template generateInstance() {
     Template template = new Template();
     template.setName("TemplateRepositoryIntegrationTest");
     return template;
