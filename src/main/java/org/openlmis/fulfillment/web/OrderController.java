@@ -12,7 +12,6 @@ import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
-import org.openlmis.fulfillment.web.util.OrderCsvHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,7 @@ public class OrderController extends BaseController {
   @ResponseBody
 
   public ResponseEntity<?> createOrder(@RequestBody Order order) throws IOException,
-      OrderFileException, OrderStorageException, OrderSaveException{
+      OrderFileException, OrderStorageException, OrderSaveException {
 
     LOGGER.debug("Checking rights to create order");
     try {

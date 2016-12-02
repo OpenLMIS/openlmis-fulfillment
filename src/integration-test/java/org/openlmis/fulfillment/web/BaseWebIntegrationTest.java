@@ -211,7 +211,7 @@ public abstract class BaseWebIntegrationTest {
       + "}"
       + "]";
 
-  private static final String MOCK_HAS_RIGHT = "{ \"result\":\"true\" }";
+  private static final String MOCK_HAS_RIGHT = "{ \"result\":true }";
   private static final String ORDER = "order";
 
   @Rule
