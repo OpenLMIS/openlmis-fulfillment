@@ -13,33 +13,23 @@ import java.util.Properties;
 /**
  * Class containing version information.
  */
-public class Version {
+@Getter
+class ServiceVersion {
+  private static final String VERSION_FILE = "version.properties";
 
-  public static final String VERSION = "version.properties";
-
-  @Getter
   private String service = "service";
-
-  @Getter
   private String build = "${build}";
-
-  @Getter
   private String branch = "${branch}";
-
-  @Getter
   private String timeStamp = "${time}";
-
-  @Getter
   private String version = "version";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Version.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceVersion.class);
 
   /**
    * Class constructor used to fill Version with data from version file.
    */
-  public Version() {
-
-    try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(VERSION)) {
+  ServiceVersion() {
+    try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(VERSION_FILE)) {
       if (inputStream != null) {
         Properties properties = new Properties();
         properties.load(inputStream);
@@ -49,8 +39,8 @@ public class Version {
         branch = properties.getProperty("Branch");
         timeStamp = properties.getProperty("Timestamp", Instant.now().toString());
       }
-    } catch (IOException ex) {
-      LOGGER.error("Error loading version properties file");
+    } catch (IOException exp) {
+      LOGGER.error("Error loading version properties file", exp);
     }
   }
 }
