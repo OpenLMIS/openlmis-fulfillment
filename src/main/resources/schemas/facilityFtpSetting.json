@@ -1,7 +1,8 @@
-{ "type": "object",
+{
+  "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
   "title": "FacilityFtpSetting",
-  "description": "A single setting for facility's external fulfillment",
+  "description": "This object contains information about ftp server related with a facility",
   "properties": {
     "id": {
       "type": "string",
@@ -11,17 +12,9 @@
       "type": "string",
       "title": "facilityId"
     },
-    "serverHost": {
+    "protocol": {
       "type": "string",
-      "title": "serverHost"
-    },
-    "serverPort": {
-      "type": "number",
-      "title": "serverPort"
-    },
-    "path": {
-      "type": "string",
-      "title": "path"
+      "title": "protocol"
     },
     "username": {
       "type": "string",
@@ -30,14 +23,37 @@
     "password": {
       "type": "string",
       "title": "password"
+    },
+    "serverHost": {
+      "type": "string",
+      "title": "serverHost"
+    },
+    "serverPort": {
+      "type": "number",
+      "title": "serverPort"
+    },
+    "removeDirectory": {
+      "type": "string",
+      "title": "removeDirectory"
+    },
+    "localDirectory": {
+      "type": "string",
+      "title": "localDirectory"
+    },
+    "passiveMode": {
+      "type": "boolean",
+      "title": "passiveMode"
     }
   },
   "required": [
     "id",
     "facilityId",
+    "protocol",
+    "username",
     "serverHost",
     "serverPort",
-    "path",
-    "username"
+    "removeDirectory",
+    "localDirectory",
+    "passiveMode"
   ]
 }

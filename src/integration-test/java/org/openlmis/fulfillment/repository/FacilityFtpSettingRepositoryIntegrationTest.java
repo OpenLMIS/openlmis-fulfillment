@@ -22,12 +22,16 @@ public class FacilityFtpSettingRepositoryIntegrationTest
   @Override
   protected FacilityFtpSetting generateInstance() {
     FacilityFtpSetting setting = new FacilityFtpSetting();
+    setting.setProtocol("ftp");
     setting.setFacilityId(UUID.randomUUID());
     setting.setServerHost(RandomStringUtils.random(10));
     setting.setServerPort(new Random().nextInt(9000) + 1000);
-    setting.setPath(RandomStringUtils.random(10));
+    setting.setRemoveDirectory(RandomStringUtils.random(10));
+    setting.setLocalDirectory(RandomStringUtils.random(10));
     setting.setUsername(RandomStringUtils.random(10));
     setting.setPassword(RandomStringUtils.random(10));
+    setting.setPassiveMode(true);
+
     return setting;
   }
 }

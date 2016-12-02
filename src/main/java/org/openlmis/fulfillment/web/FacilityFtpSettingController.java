@@ -3,6 +3,8 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.openlmis.fulfillment.service.FacilityFtpSettingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.UUID;
 
 @Controller
 public class FacilityFtpSettingController extends BaseController {
+  private static final Logger LOGGER = LoggerFactory.getLogger(FacilityFtpSettingController.class);
 
   @Autowired
   private FacilityFtpSettingRepository facilityFtpSettingRepository;
@@ -36,10 +39,14 @@ public class FacilityFtpSettingController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public FacilityFtpSetting createSetting(@RequestBody FacilityFtpSetting setting) {
-    setting.setId(null);
-    FacilityFtpSetting createdSetting = facilityFtpSettingService.save(setting);
+    LOGGER.debug("Creating new Facility Ftp Setting");
 
-    return createdSetting;
+    setting.setId(null);
+    FacilityFtpSetting saved = facilityFtpSettingService.save(setting);
+
+    LOGGER.debug("Created new Facility Ftp Setting with id: {}", saved.getId());
+
+    return saved;
   }
 
   /**
@@ -54,16 +61,21 @@ public class FacilityFtpSettingController extends BaseController {
   @ResponseBody
   public FacilityFtpSetting updateSetting(@RequestBody FacilityFtpSetting setting,
                            @PathVariable("id") UUID settingId) {
+    FacilityFtpSetting toUpdate = facilityFtpSettingRepository.findOne(settingId);
 
-    FacilityFtpSetting existent = facilityFtpSettingRepository.findOne(settingId);
-    if (existent == null) {
-      existent = new FacilityFtpSetting();
+    if (toUpdate == null) {
+      toUpdate = new FacilityFtpSetting();
+      LOGGER.info("Creating new Facility Ftp Setting");
+    } else {
+      LOGGER.debug("Updating Facility Ftp Setting with id: {}", settingId);
     }
 
-    existent.updateFrom(setting);
-    existent = facilityFtpSettingRepository.save(existent);
+    toUpdate.updateFrom(setting);
+    toUpdate = facilityFtpSettingRepository.save(toUpdate);
 
-    return existent;
+    LOGGER.debug("Saved Facility Ftp Setting with id: {}", toUpdate.getId());
+
+    return toUpdate;
   }
 
   /**
@@ -73,13 +85,11 @@ public class FacilityFtpSettingController extends BaseController {
    * @return FacilityFtpSetting.
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getSetting(@PathVariable("id") UUID settingId) {
+  public ResponseEntity<Object> getSetting(@PathVariable("id") UUID settingId) {
     FacilityFtpSetting setting = facilityFtpSettingRepository.findOne(settingId);
-    if (setting == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(setting, HttpStatus.OK);
-    }
+    return setting == null
+        ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+        : new ResponseEntity<>(setting, HttpStatus.OK);
   }
 
   /**
@@ -90,12 +100,13 @@ public class FacilityFtpSettingController extends BaseController {
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<?> deleteSetting(@PathVariable("id") UUID settingId) {
-    FacilityFtpSetting setting = facilityFtpSettingRepository.findOne(settingId);
-    if (setting == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+    FacilityFtpSetting toDelete = facilityFtpSettingRepository.findOne(settingId);
+
+    if (toDelete == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      facilityFtpSettingRepository.delete(setting);
-      return new ResponseEntity(HttpStatus.NO_CONTENT);
+      facilityFtpSettingRepository.delete(toDelete);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }
 }

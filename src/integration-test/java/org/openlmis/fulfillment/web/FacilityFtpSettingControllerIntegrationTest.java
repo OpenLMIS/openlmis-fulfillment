@@ -13,9 +13,9 @@ import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
-import java.util.UUID;
-
 import guru.nidi.ramltester.junit.RamlMatchers;
+
+import java.util.UUID;
 
 public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ACCESS_TOKEN = "access_token";
@@ -73,7 +73,9 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
     assertEquals(response.getFacilityId(), newSetting.getFacilityId());
     assertEquals(response.getServerHost(), newSetting.getServerHost());
     assertEquals(response.getServerPort(), newSetting.getServerPort());
-    assertEquals(response.getPath(), newSetting.getPath());
+    assertEquals(response.getRemoveDirectory(), newSetting.getRemoveDirectory());
+    assertEquals(response.getLocalDirectory(), newSetting.getLocalDirectory());
+    assertEquals(response.isPassiveMode(), newSetting.isPassiveMode());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -161,11 +163,15 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
     FacilityFtpSetting setting = new FacilityFtpSetting();
     setting.setId(UUID.randomUUID());
     setting.setFacilityId(UUID.randomUUID());
-    setting.setServerHost("ftp");
+    setting.setProtocol("ftp");
+    setting.setServerHost("host");
     setting.setServerPort(21);
-    setting.setPath("/orders/files/csv");
-    setting.setUsername("admin");
-    setting.setPassword("p@ssw0rd");
+    setting.setRemoveDirectory("remote/dir");
+    setting.setLocalDirectory("local/dir");
+    setting.setUsername("username");
+    setting.setPassword("password");
+    setting.setPassiveMode(true);
+
     return setting;
   }
 }

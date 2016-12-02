@@ -1,7 +1,9 @@
 package org.openlmis.fulfillment.service;
 
+import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.annotation.PostConstruct;
-
 @Component
 public class OrderFileStorage implements OrderStorage {
-  static final String LOCAL_DIR = "/var/lib/openlmis/fulfillment/orders";
 
   @Autowired
   private OrderCsvHelper csvHelper;
@@ -23,10 +22,8 @@ public class OrderFileStorage implements OrderStorage {
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
 
-  @PostConstruct
-  public void init() throws IOException {
-    Files.createDirectories(Paths.get(LOCAL_DIR));
-  }
+  @Autowired
+  private FacilityFtpSettingRepository facilityFtpSettingRepository;
 
   @Override
   public void store(Order order) throws OrderStorageException {
@@ -34,7 +31,17 @@ public class OrderFileStorage implements OrderStorage {
     OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
 
-    Path path = Paths.get(LOCAL_DIR, fileName);
+    FacilityFtpSetting setting = facilityFtpSettingRepository
+        .findFirstByFacilityId(order.getSupplyingFacilityId());
+
+    Path path;
+
+    try {
+      Files.createDirectories(Paths.get(setting.getLocalDirectory()));
+      path = Paths.get(setting.getLocalDirectory(), fileName);
+    } catch (IOException exp) {
+      throw new OrderStorageException("I/O while creating the local directory", exp);
+    }
 
     try (Writer writer = Files.newBufferedWriter(path)) {
       // 1. generate CSV file using order file template
@@ -57,9 +64,12 @@ public class OrderFileStorage implements OrderStorage {
   @Override
   public Path getOrderAsPath(Order order) {
     OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
+    FacilityFtpSetting setting = facilityFtpSettingRepository
+        .findFirstByFacilityId(order.getSupplyingFacilityId());
+
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
 
-    return Paths.get(LOCAL_DIR, fileName);
+    return Paths.get(setting.getLocalDirectory(), fileName);
   }
 
 }

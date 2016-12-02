@@ -6,7 +6,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.service.OrderFileStorage.LOCAL_DIR;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import org.junit.Before;
@@ -17,8 +16,10 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -34,7 +35,8 @@ public class OrderStorageTest {
   private static final String FILE_PREFIX = "prefix-";
   private static final String ORDER_CODE = "order-code-123";
   private static final String FILE_NAME = FILE_PREFIX + ORDER_CODE + ".csv";
-  private static final String FULL_PATH = LOCAL_DIR + '/' + FILE_NAME;
+  private static final String LOCAL_DIR = "/var/lib/openlmis/fulfillment/orders/";
+  private static final String FULL_PATH = LOCAL_DIR + FILE_NAME;
 
   @Rule
   public ExpectedException expected = ExpectedException.none();
@@ -44,6 +46,9 @@ public class OrderStorageTest {
 
   @Mock
   private OrderFileTemplateService orderFileTemplateService;
+
+  @Mock
+  private FacilityFtpSettingRepository facilityFtpSettingRepository;
 
   @InjectMocks
   private OrderFileStorage orderFileStorage;
@@ -57,6 +62,9 @@ public class OrderStorageTest {
   @Mock
   private BufferedWriter writer;
 
+  @Mock
+  private FacilityFtpSetting setting;
+
   private IOException exception = new IOException("test purpose");
 
   @Before
@@ -65,9 +73,11 @@ public class OrderStorageTest {
 
     when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
     when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(template);
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any())).thenReturn(setting);
 
     when(order.getOrderCode()).thenReturn(ORDER_CODE);
     when(template.getFilePrefix()).thenReturn(FILE_PREFIX);
+    when(setting.getLocalDirectory()).thenReturn(LOCAL_DIR);
   }
 
   @Test

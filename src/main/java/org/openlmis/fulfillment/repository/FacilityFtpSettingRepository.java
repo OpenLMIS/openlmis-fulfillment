@@ -10,4 +10,5 @@ public interface FacilityFtpSettingRepository
     extends PagingAndSortingRepository<FacilityFtpSetting, UUID> {
 
   FacilityFtpSetting findFirstByFacilityId(@Param("facilityId") UUID facilityId);
+
 }
