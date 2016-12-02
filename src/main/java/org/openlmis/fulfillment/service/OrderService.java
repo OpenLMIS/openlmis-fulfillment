@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.service;
 
-import static ch.qos.logback.core.util.CloseUtil.closeQuietly;
+import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
-import org.supercsv.prefs.CsvPreference;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,24 +92,24 @@ public class OrderService {
    */
   public void orderToCsv(Order order, String[] chosenColumns,
                          Writer writer) throws OrderCsvWriteException {
-    if (order != null) {
-      List<Map<String, Object>> rows = orderToRows(order);
+    if (null == order) {
+      return;
+    }
 
-      if (!rows.isEmpty()) {
-        ICsvMapWriter mapWriter = null;
-        try {
-          mapWriter = new CsvMapWriter(writer, CsvPreference.STANDARD_PREFERENCE);
-          mapWriter.writeHeader(chosenColumns);
+    List<Map<String, Object>> rows = orderToRows(order);
 
-          for (Map<String, Object> row : rows) {
-            mapWriter.write(row, chosenColumns);
-          }
-        } catch (IOException ex) {
-          throw new OrderCsvWriteException("I/O while creating the order CSV file", ex);
-        } finally {
-          closeQuietly(mapWriter);
-        }
+    if (rows.isEmpty()) {
+      return;
+    }
+
+    try (ICsvMapWriter mapWriter = new CsvMapWriter(writer, STANDARD_PREFERENCE)) {
+      mapWriter.writeHeader(chosenColumns);
+
+      for (Map<String, Object> row : rows) {
+        mapWriter.write(row, chosenColumns);
       }
+    } catch (IOException ex) {
+      throw new OrderCsvWriteException("I/O while creating the order CSV file", ex);
     }
   }
 
