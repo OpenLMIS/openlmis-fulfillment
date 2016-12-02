@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.web.util.ReportUtils;
@@ -47,18 +46,18 @@ public class ProofOfDeliveryController extends BaseController {
    * Allows creating new proofOfDeliveries.
    * If the id is specified, it will be ignored.
    *
-   * @param proofOfDelivery A proofOfDelivery bound to the request body
+   * @param pod A proofOfDelivery bound to the request body
    * @return ResponseEntity containing the created proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
-  public ResponseEntity<?> createProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery) {
+  public ResponseEntity<ProofOfDelivery> createProofOfDelivery(@RequestBody ProofOfDelivery pod) {
     LOGGER.debug("Creating new proofOfDelivery");
 
-    proofOfDelivery.setId(null);
-    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
+    pod.setId(null);
+    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(pod);
 
-    LOGGER.debug("Created new proofOfDelivery with id: " + proofOfDelivery.getId());
-    return new ResponseEntity<ProofOfDelivery>(newProofOfDelivery, HttpStatus.CREATED);
+    LOGGER.debug("Created new proofOfDelivery with id: " + pod.getId());
+    return new ResponseEntity<>(newProofOfDelivery, HttpStatus.CREATED);
   }
 
   /**
@@ -68,7 +67,7 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<?> getAllProofOfDeliveries() {
+  public ResponseEntity<Iterable<ProofOfDelivery>> getAllProofOfDeliveries() {
     Iterable<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
     return new ResponseEntity<>(proofOfDeliveries, HttpStatus.OK);
   }
@@ -81,8 +80,9 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<?> updateProofOfDelivery(@RequestBody ProofOfDelivery proofOfDelivery,
-                                                 @PathVariable("id") UUID proofOfDeliveryId) {
+  public ResponseEntity<ProofOfDelivery> updateProofOfDelivery(
+      @RequestBody ProofOfDelivery proofOfDelivery,
+      @PathVariable("id") UUID proofOfDeliveryId) {
 
     ProofOfDelivery proofOfDeliveryToUpdate =
         proofOfDeliveryRepository.findOne(proofOfDeliveryId);
@@ -103,12 +103,12 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Get chosen proofOfDelivery.
    *
-   * @param proofOfDeliveryId UUID of proofOfDelivery whose we want to get
+   * @param id UUID of proofOfDelivery whose we want to get
    * @return ProofOfDelivery.
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.GET)
-  public ResponseEntity<?> getProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId) {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+  public ResponseEntity<ProofOfDelivery> getProofOfDelivery(@PathVariable("id") UUID id) {
+    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -119,17 +119,17 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Allows deleting proofOfDelivery.
    *
-   * @param proofOfDeliveryId UUID of proofOfDelivery whose we want to delete
+   * @param id UUID of proofOfDelivery whose we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId) {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+  public ResponseEntity<ProofOfDelivery> deleteProofOfDelivery(@PathVariable("id") UUID id) {
+    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
     if (proofOfDelivery == null) {
-      return new ResponseEntity(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       proofOfDeliveryRepository.delete(proofOfDelivery);
-      return new ResponseEntity<ProofOfDelivery>(HttpStatus.NO_CONTENT);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }
 
@@ -143,8 +143,7 @@ public class ProofOfDeliveryController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
   @ResponseBody
   public ModelAndView print(HttpServletRequest request,
-                            @PathVariable("id") UUID proofOfDeliveryId)
-      throws JasperReportViewException, IOException {
+                            @PathVariable("id") UUID proofOfDeliveryId) throws IOException {
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
 
