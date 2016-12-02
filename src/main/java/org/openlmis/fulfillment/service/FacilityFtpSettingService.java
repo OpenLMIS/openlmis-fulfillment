@@ -1,15 +1,13 @@
 package org.openlmis.fulfillment.service;
 
 import org.apache.commons.lang.NullArgumentException;
+import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
+import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
-
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
-import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 
 @Service
 public class FacilityFtpSettingService {
@@ -29,10 +27,7 @@ public class FacilityFtpSettingService {
       throw new NullArgumentException("facilityId");
     }
 
-    List<FacilityFtpSetting> settings =
-        facilityFtpSettingRepository.searchFacilityFtpSettings(facilityId);
-
-    return settings.size() > 0 ? settings.get(0) : null;
+    return facilityFtpSettingRepository.findFirstByFacilityId(facilityId);
   }
 
   /**

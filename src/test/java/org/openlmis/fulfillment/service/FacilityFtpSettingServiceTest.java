@@ -19,8 +19,6 @@ import org.openlmis.fulfillment.referencedata.model.FacilityDto;
 import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
 import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.UUID;
 
@@ -43,8 +41,8 @@ public class FacilityFtpSettingServiceTest {
 
     when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(any(UUID.class)))
-        .thenReturn(new ArrayList<>());
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(null);
 
     // when
     facilityFtpSettingService.save(setting);
@@ -62,8 +60,8 @@ public class FacilityFtpSettingServiceTest {
 
     when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(any(UUID.class)))
-        .thenReturn(Collections.singletonList(duplicate));
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(duplicate);
 
     // when
     facilityFtpSettingService.save(setting);
@@ -75,8 +73,8 @@ public class FacilityFtpSettingServiceTest {
     FacilityFtpSetting setting = randomSetting();
 
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(any(UUID.class)))
-        .thenReturn(new ArrayList<>());
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(null);
 
     // when
     facilityFtpSettingService.save(setting);
@@ -87,8 +85,8 @@ public class FacilityFtpSettingServiceTest {
     // given
     FacilityFtpSetting setting = randomSetting();
 
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(any(UUID.class)))
-        .thenReturn(Collections.singletonList(setting));
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(setting);
 
     // when
     FacilityFtpSetting result = facilityFtpSettingService.getByFacility(setting.getFacilityId());
@@ -102,8 +100,8 @@ public class FacilityFtpSettingServiceTest {
     // given
     FacilityFtpSetting setting = randomSetting();
 
-    when(facilityFtpSettingRepository.searchFacilityFtpSettings(any(UUID.class)))
-        .thenReturn(new ArrayList<>());
+    when(facilityFtpSettingRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(null);
 
     // when
     FacilityFtpSetting result = facilityFtpSettingService.getByFacility(setting.getFacilityId());
