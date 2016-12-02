@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.service;
 import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -94,19 +95,15 @@ public class TemplateService {
     throwIfFileIsNull(file);
     throwIfIncorrectFileType(file);
     throwIfFileIsEmpty(file);
+
     try {
       JasperReport report = JasperCompileManager.compileReport(file.getInputStream());
       JRParameter[] jrParameters = report.getParameters();
-      if (jrParameters != null && jrParameters.length > 0) {
 
-        ArrayList<TemplateParameter> parameters = new ArrayList<>();
-        for (JRParameter jrParameter : jrParameters) {
-          if (!jrParameter.isSystemDefined()) {
-            parameters.add(createParameter(jrParameter));
-          }
-        }
-        template.setTemplateParameters(parameters);
+      if (jrParameters != null && jrParameters.length > 0) {
+        setTemplateParameters(template, jrParameters);
       }
+
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream out = new ObjectOutputStream(bos);
       out.writeObject(report);
@@ -116,6 +113,19 @@ public class TemplateService {
     } catch (IOException ex) {
       throw new ReportingException("Report template error: reading file.", ex);
     }
+  }
+
+  private void setTemplateParameters(Template template, JRParameter[] jrParameters)
+      throws ReportingException {
+    ArrayList<TemplateParameter> parameters = new ArrayList<>();
+
+    for (JRParameter jrParameter : jrParameters) {
+      if (!jrParameter.isSystemDefined()) {
+        parameters.add(createParameter(jrParameter));
+      }
+    }
+
+    template.setTemplateParameters(parameters);
   }
 
   /**
@@ -135,7 +145,7 @@ public class TemplateService {
     String dataType = jrParameter.getValueClassName();
     String selectSql = jrParameter.getPropertiesMap().getProperty("selectSql");
     //Sql selects need String data type.
-    if (isBlank(selectSql) == false && dataType.equals("java.lang.String") == false) {
+    if (isNotBlank(selectSql) && !"java.lang.String".equals(dataType)) {
       throw new ReportingException("Report template error: parameter sql data type not string.");
     }
     //Set parameters.
@@ -144,7 +154,7 @@ public class TemplateService {
     templateParameter.setDisplayName(displayName);
     templateParameter.setDescription(jrParameter.getDescription());
     templateParameter.setDataType(dataType);
-    if (isBlank(selectSql) == false) {
+    if (isNotBlank(selectSql)) {
       LOGGER.debug("SQL from report parameter: " + selectSql);
       templateParameter.setSelectSql(selectSql);
     }
