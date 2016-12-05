@@ -10,7 +10,6 @@ import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,9 +63,8 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
 
-  public ResponseEntity<?> createOrder(@RequestBody Order order) throws IOException,
-      OrderFileException, OrderStorageException, OrderSaveException, MissingPermissionException,
-      InvalidOrderFacilityException {
+  public ResponseEntity<?> createOrder(@RequestBody Order order) throws OrderSaveException,
+      MissingPermissionException, InvalidOrderFacilityException {
 
     LOGGER.debug("Checking rights to create order");
     permissionService.canConvertToOrder(order);
