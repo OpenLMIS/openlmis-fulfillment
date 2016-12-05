@@ -34,7 +34,7 @@ public class FacilityFtpSettingServiceTest {
   private FacilityFtpSettingService facilityFtpSettingService;
 
   @Test
-  public void shouldSaveSetting() {
+  public void shouldSaveSetting() throws DuplicateFacilityFtpSettingException {
     // given
     final FacilityFtpSetting setting = randomSetting();
     final FacilityDto facility = mock(FacilityDto.class);
@@ -51,8 +51,9 @@ public class FacilityFtpSettingServiceTest {
     verify(facilityFtpSettingRepository, atLeastOnce()).save(setting);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotSaveSettingIfFacilityIdDuplicated() {
+  @Test(expected = DuplicateFacilityFtpSettingException.class)
+  public void shouldNotSaveSettingIfFacilityIdDuplicated()
+      throws DuplicateFacilityFtpSettingException {
     // given
     final FacilityFtpSetting setting = randomSetting();
     final FacilityFtpSetting duplicate = randomSetting();
@@ -68,7 +69,8 @@ public class FacilityFtpSettingServiceTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldNotSaveSettingIfFacilityDoesNotExist() {
+  public void shouldNotSaveSettingIfFacilityDoesNotExist()
+      throws DuplicateFacilityFtpSettingException {
     // given
     FacilityFtpSetting setting = randomSetting();
 

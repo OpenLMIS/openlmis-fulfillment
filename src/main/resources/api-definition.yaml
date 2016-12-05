@@ -737,30 +737,3 @@ resourceTypes:
                     body:
                       application/json:
                         schema: facilityFtpSetting
-    /search:
-        get:
-            is: [ secured ]
-            description: Find facility FTP settings with matched parameters.
-            queryParameters:
-                facility:
-                    displayName: facility
-                    description: Facility ID
-                    type: string
-                    required: true
-                    repeat: false
-            responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                    body:
-                      application/json:
-                        schema: facilityFtpSettingArray
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:

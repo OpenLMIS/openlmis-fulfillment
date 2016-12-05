@@ -35,14 +35,15 @@ public class FacilityFtpSettingService {
    * @param setting an instance of FacilityFtpSetting to be saved.
    * @return saved instance of FacilityFtpSetting.
    */
-  public FacilityFtpSetting save(FacilityFtpSetting setting) {
+  public FacilityFtpSetting save(FacilityFtpSetting setting)
+      throws DuplicateFacilityFtpSettingException {
     if (facilityReferenceDataService.findOne(setting.getFacilityId()) == null) {
       throw new IllegalArgumentException("Facility with given ID does not exist.");
     }
 
     FacilityFtpSetting existent = getByFacility(setting.getFacilityId());
     if (existent != null && existent.getId() != setting.getId()) {
-      throw new IllegalArgumentException("A setting for this facility already exists.");
+      throw new DuplicateFacilityFtpSettingException("A setting for this facility already exists");
     }
 
     return facilityFtpSettingRepository.save(setting);

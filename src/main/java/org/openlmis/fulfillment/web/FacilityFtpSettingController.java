@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
+import org.openlmis.fulfillment.service.DuplicateFacilityFtpSettingException;
 import org.openlmis.fulfillment.service.FacilityFtpSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,8 @@ public class FacilityFtpSettingController extends BaseController {
   @RequestMapping(value = "/facilityFtpSettings", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public FacilityFtpSetting createSetting(@RequestBody FacilityFtpSetting setting) {
+  public FacilityFtpSetting createSetting(@RequestBody FacilityFtpSetting setting)
+      throws DuplicateFacilityFtpSettingException {
     LOGGER.debug("Creating new Facility Ftp Setting");
 
     setting.setId(null);
