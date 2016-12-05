@@ -69,7 +69,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder = addOrder(UUID.randomUUID(), facility, period1, "orderCode", UUID.randomUUID(),
         INITIAL_USER_ID, facility, facility, facility, OrderStatus.ORDERED,
-        new BigDecimal("1" + ".29"), UUID.randomUUID());
+        new BigDecimal("1.29"), UUID.randomUUID());
 
     secondOrder = addOrder(UUID.randomUUID(), facility2, period1, "O2", program1, INITIAL_USER_ID,
         facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(100),

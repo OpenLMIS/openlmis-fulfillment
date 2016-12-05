@@ -41,7 +41,7 @@ public class PermissionService {
       hasPermission(REQUISITION_CONVERT_TO_ORDER, order.getProgramId(),
           order.getSupplyingFacilityId());
     } else {
-      throw new InvalidOrderFacilityException("Can not create order " + order.getId() + ". Must "
+      throw new InvalidOrderFacilityException("The order with id " + order.getId() + " must "
           + "have supplying facility");
     }
   }

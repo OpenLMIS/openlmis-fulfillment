@@ -1,9 +1,11 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
+import org.openlmis.fulfillment.referencedata.service.InvalidOrderFacilityException;
 import org.openlmis.fulfillment.referencedata.service.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.ReportingException;
+import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -54,6 +56,20 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleOrderSaveException(OrderSaveException ex) {
     return logErrorAndRespond("Unable to save the order", ex);
+  }
+
+  @ExceptionHandler(MissingPermissionException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ResponseBody
+  public ErrorResponse handleMissingPermissionException(MissingPermissionException ex) {
+    return logErrorAndRespond("Missing permission for this action", ex);
+  }
+
+  @ExceptionHandler(InvalidOrderFacilityException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ErrorResponse handleInvalidOrderFacilityException(InvalidOrderFacilityException ex) {
+    return logErrorAndRespond("Unable to find facility", ex);
   }
 
 }

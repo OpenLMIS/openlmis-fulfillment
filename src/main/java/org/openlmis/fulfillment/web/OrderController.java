@@ -65,16 +65,11 @@ public class OrderController extends BaseController {
   @ResponseBody
 
   public ResponseEntity<?> createOrder(@RequestBody Order order) throws IOException,
-      OrderFileException, OrderStorageException, OrderSaveException {
+      OrderFileException, OrderStorageException, OrderSaveException, MissingPermissionException,
+      InvalidOrderFacilityException {
 
     LOGGER.debug("Checking rights to create order");
-    try {
-      permissionService.canConvertToOrder(order);
-    } catch (MissingPermissionException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
-    } catch (InvalidOrderFacilityException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
+    permissionService.canConvertToOrder(order);
 
     LOGGER.debug("Creating new order");
     order.setId(null);

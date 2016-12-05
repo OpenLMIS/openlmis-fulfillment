@@ -54,6 +54,7 @@ schemas:
           "type": "array",
           "items": { "type": "object", "$ref": "schemas/facilityFtpSetting.json" }
       }
+  - errorResponse: !include schemas/errorResponse.json
 
 traits:
     - secured:
@@ -155,6 +156,9 @@ resourceTypes:
                 headers:
                   X-Context-Type-Options:
                   X-XSS-Protection:
+                body:
+                  application/json:
+                    schema: errorResponse
             "400":
                 headers:
                   X-Content-Type-Options:
