@@ -24,7 +24,10 @@
       "title": "username"
     },
     "password": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "password"
     },
     "serverHost": {
