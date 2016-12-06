@@ -12,14 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 
 @Component
 public class OrderFtpSender implements OrderSender {
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderFtpSender.class);
-
-  private static final String CAMEL_FTP_PATTERN =
-      "{0}://{1}@{2}:{3}/{4}?password={5}&passiveMode={6}";
 
   @Autowired
   private ProducerTemplate producerTemplate;
@@ -53,13 +49,8 @@ public class OrderFtpSender implements OrderSender {
   }
 
   private String createEndpointUri(FacilityFtpSetting setting) {
-    return MessageFormat.format(CAMEL_FTP_PATTERN,
-        setting.getProtocol(),
-        setting.getUsername(),
-        setting.getServerHost(),
-        setting.getServerPort(),
-        setting.getRemoteDirectory(),
-        setting.getPassword(),
-        setting.isPassiveMode());
+    return setting.getProtocol() + "://" + setting.getUsername() + "@" + setting.getServerHost()
+        + ":" + setting.getServerPort() + "/" + setting.getRemoteDirectory() + "?password="
+        + setting.getPassword() + "&passiveMode=" + setting.isPassiveMode();
   }
 }
