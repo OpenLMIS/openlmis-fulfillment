@@ -72,7 +72,7 @@ public class FacilityFtpSettingController extends BaseController {
 
     if (toUpdate == null) {
       toUpdate = new FacilityFtpSetting();
-      LOGGER.info("Creating new Facility Ftp Setting");
+      LOGGER.debug("Creating new Facility Ftp Setting");
     } else {
       LOGGER.debug("Updating Facility Ftp Setting with id: {}", settingId);
     }
