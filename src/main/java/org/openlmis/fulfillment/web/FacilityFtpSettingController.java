@@ -90,11 +90,11 @@ public class FacilityFtpSettingController extends BaseController {
    * @return FacilityFtpSetting.
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.GET)
-  public ResponseEntity<FacilityFtpSettingDto> getSetting(@PathVariable("id") UUID settingId) {
+  public ResponseEntity<?> getSetting(@PathVariable("id") UUID settingId) {
     FacilityFtpSetting setting = facilityFtpSettingRepository.findOne(settingId);
     return setting == null
-        ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-        : new ResponseEntity<>(FacilityFtpSettingDto.newInstance(setting), HttpStatus.OK);
+        ? ResponseEntity.notFound().build()
+        : ResponseEntity.ok(FacilityFtpSettingDto.newInstance(setting));
   }
 
   /**
@@ -104,14 +104,14 @@ public class FacilityFtpSettingController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<FacilityFtpSettingDto> deleteSetting(@PathVariable("id") UUID settingId) {
+  public ResponseEntity<?> deleteSetting(@PathVariable("id") UUID settingId) {
     FacilityFtpSetting toDelete = facilityFtpSettingRepository.findOne(settingId);
 
     if (toDelete == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return ResponseEntity.notFound().build();
     } else {
       facilityFtpSettingRepository.delete(toDelete);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      return ResponseEntity.noContent().build();
     }
   }
 }
