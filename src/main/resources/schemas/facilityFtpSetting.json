@@ -5,7 +5,10 @@
   "description": "This object contains information about ftp server related with a facility",
   "properties": {
     "id": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "id"
     },
     "facilityId": {
@@ -46,7 +49,6 @@
     }
   },
   "required": [
-    "id",
     "facilityId",
     "protocol",
     "username",
