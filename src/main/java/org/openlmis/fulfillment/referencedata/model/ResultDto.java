@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.dto;
+package org.openlmis.fulfillment.referencedata.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

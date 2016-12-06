@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.dto.ResultDto;
+import org.openlmis.fulfillment.referencedata.model.ResultDto;
 import org.openlmis.fulfillment.referencedata.model.RightDto;
 import org.openlmis.fulfillment.referencedata.model.UserDto;
 import org.openlmis.fulfillment.referencedata.service.UserReferenceDataService;

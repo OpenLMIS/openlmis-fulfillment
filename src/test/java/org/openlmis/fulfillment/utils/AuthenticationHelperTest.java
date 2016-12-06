@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.utils;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -51,13 +52,13 @@ public class AuthenticationHelperTest {
   public void shouldReturnUser() {
     // given
     UserDto userMock = mock(UserDto.class);
-    when(userReferenceDataService.findUser(any(String.class))).thenReturn(userMock);
+    when(userReferenceDataService.findUser("username")).thenReturn(userMock);
 
     // when
     UserDto user = authenticationHelper.getCurrentUser();
 
     // then
-    assertNotNull(user);
+    assertEquals(userMock, user);
   }
 
   @Test(expected = AuthenticationException.class)
@@ -73,7 +74,7 @@ public class AuthenticationHelperTest {
   public void shouldReturnRight() throws Exception {
     // given
     RightDto right = mock(RightDto.class);
-    when(rightReferenceDataService.findRight(anyString())).thenReturn(right);
+    when(rightReferenceDataService.findRight("rightName")).thenReturn(right);
 
     // when
     RightDto dto = authenticationHelper.getRight("rightName");

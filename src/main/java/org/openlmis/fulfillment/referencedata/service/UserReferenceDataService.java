@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.referencedata.service;
 
-import org.openlmis.fulfillment.dto.ResultDto;
+import org.openlmis.fulfillment.referencedata.model.ResultDto;
 import org.openlmis.fulfillment.referencedata.model.UserDto;
 import org.springframework.stereotype.Service;
 
