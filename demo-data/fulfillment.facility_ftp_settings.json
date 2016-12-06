@@ -7,7 +7,7 @@
     "password": "p@ssw0rd",
     "serverHost": "ftp",
     "serverPort": 21,
-    "removeDirectory": "/orders/files/csv/HC01",
+    "remoteDirectory": "/orders/files/csv/HC01",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/HC01",
     "passiveMode": true
   },
@@ -19,7 +19,7 @@
     "password": "p@ssw0rd",
     "serverHost": "ftp",
     "serverPort": 21,
-    "removeDirectory": "/orders/files/csv/DH01",
+    "remoteDirectory": "/orders/files/csv/DH01",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/DH01",
     "passiveMode": true
   },
@@ -31,7 +31,7 @@
     "password": "p@ssw0rd",
     "serverHost": "ftp",
     "serverPort": 21,
-    "removeDirectory": "/orders/files/csv/W01",
+    "remoteDirectory": "/orders/files/csv/W01",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/W01",
     "passiveMode": true
   },
@@ -43,7 +43,7 @@
     "password": "p@ssw0rd",
     "serverHost": "ftp",
     "serverPort": 21,
-    "removeDirectory": "/orders/files/csv/FAC003",
+    "remoteDirectory": "/orders/files/csv/FAC003",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/FAC003",
     "passiveMode": true
   },
@@ -55,7 +55,7 @@
     "password": "p@ssw0rd",
     "serverHost": "ftp",
     "serverPort": 21,
-    "removeDirectory": "/orders/files/csv/FAC004",
+    "remoteDirectory": "/orders/files/csv/FAC004",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/FAC004",
     "passiveMode": true
   }

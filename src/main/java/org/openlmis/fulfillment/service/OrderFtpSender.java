@@ -58,7 +58,7 @@ public class OrderFtpSender implements OrderSender {
         setting.getUsername(),
         setting.getServerHost(),
         setting.getServerPort(),
-        setting.getRemoveDirectory(),
+        setting.getRemoteDirectory(),
         setting.getPassword(),
         setting.isPassiveMode());
   }

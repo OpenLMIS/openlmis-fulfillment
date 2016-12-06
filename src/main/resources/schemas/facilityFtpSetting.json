@@ -32,9 +32,9 @@
       "type": "number",
       "title": "serverPort"
     },
-    "removeDirectory": {
+    "remoteDirectory": {
       "type": "string",
-      "title": "removeDirectory"
+      "title": "remoteDirectory"
     },
     "localDirectory": {
       "type": "string",
@@ -52,7 +52,7 @@
     "username",
     "serverHost",
     "serverPort",
-    "removeDirectory",
+    "remoteDirectory",
     "localDirectory",
     "passiveMode"
   ]

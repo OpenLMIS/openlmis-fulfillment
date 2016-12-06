@@ -55,7 +55,7 @@ public class FacilityFtpSetting extends BaseEntity {
   @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
-  private String removeDirectory;
+  private String remoteDirectory;
 
   @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
@@ -79,7 +79,7 @@ public class FacilityFtpSetting extends BaseEntity {
     this.password = setting.password;
     this.serverHost = setting.serverHost;
     this.serverPort = setting.serverPort;
-    this.removeDirectory = setting.removeDirectory;
+    this.remoteDirectory = setting.remoteDirectory;
     this.localDirectory = setting.localDirectory;
     this.passiveMode = setting.passiveMode;
   }

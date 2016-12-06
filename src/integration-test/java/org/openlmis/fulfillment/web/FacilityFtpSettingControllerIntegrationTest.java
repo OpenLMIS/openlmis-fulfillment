@@ -73,7 +73,7 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
     assertEquals(response.getFacilityId(), newSetting.getFacilityId());
     assertEquals(response.getServerHost(), newSetting.getServerHost());
     assertEquals(response.getServerPort(), newSetting.getServerPort());
-    assertEquals(response.getRemoveDirectory(), newSetting.getRemoveDirectory());
+    assertEquals(response.getRemoteDirectory(), newSetting.getRemoteDirectory());
     assertEquals(response.getLocalDirectory(), newSetting.getLocalDirectory());
     assertEquals(response.isPassiveMode(), newSetting.isPassiveMode());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -166,7 +166,7 @@ public class FacilityFtpSettingControllerIntegrationTest extends BaseWebIntegrat
     setting.setProtocol("ftp");
     setting.setServerHost("host");
     setting.setServerPort(21);
-    setting.setRemoveDirectory("remote/dir");
+    setting.setRemoteDirectory("remote/dir");
     setting.setLocalDirectory("local/dir");
     setting.setUsername("username");
     setting.setPassword("password");
