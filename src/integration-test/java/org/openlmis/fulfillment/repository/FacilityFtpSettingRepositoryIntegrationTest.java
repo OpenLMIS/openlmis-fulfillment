@@ -1,6 +1,10 @@
 package org.openlmis.fulfillment.repository;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Test;
 import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -34,4 +38,19 @@ public class FacilityFtpSettingRepositoryIntegrationTest
 
     return setting;
   }
+
+  @Test
+  public void shouldFindSettingByFacilityId() {
+    UUID facilityId = UUID.randomUUID();
+
+    FacilityFtpSetting setting = generateInstance();
+    setting.setFacilityId(facilityId);
+
+    facilityFtpSettingRepository.save(setting);
+
+    FacilityFtpSetting found = facilityFtpSettingRepository.findFirstByFacilityId(facilityId);
+
+    assertThat(found.getId(), is(setting.getId()));
+  }
+
 }
