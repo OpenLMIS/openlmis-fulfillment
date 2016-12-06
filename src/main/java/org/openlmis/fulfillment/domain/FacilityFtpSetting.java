@@ -14,29 +14,28 @@ import javax.persistence.Table;
 @Table(name = "facility_ftp_settings")
 @NoArgsConstructor
 public class FacilityFtpSetting extends BaseEntity {
-  private static final String TEXT_COLUMN_DEFINITION = "text";
 
   @Column(nullable = false, unique = true)
   @Getter
   @Setter
   private UUID facilityId;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String protocol;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String username;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String password;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String serverHost;
@@ -46,12 +45,12 @@ public class FacilityFtpSetting extends BaseEntity {
   @Setter
   private Integer serverPort;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String remoteDirectory;
 
-  @Column(nullable = false, columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Column(nullable = false)
   @Getter
   @Setter
   private String localDirectory;
