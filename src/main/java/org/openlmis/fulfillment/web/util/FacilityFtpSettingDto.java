@@ -53,6 +53,13 @@ public class FacilityFtpSettingDto
   @Setter
   private boolean passiveMode;
 
+  /**
+   * Creates a new instance of {@link FacilityFtpSettingDto}
+   * based on data from {@link FacilityFtpSetting}.
+   *
+   * @param setting instance with ftp settings
+   * @return an instance of {@link FacilityFtpSettingDto}
+   */
   public static FacilityFtpSettingDto newInstance(FacilityFtpSetting setting) {
     FacilityFtpSettingDto dto = new FacilityFtpSettingDto();
     setting.export(dto);

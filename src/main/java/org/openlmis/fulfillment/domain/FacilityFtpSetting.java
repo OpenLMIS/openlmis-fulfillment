@@ -61,6 +61,12 @@ public class FacilityFtpSetting extends BaseEntity {
   @Setter
   private boolean passiveMode;
 
+  /**
+   * Creates a new instance of {@link FacilityFtpSetting} based on data from {@link Importer}.
+   *
+   * @param importer instance that implement {@link Importer}
+   * @return an instance of {@link FacilityFtpSetting}
+   */
   public static FacilityFtpSetting newInstance(Importer importer) {
     FacilityFtpSetting setting = new FacilityFtpSetting();
     setting.id = importer.getId();
@@ -94,6 +100,11 @@ public class FacilityFtpSetting extends BaseEntity {
     this.passiveMode = setting.passiveMode;
   }
 
+  /**
+   * Exports current data from this Facility FTP Setting.
+   *
+   * @param exporter instance that implement {@link Exporter}
+   */
   public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setFacilityId(facilityId);
