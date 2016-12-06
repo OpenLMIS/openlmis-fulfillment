@@ -159,10 +159,6 @@ resourceTypes:
                 body:
                   application/json:
                     schema: errorResponse
-            "400":
-                headers:
-                  X-Content-Type-Options:
-                  X-XSS-Protection:
     /{id}:
         uriParameters:
             id:

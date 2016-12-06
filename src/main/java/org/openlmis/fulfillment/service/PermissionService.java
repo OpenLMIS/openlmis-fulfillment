@@ -6,7 +6,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.dto.ResultDto;
 import org.openlmis.fulfillment.referencedata.model.RightDto;
 import org.openlmis.fulfillment.referencedata.model.UserDto;
-import org.openlmis.fulfillment.referencedata.service.InvalidOrderFacilityException;
 import org.openlmis.fulfillment.referencedata.service.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
@@ -25,25 +24,15 @@ public class PermissionService {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
-  @Autowired
-  private OrderService orderService;
 
   /**
    * Checks if user has permission to create order.
    * @param order checked if can be created by user.
    * @throws MissingPermissionException when used do not have permission.
-   * @throws InvalidOrderFacilityException when facility is not properly assigned to order.
    */
-  public void canConvertToOrder(Order order) throws MissingPermissionException,
-      InvalidOrderFacilityException {
-    if (orderService.isFacilityValid(order, order.getCreatedById(),
-        order.getSupplyingFacilityId())) {
-      hasPermission(REQUISITION_CONVERT_TO_ORDER, order.getProgramId(),
-          order.getSupplyingFacilityId());
-    } else {
-      throw new InvalidOrderFacilityException("The order with id " + order.getId() + " must "
-          + "have supplying facility");
-    }
+  public void canConvertToOrder(Order order) throws MissingPermissionException {
+    hasPermission(REQUISITION_CONVERT_TO_ORDER, order.getProgramId(),
+        order.getSupplyingFacilityId());
   }
 
   private void hasPermission(String rightName, UUID program, UUID facility)

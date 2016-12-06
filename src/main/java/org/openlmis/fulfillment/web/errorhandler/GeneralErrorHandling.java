@@ -1,6 +1,5 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
-import org.openlmis.fulfillment.referencedata.service.InvalidOrderFacilityException;
 import org.openlmis.fulfillment.referencedata.service.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.service.DuplicateFacilityFtpSettingException;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -64,13 +63,6 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleMissingPermissionException(MissingPermissionException ex) {
     return logErrorAndRespond("Missing permission for this action", ex);
-  }
-
-  @ExceptionHandler(InvalidOrderFacilityException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
-  public ErrorResponse handleInvalidOrderFacilityException(InvalidOrderFacilityException ex) {
-    return logErrorAndRespond("Unable to find facility", ex);
   }
 
   @ExceptionHandler(DuplicateFacilityFtpSettingException.class)

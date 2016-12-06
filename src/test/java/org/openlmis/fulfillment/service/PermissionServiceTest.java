@@ -36,9 +36,6 @@ public class PermissionServiceTest {
   @Mock
   private AuthenticationHelper authenticationHelper;
 
-  @Mock
-  private OrderService orderService;
-
   @InjectMocks
   private PermissionService permissionService;
 
@@ -69,8 +66,6 @@ public class PermissionServiceTest {
 
     when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
         requisitionConvertRight);
-
-    when(orderService.isFacilityValid(order, userId, facilityId)).thenReturn(true);
   }
 
   @Test

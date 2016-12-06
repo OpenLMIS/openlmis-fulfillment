@@ -42,6 +42,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String PROGRAM = "program";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String NUMBER = "10.90";
+  private static final String ID_EXPORT = "/api/orders/{id}/export";
 
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
@@ -69,15 +70,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder = addOrder(UUID.randomUUID(), facility, period1, "orderCode", UUID.randomUUID(),
         INITIAL_USER_ID, facility, facility, facility, OrderStatus.ORDERED,
-        new BigDecimal("1.29"), UUID.randomUUID());
+        new BigDecimal("1.29"));
 
     secondOrder = addOrder(UUID.randomUUID(), facility2, period1, "O2", program1, INITIAL_USER_ID,
-        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(100),
-        UUID.randomUUID());
+        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(100));
 
     thirdOrder = addOrder(UUID.randomUUID(), facility2, period2, "O3", program2, INITIAL_USER_ID,
-        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(200),
-        UUID.randomUUID());
+        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(200));
 
     addOrderLineItem(secondOrder, product1, 35L, 50L);
 
@@ -112,8 +111,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order addOrder(UUID requisition, UUID facility, UUID processingPeriod,
                          String orderCode, UUID program, UUID user,
                          UUID requestingFacility, UUID receivingFacility,
-                         UUID supplyingFacility, OrderStatus orderStatus, BigDecimal cost,
-                         UUID supervisoryNodeId) {
+                         UUID supplyingFacility, OrderStatus orderStatus, BigDecimal cost) {
     Order order = new Order();
     order.setId(UUID.randomUUID());
     order.setExternalId(requisition);
@@ -130,7 +128,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setReceivingFacilityId(receivingFacility);
     order.setSupplyingFacilityId(supplyingFacility);
     order.setOrderLineItems(new ArrayList<>());
-    order.setSupervisoryNodeId(supervisoryNodeId);
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
     given(orderRepository.exists(order.getId())).willReturn(true);
@@ -445,7 +442,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
-        .get("/api/orders/{id}/export")
+        .get(ID_EXPORT)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -471,7 +468,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", secondOrder.getId())
         .queryParam("type", "csv")
         .when()
-        .get("/api/orders/{id}/export")
+        .get(ID_EXPORT)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -488,7 +485,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", secondOrder.getId())
         .queryParam("type", "pdf")
         .when()
-        .get("/api/orders/{id}/export")
+        .get(ID_EXPORT)
         .then()
         .statusCode(400);
 

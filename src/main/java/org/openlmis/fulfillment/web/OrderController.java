@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.referencedata.service.InvalidOrderFacilityException;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -63,8 +62,8 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
 
-  public ResponseEntity<?> createOrder(@RequestBody Order order) throws OrderSaveException,
-      MissingPermissionException, InvalidOrderFacilityException {
+  public Order createOrder(@RequestBody Order order) throws OrderSaveException,
+      MissingPermissionException {
 
     LOGGER.debug("Checking rights to create order");
     permissionService.canConvertToOrder(order);
@@ -73,7 +72,7 @@ public class OrderController extends BaseController {
     order.setId(null);
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
+    return newOrder;
   }
 
   /**
