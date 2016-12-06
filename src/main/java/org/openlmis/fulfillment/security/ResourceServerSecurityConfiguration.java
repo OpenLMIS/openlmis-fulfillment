@@ -62,9 +62,10 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
     http
         .authorizeRequests()
         .antMatchers(
-            "/",
+            "/fulfillment",
             "/webjars/**",
-            "/docs/**"
+            "/fulfillment/webjars/**",
+            "/fulfillment/docs/**"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }

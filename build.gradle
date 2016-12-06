@@ -190,12 +190,6 @@ sonarqube {
     }
 }
 
-build {
-    dependsOn check
-    dependsOn jacocoTestReport
-    dependsOn demoDataSeed
-}
-
 pmd {
     toolVersion = '5.4.0'
     consoleOutput= true
@@ -237,3 +231,14 @@ check {
     dependsOn copyRamlHtmlToBuild
     dependsOn integrationTest
 }
+
+apply from: "registration.gradle"
+
+build {
+    dependsOn check
+    dependsOn jacocoTestReport
+    dependsOn demoDataSeed
+    dependsOn copyConsulRegistrationToBuild
+}
+
+bootRun.dependsOn consulRegistration

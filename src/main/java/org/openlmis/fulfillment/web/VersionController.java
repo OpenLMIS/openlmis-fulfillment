@@ -18,7 +18,7 @@ public class VersionController {
    *
    * @return {Version} Returns version read from file.
    */
-  @RequestMapping("/")
+  @RequestMapping("/fulfillment")
   public ServiceVersion display() {
     LOGGER.debug("Returning version");
     return new ServiceVersion();

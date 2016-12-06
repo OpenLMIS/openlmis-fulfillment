@@ -1,0 +1,11 @@
+{
+  "name": "fulfillment",
+  "raml": "src/main/resources/api-definition.yaml",
+  "path": [
+    "fulfillment",
+    "fulfillment/docs",
+    "fulfillment/docs/<all>",
+    "fulfillment/webjars",
+    "fulfillment/webjars/<all>"
+  ]
+}
