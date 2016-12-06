@@ -38,12 +38,7 @@ public class OrderNumberConfigurationTest {
     String generatedNumber =
         orderNumberConfiguration.generateOrderNumber(order, program);
 
-    StringBuilder stringBuilder = new StringBuilder(PREFIX);
-    stringBuilder.append(PROGRAM_CODE)
-        .append(UUID_STRING)
-        .append(EMERGENCY);
-    String expectedResult = stringBuilder.toString();
-    assertEquals(expectedResult, generatedNumber);
+    assertEquals(PREFIX + PROGRAM_CODE + UUID_STRING + EMERGENCY, generatedNumber);
   }
 
   @Test
@@ -54,9 +49,7 @@ public class OrderNumberConfigurationTest {
     String generatedNumber =
         orderNumberConfiguration.generateOrderNumber(order, null);
 
-    String expectedResult = UUID_STRING;
-
-    assertEquals(expectedResult, generatedNumber);
+    assertEquals(UUID_STRING, generatedNumber);
   }
 
   @Test
@@ -67,9 +60,7 @@ public class OrderNumberConfigurationTest {
     String generatedNumber =
         orderNumberConfiguration.generateOrderNumber(order, program);
 
-    String expectedResult = UUID_STRING;
-
-    assertEquals(expectedResult, generatedNumber);
+    assertEquals(UUID_STRING, generatedNumber);
   }
 
   @Test

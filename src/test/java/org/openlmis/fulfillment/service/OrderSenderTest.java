@@ -22,6 +22,7 @@ import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrderSenderTest {
@@ -39,9 +40,6 @@ public class OrderSenderTest {
   private OrderFtpSender orderFtpSender;
 
   @Mock
-  private FacilityFtpSetting setting;
-
-  @Mock
   private Order order;
 
   @Mock
@@ -52,6 +50,18 @@ public class OrderSenderTest {
 
   @Before
   public void setUp() throws Exception {
+    FacilityFtpSetting setting = new FacilityFtpSetting();
+    setting.setId(UUID.randomUUID());
+    setting.setFacilityId(UUID.randomUUID());
+    setting.setProtocol("ftp");
+    setting.setServerHost("host");
+    setting.setServerPort(21);
+    setting.setRemoteDirectory("remote/dir");
+    setting.setLocalDirectory("local/dir");
+    setting.setUsername("username");
+    setting.setPassword("password");
+    setting.setPassiveMode(true);
+
     when(orderStorage.getOrderAsPath(order)).thenReturn(path);
     when(facilityFtpSettingRepository.findFirstByFacilityId(any())).thenReturn(setting);
 
