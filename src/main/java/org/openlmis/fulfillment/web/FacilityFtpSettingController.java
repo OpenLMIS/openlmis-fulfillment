@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.web;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-
 import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
 import org.openlmis.fulfillment.service.DuplicateFacilityFtpSettingException;
@@ -92,10 +90,10 @@ public class FacilityFtpSettingController extends BaseController {
    * @return FacilityFtpSetting.
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.GET)
-  public ResponseEntity<FacilityFtpSettingDto> getSetting(@PathVariable("id") UUID settingId) {
+  public ResponseEntity getSetting(@PathVariable("id") UUID settingId) {
     FacilityFtpSetting setting = facilityFtpSettingRepository.findOne(settingId);
     return setting == null
-        ? ResponseEntity.status(NOT_FOUND).body(null)
+        ? ResponseEntity.notFound().build()
         : ResponseEntity.ok(FacilityFtpSettingDto.newInstance(setting));
   }
 
@@ -106,7 +104,7 @@ public class FacilityFtpSettingController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/facilityFtpSettings/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<Void> deleteSetting(@PathVariable("id") UUID settingId) {
+  public ResponseEntity deleteSetting(@PathVariable("id") UUID settingId) {
     FacilityFtpSetting toDelete = facilityFtpSettingRepository.findOne(settingId);
 
     if (toDelete == null) {
