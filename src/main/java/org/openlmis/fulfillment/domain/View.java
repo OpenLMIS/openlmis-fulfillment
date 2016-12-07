@@ -1,6 +1,11 @@
 package org.openlmis.fulfillment.domain;
 
-public class View {
-  public static class BasicInformation {
+public final class View {
+
+  private View() {
+    throw new UnsupportedOperationException();
+  }
+
+  interface BasicInformation {
   }
 }
