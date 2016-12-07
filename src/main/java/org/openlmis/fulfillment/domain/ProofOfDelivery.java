@@ -16,6 +16,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -25,6 +27,8 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 
@@ -78,6 +82,16 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private LocalDate receivedDate;
 
+  @PrePersist
+  private void prePersist() {
+    forEachLine(line -> line.setProofOfDelivery(this));
+  }
+
+  @PreUpdate
+  private void preUpdate() {
+    forEachLine(line -> line.setProofOfDelivery(this));
+  }
+
   /**
    * Copy values of attributes into new or updated ProofOfDelivery.
    *
@@ -91,5 +105,10 @@ public class ProofOfDelivery extends BaseEntity {
     this.deliveredBy = proofOfDelivery.getDeliveredBy();
     this.receivedBy = proofOfDelivery.getReceivedBy();
     this.receivedDate = proofOfDelivery.getReceivedDate();
+  }
+
+  public void forEachLine(Consumer<ProofOfDeliveryLineItem> consumer) {
+    Optional.ofNullable(proofOfDeliveryLineItems)
+        .ifPresent(list -> list.forEach(consumer));
   }
 }
