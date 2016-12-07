@@ -61,12 +61,12 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private Integer totalReturnedPacks;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String deliveredBy;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String receivedBy;

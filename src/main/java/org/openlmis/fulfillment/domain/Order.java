@@ -41,12 +41,10 @@ import javax.persistence.Table;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Order extends BaseEntity {
 
-  private static final String UUID = "pg-uuid";
-
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID externalId;
 
   @Column(nullable = false)
@@ -56,12 +54,12 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID facilityId;
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID processingPeriodId;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -74,34 +72,34 @@ public class Order extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID createdById;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID programId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID requestingFacilityId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID receivingFacilityId;
 
   @Column(nullable = false)
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID supplyingFacilityId;
 
-  @Column(nullable = false, unique = true, columnDefinition = "text")
+  @Column(nullable = false, unique = true, columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String orderCode;

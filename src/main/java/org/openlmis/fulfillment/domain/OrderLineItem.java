@@ -20,8 +20,6 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class OrderLineItem extends BaseEntity {
 
-  private static final String UUID = "pg-uuid";
-
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
   @Getter
@@ -30,7 +28,7 @@ public class OrderLineItem extends BaseEntity {
 
   @Getter
   @Setter
-  @Type(type = UUID)
+  @Type(type = UUID_TYPE)
   private UUID orderableProductId;
 
   @Column(nullable = false)

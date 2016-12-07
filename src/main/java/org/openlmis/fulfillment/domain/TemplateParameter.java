@@ -18,40 +18,38 @@ import javax.persistence.Table;
 @AllArgsConstructor
 public class TemplateParameter extends BaseEntity {
 
-  private static final String TEXT = "text";
-
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "templateId", nullable = false)
   @Getter
   @Setter
   private Template template;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String name;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String displayName;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String defaultValue;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String dataType;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String selectSql;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String description;

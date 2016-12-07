@@ -14,7 +14,6 @@ import javax.persistence.Table;
 @Table(name = "facility_ftp_settings")
 @NoArgsConstructor
 public class FacilityFtpSetting extends BaseEntity {
-  private static final String TEXT_COLUMN_DEFINITION = "text";
 
   @Column(nullable = false, unique = true)
   @Getter

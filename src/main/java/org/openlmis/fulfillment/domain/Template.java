@@ -27,9 +27,7 @@ import javax.persistence.Table;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Template extends BaseEntity {
 
-  private static final String TEXT = "text";
-
-  @Column(columnDefinition = TEXT, unique = true, nullable = false)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, unique = true, nullable = false)
   @Getter
   @Setter
   private String name;
@@ -49,12 +47,12 @@ public class Template extends BaseEntity {
   @Setter
   private List<TemplateParameter> templateParameters;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String type;
 
-  @Column(columnDefinition = TEXT)
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String description;

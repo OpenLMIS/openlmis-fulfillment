@@ -47,12 +47,12 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Setter
   private Long quantityReturned;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String replacedProductCode;
 
-  @Column(columnDefinition = "text")
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   @Getter
   @Setter
   private String notes;
