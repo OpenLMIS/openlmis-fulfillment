@@ -64,9 +64,26 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     if (null != facility) {
       parameters.put("facilityId", facility);
     }
-    ResultDto<Boolean> result = get(ResultDto.class, user + "/hasRight", parameters);
 
-    return new ResultDto<>(result.getResult());
+    ResultDto result = get(ResultDto.class, user + "/hasRight", parameters);
+
+    return new ResultDto<>(toBoolean(result.getResult()));
+  }
+
+  private Boolean toBoolean(Object value) {
+    if (value instanceof Boolean) {
+      return (Boolean) value;
+    }
+
+    if (value instanceof String) {
+      return Boolean.parseBoolean((String) value);
+    }
+
+    if (value instanceof Number) {
+      return ((Number) value).longValue() > 0;
+    }
+
+    return false;
   }
 
 }

@@ -38,17 +38,18 @@ import java.util.UUID;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseReferenceDataServiceTest<T> {
   private static final String TOKEN = UUID.randomUUID().toString();
-  private static final String ACCESS_TOKEN = "access_token=" + TOKEN;
   private static final String AUTHORIZATION_URL = "http://localhost/auth/oauth/token";
+
+  static final String ACCESS_TOKEN = "access_token=" + TOKEN;
 
   private static final URI AUTHORIZATION_URI =
       URI.create(AUTHORIZATION_URL + "?grant_type=client_credentials");
 
   @Mock
-  private RestTemplate restTemplate;
+  protected RestTemplate restTemplate;
 
   @Captor
-  private ArgumentCaptor<URI> uriCaptor;
+  protected ArgumentCaptor<URI> uriCaptor;
 
   @Captor
   private ArgumentCaptor<HttpEntity> entityCaptor;
@@ -130,7 +131,7 @@ public abstract class BaseReferenceDataServiceTest<T> {
     service.findOne(id);
   }
 
-  private BaseReferenceDataService<T> prepareService() {
+  BaseReferenceDataService<T> prepareService() {
     BaseReferenceDataService<T> service = getService();
     service.setRestTemplate(restTemplate);
 

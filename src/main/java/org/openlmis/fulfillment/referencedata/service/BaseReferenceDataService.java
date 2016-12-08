@@ -74,7 +74,7 @@ public abstract class BaseReferenceDataService<T> {
    * @param parameters  Map of query parameters.
    * @return all reference data T objects.
    */
-  public Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+  Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
     return findAllWithMethod(resourceUrl, parameters, null, HttpMethod.GET);
   }
 
@@ -86,7 +86,7 @@ public abstract class BaseReferenceDataService<T> {
    * @param payload       body to include with the outgoing request.
    * @return all reference data T objects.
    */
-  public Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
+  Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
                                    Map<String, Object> payload) {
     return findAllWithMethod(resourceUrl, uriParameters, payload, HttpMethod.POST);
   }
@@ -117,8 +117,8 @@ public abstract class BaseReferenceDataService<T> {
   <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
     String url = getReferenceDataUrl() + getUrl() + resourceUrl;
     Map<String, Object> params = new HashMap<>();
-    params.putAll(parameters);
     params.put(ACCESS_TOKEN, obtainAccessToken());
+    params.putAll(parameters);
 
     ResponseEntity<P> response = restTemplate.getForEntity(buildUri(url, params), type);
 
