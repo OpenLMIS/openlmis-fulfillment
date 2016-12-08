@@ -31,16 +31,16 @@ public class PermissionService {
    * @throws MissingPermissionException when used do not have permission.
    */
   public void canConvertToOrder(Order order) throws MissingPermissionException {
-    hasPermission(REQUISITION_CONVERT_TO_ORDER, order.getProgramId(),
+    hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
         order.getSupplyingFacilityId());
   }
 
-  private void hasPermission(String rightName, UUID program, UUID facility)
+  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
       throws MissingPermissionException {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result = userReferenceDataService.hasRight(
-        user.getId(), right.getId(), program, facility
+        user.getId(), right.getId(), program, facility, warehouse
     );
 
     if (null == result || !result.getResult().booleanValue()) {

@@ -111,8 +111,8 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     UUID program = UUID.randomUUID();
     UUID facility = UUID.randomUUID();
 
-    executeHasRightEndpoint(user, right, program, facility, true, true);
-    executeHasRightEndpoint(user, right, program, facility, false, false);
+    executeHasRightEndpoint(user, right, program, facility, null, true, true);
+    executeHasRightEndpoint(user, right, program, facility, null, false, false);
   }
 
   @Test
@@ -121,9 +121,9 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     UUID right = UUID.randomUUID();
     UUID facility = UUID.randomUUID();
 
-    executeHasRightEndpoint(user, right, null, facility, "true", true);
-    executeHasRightEndpoint(user, right, null, facility, "false", false);
-    executeHasRightEndpoint(user, right, null, facility, "dsfdsfsdf", false);
+    executeHasRightEndpoint(user, right, null, facility, null, "true", true);
+    executeHasRightEndpoint(user, right, null, facility, null, "false", false);
+    executeHasRightEndpoint(user, right, null, facility, null, "dsfdsfsdf", false);
   }
 
   @Test
@@ -132,20 +132,20 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     UUID right = UUID.randomUUID();
     UUID program = UUID.randomUUID();
 
-    executeHasRightEndpoint(user, right, program, null, 1, true);
-    executeHasRightEndpoint(user, right, program, null, 0, false);
-    executeHasRightEndpoint(user, right, program, null, -1, false);
+    executeHasRightEndpoint(user, right, program, null, null, 1, true);
+    executeHasRightEndpoint(user, right, program, null, null, 0, false);
+    executeHasRightEndpoint(user, right, program, null, null, -1, false);
   }
 
   @Test
   public void shouldHandleIncorrectResultForHasRightEndpoint() {
     executeHasRightEndpoint(
-        UUID.randomUUID(), UUID.randomUUID(), null, null, new Object(), false
+        UUID.randomUUID(), UUID.randomUUID(), null, null, null, new Object(), false
     );
   }
 
   private void executeHasRightEndpoint(UUID user, UUID right, UUID program, UUID facility,
-                                       Object resultValue, boolean expectedValue) {
+                                       UUID warehouse, Object resultValue, boolean expectedValue) {
     // given
     UserReferenceDataService service = (UserReferenceDataService) prepareService();
     ResponseEntity<ResultDto> response = mock(ResponseEntity.class);
@@ -155,7 +155,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
         .thenReturn(response);
     when(response.getBody()).thenReturn(new ResultDto<>(resultValue));
 
-    ResultDto result = service.hasRight(user, right, program, facility);
+    ResultDto result = service.hasRight(user, right, program, facility, warehouse);
 
     // then
     assertThat(result.getResult(), is(expectedValue));

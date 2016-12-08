@@ -88,7 +88,7 @@ public class PermissionServiceTest {
   private void hasRight(UUID rightId, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
-        .hasRight(userId, rightId, programId, facilityId)
+        .hasRight(userId, rightId, null, null, facilityId)
     ).thenReturn(resultDto);
   }
 
@@ -102,7 +102,7 @@ public class PermissionServiceTest {
   private void verifyRight(InOrder order, String rightName, UUID rightId) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, programId, facilityId);
+    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, facilityId);
   }
 
 }
