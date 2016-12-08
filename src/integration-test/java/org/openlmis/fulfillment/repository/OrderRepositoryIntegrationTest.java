@@ -1,7 +1,13 @@
 package org.openlmis.fulfillment.repository;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
 
@@ -13,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -34,7 +41,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setExternalId(UUID.randomUUID());
     order.setEmergency(false);
     order.setFacilityId(UUID.randomUUID());
-    order.setOrderCode(ORDER_REPOSITORY_INTEGRATION_TEST);
+    order.setOrderCode(ORDER_REPOSITORY_INTEGRATION_TEST + getNextInstanceNumber());
     order.setQuotedCost(new BigDecimal("1.29"));
     order.setStatus(OrderStatus.PICKING);
     order.setProgramId(UUID.randomUUID());
@@ -69,5 +76,32 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.delete(instanceId);
 
     assertFalse(orderRepository.exists(instanceId));
+  }
+
+  @Test
+  public void shouldFindOrderByParameters() {
+    Order one = orderRepository.save(generateInstance());
+    Order two = orderRepository.save(generateInstance());
+    Order three = orderRepository.save(generateInstance());
+
+    List<Order> list = orderRepository.searchOrders(null, null, null);
+
+    assertThat(list, hasSize(3));
+    assertThat(list, hasItem(hasProperty("id", isOneOf(one.getId(), two.getId(), three.getId()))));
+
+    list = orderRepository.searchOrders(one.getSupplyingFacilityId(), null, null);
+
+    assertThat(list, hasSize(1));
+    assertThat(list, hasItem(hasProperty("id", is(one.getId()))));
+
+    list = orderRepository.searchOrders(null, two.getRequestingFacilityId(), null);
+
+    assertThat(list, hasSize(1));
+    assertThat(list, hasItem(hasProperty("id", is(two.getId()))));
+
+    list = orderRepository.searchOrders(null, null, three.getProgramId());
+
+    assertThat(list, hasSize(1));
+    assertThat(list, hasItem(hasProperty("id", is(three.getId()))));
   }
 }
