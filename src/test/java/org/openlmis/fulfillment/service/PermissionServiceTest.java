@@ -70,12 +70,12 @@ public class PermissionServiceTest {
 
   @Test
   public void canConvertToOrder() throws Exception {
-    hasRight(requisitionConvertRightId, true);
+    mockFulfillmentHasRight(requisitionConvertRightId, true);
 
     permissionService.canConvertToOrder(order);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
+    verifyFulfillmentRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
   }
 
   @Test
@@ -85,7 +85,7 @@ public class PermissionServiceTest {
     permissionService.canConvertToOrder(order);
   }
 
-  private void hasRight(UUID rightId, boolean assign) {
+  private void mockFulfillmentHasRight(UUID rightId, boolean assign) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
         .hasRight(userId, rightId, null, null, facilityId)
@@ -99,7 +99,7 @@ public class PermissionServiceTest {
     );
   }
 
-  private void verifyRight(InOrder order, String rightName, UUID rightId) {
+  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
     order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, facilityId);
