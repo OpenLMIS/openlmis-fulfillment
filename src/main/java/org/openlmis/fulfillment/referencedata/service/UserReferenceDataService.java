@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.referencedata.service;
 
 import org.openlmis.fulfillment.referencedata.model.ResultDto;
 import org.openlmis.fulfillment.referencedata.model.UserDto;
+import org.openlmis.fulfillment.util.BooleanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -72,23 +73,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
 
     ResultDto result = get(ResultDto.class, user + "/hasRight", parameters);
 
-    return new ResultDto<>(toBoolean(result.getResult()));
-  }
-
-  private Boolean toBoolean(Object value) {
-    if (value instanceof Boolean) {
-      return (Boolean) value;
-    }
-
-    if (value instanceof String) {
-      return Boolean.parseBoolean((String) value);
-    }
-
-    if (value instanceof Number) {
-      return ((Number) value).longValue() > 0;
-    }
-
-    return false;
+    return new ResultDto<>(BooleanUtils.toBoolean(result.getResult()));
   }
 
 }
