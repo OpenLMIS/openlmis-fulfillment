@@ -102,7 +102,7 @@
                INNER JOIN  referencedata.facilities f on r.facilityid = f.id
                INNER JOIN referencedata.facilities sf on o.supplyingfacilityid = sf.id
                INNER JOIN  referencedata.programs  pgm on o.programid = pgm.id
-               INNER JOIN  referencedata.periods pp on r.processingperiodid  = pp.id
+               INNER JOIN  referencedata.processing_periods pp on r.processingperiodid  = pp.id
              WHERE p.id = $P!{pod_id}]]>
 	</queryString>
 	<field name="totalquantityreturned" class="java.math.BigDecimal"/>
@@ -327,7 +327,9 @@
 					<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[JasperCompileManager.compileReport($P{subreport_dir} + "podLineItemPrint.jrxml")]]></subreportExpression>
+				<subreportExpression>
+					<![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "podLineItemPrint.jrxml"))]]>
+				</subreportExpression>
 			</subreport>
 		</band>
 	</detail>

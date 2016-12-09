@@ -12,12 +12,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 @Entity
@@ -57,6 +61,16 @@ public class Template extends BaseEntity {
   @Setter
   private String description;
 
+  @PrePersist
+  private void prePersist() {
+    forEachParameter(line -> line.setTemplate(this));
+  }
+
+  @PreUpdate
+  private void preUpdate() {
+    forEachParameter(line -> line.setTemplate(this));
+  }
+
   /**
    * Copy values of attributes into new or updated Template.
    *
@@ -68,5 +82,10 @@ public class Template extends BaseEntity {
     this.templateParameters = template.getTemplateParameters();
     this.type = template.getType();
     this.description = template.getDescription();
+  }
+
+  public void forEachParameter(Consumer<TemplateParameter> consumer) {
+    Optional.ofNullable(templateParameters)
+        .ifPresent(list -> list.forEach(consumer));
   }
 }

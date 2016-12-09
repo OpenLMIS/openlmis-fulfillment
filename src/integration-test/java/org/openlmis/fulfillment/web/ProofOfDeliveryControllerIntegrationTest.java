@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.web;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -7,7 +8,10 @@ import static org.mockito.Matchers.any;
 
 import com.google.common.collect.Lists;
 
-import org.apache.commons.io.IOUtils;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperReport;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,6 +21,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.openlmis.fulfillment.referencedata.model.FacilityDto;
 import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
 import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
@@ -25,16 +30,13 @@ import org.openlmis.fulfillment.referencedata.model.ProgramDto;
 import org.openlmis.fulfillment.referencedata.model.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,6 +44,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -55,7 +58,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   @MockBean
-  private TemplateService templateService;
+  private TemplateRepository templateRepository;
 
   @MockBean
   private OrderRepository orderRepository;
@@ -157,16 +160,26 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willAnswer(new SaveAnswer<ProofOfDelivery>());
   }
 
-  @Ignore
   @Test
+  @Ignore("Current version *.jrxml have relations to different modules (like requisition)")
   public void shouldPrintProofOfDeliveryToPdf() throws Exception {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
-    FileInputStream fileInputStream = new FileInputStream(podReport.getFile());
-    MultipartFile templateOfProofOfDelivery = new MockMultipartFile("file",
-        podReport.getFilename(), "multipart/form-data", IOUtils.toByteArray(fileInputStream));
 
     Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
-    templateService.validateFileAndInsertTemplate(template, templateOfProofOfDelivery);
+
+    JasperReport report = JasperCompileManager.compileReport(podReport.getInputStream());
+    JRParameter[] jrParameters = report.getParameters();
+
+    if (jrParameters != null && jrParameters.length > 0) {
+      template.setTemplateParameters(
+          Arrays.stream(jrParameters)
+              .filter(p -> !p.isSystemDefined())
+              .map(this::createParameter)
+              .collect(Collectors.toList())
+      );
+    }
+
+    given(templateRepository.findByName(PRINT_POD)).willReturn(template);
 
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
@@ -303,5 +316,25 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private TemplateParameter createParameter(JRParameter jrParameter) {
+    TemplateParameter templateParameter = new TemplateParameter();
+    templateParameter.setName(jrParameter.getName());
+    templateParameter.setDisplayName(jrParameter.getPropertiesMap().getProperty("displayName"));
+    templateParameter.setDescription(jrParameter.getDescription());
+    templateParameter.setDataType(jrParameter.getValueClassName());
+
+    String selectSql = jrParameter.getPropertiesMap().getProperty("selectSql");
+    if (isNotBlank(selectSql)) {
+      templateParameter.setSelectSql(selectSql);
+    }
+
+    if (jrParameter.getDefaultValueExpression() != null) {
+      templateParameter.setDefaultValue(jrParameter.getDefaultValueExpression()
+          .getText().replace("\"", "").replace("\'", ""));
+    }
+
+    return templateParameter;
   }
 }
