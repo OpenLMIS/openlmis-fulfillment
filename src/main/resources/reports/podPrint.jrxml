@@ -94,15 +94,14 @@
             (SELECT sum(fulfillment.proof_of_delivery_line_items.quantityshipped) FROM  fulfillment.proof_of_delivery_line_items WHERE fulfillment.proof_of_delivery_line_items.proofofdeliveryid  =  $P!{pod_id}) AS totalquantityshipped,
             (SELECT sum(fulfillment.proof_of_delivery_line_items.quantityreceived) FROM  fulfillment.proof_of_delivery_line_items WHERE fulfillment.proof_of_delivery_line_items.proofofdeliveryid = $P!{pod_id}) AS totalquantityreceived,
             p.receiveddate, p.receivedby, p.deliveredby, o.ordercode, o.createddate, f.name as facility,
-             CASE WHEN r.emergency = true THEN 'Emergency'
+             CASE WHEN o.emergency = true THEN 'Emergency'
              ELSE 'Regular' END as type,
              sf.name as supplyingdepot, pgm.name as program, pp.startdate, pp.enddate
              FROM   fulfillment.proof_of_deliveries p inner join  fulfillment.orders o on p.orderid  = o.id
-               INNER JOIN  requisition.requisitions r on o.externalId = r.id
-               INNER JOIN  referencedata.facilities f on r.facilityid = f.id
+               INNER JOIN  referencedata.facilities f on o.facilityid = f.id
                INNER JOIN referencedata.facilities sf on o.supplyingfacilityid = sf.id
                INNER JOIN  referencedata.programs  pgm on o.programid = pgm.id
-               INNER JOIN  referencedata.processing_periods pp on r.processingperiodid  = pp.id
+               INNER JOIN  referencedata.processing_periods pp on o.processingperiodid  = pp.id
              WHERE p.id = $P!{pod_id}]]>
 	</queryString>
 	<field name="totalquantityreturned" class="java.math.BigDecimal"/>

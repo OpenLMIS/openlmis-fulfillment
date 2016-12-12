@@ -161,7 +161,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  @Ignore("Current version *.jrxml have relations to different modules (like requisition)")
+  @Ignore("Current version *.jrxml have relations to different modules (like reference-data)")
   public void shouldPrintProofOfDeliveryToPdf() throws Exception {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
