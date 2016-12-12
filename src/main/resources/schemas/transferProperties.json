@@ -1,0 +1,82 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Transfer Properties",
+  "description": "This object contains information about transfer properties related with a facility",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "id"
+    },
+    "facilityId": {
+      "type": "string",
+      "title": "facilityId"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "title": "protocol"
+        },
+        "username": {
+          "type": "string",
+          "title": "username"
+        },
+        "password": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "title": "password"
+        },
+        "serverHost": {
+          "type": "string",
+          "title": "serverHost"
+        },
+        "serverPort": {
+          "type": "number",
+          "title": "serverPort"
+        },
+        "remoteDirectory": {
+          "type": "string",
+          "title": "remoteDirectory"
+        },
+        "localDirectory": {
+          "type": "string",
+          "title": "localDirectory"
+        },
+        "passiveMode": {
+          "type": "boolean",
+          "title": "passiveMode"
+        }
+      },
+      "required": [
+        "facilityId",
+        "protocol",
+        "username",
+        "serverHost",
+        "serverPort",
+        "remoteDirectory",
+        "localDirectory",
+        "passiveMode"
+      ]
+    },
+    {
+      "properties": {
+        "path": {
+          "type": "string",
+          "title": "path"
+        }
+      },
+      "required": [
+        "facilityId",
+        "path"
+      ]
+    }
+  ]
+}

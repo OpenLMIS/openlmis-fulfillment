@@ -16,10 +16,10 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -48,7 +48,7 @@ public class OrderStorageTest {
   private OrderFileTemplateService orderFileTemplateService;
 
   @Mock
-  private FacilityFtpSettingRepository facilityFtpSettingRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @InjectMocks
   private OrderFileStorage orderFileStorage;
@@ -63,7 +63,7 @@ public class OrderStorageTest {
   private BufferedWriter writer;
 
   @Mock
-  private FacilityFtpSetting setting;
+  private FtpTransferProperties properties;
 
   private IOException exception = new IOException("test purpose");
 
@@ -73,11 +73,11 @@ public class OrderStorageTest {
 
     when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
     when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(template);
-    when(facilityFtpSettingRepository.findFirstByFacilityId(any())).thenReturn(setting);
+    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
 
     when(order.getOrderCode()).thenReturn(ORDER_CODE);
     when(template.getFilePrefix()).thenReturn(FILE_PREFIX);
-    when(setting.getLocalDirectory()).thenReturn(LOCAL_DIR);
+    when(properties.getPath()).thenReturn(LOCAL_DIR);
   }
 
   @Test

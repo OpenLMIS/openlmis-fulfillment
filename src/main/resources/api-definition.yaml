@@ -48,11 +48,11 @@ schemas:
           "type": "array",
           "items": { "type": "object", "$ref": "schemas/templateParameter.json" }
       }
-  - facilityFtpSetting: !include schemas/facilityFtpSetting.json
-  - facilityFtpSettingArray: |
+  - transferProperties: !include schemas/transferProperties.json
+  - transferPropertiesArray: |
       {
           "type": "array",
-          "items": { "type": "object", "$ref": "schemas/facilityFtpSetting.json" }
+          "items": { "type": "object", "$ref": "schemas/transferProperties.json" }
       }
   - errorResponse: !include schemas/errorResponse.json
 
@@ -656,14 +656,14 @@ resourceTypes:
                       body:
                         application/json:
                           schema: template
-  /facilityFtpSettings:
-      displayName: FTP settings for facilities.
+  /transferProperties:
+      displayName: Transfer properties for facilities.
       post:
           is: [ secured ]
-          description: Creates new facility FTP setting.
+          description: Creates new transfer properties.
           body:
               application/json:
-                schema: facilityFtpSetting
+                schema: transferProperties
           responses:
               "201":
                   headers:
@@ -671,7 +671,7 @@ resourceTypes:
                     X-XSS-Protection:
                   body:
                     application/json:
-                      schema: facilityFtpSetting
+                      schema: transferProperties
               "409":
                   headers:
                     X-Content-Type-Options:
@@ -685,7 +685,7 @@ resourceTypes:
                   repeat: false
           delete:
               is: [ secured ]
-              description: Delete chosen facility FTP setting.
+              description: Delete chosen transfer properties.
               responses:
                   "204":
                       headers:
@@ -701,7 +701,7 @@ resourceTypes:
                         X-XSS-Protection:
           get:
               is: [ secured ]
-              description: Get chosen facility FTP setting.
+              description: Get chosen transfer properties.
               responses:
                   "200":
                       headers:
@@ -709,17 +709,17 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         application/json:
-                          schema: facilityFtpSetting
+                          schema: transferProperties
                   "404":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
           put:
               is: [ secured ]
-              description: Update existing facility FTP setting.
+              description: Update existing transfer properties.
               body:
                   application/json:
-                    schema: facilityFtpSetting
+                    schema: transferProperties
               responses:
                   "200":
                       headers:
@@ -727,4 +727,35 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         application/json:
-                          schema: facilityFtpSetting
+                          schema: transferProperties
+                  "400":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
+      /search:
+              get:
+                  is: [ secured ]
+                  description: Find transfer properties by facility id.
+                  queryParameters:
+                      facility:
+                          displayName: facility
+                          description: facility ID
+                          type: string
+                          required: true
+                          repeat: false
+                  responses:
+                      "200":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                          body:
+                            application/json:
+                              schema: orderArray
+                      "404":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:
+                      "500":
+                          headers:
+                            X-Content-Type-Options:
+                            X-XSS-Protection:

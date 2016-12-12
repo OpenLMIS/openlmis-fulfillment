@@ -16,6 +16,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderFileStorage;
+import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
@@ -59,6 +60,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderFileStorage orderStorage;
+
+  @MockBean
+  private OrderFtpSender orderFtpSender;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();

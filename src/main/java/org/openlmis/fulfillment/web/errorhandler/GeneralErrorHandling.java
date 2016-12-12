@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
 import org.openlmis.fulfillment.referencedata.service.ReferenceDataRetrievalException;
-import org.openlmis.fulfillment.service.DuplicateFacilityFtpSettingException;
+import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.ReportingException;
@@ -65,11 +65,11 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Missing permission for this action", ex);
   }
 
-  @ExceptionHandler(DuplicateFacilityFtpSettingException.class)
+  @ExceptionHandler(DuplicateTransferPropertiesException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ErrorResponse handleDuplicateFacilityFtpSettingException(
-      DuplicateFacilityFtpSettingException ex) {
+  public ErrorResponse handleDuplicateTransferPropertiesException(
+      DuplicateTransferPropertiesException ex) {
     return logErrorAndRespond("Duplicate facility setting", ex);
   }
 }

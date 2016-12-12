@@ -1,10 +1,13 @@
 package org.openlmis.fulfillment.service;
 
+import static java.util.Locale.ENGLISH;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
+import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,38 +31,43 @@ public class OrderFtpSender implements OrderSender {
   private OrderStorage orderStorage;
 
   @Autowired
-  private FacilityFtpSettingRepository facilityFtpSettingRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @Override
   public boolean send(Order order) throws OrderSenderException {
     Path path = orderStorage.getOrderAsPath(order);
-    FacilityFtpSetting setting = facilityFtpSettingRepository
+    TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
-    try {
-      String endpointUri = createEndpointUri(setting);
-      File file = path.toFile();
-      producerTemplate.sendBodyAndHeader(endpointUri, file, Exchange.FILE_NAME, file.getName());
-    } catch (Exception exp) {
-      LOGGER.error(
-          "Can't transfer CSV file {} related with order {} to the FTP server",
-          path, order.getId(), exp
-      );
+    if (properties instanceof FtpTransferProperties) {
+      try {
+        FtpTransferProperties ftp = (FtpTransferProperties) properties;
+        String endpointUri = createEndpointUri(ftp);
+        File file = path.toFile();
+        producerTemplate.sendBodyAndHeader(endpointUri, file, Exchange.FILE_NAME, file.getName());
+      } catch (Exception exp) {
+        LOGGER.error(
+            "Can't transfer CSV file {} related with order {} to the FTP server",
+            path, order.getId(), exp
+        );
 
-      return false;
+        return false;
+      }
+
+      return true;
     }
 
-    return true;
+    return false;
   }
 
-  private String createEndpointUri(FacilityFtpSetting setting) {
+  private String createEndpointUri(FtpTransferProperties setting) {
     return MessageFormat.format(CAMEL_FTP_PATTERN,
-        setting.getProtocol(),
+        setting.getProtocol().name().toLowerCase(ENGLISH),
         setting.getUsername(),
         setting.getServerHost(),
         setting.getServerPort(),
         setting.getRemoteDirectory(),
         setting.getPassword(),
-        setting.isPassiveMode());
+        setting.getPassiveMode());
   }
 }

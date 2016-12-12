@@ -1,9 +1,9 @@
 package org.openlmis.fulfillment.service;
 
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
+import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ public class OrderFileStorage implements OrderStorage {
   private OrderFileTemplateService orderFileTemplateService;
 
   @Autowired
-  private FacilityFtpSettingRepository facilityFtpSettingRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @Override
   public void store(Order order) throws OrderStorageException {
@@ -31,14 +31,15 @@ public class OrderFileStorage implements OrderStorage {
     OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
 
-    FacilityFtpSetting setting = facilityFtpSettingRepository
+    TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
     Path path;
 
     try {
-      Files.createDirectories(Paths.get(setting.getLocalDirectory()));
-      path = Paths.get(setting.getLocalDirectory(), fileName);
+      String dir = properties.getPath();
+      Files.createDirectories(Paths.get(dir));
+      path = Paths.get(dir, fileName);
     } catch (IOException exp) {
       throw new OrderStorageException("I/O while creating the local directory", exp);
     }
@@ -64,12 +65,12 @@ public class OrderFileStorage implements OrderStorage {
   @Override
   public Path getOrderAsPath(Order order) {
     OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
-    FacilityFtpSetting setting = facilityFtpSettingRepository
+    TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
 
-    return Paths.get(setting.getLocalDirectory(), fileName);
+    return Paths.get(properties.getPath(), fileName);
   }
 
 }

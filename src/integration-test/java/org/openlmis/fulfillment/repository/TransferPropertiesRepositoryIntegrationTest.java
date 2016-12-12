@@ -5,28 +5,30 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
+import org.openlmis.fulfillment.domain.FtpProtocol;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
+import org.openlmis.fulfillment.domain.TransferProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Random;
 import java.util.UUID;
 
-public class FacilityFtpSettingRepositoryIntegrationTest
-    extends BaseCrudRepositoryIntegrationTest<FacilityFtpSetting> {
+public class TransferPropertiesRepositoryIntegrationTest
+    extends BaseCrudRepositoryIntegrationTest<TransferProperties> {
 
   @Autowired
-  private FacilityFtpSettingRepository facilityFtpSettingRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @Override
-  protected CrudRepository<FacilityFtpSetting, UUID> getRepository() {
-    return facilityFtpSettingRepository;
+  protected CrudRepository<TransferProperties, UUID> getRepository() {
+    return transferPropertiesRepository;
   }
 
   @Override
-  protected FacilityFtpSetting generateInstance() {
-    FacilityFtpSetting setting = new FacilityFtpSetting();
-    setting.setProtocol("ftp");
+  protected TransferProperties generateInstance() {
+    FtpTransferProperties setting = new FtpTransferProperties();
+    setting.setProtocol(FtpProtocol.FTP);
     setting.setFacilityId(UUID.randomUUID());
     setting.setServerHost(RandomStringUtils.random(10));
     setting.setServerPort(new Random().nextInt(9000) + 1000);
@@ -43,12 +45,12 @@ public class FacilityFtpSettingRepositoryIntegrationTest
   public void shouldFindSettingByFacilityId() {
     UUID facilityId = UUID.randomUUID();
 
-    FacilityFtpSetting setting = generateInstance();
+    TransferProperties setting = generateInstance();
     setting.setFacilityId(facilityId);
 
-    facilityFtpSettingRepository.save(setting);
+    transferPropertiesRepository.save(setting);
 
-    FacilityFtpSetting found = facilityFtpSettingRepository.findFirstByFacilityId(facilityId);
+    TransferProperties found = transferPropertiesRepository.findFirstByFacilityId(facilityId);
 
     assertThat(found.getId(), is(setting.getId()));
   }

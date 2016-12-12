@@ -16,9 +16,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.fulfillment.domain.FacilityFtpSetting;
+import org.openlmis.fulfillment.domain.FtpProtocol;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.repository.FacilityFtpSettingRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public class OrderSenderTest {
   private OrderStorage orderStorage;
 
   @Mock
-  private FacilityFtpSettingRepository facilityFtpSettingRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @InjectMocks
   private OrderFtpSender orderFtpSender;
@@ -50,10 +51,10 @@ public class OrderSenderTest {
 
   @Before
   public void setUp() throws Exception {
-    FacilityFtpSetting setting = new FacilityFtpSetting();
+    FtpTransferProperties setting = new FtpTransferProperties();
     setting.setId(UUID.randomUUID());
     setting.setFacilityId(UUID.randomUUID());
-    setting.setProtocol("ftp");
+    setting.setProtocol(FtpProtocol.FTP);
     setting.setServerHost("host");
     setting.setServerPort(21);
     setting.setRemoteDirectory("remote/dir");
@@ -63,7 +64,7 @@ public class OrderSenderTest {
     setting.setPassiveMode(true);
 
     when(orderStorage.getOrderAsPath(order)).thenReturn(path);
-    when(facilityFtpSettingRepository.findFirstByFacilityId(any())).thenReturn(setting);
+    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(setting);
 
     when(path.toFile()).thenReturn(file);
   }

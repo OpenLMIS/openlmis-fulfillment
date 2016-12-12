@@ -2,7 +2,8 @@
   {
     "id": "5f028911-2683-4343-83e7-48434cd6b7a2",
     "facilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
-    "protocol": "ftp",
+    "type": "ftp",
+    "protocol": "FTP",
     "username": "admin",
     "password": "p@ssw0rd",
     "serverHost": "ftp",
@@ -14,7 +15,8 @@
   {
     "id": "b8f940de-3f01-4e56-b164-8b9651ecd38e",
     "facilityId": "13037147-1769-4735-90a7-b9b310d128b8",
-    "protocol": "ftp",
+    "type": "ftp",
+    "protocol": "FTP",
     "username": "admin",
     "password": "p@ssw0rd",
     "serverHost": "ftp",
@@ -26,7 +28,8 @@
   {
     "id": "ce88d3b1-0518-42fb-8fc1-e47ad80c7134",
     "facilityId": "19121381-9f3d-4e77-b9e5-d3f59fc1639e",
-    "protocol": "ftp",
+    "type": "ftp",
+    "protocol": "FTP",
     "username": "admin",
     "password": "p@ssw0rd",
     "serverHost": "ftp",
@@ -38,7 +41,8 @@
   {
     "id": "643c433a-91fe-4373-85f1-2db751d5be06",
     "facilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
-    "protocol": "ftp",
+    "type": "ftp",
+    "protocol": "FTP",
     "username": "admin",
     "password": "p@ssw0rd",
     "serverHost": "ftp",
@@ -50,7 +54,8 @@
   {
     "id": "312247e0-7c31-4b6c-b35c-1868e5a19742",
     "facilityId": "ab95f1cf-ae8d-4888-ba9d-05141d3f50de",
-    "protocol": "ftp",
+    "type": "ftp",
+    "protocol": "FTP",
     "username": "admin",
     "password": "p@ssw0rd",
     "serverHost": "ftp",
