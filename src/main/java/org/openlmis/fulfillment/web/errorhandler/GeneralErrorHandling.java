@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
-import org.openlmis.fulfillment.referencedata.service.ReferenceDataRetrievalException;
+import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderSaveException;

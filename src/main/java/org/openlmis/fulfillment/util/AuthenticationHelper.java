@@ -1,10 +1,10 @@
 package org.openlmis.fulfillment.util;
 
 
-import org.openlmis.fulfillment.referencedata.model.RightDto;
-import org.openlmis.fulfillment.referencedata.model.UserDto;
-import org.openlmis.fulfillment.referencedata.service.RightReferenceDataService;
-import org.openlmis.fulfillment.referencedata.service.UserReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.RightDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.RightReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

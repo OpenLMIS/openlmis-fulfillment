@@ -3,10 +3,10 @@ package org.openlmis.fulfillment.service;
 
 
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.referencedata.model.ResultDto;
-import org.openlmis.fulfillment.referencedata.model.RightDto;
-import org.openlmis.fulfillment.referencedata.model.UserDto;
-import org.openlmis.fulfillment.referencedata.service.UserReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ResultDto;
+import org.openlmis.fulfillment.service.referencedata.RightDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;

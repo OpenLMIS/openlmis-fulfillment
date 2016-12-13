@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.service;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.openlmis.fulfillment.domain.TransferProperties;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

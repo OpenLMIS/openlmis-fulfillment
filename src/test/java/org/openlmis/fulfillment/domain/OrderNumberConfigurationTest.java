@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.fulfillment.referencedata.model.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 
 import java.util.UUID;
 

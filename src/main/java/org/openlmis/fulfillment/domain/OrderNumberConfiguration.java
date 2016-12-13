@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.domain;
 
-import org.openlmis.fulfillment.referencedata.model.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

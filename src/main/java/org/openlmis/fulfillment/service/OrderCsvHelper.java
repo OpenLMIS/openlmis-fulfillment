@@ -8,12 +8,12 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderLineItem;
-import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
-import org.openlmis.fulfillment.referencedata.model.ProcessingPeriodDto;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
-import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
-import org.openlmis.fulfillment.referencedata.service.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -23,12 +23,12 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.referencedata.model.FacilityDto;
-import org.openlmis.fulfillment.referencedata.model.OrderableProductDto;
-import org.openlmis.fulfillment.referencedata.model.ProgramDto;
-import org.openlmis.fulfillment.referencedata.service.FacilityReferenceDataService;
-import org.openlmis.fulfillment.referencedata.service.OrderableProductReferenceDataService;
-import org.openlmis.fulfillment.referencedata.service.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 

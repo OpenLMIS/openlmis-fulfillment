@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.referencedata.model.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
