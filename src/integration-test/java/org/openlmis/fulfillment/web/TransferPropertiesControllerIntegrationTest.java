@@ -1,7 +1,6 @@
 package org.openlmis.fulfillment.web;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -12,6 +11,8 @@ import org.openlmis.fulfillment.domain.FtpProtocol;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
+import org.openlmis.fulfillment.web.util.LocalTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,6 +27,8 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
   private static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/transferProperties";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String SEARCH = RESOURCE_URL + "/search";
+  private static final String FACILITY = "facility";
 
   @MockBean
   private TransferPropertiesRepository transferPropertiesRepository;
@@ -84,7 +87,7 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
         .willAnswer(new SaveAnswer<FtpTransferProperties>());
 
     // when
-    TransferPropertiesDto response = restAssured.given()
+    FtpTransferPropertiesDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
@@ -93,7 +96,7 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(TransferPropertiesDto.class);
+        .extract().as(FtpTransferPropertiesDto.class);
 
     // then
     assertEquals(response.getId(), oldProperties.getId());
@@ -103,7 +106,6 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
     assertEquals(response.getRemoteDirectory(), newProperties.getRemoteDirectory());
     assertEquals(response.getLocalDirectory(), newProperties.getLocalDirectory());
     assertEquals(response.getPassiveMode(), newProperties.getPassiveMode());
-    assertNull(response.getPath());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -119,7 +121,7 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
         .willAnswer(new SaveAnswer<LocalTransferProperties>());
 
     // when
-    TransferPropertiesDto response = restAssured.given()
+    LocalTransferPropertiesDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
@@ -128,16 +130,11 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(TransferPropertiesDto.class);
+        .extract().as(LocalTransferPropertiesDto.class);
 
     // then
     assertEquals(response.getId(), oldProperties.getId());
     assertEquals(response.getFacilityId(), newProperties.getFacilityId());
-    assertNull(response.getServerHost());
-    assertNull(response.getServerPort());
-    assertNull(response.getRemoteDirectory());
-    assertNull(response.getLocalDirectory());
-    assertNull(response.getPassiveMode());
     assertEquals(response.getPath(), newProperties.getPath());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -296,6 +293,60 @@ public class TransferPropertiesControllerIntegrationTest extends BaseWebIntegrat
         .pathParam("id", properties.getId())
         .when()
         .get(ID_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldFindFtpPropertiesByFacilityId() {
+    FtpTransferProperties properties = generateFtpProperties();
+    when(transferPropertiesRepository.findFirstByFacilityId(properties.getFacilityId()))
+        .thenReturn(properties);
+
+    FtpTransferPropertiesDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(FACILITY, properties.getFacilityId())
+        .when()
+        .get(SEARCH)
+        .then()
+        .statusCode(200)
+        .extract().as(FtpTransferPropertiesDto.class);
+
+    assertEquals(response.getId(), properties.getId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldFindLocalPropertiesByFacilityId() {
+    LocalTransferProperties properties = generateLocalProperties();
+    when(transferPropertiesRepository.findFirstByFacilityId(properties.getFacilityId()))
+        .thenReturn(properties);
+
+    LocalTransferPropertiesDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(FACILITY, properties.getFacilityId())
+        .when()
+        .get(SEARCH)
+        .then()
+        .statusCode(200)
+        .extract().as(LocalTransferPropertiesDto.class);
+
+    assertEquals(response.getId(), properties.getId());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfPropertiesCannotBeFound() {
+    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+        .thenReturn(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(FACILITY, UUID.randomUUID())
+        .when()
+        .get(SEARCH)
         .then()
         .statusCode(404);
 
