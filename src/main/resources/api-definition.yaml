@@ -49,11 +49,6 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/templateParameter.json" }
       }
   - transferProperties: !include schemas/transferProperties.json
-  - transferPropertiesArray: |
-      {
-          "type": "array",
-          "items": { "type": "object", "$ref": "schemas/transferProperties.json" }
-      }
   - errorResponse: !include schemas/errorResponse.json
 
 traits:
@@ -750,7 +745,7 @@ resourceTypes:
                             X-XSS-Protection:
                           body:
                             application/json:
-                              schema: orderArray
+                              schema: transferProperties
                       "404":
                           headers:
                             X-Content-Type-Options:

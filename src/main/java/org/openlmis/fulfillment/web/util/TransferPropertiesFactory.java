@@ -1,12 +1,15 @@
 package org.openlmis.fulfillment.web.util;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import com.google.common.collect.Lists;
 
-import org.openlmis.fulfillment.domain.FtpTransferProperties;
-import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 
+import java.util.List;
+
 public final class TransferPropertiesFactory {
+  private static final List<TransferPropertiesConverter> CONVERTERS = Lists.newArrayList(
+      new FtpTransferPropertiesConverter(), new LocalTransferPropertiesConverter()
+  );
 
   private TransferPropertiesFactory() {
     throw new UnsupportedOperationException();
@@ -19,28 +22,39 @@ public final class TransferPropertiesFactory {
    * @return new instance of {@link TransferProperties}.
    */
   public static TransferProperties newInstance(TransferPropertiesDto dto) {
-    return isNotBlank(dto.getPath())
-        ? LocalTransferProperties.newInstance(dto)
-        : FtpTransferProperties.newInstance(dto);
+    TransferPropertiesConverter converter = CONVERTERS
+        .stream()
+        .filter(c -> c.supports(dto.getClass()))
+        .findFirst()
+        .orElse(null);
+
+    if (null == converter) {
+      throw new IllegalArgumentException("The given dto type is not supported: " + dto.getClass());
+    }
+
+    return converter.toDomain(dto);
   }
 
   /**
    * Creates a new instance of {@link TransferPropertiesDto} based on data from domain class.
    *
-   * @param properties an instance of {@link TransferProperties}.
+   * @param domain an instance of {@link TransferProperties}.
    * @return new instance of {@link TransferPropertiesDto}.
    */
-  public static TransferPropertiesDto newInstance(TransferProperties properties) {
-    TransferPropertiesDto dto = new TransferPropertiesDto();
+  public static TransferPropertiesDto newInstance(TransferProperties domain) {
+    TransferPropertiesConverter converter = CONVERTERS
+        .stream()
+        .filter(c -> c.supports(domain.getClass()))
+        .findFirst()
+        .orElse(null);
 
-    if (properties instanceof LocalTransferProperties) {
-      ((LocalTransferProperties) properties).export(dto);
-    } else if (properties instanceof FtpTransferProperties) {
-      ((FtpTransferProperties) properties).export(dto);
+    if (null == converter) {
+      throw new IllegalArgumentException(
+          "The given domain type is not supported: " + domain.getClass()
+      );
     }
 
-    return dto;
-
+    return converter.toDto(domain);
   }
 
 }

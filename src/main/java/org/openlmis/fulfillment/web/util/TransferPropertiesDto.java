@@ -1,18 +1,26 @@
 package org.openlmis.fulfillment.web.util;
 
-import org.openlmis.fulfillment.domain.FtpTransferProperties;
-import org.openlmis.fulfillment.domain.LocalTransferProperties;
+import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.commons.lang.StringUtils.splitByCharacterTypeCamelCase;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
+
 import org.openlmis.fulfillment.domain.TransferProperties;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Locale;
 import java.util.UUID;
 
-public class TransferPropertiesDto
-    implements TransferProperties.Importer, TransferProperties.Exporter,
-    FtpTransferProperties.Importer, FtpTransferProperties.Exporter,
-    LocalTransferProperties.Importer, LocalTransferProperties.Exporter {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeIdResolver(TransferPropertiesDto.TypeIdResolver.class)
+public abstract class TransferPropertiesDto
+    implements TransferProperties.Importer, TransferProperties.Exporter {
 
   @Getter
   @Setter
@@ -22,39 +30,45 @@ public class TransferPropertiesDto
   @Setter
   private UUID facilityId;
 
-  @Getter
-  @Setter
-  private String protocol;
+  public static final class TypeIdResolver extends TypeIdResolverBase {
 
-  @Getter
-  @Setter
-  private String username;
+    @Override
+    public String idFromValue(Object value) {
+      return idFromClass(value.getClass());
+    }
 
-  @Getter
-  private String password;
+    @Override
+    public String idFromValueAndType(Object value, Class<?> suggestedType) {
+      return value == null ? idFromClass(suggestedType) : idFromValue(value);
+    }
 
-  @Getter
-  @Setter
-  private String serverHost;
+    @Override
+    public JsonTypeInfo.Id getMechanism() {
+      return JsonTypeInfo.Id.CUSTOM;
+    }
 
-  @Getter
-  @Setter
-  private Integer serverPort;
+    @Override
+    public JavaType typeFromId(DatabindContext context, String id) {
+      switch (id) {
+        case "ftp":
+          return context.constructType(FtpTransferPropertiesDto.class);
+        case "local":
+          return context.constructType(LocalTransferPropertiesDto.class);
+        default:
+          throw new IllegalArgumentException("The id is not supported: " + id);
+      }
+    }
 
-  @Getter
-  @Setter
-  private String remoteDirectory;
+    private String idFromClass(Class<?> type) {
+      String[] strings = splitByCharacterTypeCamelCase(type.getSimpleName());
 
-  @Getter
-  @Setter
-  private String localDirectory;
+      if (strings.length > 0) {
+        return lowerCase(strings[0], Locale.ENGLISH);
+      }
 
-  @Getter
-  @Setter
-  private Boolean passiveMode;
+      throw new IllegalStateException("The type: " + type + " should have camel case name");
+    }
 
-  @Getter
-  @Setter
-  private String path;
+  }
 
 }

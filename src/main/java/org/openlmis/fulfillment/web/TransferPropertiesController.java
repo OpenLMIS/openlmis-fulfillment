@@ -128,7 +128,7 @@ public class TransferPropertiesController extends BaseController {
     if (properties == null) {
       return ResponseEntity.notFound().build();
     } else {
-      return ResponseEntity.ok(properties);
+      return ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties));
     }
   }
 }
