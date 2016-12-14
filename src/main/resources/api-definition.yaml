@@ -49,7 +49,15 @@ schemas:
             "items": { "type": "object", "$ref": "schemas/templateParameterDto.json" }
         }
   - transferProperties: !include schemas/transferProperties.json
+
   - errorResponse: !include schemas/errorResponse.json
+
+  - configurationSetting: !include schemas/configurationSetting.json
+  - configurationSettingArray: |
+      {
+          "type": "array",
+          "items": { "type": "object", "$ref": "schemas/configurationSetting.json" }
+      }
 
 traits:
     - secured:
@@ -754,3 +762,37 @@ resourceTypes:
                           headers:
                             X-Content-Type-Options:
                             X-XSS-Protection:
+  /configurationSetting:
+      displayName: Configuration settings.
+      get:
+          is: [ secured ]
+          description: Get all configuration settings.
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+                      schema: configurationSettingArray
+      put:
+          is: [ secured ]
+          description: update configuration setting with the given key.
+          body:
+            application/json:
+                schema: configurationSetting
+          responses:
+              "200":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+                      schema: configurationSetting
+              "404":
+                  headers:
+                    X-Content-Type-Options:
+                    X-XSS-Protection:
+                  body:
+                    application/json:
+                      schema: errorResponse

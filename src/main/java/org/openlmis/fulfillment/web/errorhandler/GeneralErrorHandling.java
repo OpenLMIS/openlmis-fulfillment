@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
+import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -71,5 +72,13 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   public ErrorResponse handleDuplicateTransferPropertiesException(
       DuplicateTransferPropertiesException ex) {
     return logErrorAndRespond("Duplicate facility setting", ex);
+  }
+
+  @ExceptionHandler(ConfigurationSettingException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ResponseBody
+  public ErrorResponse handleConfigurationSettingException(
+      ConfigurationSettingException ex) {
+    return logErrorAndRespond("Cannot find configuration setting", ex);
   }
 }
