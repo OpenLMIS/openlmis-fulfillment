@@ -165,6 +165,8 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
+    this.supervisoryNodeId = order.supervisoryNodeId;
+    this.supplyLineId = order.supplyLineId;
   }
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {

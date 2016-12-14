@@ -147,6 +147,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setRequestingFacilityId(requestingFacility);
     order.setReceivingFacilityId(receivingFacility);
     order.setSupplyingFacilityId(supplyingFacility);
+    order.setSupervisoryNodeId(UUID.randomUUID());
     order.setOrderLineItems(new ArrayList<>());
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
@@ -370,6 +371,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateNewOrderIfDoesNotExist() {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
     firstOrder.setQuotedCost(new BigDecimal(NUMBER));
+    firstOrder.setSupervisoryNodeId(UUID.randomUUID());
 
     Order response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
