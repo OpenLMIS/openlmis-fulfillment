@@ -1,6 +1,8 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.domain.OrderFileTemplateBuilder;
+import org.openlmis.fulfillment.dto.OrderFileTemplateDto;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.web.validator.OrderFileTemplateValidator;
@@ -30,6 +32,8 @@ public class OrderFileTemplateController extends BaseController {
   private OrderFileTemplateRepository orderFileTemplateRepository;
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
+  @Autowired
+  private OrderFileTemplateDtoBuilder orderFileTemplateDtoBuilder;
 
   @InitBinder
   protected void initBinder(WebDataBinder binder) {
@@ -39,21 +43,23 @@ public class OrderFileTemplateController extends BaseController {
   /**
    * Allows creating or updating orderFileTemplate.
    *
-   * @param orderFileTemplate A orderFileTemplate bound to the request body
+   * @param orderFileTemplateDto A orderFileTemplate bound to the request body
    * @return ResponseEntity containing saved orderFileTemplate
    */
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.POST)
   public ResponseEntity<Object> savedOrderFileTemplate(
-      @RequestBody @Valid OrderFileTemplate orderFileTemplate, BindingResult bindingResult) {
+      @RequestBody @Valid OrderFileTemplateDto orderFileTemplateDto, BindingResult bindingResult) {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
     LOGGER.debug("Saving Order File Template");
+    OrderFileTemplate orderFileTemplate = OrderFileTemplateBuilder.newOrderFileTemplate(
+        orderFileTemplateDto);
 
     OrderFileTemplate savedTemplate = orderFileTemplateRepository.save(orderFileTemplate);
 
     LOGGER.debug("Saved Order File Template with id: " + orderFileTemplate.getId());
-    return new ResponseEntity<>(savedTemplate, HttpStatus.OK);
+    return new ResponseEntity<>( orderFileTemplateDtoBuilder.build(savedTemplate), HttpStatus.OK);
   }
 
   /**
@@ -62,12 +68,13 @@ public class OrderFileTemplateController extends BaseController {
    * @return OrderFileTemplate.
    */
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.GET)
-  public ResponseEntity<OrderFileTemplate> getOrderFileTemplate() {
+  public ResponseEntity<OrderFileTemplateDto> getOrderFileTemplate() {
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
     if (orderFileTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(orderFileTemplate, HttpStatus.OK);
+      return new ResponseEntity<>(orderFileTemplateDtoBuilder.build(orderFileTemplate),
+          HttpStatus.OK);
     }
   }
 }

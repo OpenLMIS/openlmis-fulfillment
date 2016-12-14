@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openlmis.fulfillment.domain.convert.LocalDatePersistenceConverter;
+import org.openlmis.fulfillment.dto.OrderDto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
@@ -110,5 +112,58 @@ public class ProofOfDelivery extends BaseEntity {
   public void forEachLine(Consumer<ProofOfDeliveryLineItem> consumer) {
     Optional.ofNullable(proofOfDeliveryLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(ProofOfDelivery.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setDeliveredBy(deliveredBy);
+    exporter.setReceivedBy(receivedBy);
+    exporter.setReceivedDate(receivedDate);
+    exporter.setTotalReceivedPacks(totalReceivedPacks);
+    exporter.setTotalReturnedPacks(totalReturnedPacks);
+    exporter.setTotalShippedPacks(totalShippedPacks);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setTotalShippedPacks(Integer totalShippedPacks);
+
+    void setTotalReceivedPacks(Integer totalReceivedPacks);
+
+    void setTotalReturnedPacks(Integer totalReturnedPacks);
+
+    void setDeliveredBy(String deliveredBy);
+
+    void setReceivedBy(String receivedBy);
+
+    void setReceivedDate(LocalDate receivedDate);
+
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    OrderDto getOrder();
+
+    List<ProofOfDeliveryLineItem.Importer> getProofOfDeliveryLineItems();
+
+    Integer getTotalShippedPacks();
+
+    Integer getTotalReceivedPacks();
+
+    Integer getTotalReturnedPacks();
+
+    String getDeliveredBy();
+
+    String getReceivedBy();
+
+    LocalDate getReceivedDate();
+
   }
 }

@@ -1,6 +1,6 @@
 { "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "ProofOfDelivery",
+  "title": "ProofOfDeliveryDto",
   "description": "A single proofOfDelivery of ordered products",
   "properties": {
     "id": {
@@ -12,7 +12,7 @@
       "title": "proofOfDeliveryLineItems",
       "items": {
         "type": "object",
-        "$ref": "proofOfDeliveryLineItem.json"
+        "$ref": "proofOfDeliveryLineItemDto.json"
       },
       "uniqueItems": false
     },
@@ -58,7 +58,7 @@
       "properties": {
         "order": {
           "type": "object",
-          "$ref": "order.json",
+          "$ref": "orderDto.json",
           "title": "order"
         }
       }

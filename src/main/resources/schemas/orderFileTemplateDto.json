@@ -1,6 +1,6 @@
 {   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderFileTemplate",
+  "title": "OrderFileTemplateDto",
   "description": "A single orderFileTemplate",
   "properties": {
     "id": {
@@ -20,7 +20,7 @@
       "title": "orderFileColumns",
       "items": {
         "type": "object",
-        "$ref": "orderFileColumn.json"
+        "$ref": "orderFileColumnDto.json"
       },
       "uniqueItems": false
     }

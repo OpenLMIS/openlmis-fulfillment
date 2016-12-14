@@ -58,4 +58,58 @@ public class OrderLineItem extends BaseEntity {
     this.filledQuantity = orderLineItem.getFilledQuantity();
     this.approvedQuantity = orderLineItem.getApprovedQuantity();
   }
+
+  /**
+   * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}
+   * @param importer instance of {@link OrderLineItem.Importer}
+   * @return new instance of OrderLineItem.
+   */
+  public static OrderLineItem newOrderLineItem(OrderLineItem.Importer importer) {
+    OrderLineItem orderLineItem = new OrderLineItem();
+    orderLineItem.setId(importer.getId());
+    orderLineItem.setOrderableProductId(importer.getOrderableProductId());
+    orderLineItem.setOrderedQuantity(importer.getOrderedQuantity());
+    orderLineItem.setFilledQuantity(importer.getFilledQuantity());
+    orderLineItem.setApprovedQuantity(importer.getApprovedQuantity());
+    return orderLineItem;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(OrderLineItem.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setApprovedQuantity(approvedQuantity);
+    exporter.setOrderableProductId(orderableProductId);
+    exporter.setFilledQuantity(filledQuantity);
+    exporter.setOrderedQuantity(orderedQuantity);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setOrderableProductId(UUID orderableProductId);
+
+    void setOrderedQuantity(Long orderedQuantity);
+
+    void setFilledQuantity(Long filledQuantity);
+
+    void setApprovedQuantity(Long approvedQuantity);
+
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    UUID getOrderableProductId();
+
+    Long getOrderedQuantity();
+
+    Long getFilledQuantity();
+
+    Long getApprovedQuantity();
+
+  }
 }

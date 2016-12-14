@@ -160,4 +160,89 @@ public class Order extends BaseEntity {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));
   }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Order.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setExternalId(externalId);
+    exporter.setEmergency(emergency);
+    exporter.setFacilityId(facilityId);
+    exporter.setProgramId(programId);
+    exporter.setProcessingPeriodId(processingPeriodId);
+    exporter.setRequestingFacilityId(requestingFacilityId);
+    exporter.setReceivingFacilityId(receivingFacilityId);
+    exporter.setSupplyingFacilityId(supplyingFacilityId);
+    exporter.setOrderCode(orderCode);
+    exporter.setStatus(status);
+    exporter.setQuotedCost(quotedCost);
+    exporter.setCreatedById(createdById);
+    exporter.setCreatedDate(createdDate);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setExternalId(UUID id);
+
+    void setEmergency(Boolean emergency);
+
+    void setFacilityId(UUID facilityId);
+
+    void setProgramId(UUID programId);
+
+    void setRequestingFacilityId(UUID requestingFacilityId);
+
+    void setReceivingFacilityId(UUID receivingFacilityId);
+
+    void setSupplyingFacilityId(UUID supplyingFacilityId);
+
+    void setOrderCode(String orderCode);
+
+    void setStatus(OrderStatus orderStatus);
+
+    void setQuotedCost(BigDecimal quotedCost);
+
+    void setProcessingPeriodId(UUID id);
+
+    void setCreatedDate(LocalDateTime localDateTime);
+
+    void setCreatedById(UUID id);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    UUID getExternalId();
+
+    Boolean getEmergency();
+
+    UUID getFacilityId();
+
+    UUID getProgramId();
+
+    UUID getRequestingFacilityId();
+
+    UUID getReceivingFacilityId();
+
+    UUID getSupplyingFacilityId();
+
+    String getOrderCode();
+
+    OrderStatus getStatus();
+
+    BigDecimal getQuotedCost();
+
+    List<OrderLineItem.Importer> getOrderLineItems();
+
+    UUID getProcessingPeriodId();
+
+    LocalDateTime getCreatedDate();
+
+    UUID getCreatedById();
+
+  }
 }

@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web.validator;
 
 import org.openlmis.fulfillment.domain.OrderFileColumn;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.dto.OrderFileTemplateDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -22,17 +22,17 @@ public class OrderFileTemplateValidator implements Validator {
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return OrderFileTemplate.class.equals(clazz);
+    return OrderFileTemplateDto.class.equals(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
-    OrderFileTemplate orderFileTemplate = (OrderFileTemplate) target;
-    List<OrderFileColumn> columns = orderFileTemplate.getOrderFileColumns();
+    OrderFileTemplateDto orderFileTemplate = (OrderFileTemplateDto) target;
+    List<OrderFileColumn.Importer> columns = orderFileTemplate.getOrderFileColumns();
     List<String> acceptedValues = Arrays.asList(ACCEPTED_VALUES);
 
     for (int i = 0; i < columns.size(); i++) {
-      OrderFileColumn orderFileColumn = columns.get(i);
+      OrderFileColumn.Importer orderFileColumn = columns.get(i);
       if ((orderFileColumn.getFormat() != null)
           && (!acceptedValues.contains(orderFileColumn.getFormat()))) {
         errors.rejectValue("orderFileColumns[" + i + "].format",

@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.web.validator;
 
-import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.dto.OrderNumberConfigurationDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -14,12 +14,12 @@ public class OrderNumberConfigurationValidator implements Validator {
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return OrderNumberConfiguration.class.equals(clazz);
+    return OrderNumberConfigurationDto.class.equals(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
-    OrderNumberConfiguration orderNumberConfiguration = (OrderNumberConfiguration) target;
+    OrderNumberConfigurationDto orderNumberConfiguration = (OrderNumberConfigurationDto) target;
     if (!validateOrderNumberPrefix(orderNumberConfiguration.getOrderNumberPrefix())) {
       errors.rejectValue(PREFIX_FIELD, INVALID_PREFIX);
     }

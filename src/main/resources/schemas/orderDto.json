@@ -1,6 +1,6 @@
 { "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "Order",
+  "title": "OrderDto",
   "description": "A single order created from requisition",
   "properties": {
     "id": {
@@ -68,7 +68,7 @@
       "title": "orderLineItems",
       "items": {
         "type": "object",
-        "$ref": "orderLineItem.json"
+        "$ref": "orderLineItemDto.json"
       },
       "uniqueItems": false
     }

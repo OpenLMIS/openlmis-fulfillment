@@ -1,0 +1,39 @@
+{   "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "ProofOfDeliveryLineItemDto",
+  "description": "A single proofOfDeliveryLineItem ",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "packToShip": {
+      "type": "integer",
+      "title": "packToShip"
+    },
+    "quantityShipped": {
+      "type": "integer",
+      "title": "quantityShipped"
+    },
+    "quantityReceived": {
+      "type": "integer",
+      "title": "quantityReceived"
+    },
+    "quantityReturned": {
+      "type": "integer",
+      "title": "quantityReturned"
+    },
+    "replacedProductCode": {
+      "type": "string",
+      "title": "replacedProductCode"
+    },
+    "notes": {
+      "type": "string",
+      "title": "notes"
+    }
+  },
+  "required": [
+    "id",
+    "orderLineItem"
+  ]
+}

@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.dto.OrderNumberConfigurationDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.web.validator.OrderNumberConfigurationValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,22 +42,28 @@ public class OrderNumberConfigurationController extends BaseController {
    */
   @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.POST)
   public ResponseEntity<Object> saveOrderNumberConfigurations(
-      @RequestBody @Valid OrderNumberConfiguration orderNumberConfigurationDto,
+      @RequestBody @Valid OrderNumberConfigurationDto orderNumberConfigurationDto,
       BindingResult bindingResult) {
 
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+    OrderNumberConfiguration orderNumberConfiguration = OrderNumberConfiguration
+        .newOrderNumberConfiguration(orderNumberConfigurationDto);
 
     Iterator<OrderNumberConfiguration> it = orderNumberConfigurationRepository.findAll().iterator();
 
     if (it.hasNext()) {
-      orderNumberConfigurationDto.setId(it.next().getId());
+      orderNumberConfiguration.setId(it.next().getId());
     }
 
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.save(orderNumberConfigurationDto);
-    return new ResponseEntity<>(orderNumberConfiguration, HttpStatus.OK);
+    OrderNumberConfiguration savedOrderNumberConfiguration =
+        orderNumberConfigurationRepository.save(orderNumberConfiguration);
+
+    OrderNumberConfigurationDto orderNumberConfigurationDto1 = new OrderNumberConfigurationDto();
+    savedOrderNumberConfiguration.export(orderNumberConfigurationDto1);
+
+    return new ResponseEntity<>(orderNumberConfigurationDto1, HttpStatus.OK);
   }
 
   /**
@@ -66,13 +73,16 @@ public class OrderNumberConfigurationController extends BaseController {
    */
   @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<OrderNumberConfiguration> getOrderFileTemplate() {
+  public ResponseEntity<OrderNumberConfigurationDto> getOrderFileTemplate() {
     Iterator<OrderNumberConfiguration> it = orderNumberConfigurationRepository.findAll().iterator();
 
     if (!it.hasNext()) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    return new ResponseEntity<>(it.next(), HttpStatus.OK);
+    OrderNumberConfigurationDto orderNumberConfigurationDto = new OrderNumberConfigurationDto();
+    it.next().export(orderNumberConfigurationDto);
+
+    return new ResponseEntity<>(orderNumberConfigurationDto, HttpStatus.OK);
   }
 }

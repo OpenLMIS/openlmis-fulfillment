@@ -1,7 +1,7 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderNumberConfiguration",
+  "title": "OrderNumberConfigurationDto",
   "description": "A single orderNumberConfiguration describing how orders number will look like",
   "properties": {
     "id": {

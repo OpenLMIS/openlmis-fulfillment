@@ -1,8 +1,10 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderBuilder;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.dto.OrderDto;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -51,20 +53,23 @@ public class OrderController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
+  @Autowired
+  private OrderDtoBuilder orderDtoBuilder;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
    *
-   * @param order A order bound to the request body
+   * @param orderDto A order bound to the request body
    * @return ResponseEntity containing the created order
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
 
-  public Order createOrder(@RequestBody Order order) throws OrderSaveException,
+  public OrderDto createOrder(@RequestBody OrderDto orderDto) throws OrderSaveException,
       MissingPermissionException {
-
+    Order order = OrderBuilder.newOrder(orderDto);
     LOGGER.debug("Checking rights to create order");
     permissionService.canConvertToOrder(order);
 
@@ -72,30 +77,30 @@ public class OrderController extends BaseController {
     order.setId(null);
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return newOrder;
+    return orderDtoBuilder.build(newOrder);
   }
 
   /**
    * Get all orders.
    *
-   * @return Orders.
+   * @return OrderDtos.
    */
   @RequestMapping(value = "/orders", method = RequestMethod.GET)
   @ResponseBody
-  public Iterable<Order> getAllOrders() {
-    return orderRepository.findAll();
+  public Iterable<OrderDto> getAllOrders() {
+    return orderDtoBuilder.build(orderRepository.findAll());
   }
 
   /**
    * Allows updating orders.
    *
-   * @param order   A order bound to the request body
+   * @param orderDto   A order bound to the request body
    * @param orderId UUID of order which we want to update
    * @return ResponseEntity containing the updated order
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   @ResponseBody
-  public Order updateOrder(@RequestBody Order order,
+  public OrderDto updateOrder(@RequestBody OrderDto orderDto,
                            @PathVariable("id") UUID orderId) {
 
     Order orderToUpdate = orderRepository.findOne(orderId);
@@ -106,27 +111,29 @@ public class OrderController extends BaseController {
       LOGGER.debug("Updating order with id: {}", orderId);
     }
 
+    Order order = OrderBuilder.newOrder(orderDto);
+
     orderToUpdate.updateFrom(order);
     orderToUpdate = orderRepository.save(orderToUpdate);
 
     LOGGER.debug("Saved order with id: {}", orderToUpdate.getId());
 
-    return orderToUpdate;
+    return orderDtoBuilder.build(orderToUpdate);
   }
 
   /**
    * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get
-   * @return Order.
+   * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<Order> getOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(order, HttpStatus.OK);
+      return new ResponseEntity<>(orderDtoBuilder.build(order), HttpStatus.OK);
     }
   }
 
@@ -137,7 +144,7 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<Order> deleteOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -157,13 +164,14 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseBody
-  public Iterable<Order> searchOrders(
+  public Iterable<OrderDto> searchOrders(
       @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
       @RequestParam(value = "requestingFacility", required = false)
           UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program) {
 
-    return orderService.searchOrders(supplyingFacility, requestingFacility, program);
+    return orderDtoBuilder.build(orderService.searchOrders(supplyingFacility, requestingFacility,
+        program));
   }
 
   /**
@@ -174,7 +182,7 @@ public class OrderController extends BaseController {
    *         containing the error description and "#400 Bad Request" status
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<Order> finalizeOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId) {
 
     Order order = orderRepository.findOne(orderId);
 

@@ -1,17 +1,12 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "TemplateParameter",
+  "title": "TemplateParameterDto",
   "description": "A single templateParameter for template object",
   "properties": {
     "id": {
       "type": "string",
       "title": "id"
-    },
-    "template": {
-      "type": "object",
-      "$ref": "template.json",
-      "title": "template"
     },
     "name": {
       "type": "string",

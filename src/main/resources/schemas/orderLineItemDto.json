@@ -1,7 +1,6 @@
-{
-  "type": "object",
+{ "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderLineItem",
+  "title": "OrderLineItemDto",
   "description": "A single orderLineItem representing ordered product",
   "properties": {
     "id": {
@@ -25,25 +24,6 @@
       "title": "approvedQuantity"
     }
   },
-  "oneOf": [
-    {
-      "properties": {
-        "order": {
-          "type": ["string", "null"],
-          "title": "order"
-        }
-      }
-    },
-    {
-      "properties": {
-        "order": {
-          "type": "object",
-          "$ref": "order.json",
-          "title": "order"
-        }
-      }
-    }
-  ],
   "required": [
     "id",
     "orderableProductId",

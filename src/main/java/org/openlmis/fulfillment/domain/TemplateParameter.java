@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -53,4 +55,70 @@ public class TemplateParameter extends BaseEntity {
   @Getter
   @Setter
   private String description;
+
+  /**
+   * Create new instance of TemplateParemater based on given {@link TemplateParameter.Importer}
+   * @param importer instance of {@link TemplateParameter.Importer}
+   * @return instance of TemplateParameter.
+   */
+  public static TemplateParameter newTemplateParameter(Importer importer) {
+    TemplateParameter templateParameter = new TemplateParameter();
+    templateParameter.setId(importer.getId());
+    templateParameter.setName(importer.getName());
+    templateParameter.setDisplayName(importer.getDisplayName());
+    templateParameter.setDefaultValue(importer.getDefaultValue());
+    templateParameter.setSelectSql(importer.getSelectSql());
+    templateParameter.setDescription(importer.getDescription());
+    templateParameter.setDataType(importer.getDataType());
+    return templateParameter;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(id);
+    exporter.setName(name);
+    exporter.setDescription(description);
+    exporter.setDataType(dataType);
+    exporter.setDefaultValue(defaultValue);
+    exporter.setDisplayName(displayName);
+    exporter.setSelectSql(selectSql);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setName(String name);
+
+    void setDisplayName(String displayName);
+
+    void setDefaultValue(String defaultValue);
+
+    void setDataType(String dataType);
+
+    void setSelectSql(String selectSql);
+
+    void setDescription(String description);
+
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    String getName();
+
+    String getDisplayName();
+
+    String getDefaultValue();
+
+    String getDataType();
+
+    String getSelectSql();
+
+    String getDescription();
+
+  }
 }

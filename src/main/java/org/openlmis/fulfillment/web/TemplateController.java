@@ -2,6 +2,8 @@ package org.openlmis.fulfillment.web;
 
 import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.domain.TemplateBuilder;
+import org.openlmis.fulfillment.dto.TemplateDto;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.TemplateService;
@@ -33,6 +35,9 @@ public class TemplateController extends BaseController {
   @Autowired
   private TemplateRepository templateRepository;
 
+  @Autowired
+  private TemplateDtoBuilder templateDtoBuilder;
+
   /**
    * Adding report templates with ".jrxml" format to database.
    *
@@ -56,22 +61,22 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(value = "/templates", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<Iterable<Template>> getAllTemplates() {
-    Iterable<Template> templates = templateRepository.findAll();
+  public ResponseEntity<Iterable<TemplateDto>> getAllTemplates() {
+    Iterable<TemplateDto> templates = templateDtoBuilder.build(templateRepository.findAll());
     return new ResponseEntity<>(templates, HttpStatus.OK);
   }
 
   /**
    * Allows updating templates.
    *
-   * @param template   A template bound to the request body
+   * @param templateDto   A template bound to the request body
    * @param templateId UUID of template which we want to update
    * @return ResponseEntity containing the updated template
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<Template> updateTemplate(@RequestBody Template template,
+  public ResponseEntity<TemplateDto> updateTemplate(@RequestBody TemplateDto templateDto,
                                           @PathVariable("id") UUID templateId) {
-
+    Template template = TemplateBuilder.newTemplate(templateDto);
     Template templateToUpdate = templateRepository.findOne(templateId);
     if (templateToUpdate == null) {
       templateToUpdate = new Template();
@@ -84,7 +89,7 @@ public class TemplateController extends BaseController {
     templateToUpdate = templateRepository.save(templateToUpdate);
 
     LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
-    return new ResponseEntity<>(templateToUpdate, HttpStatus.OK);
+    return new ResponseEntity<>(templateDtoBuilder.build(templateToUpdate), HttpStatus.OK);
   }
 
   /**
@@ -94,13 +99,13 @@ public class TemplateController extends BaseController {
    * @return Template.
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.GET)
-  public ResponseEntity<Template> getTemplate(@PathVariable("id") UUID templateId) {
+  public ResponseEntity<TemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(template, HttpStatus.OK);
+      return new ResponseEntity<>(templateDtoBuilder.build(template), HttpStatus.OK);
     }
   }
 
@@ -111,7 +116,7 @@ public class TemplateController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<Template> deleteTemplate(@PathVariable("id")
+  public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id")
                                               UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);

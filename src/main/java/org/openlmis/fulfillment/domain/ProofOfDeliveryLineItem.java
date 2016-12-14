@@ -3,6 +3,8 @@ package org.openlmis.fulfillment.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -72,4 +74,56 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     this.replacedProductCode = proofOfDeliveryLineItem.getReplacedProductCode();
     this.notes = proofOfDeliveryLineItem.getNotes();
   }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(ProofOfDeliveryLineItem.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setPackToShip(packToShip);
+    exporter.setQuantityShipped(quantityShipped);
+    exporter.setQuantityReceived(quantityReceived);
+    exporter.setQuantityReturned(quantityReturned);
+    exporter.setReplacedProductCode(replacedProductCode);
+    exporter.setNotes(notes);
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    Long getPackToShip();
+
+    OrderLineItem.Importer getOrderLineItem();
+
+    Long getQuantityShipped();
+
+    Long getQuantityReceived();
+
+    Long getQuantityReturned();
+
+    String getReplacedProductCode();
+
+    String getNotes();
+
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setPackToShip(Long packToShip);
+
+    void setQuantityShipped(Long quantityShipped);
+
+    void setQuantityReceived(Long quantityReceived);
+
+    void setQuantityReturned(Long quantityReturned);
+
+    void setReplacedProductCode(String replacedProductCode);
+
+    void setNotes(String notes);
+
+  }
+
 }

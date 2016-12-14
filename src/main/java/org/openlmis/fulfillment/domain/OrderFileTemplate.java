@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -44,4 +45,36 @@ public class OrderFileTemplate extends BaseEntity {
   @Getter
   @Setter
   private List<OrderFileColumn> orderFileColumns;
+
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(OrderFileTemplate.Exporter exporter) {
+    exporter.setId(id);
+    exporter.setFilePrefix(filePrefix);
+    exporter.setHeaderInFile(headerInFile);
+  }
+
+  public interface Exporter {
+    void setId(UUID id);
+
+    void setFilePrefix(String filePrefix);
+
+    void setHeaderInFile(Boolean headerInFile);
+
+  }
+
+  public interface Importer {
+    UUID getId();
+
+    String getFilePrefix();
+
+    Boolean getHeaderInFile();
+
+    List<OrderFileColumn.Importer> getOrderFileColumns();
+
+  }
 }

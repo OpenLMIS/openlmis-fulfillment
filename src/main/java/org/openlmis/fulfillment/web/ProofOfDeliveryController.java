@@ -1,7 +1,9 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryBuilder;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.dto.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,6 +44,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
+  @Autowired
+  private ProofOfDeliveryDtoBuilder proofOfDeliveryDtoBuilder;
+
 
   /**
    * Allows creating new proofOfDeliveries.
@@ -50,14 +56,17 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the created proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
-  public ResponseEntity<ProofOfDelivery> createProofOfDelivery(@RequestBody ProofOfDelivery pod) {
+  public ResponseEntity<ProofOfDeliveryDto> createProofOfDelivery(
+      @RequestBody ProofOfDeliveryDto pod) {
     LOGGER.debug("Creating new proofOfDelivery");
+    ProofOfDelivery proofOfDelivery = ProofOfDeliveryBuilder.newProofOfDelivery(pod);
 
-    pod.setId(null);
-    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(pod);
+    proofOfDelivery.setId(null);
+    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
 
     LOGGER.debug("Created new proofOfDelivery with id: " + pod.getId());
-    return new ResponseEntity<>(newProofOfDelivery, HttpStatus.CREATED);
+    return new ResponseEntity<>(proofOfDeliveryDtoBuilder.build(newProofOfDelivery), HttpStatus
+        .CREATED);
   }
 
   /**
@@ -67,23 +76,24 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<Iterable<ProofOfDelivery>> getAllProofOfDeliveries() {
+  public ResponseEntity<Collection<ProofOfDeliveryDto>> getAllProofOfDeliveries() {
     Iterable<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
-    return new ResponseEntity<>(proofOfDeliveries, HttpStatus.OK);
+    return new ResponseEntity<>(proofOfDeliveryDtoBuilder.build(proofOfDeliveries), HttpStatus.OK);
   }
 
   /**
    * Allows updating proofOfDeliveries.
    *
-   * @param proofOfDelivery   A proofOfDelivery bound to the request body
+   * @param proofOfDeliveryDto   A proofOfDeliveryDto bound to the request body
    * @param proofOfDeliveryId UUID of proofOfDelivery which we want to update
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<ProofOfDelivery> updateProofOfDelivery(
-      @RequestBody ProofOfDelivery proofOfDelivery,
+  public ResponseEntity<ProofOfDeliveryDto> updateProofOfDelivery(
+      @RequestBody ProofOfDeliveryDto proofOfDeliveryDto,
       @PathVariable("id") UUID proofOfDeliveryId) {
 
+    ProofOfDelivery proofOfDelivery = ProofOfDeliveryBuilder.newProofOfDelivery(proofOfDeliveryDto);
     ProofOfDelivery proofOfDeliveryToUpdate =
         proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     if (proofOfDeliveryToUpdate == null) {
@@ -97,7 +107,8 @@ public class ProofOfDeliveryController extends BaseController {
     proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
 
     LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
-    return new ResponseEntity<>(proofOfDeliveryToUpdate, HttpStatus.OK);
+    return new ResponseEntity<>(proofOfDeliveryDtoBuilder.build(proofOfDeliveryToUpdate), HttpStatus
+        .OK);
   }
 
   /**
@@ -107,12 +118,12 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ProofOfDelivery.
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.GET)
-  public ResponseEntity<ProofOfDelivery> getProofOfDelivery(@PathVariable("id") UUID id) {
+  public ResponseEntity<ProofOfDeliveryDto> getProofOfDelivery(@PathVariable("id") UUID id) {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(proofOfDelivery, HttpStatus.OK);
+      return new ResponseEntity<>(proofOfDeliveryDtoBuilder.build(proofOfDelivery), HttpStatus.OK);
     }
   }
 
@@ -123,7 +134,7 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<ProofOfDelivery> deleteProofOfDelivery(@PathVariable("id") UUID id) {
+  public ResponseEntity<?> deleteProofOfDelivery(@PathVariable("id") UUID id) {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);

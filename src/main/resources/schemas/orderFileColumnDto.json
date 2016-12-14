@@ -1,7 +1,6 @@
-{
-  "type": "object",
+{ "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderFileColumn",
+  "title": "OrderFileColumnDto",
   "description": "A single orderFileColumn",
   "properties": {
     "id": {
@@ -47,16 +46,11 @@
     "relatedKeyPath": {
       "type": "string",
       "title": "relatedKeyPath"
-    },
-    "orderFileTemplate": {
-      "type": "object",
-      "$ref": "orderFileTemplate.json"
     }
   },
   "required": [
     "openLmisField",
     "include",
-    "position",
-    "orderFileTemplate"
+    "position"
   ]
 }

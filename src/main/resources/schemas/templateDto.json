@@ -1,6 +1,6 @@
 { "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "Template",
+  "title": "TemplateDto",
   "description": "A single template",
   "properties": {
     "id": {
@@ -24,7 +24,7 @@
       "title": "templateParameters",
       "items": {
         "type": "object",
-        "$ref": "templateParameter.json"
+        "$ref": "templateParameterDto.json"
       },
       "uniqueItems": false
     },
