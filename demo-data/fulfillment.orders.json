@@ -11,6 +11,7 @@
     "requestingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "receivingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000006R",
     "status": "RECEIVED",
     "quotedCost": 1000000
@@ -27,6 +28,7 @@
     "requestingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "receivingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000007R",
     "status": "SHIPPED",
     "quotedCost": 30000
@@ -43,6 +45,7 @@
     "requestingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "receivingFacilityId": "44a29ccb-ed55-4c26-9eca-7e5759269b25",
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000008R",
     "status": "PICKING",
     "quotedCost": 5000
@@ -59,6 +62,7 @@
     "requestingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "receivingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "supplyingFacilityId": "e6799d64-d10d-4011-b8c2-0e4d4a3f65ce",
+    "supervisoryNodeId": "fb38bd1c-beeb-4527-8345-900900329c10",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000009R",
     "status": "ORDERED",
     "quotedCost": 100000
