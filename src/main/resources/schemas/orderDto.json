@@ -63,6 +63,14 @@
       "type": "number",
       "title": "quotedCost"
     },
+    "supervisoryNodeId": {
+      "type": "string",
+      "title": "supervisoryNodeId"
+    },
+    "supplyLineId": {
+      "type": ["string", "null"],
+      "title": "supplyLineId"
+    },
     "orderLineItems": {
       "type": ["array", "null"],
       "title": "orderLineItems",
