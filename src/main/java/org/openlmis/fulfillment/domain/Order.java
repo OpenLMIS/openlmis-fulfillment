@@ -192,6 +192,8 @@ public class Order extends BaseEntity {
     exporter.setQuotedCost(quotedCost);
     exporter.setCreatedById(createdById);
     exporter.setCreatedDate(createdDate);
+    exporter.setSupervisoryNodeId(supervisoryNodeId);
+    exporter.setSupplyLineId(supplyLineId);
   }
 
   public interface Exporter {
@@ -222,6 +224,11 @@ public class Order extends BaseEntity {
     void setCreatedDate(LocalDateTime localDateTime);
 
     void setCreatedById(UUID id);
+
+    void setSupervisoryNodeId(UUID supervisoryNodeId);
+
+    void setSupplyLineId(UUID supplyLineId);
+
   }
 
   public interface Importer {
@@ -254,6 +261,10 @@ public class Order extends BaseEntity {
     LocalDateTime getCreatedDate();
 
     UUID getCreatedById();
+
+    UUID getSupervisoryNodeId();
+
+    UUID getSupplyLineId();
 
   }
 }

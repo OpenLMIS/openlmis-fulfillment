@@ -26,6 +26,8 @@ public class OrderBuilder {
     order.setProcessingPeriodId(importer.getProcessingPeriodId());
     order.setCreatedDate(importer.getCreatedDate());
     order.setCreatedById(importer.getCreatedById());
+    order.setSupervisoryNodeId(importer.getSupervisoryNodeId());
+    order.setSupplyLineId(importer.getSupplyLineId());
     order.setOrderLineItems(new ArrayList<>());
     
     if (importer.getOrderLineItems() != null) {
