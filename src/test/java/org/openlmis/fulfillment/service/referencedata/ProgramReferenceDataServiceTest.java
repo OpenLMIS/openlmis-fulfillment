@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.service.referencedata;
 public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTest<ProgramDto> {
 
   @Override
-  BaseReferenceDataService<ProgramDto> getService() {
+  protected BaseReferenceDataService<ProgramDto> getService() {
     return new ProgramReferenceDataService();
   }
 

@@ -4,7 +4,7 @@ public class PeriodReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<ProcessingPeriodDto> {
 
   @Override
-  BaseReferenceDataService<ProcessingPeriodDto> getService() {
+  protected BaseReferenceDataService<ProcessingPeriodDto> getService() {
     return new PeriodReferenceDataService();
   }
 

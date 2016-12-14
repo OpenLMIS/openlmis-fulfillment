@@ -36,7 +36,7 @@ public class UserReferenceDataServiceParameterizedTest
   private static final String URI_QUERY_VALUE = "value";
 
   @Override
-  BaseReferenceDataService<UserDto> getService() {
+  protected BaseReferenceDataService<UserDto> getService() {
     return new UserReferenceDataService();
   }
 

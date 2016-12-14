@@ -4,7 +4,7 @@ public class OrderableProductReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<OrderableProductDto> {
 
   @Override
-  BaseReferenceDataService<OrderableProductDto> getService() {
+  protected BaseReferenceDataService<OrderableProductDto> getService() {
     return new OrderableProductReferenceDataService();
   }
 

@@ -20,7 +20,7 @@ import java.util.Map;
 public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<UserDto> {
 
   @Override
-  BaseReferenceDataService<UserDto> getService() {
+  protected BaseReferenceDataService<UserDto> getService() {
     return new UserReferenceDataService();
   }
 

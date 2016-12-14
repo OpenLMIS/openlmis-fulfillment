@@ -18,7 +18,7 @@ import java.net.URI;
 public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<RightDto> {
 
   @Override
-  BaseReferenceDataService<RightDto> getService() {
+  protected BaseReferenceDataService<RightDto> getService() {
     return new RightReferenceDataService();
   }
 
