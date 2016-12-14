@@ -1,7 +1,6 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderBuilder;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.dto.OrderDto;
@@ -53,9 +52,6 @@ public class OrderController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
-  @Autowired
-  private OrderDtoBuilder orderDtoBuilder;
-
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -69,7 +65,7 @@ public class OrderController extends BaseController {
 
   public OrderDto createOrder(@RequestBody OrderDto orderDto) throws OrderSaveException,
       MissingPermissionException {
-    Order order = OrderBuilder.newOrder(orderDto);
+    Order order = Order.newInstance(orderDto);
     LOGGER.debug("Checking rights to create order");
     permissionService.canConvertToOrder(order);
 
@@ -77,7 +73,7 @@ public class OrderController extends BaseController {
     order.setId(null);
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return orderDtoBuilder.build(newOrder);
+    return OrderDto.newInstance(newOrder);
   }
 
   /**
@@ -88,7 +84,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<OrderDto> getAllOrders() {
-    return orderDtoBuilder.build(orderRepository.findAll());
+    return OrderDto.newInstance(orderRepository.findAll());
   }
 
   /**
@@ -111,14 +107,14 @@ public class OrderController extends BaseController {
       LOGGER.debug("Updating order with id: {}", orderId);
     }
 
-    Order order = OrderBuilder.newOrder(orderDto);
+    Order order = Order.newInstance(orderDto);
 
     orderToUpdate.updateFrom(order);
     orderToUpdate = orderRepository.save(orderToUpdate);
 
     LOGGER.debug("Saved order with id: {}", orderToUpdate.getId());
 
-    return orderDtoBuilder.build(orderToUpdate);
+    return OrderDto.newInstance(orderToUpdate);
   }
 
   /**
@@ -133,7 +129,7 @@ public class OrderController extends BaseController {
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(orderDtoBuilder.build(order), HttpStatus.OK);
+      return new ResponseEntity<>(OrderDto.newInstance(order), HttpStatus.OK);
     }
   }
 
@@ -170,7 +166,7 @@ public class OrderController extends BaseController {
           UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program) {
 
-    return orderDtoBuilder.build(orderService.searchOrders(supplyingFacility, requestingFacility,
+    return OrderDto.newInstance(orderService.searchOrders(supplyingFacility, requestingFacility,
         program));
   }
 

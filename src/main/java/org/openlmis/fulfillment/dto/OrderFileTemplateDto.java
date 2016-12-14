@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,5 +41,36 @@ public class OrderFileTemplateDto implements OrderFileTemplate.Importer,
     return new ArrayList<>(
         Optional.ofNullable(orderFileColumns).orElse(Collections.emptyList())
     );
+  }
+
+  /**
+   * Create new list of OrderFileTemplateDto based on given list of {@link OrderFileTemplate}
+   * @param templates instance of OrderFileTemplate
+   * @return new instance of OrderFileTemplateDto.
+   */
+  public static Iterable<OrderFileTemplateDto> newInstance(Iterable<OrderFileTemplate> templates) {
+
+    List<OrderFileTemplateDto> orderFileTemplateDtos = new ArrayList<>();
+    templates.forEach(t -> orderFileTemplateDtos.add(newInstance(t)));
+    return orderFileTemplateDtos;
+  }
+
+  /**
+   * Create new instance of OrderFileTemplateDto based on given {@link OrderFileTemplate}
+   * @param orderFileTemplate instance of OrderFileTemplate
+   * @return new instance of OrderFileTemplateDto.
+   */
+  public static OrderFileTemplateDto newInstance(OrderFileTemplate orderFileTemplate) {
+    if (orderFileTemplate == null) {
+      return null;
+    }
+    OrderFileTemplateDto orderFileTemplateDto = new OrderFileTemplateDto();
+    orderFileTemplate.export(orderFileTemplateDto);
+
+    if (orderFileTemplate.getOrderFileColumns() != null) {
+      orderFileTemplateDto.setOrderFileColumns(orderFileTemplate.getOrderFileColumns()
+          .stream().map(OrderFileColumnDto::newInstance).collect(Collectors.toList()));
+    }
+    return orderFileTemplateDto;
   }
 }

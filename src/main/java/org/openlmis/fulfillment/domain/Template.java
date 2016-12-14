@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -91,11 +92,32 @@ public class Template extends BaseEntity {
   }
 
   /**
+   * Create a new instance of Tamplate absed on data from {@link Template.Importer}
+   *
+   * @param importer instance of {@link Template.Importer}
+   * @return new instance od template.
+   */
+  public static Template newInstance(Template.Importer importer) {
+    Template template = new Template();
+    template.setId(importer.getId());
+    template.setName(importer.getName());
+    template.setData(importer.getData());
+    template.setType(importer.getType());
+    template.setDescription(importer.getDescription());
+    template.setTemplateParameters(new ArrayList<>());
+
+    if (importer.getTemplateParameters() != null) {
+      importer.getTemplateParameters().forEach(
+          tp -> template.getTemplateParameters().add(TemplateParameter.newTemplateParameter(tp)));
+    }
+    return template;
+  }
+
+  /**
    * Export this object to the specified exporter (DTO).
    *
    * @param exporter exporter to export to
    */
-
   public void export(Template.Exporter exporter) {
     exporter.setData(data);
     exporter.setDescription(description);

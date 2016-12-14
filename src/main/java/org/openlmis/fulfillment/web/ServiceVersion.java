@@ -18,7 +18,7 @@ class ServiceVersion {
   private static final String VERSION_FILE = "version.properties";
 
   private String service = "service";
-  private String build = "${build}";
+  private String build = "${newInstance}";
   private String branch = "${branch}";
   private String timeStamp = "${time}";
   private String version = "version";

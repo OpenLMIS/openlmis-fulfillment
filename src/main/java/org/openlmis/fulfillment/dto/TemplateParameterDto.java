@@ -22,4 +22,15 @@ public class TemplateParameterDto implements TemplateParameter.Importer,
   private String dataType;
   private String selectSql;
   private String description;
+
+  /**
+   * Create new instance of TemplateParameterDto based on given {@link TemplateParameter}
+   * @param templateParameter instance of Template
+   * @return new instance of TemplateDto.
+   */
+  public static TemplateParameterDto newInstance(TemplateParameter templateParameter) {
+    TemplateParameterDto templateParameterDto = new TemplateParameterDto();
+    templateParameter.export(templateParameterDto);
+    return templateParameterDto;
+  }
 }

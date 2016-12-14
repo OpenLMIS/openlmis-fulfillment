@@ -24,4 +24,15 @@ public class OrderFileColumnDto implements OrderFileColumn.Importer, OrderFileCo
   private String keyPath;
   private String related;
   private String relatedKeyPath;
+
+  /**
+   * Create new instance of OrderFileColumnDto based on given {@link OrderFileColumn}
+   * @param orderFileColumn instance of Template
+   * @return new instance of TemplateDto.
+   */
+  public static OrderFileColumnDto newInstance(OrderFileColumn orderFileColumn) {
+    OrderFileColumnDto orderFileColumnDto = new OrderFileColumnDto();
+    orderFileColumn.export(orderFileColumnDto);
+    return orderFileColumnDto;
+  }
 }

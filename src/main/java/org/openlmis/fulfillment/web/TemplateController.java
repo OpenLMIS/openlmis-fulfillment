@@ -2,7 +2,6 @@ package org.openlmis.fulfillment.web;
 
 import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.domain.TemplateBuilder;
 import org.openlmis.fulfillment.dto.TemplateDto;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.ReportingException;
@@ -35,9 +34,6 @@ public class TemplateController extends BaseController {
   @Autowired
   private TemplateRepository templateRepository;
 
-  @Autowired
-  private TemplateDtoBuilder templateDtoBuilder;
-
   /**
    * Adding report templates with ".jrxml" format to database.
    *
@@ -62,7 +58,7 @@ public class TemplateController extends BaseController {
   @RequestMapping(value = "/templates", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Iterable<TemplateDto>> getAllTemplates() {
-    Iterable<TemplateDto> templates = templateDtoBuilder.build(templateRepository.findAll());
+    Iterable<TemplateDto> templates = TemplateDto.newInstance(templateRepository.findAll());
     return new ResponseEntity<>(templates, HttpStatus.OK);
   }
 
@@ -76,7 +72,7 @@ public class TemplateController extends BaseController {
   @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
   public ResponseEntity<TemplateDto> updateTemplate(@RequestBody TemplateDto templateDto,
                                           @PathVariable("id") UUID templateId) {
-    Template template = TemplateBuilder.newTemplate(templateDto);
+    Template template = Template.newInstance(templateDto);
     Template templateToUpdate = templateRepository.findOne(templateId);
     if (templateToUpdate == null) {
       templateToUpdate = new Template();
@@ -89,7 +85,7 @@ public class TemplateController extends BaseController {
     templateToUpdate = templateRepository.save(templateToUpdate);
 
     LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
-    return new ResponseEntity<>(templateDtoBuilder.build(templateToUpdate), HttpStatus.OK);
+    return new ResponseEntity<>(TemplateDto.newInstance(templateToUpdate), HttpStatus.OK);
   }
 
   /**
@@ -105,7 +101,7 @@ public class TemplateController extends BaseController {
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(templateDtoBuilder.build(template), HttpStatus.OK);
+      return new ResponseEntity<>(TemplateDto.newInstance(template), HttpStatus.OK);
     }
   }
 

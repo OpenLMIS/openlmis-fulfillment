@@ -1,7 +1,6 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.domain.OrderFileTemplateBuilder;
 import org.openlmis.fulfillment.dto.OrderFileTemplateDto;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
@@ -32,8 +31,6 @@ public class OrderFileTemplateController extends BaseController {
   private OrderFileTemplateRepository orderFileTemplateRepository;
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
-  @Autowired
-  private OrderFileTemplateDtoBuilder orderFileTemplateDtoBuilder;
 
   @InitBinder
   protected void initBinder(WebDataBinder binder) {
@@ -53,13 +50,13 @@ public class OrderFileTemplateController extends BaseController {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
     LOGGER.debug("Saving Order File Template");
-    OrderFileTemplate orderFileTemplate = OrderFileTemplateBuilder.newOrderFileTemplate(
+    OrderFileTemplate orderFileTemplate = OrderFileTemplate.newInstance(
         orderFileTemplateDto);
 
     OrderFileTemplate savedTemplate = orderFileTemplateRepository.save(orderFileTemplate);
 
     LOGGER.debug("Saved Order File Template with id: " + orderFileTemplate.getId());
-    return new ResponseEntity<>( orderFileTemplateDtoBuilder.build(savedTemplate), HttpStatus.OK);
+    return new ResponseEntity<>( OrderFileTemplateDto.newInstance(savedTemplate), HttpStatus.OK);
   }
 
   /**
@@ -73,7 +70,7 @@ public class OrderFileTemplateController extends BaseController {
     if (orderFileTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(orderFileTemplateDtoBuilder.build(orderFileTemplate),
+      return new ResponseEntity<>(OrderFileTemplateDto.newInstance(orderFileTemplate),
           HttpStatus.OK);
     }
   }

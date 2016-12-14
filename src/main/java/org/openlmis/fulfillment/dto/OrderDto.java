@@ -9,7 +9,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,8 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import javax.persistence.Convert;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -52,7 +51,6 @@ public class OrderDto implements Order.Importer, Order.Exporter {
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
   @Getter
   @Setter
   private LocalDateTime createdDate;
@@ -105,5 +103,32 @@ public class OrderDto implements Order.Importer, Order.Exporter {
     return new ArrayList<>(
         Optional.ofNullable(orderLineItems).orElse(Collections.emptyList())
     );
+  }
+
+  /**
+   * Crete new list of OrderDto based on list of {@link Order}
+   * @param orders list on orders
+   * @return list of OrderDto.
+   */
+  public static Iterable<OrderDto> newInstance(Iterable<Order> orders) {
+    List<OrderDto> orderDtos = new ArrayList<>();
+    orders.forEach(o -> orderDtos.add(newInstance(o)));
+    return orderDtos;
+  }
+
+  /**
+   * Create new instance of Order based on given {@link Order}
+   * @param order instance of Order
+   * @return new instance od OrderDto.
+   */
+  public static OrderDto newInstance(Order order) {
+    OrderDto orderDto =  new OrderDto();
+    order.export(orderDto);
+
+    if (order.getOrderLineItems() != null) {
+      orderDto.setOrderLineItems(order.getOrderLineItems().stream()
+          .map(OrderLineItemDto::newInstance).collect(Collectors.toList()));
+    }
+    return orderDto;
   }
 }

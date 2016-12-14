@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -112,6 +113,31 @@ public class ProofOfDelivery extends BaseEntity {
   public void forEachLine(Consumer<ProofOfDeliveryLineItem> consumer) {
     Optional.ofNullable(proofOfDeliveryLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Create instance of ProofOfDelivery based on given {@link ProofOfDelivery.Importer}
+   * @param importer instance of {@link ProofOfDelivery.Importer}
+   * @return instance of ProofOfDelivery.
+   */
+  public static ProofOfDelivery newInstance(ProofOfDelivery.Importer importer) {
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+    proofOfDelivery.setOrder(Order.newInstance(importer.getOrder()));
+    proofOfDelivery.setTotalShippedPacks(importer.getTotalShippedPacks());
+    proofOfDelivery.setTotalReceivedPacks(importer.getTotalReceivedPacks());
+    proofOfDelivery.setTotalReturnedPacks(importer.getTotalReturnedPacks());
+    proofOfDelivery.setDeliveredBy(importer.getDeliveredBy());
+    proofOfDelivery.setReceivedBy(importer.getReceivedBy());
+    proofOfDelivery.setReceivedDate(importer.getReceivedDate());
+
+    if (importer.getProofOfDeliveryLineItems() != null) {
+      proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
+      importer.getProofOfDeliveryLineItems().forEach(
+          podli -> proofOfDelivery.getProofOfDeliveryLineItems().add(
+              ProofOfDeliveryLineItem.newInstance(podli)));
+    }
+
+    return proofOfDelivery;
   }
 
   /**

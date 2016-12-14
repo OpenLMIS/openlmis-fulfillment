@@ -24,4 +24,21 @@ public class ProofOfDeliveryLineItemDto implements ProofOfDeliveryLineItem.Impor
   private String replacedProductCode;
   private String notes;
 
+  /**
+   * Create new instance of ProofOfDeliveryLineItemDto based of given
+   * {@link ProofOfDeliveryLineItem}
+   * @param proofOfDeliveryLineItem instance of {@link ProofOfDeliveryLineItem}
+   * @return new instance of ProofOfDeliveryLineItemDto.
+   */
+  public static ProofOfDeliveryLineItemDto newInstance(
+      ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
+    ProofOfDeliveryLineItemDto proofOfDeliveryLineItemDto = new ProofOfDeliveryLineItemDto();
+    proofOfDeliveryLineItem.export(proofOfDeliveryLineItemDto);
+
+    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
+    proofOfDeliveryLineItem.getOrderLineItem().export(orderLineItemDto);
+    proofOfDeliveryLineItemDto.setOrderLineItem(orderLineItemDto);
+
+    return proofOfDeliveryLineItemDto;
+  }
 }

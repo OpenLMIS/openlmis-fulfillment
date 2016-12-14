@@ -18,6 +18,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -172,6 +173,39 @@ public class Order extends BaseEntity {
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Create a new instance of Order based on data from {@link Order.Importer}
+   *
+   * @param importer instance of {@link Order.Importer}
+   * @return new instance of requisition.
+   */
+  public static Order newInstance(Order.Importer importer) {
+    Order order = new Order();
+    order.setId(importer.getId());
+    order.setExternalId(importer.getExternalId());
+    order.setEmergency(importer.getEmergency());
+    order.setFacilityId(importer.getFacilityId());
+    order.setProgramId(importer.getProgramId());
+    order.setRequestingFacilityId(importer.getRequestingFacilityId());
+    order.setReceivingFacilityId(importer.getReceivingFacilityId());
+    order.setSupplyingFacilityId(importer.getSupplyingFacilityId());
+    order.setOrderCode(importer.getOrderCode());
+    order.setStatus(importer.getStatus());
+    order.setQuotedCost(importer.getQuotedCost());
+    order.setProcessingPeriodId(importer.getProcessingPeriodId());
+    order.setCreatedDate(importer.getCreatedDate());
+    order.setCreatedById(importer.getCreatedById());
+    order.setSupervisoryNodeId(importer.getSupervisoryNodeId());
+    order.setSupplyingFacilityId(importer.getSupplyingFacilityId());
+    order.setOrderLineItems(new ArrayList<>());
+
+    if (importer.getOrderLineItems() != null) {
+      importer.getOrderLineItems().forEach(
+          oli -> order.getOrderLineItems().add(OrderLineItem.newOrderLineItem(oli)));
+    }
+    return order;
   }
 
   /**

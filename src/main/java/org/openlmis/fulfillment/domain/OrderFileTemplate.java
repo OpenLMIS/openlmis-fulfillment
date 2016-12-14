@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +47,25 @@ public class OrderFileTemplate extends BaseEntity {
   @Setter
   private List<OrderFileColumn> orderFileColumns;
 
+  /**
+   * Creates new instance od OrderFileTemplate based on given{@link OrderFileTemplate.Importer}
+   * @param importer instance of {@link OrderFileTemplate.Importer}
+   * @return new instance of OrderFileTemplate.
+   */
+  public static OrderFileTemplate newInstance(OrderFileTemplate.Importer importer) {
+    OrderFileTemplate orderFileTemplate =  new OrderFileTemplate();
+    orderFileTemplate.setId(importer.getId());
+    orderFileTemplate.setFilePrefix(importer.getFilePrefix());
+    orderFileTemplate.setHeaderInFile(importer.getHeaderInFile());
+    orderFileTemplate.setOrderFileColumns(new ArrayList<>());
+    if (importer.getOrderFileColumns() != null) {
+      importer.getOrderFileColumns().forEach(
+          ofc -> orderFileTemplate.getOrderFileColumns().add(
+              OrderFileColumn.newOrderFileColumn(ofc)));
+    }
+
+    return orderFileTemplate;
+  }
 
   /**
    * Export this object to the specified exporter (DTO).

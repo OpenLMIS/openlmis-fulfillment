@@ -18,4 +18,15 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
   private Long orderedQuantity;
   private Long filledQuantity;
   private Long approvedQuantity;
+
+  /**
+   * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}
+   * @param orderLineItem instance of Template
+   * @return new instance of TemplateDto.
+   */
+  public static OrderLineItemDto newInstance(OrderLineItem orderLineItem) {
+    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
+    orderLineItem.export(orderLineItemDto);
+    return orderLineItemDto;
+  }
 }
