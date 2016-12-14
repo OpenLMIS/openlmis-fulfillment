@@ -1,5 +1,9 @@
 package org.openlmis.fulfillment.service;
 
+import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
+import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
+import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
+import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
 
 import net.sf.jasperreports.engine.JRException;
@@ -12,28 +16,39 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.service.referencedata.FacilityDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.service.notification.NotificationRequest;
+import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.SupplyLineDto;
+import org.openlmis.fulfillment.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
 
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +77,21 @@ public class OrderService {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
+
+  @Autowired
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private TransferPropertiesRepository transferPropertiesRepository;
+
+  @Autowired
+  private NotificationService notificationService;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
 
   @Autowired
   private OrderStorage orderStorage;
@@ -203,22 +233,28 @@ public class OrderService {
    * @return passed instance after save.
    */
   public Order save(Order order) throws OrderSaveException {
-    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.findAll().iterator().next();
+    SupplyLineDto supplyLine = getSupplyLine(order);
+    setOrderStatus(order, supplyLine);
+    setOrderCode(order);
 
-    order.setOrderCode(
-        orderNumberConfiguration.generateOrderNumber(order, program)
-    );
-
+    // save order
     Order saved = orderRepository.save(order);
 
     try {
       orderStorage.store(saved);
-      boolean success = orderSender.send(saved);
 
-      if (success) {
-        orderStorage.delete(saved);
+      TransferProperties properties = transferPropertiesRepository
+          .findFirstByFacilityId(order.getSupplyingFacilityId());
+
+      if (properties instanceof FtpTransferProperties) {
+        boolean success = orderSender.send(saved);
+
+        if (success) {
+          orderStorage.delete(saved);
+        } else {
+          order.setStatus(TRANSFER_FAILED);
+          saved = orderRepository.save(order);
+        }
       }
     } catch (OrderStorageException exp) {
       throw new OrderSaveException("Unable to storage the order", exp);
@@ -226,6 +262,105 @@ public class OrderService {
       throw new OrderSaveException("Unable to send the order", exp);
     }
 
+    try {
+      // notification via email is sent to the storeroom manager who initiated the requisition
+      // TODO: check OLMIS-1467
+
+      // Send an email notification to the user that converted the order
+      sendNotification(saved, saved.getCreatedById());
+    } catch (ConfigurationSettingException exp) {
+      throw new OrderSaveException("Unable to send email notification", exp);
+    }
+
     return saved;
   }
+
+  private void sendNotification(Order order, UUID userId) throws ConfigurationSettingException {
+    String from = configurationSettingService.getStringValue("fulfillment.email.noreply");
+    String to = userReferenceDataService.findOne(userId).getEmail();
+    String subject = configurationSettingService
+        .getStringValue("fulfillment.email.subject.order.creation");
+    String content = createContent(order);
+
+    notificationService.send(
+        NotificationRequest.plainTextNotification(from, to, subject, content)
+    );
+  }
+
+  private String createContent(Order order) throws ConfigurationSettingException {
+    String content = configurationSettingService
+        .getStringValue("fulfilllment.email.body.order.creation");
+
+    try {
+      List<PropertyDescriptor> descriptors = Arrays
+          .stream(getPropertyDescriptors(order.getClass()))
+          .filter(d -> null != d.getReadMethod())
+          .collect(Collectors.toList());
+
+      for (PropertyDescriptor descriptor : descriptors) {
+        String target = "{" + descriptor.getName() + "}";
+        String replacement = String.valueOf(descriptor.getReadMethod().invoke(order));
+
+        content = content.replace(target, replacement);
+      }
+    } catch (IllegalAccessException | InvocationTargetException exp) {
+      throw new IllegalStateException("Can't get access to getter method", exp);
+    }
+    return content;
+  }
+
+  private void setOrderCode(Order order) {
+    // set order code
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
+
+    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
+  }
+
+  private void setOrderStatus(Order order, SupplyLineDto supplyLine) {
+    // Is the order associated with a supply line?
+    if (null != supplyLine) {
+      order.setSupplyLineId(supplyLine.getId());
+
+      // Is the supplying facility have the FTP configuration?
+      TransferProperties properties = transferPropertiesRepository
+          .findFirstByFacilityId(supplyLine.getSupplyingFacility());
+
+      if (null == properties) {
+        // Set order status as TRANSFER_FAILED
+        order.setStatus(TRANSFER_FAILED);
+      } else {
+        // Is the export-orders flag enabled on the supply line associated with the order
+        // yes -> Set order status as IN_ROUTE
+        // no  -> Set order status as READY_TO_PACK
+        order.setStatus(properties instanceof FtpTransferProperties ? IN_ROUTE : READY_TO_PACK);
+      }
+    } else {
+      // Set order status as TRANSFER_FAILED
+      order.setStatus(TRANSFER_FAILED);
+    }
+  }
+
+  private SupplyLineDto getSupplyLine(Order order) {
+    UUID supplyingFacilityId = order.getSupplyingFacilityId();
+    SupplyLineDto supplyLine;
+
+    // Is the order associated with a specific depot?
+    if (null != supplyingFacilityId) {
+      // Associate the depot's supply line with the order
+      supplyLine = supplyLineReferenceDataService.search(
+          order.getProgramId(), null, supplyingFacilityId
+      ).stream().findFirst().orElse(null);
+    } else {
+      // Get the supply line associated with the requisition's program and supervisory node.
+      // Associate this supply line with the order.
+      supplyLine = supplyLineReferenceDataService.search(
+          order.getProgramId(), order.getSupervisoryNodeId(), null
+      ).stream().findFirst().orElse(null);
+    }
+
+    return supplyLine;
+  }
+
 }

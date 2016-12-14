@@ -39,25 +39,26 @@ public class OrderFtpSender implements OrderSender {
     TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
-    if (properties instanceof FtpTransferProperties) {
-      try {
-        FtpTransferProperties ftp = (FtpTransferProperties) properties;
-        String endpointUri = createEndpointUri(ftp);
-        File file = path.toFile();
-        producerTemplate.sendBodyAndHeader(endpointUri, file, Exchange.FILE_NAME, file.getName());
-      } catch (Exception exp) {
-        LOGGER.error(
-            "Can't transfer CSV file {} related with order {} to the FTP server",
-            path, order.getId(), exp
-        );
+    return properties instanceof FtpTransferProperties
+        && send(order, path, (FtpTransferProperties) properties);
 
-        return false;
-      }
+  }
 
-      return true;
+  private boolean send(Order order, Path path, FtpTransferProperties ftp) {
+    try {
+      String endpointUri = createEndpointUri(ftp);
+      File file = path.toFile();
+      producerTemplate.sendBodyAndHeader(endpointUri, file, Exchange.FILE_NAME, file.getName());
+    } catch (Exception exp) {
+      LOGGER.error(
+          "Can't transfer CSV file {} related with order {} to the FTP server",
+          path, order.getId(), exp
+      );
+
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   private String createEndpointUri(FtpTransferProperties setting) {

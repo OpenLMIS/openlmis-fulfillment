@@ -115,6 +115,17 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  @Type(type = UUID_TYPE)
+  private UUID supervisoryNodeId;
+
+  @Getter
+  @Setter
+  @Type(type = UUID_TYPE)
+  private UUID supplyLineId;
+
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},

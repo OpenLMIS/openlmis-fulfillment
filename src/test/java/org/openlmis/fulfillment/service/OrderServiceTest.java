@@ -1,6 +1,10 @@
 package org.openlmis.fulfillment.service;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
@@ -15,22 +19,32 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.service.referencedata.FacilityDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.service.notification.NotificationRequest;
+import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.SupplyLineDto;
+import org.openlmis.fulfillment.service.referencedata.SupplyLineReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -48,7 +62,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
+@SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
 
@@ -59,16 +73,28 @@ public class OrderServiceTest {
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Mock
-  private ProgramDto program;
+  private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
 
   @Mock
-  private FacilityReferenceDataService facilityReferenceDataService;
+  private OrderableProductReferenceDataService orderableProductReferenceDataService;
 
   @Mock
-  private OrderableProductReferenceDataService orderableProductReferenceDataService;
+  private SupplyLineReferenceDataService supplyLineReferenceDataService;
+
+  @Mock
+  private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private TransferPropertiesRepository transferPropertiesRepository;
+
+  @Mock
+  private NotificationService notificationService;
+
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
 
   @Mock
   private OrderStorage orderStorage;
@@ -79,8 +105,14 @@ public class OrderServiceTest {
   @InjectMocks
   private OrderService orderService;
 
+  @Mock
+  private ProgramDto program;
+
+  @Captor
+  private ArgumentCaptor<NotificationRequest> notificationCaptor;
+
   @Before
-  public void setUp() {
+  public void setUp() throws ConfigurationSettingException {
     generateMocks();
   }
 
@@ -92,7 +124,12 @@ public class OrderServiceTest {
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
+    SupplyLineDto supplyLineDto = new SupplyLineDto();
+    when(supplyLineReferenceDataService.search(any(), any(), any()))
+        .thenReturn(Collections.singletonList(supplyLineDto));
+
     Order order = new Order();
+    order.setId(UUID.randomUUID());
     order.setExternalId(UUID.randomUUID());
     order.setEmergency(true);
     order.setProgramId(program.getId());
@@ -113,12 +150,25 @@ public class OrderServiceTest {
 
     // then
     validateCreatedOrder(created, order);
+    assertEquals(OrderStatus.IN_ROUTE, created.getStatus());
 
     InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
     inOrder.verify(orderRepository).save(order);
     inOrder.verify(orderStorage).store(order);
     inOrder.verify(orderSender).send(order);
     inOrder.verify(orderStorage).delete(order);
+
+    verify(notificationService).send(notificationCaptor.capture());
+
+    NotificationRequest notification = notificationCaptor.getValue();
+    assertThat(notification, is(notNullValue()));
+
+    assertThat(notification.getFrom(), is("noreply@openlmis.org"));
+    assertThat(notification.getTo(), is("user@openlmis.org"));
+    assertThat(notification.getSubject(), is("New order"));
+    assertThat(notification.getContent(),
+        is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
+    assertThat(notification.getHtmlContent(), is(nullValue()));
   }
 
   @Test
@@ -128,6 +178,10 @@ public class OrderServiceTest {
         new OrderNumberConfiguration("prefix", true, true, true);
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
+
+    SupplyLineDto supplyLineDto = new SupplyLineDto();
+    when(supplyLineReferenceDataService.search(any(), any(), any()))
+        .thenReturn(Collections.singletonList(supplyLineDto));
 
     Order order = new Order();
     order.setExternalId(UUID.randomUUID());
@@ -150,6 +204,7 @@ public class OrderServiceTest {
 
     // then
     validateCreatedOrder(created, order);
+    assertEquals(OrderStatus.TRANSFER_FAILED, created.getStatus());
 
     InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
     inOrder.verify(orderRepository).save(order);
@@ -247,7 +302,6 @@ public class OrderServiceTest {
   }
 
   private void validateCreatedOrder(Order actual, Order expected) {
-    assertEquals(OrderStatus.ORDERED, actual.getStatus());
     assertEquals(actual.getExternalId(), expected.getExternalId());
     assertEquals(actual.getReceivingFacilityId(), expected.getReceivingFacilityId());
     assertEquals(actual.getRequestingFacilityId(), expected.getRequestingFacilityId());
@@ -263,7 +317,7 @@ public class OrderServiceTest {
     assertEquals(expectedLineItem.getOrderableProductId(), actualLineItem.getOrderableProductId());
   }
 
-  private void generateMocks() {
+  private void generateMocks() throws ConfigurationSettingException {
     ProgramDto programDto = new ProgramDto();
     programDto.setCode("programCode");
     when(programReferenceDataService.findOne(any())).thenReturn(programDto);
@@ -272,5 +326,18 @@ public class OrderServiceTest {
     facilityDto.setCode("FacilityCode");
     when(facilityReferenceDataService.findOne(any())).thenReturn(facilityDto);
 
+    UserDto userDto = new UserDto();
+    userDto.setEmail("user@openlmis.org");
+    when(userReferenceDataService.findOne(any())).thenReturn(userDto);
+
+    FtpTransferProperties properties = new FtpTransferProperties();
+    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
+
+    when(configurationSettingService.getStringValue("fulfillment.email.noreply"))
+        .thenReturn("noreply@openlmis.org");
+    when(configurationSettingService.getStringValue("fulfillment.email.subject.order.creation"))
+        .thenReturn("New order");
+    when(configurationSettingService.getStringValue("fulfilllment.email.body.order.creation"))
+        .thenReturn("Create an order: {id} with status: {status}");
   }
 }

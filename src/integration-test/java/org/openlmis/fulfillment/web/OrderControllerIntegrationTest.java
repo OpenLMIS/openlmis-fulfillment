@@ -15,8 +15,11 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.ConfigurationSettingException;
+import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
+import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
@@ -64,12 +67,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private OrderFtpSender orderFtpSender;
 
+  @MockBean
+  private NotificationService notificationService;
+
+  @MockBean
+  private ConfigurationSettingService configurationSettingService;
+
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
 
   @Before
-  public void setUp() {
+  public void setUp() throws ConfigurationSettingException {
     this.setUpBootstrapData();
 
     firstOrder = addOrder(UUID.randomUUID(), facility, period1, "orderCode", UUID.randomUUID(),
@@ -110,6 +119,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           }
 
         });
+
+    given(configurationSettingService.getStringValue("fulfillment.email.noreply"))
+        .willReturn("noreply@openlmis.org");
+    given(configurationSettingService.getStringValue("fulfillment.email.subject.order.creation"))
+        .willReturn("New order");
+    given(configurationSettingService.getStringValue("fulfilllment.email.body.order.creation"))
+        .willReturn("Create an order: {id} with status: {status}");
   }
 
   private Order addOrder(UUID requisition, UUID facility, UUID processingPeriod,

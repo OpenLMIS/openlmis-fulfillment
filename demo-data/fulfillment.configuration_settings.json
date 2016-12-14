@@ -1,0 +1,14 @@
+[
+  {
+    "key": "fulfillment.email.noreply",
+    "value": "noreply@openlmis.org"
+  },
+  {
+    "key": "fulfillment.email.subject.order.creation",
+    "value": "New order"
+  },
+  {
+    "key": "fulfilllment.email.body.order.creation",
+    "value": "Create an order: {id} with status: {status}"
+  }
+]
