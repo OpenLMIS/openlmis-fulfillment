@@ -762,7 +762,7 @@ resourceTypes:
                           headers:
                             X-Content-Type-Options:
                             X-XSS-Protection:
-  /configurationSetting:
+  /configurationSettings:
       displayName: Configuration settings.
       get:
           is: [ secured ]

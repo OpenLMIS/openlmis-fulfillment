@@ -1,6 +1,5 @@
 package org.openlmis.fulfillment.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +12,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "configuration_settings")
 @NoArgsConstructor
-@AllArgsConstructor
 public class ConfigurationSetting {
 
   @Id
@@ -33,7 +31,11 @@ public class ConfigurationSetting {
    * @return new instance of {@link ConfigurationSetting}.
    */
   public static ConfigurationSetting newInstance(Importer importer) {
-    return new ConfigurationSetting(importer.getKey(), importer.getValue());
+    ConfigurationSetting setting = new ConfigurationSetting();
+    setting.setKey(importer.getKey());
+    setting.setValue(importer.getValue());
+
+    return setting;
   }
 
   /**
