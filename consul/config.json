@@ -1,5 +1,9 @@
 {
-  "name": "fulfillment",
+  "service": {
+    "Name": "fulfillment",
+    "Port": 8080,
+    "Tags": ["openlmis-service"]
+  },
   "raml": "src/main/resources/api-definition.yaml",
   "path": [
     "fulfillment",
