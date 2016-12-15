@@ -4,6 +4,7 @@ import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
 import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
 
 import net.sf.jasperreports.engine.JRException;
@@ -24,7 +25,6 @@ import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
-import org.openlmis.fulfillment.service.notification.NotificationRequest;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -282,9 +282,7 @@ public class OrderService {
         .getStringValue("fulfillment.email.subject.order.creation");
     String content = createContent(order);
 
-    notificationService.send(
-        NotificationRequest.plainTextNotification(from, to, subject, content)
-    );
+    notificationService.send(plainTextNotification(from, to, subject, content));
   }
 
   private String createContent(Order order) throws ConfigurationSettingException {
