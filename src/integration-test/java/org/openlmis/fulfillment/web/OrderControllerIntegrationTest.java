@@ -6,6 +6,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
 import com.google.common.collect.Lists;
 
@@ -120,11 +123,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
         });
 
-    given(configurationSettingService.getStringValue("fulfillment.email.noreply"))
+    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY))
         .willReturn("noreply@openlmis.org");
-    given(configurationSettingService.getStringValue("fulfillment.email.subject.order.creation"))
+    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
         .willReturn("New order");
-    given(configurationSettingService.getStringValue("fulfilllment.email.body.order.creation"))
+    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
         .willReturn("Create an order: {id} with status: {status}");
   }
 

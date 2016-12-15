@@ -5,6 +5,9 @@ import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
 
 import net.sf.jasperreports.engine.JRException;
@@ -276,10 +279,10 @@ public class OrderService {
   }
 
   private void sendNotification(Order order, UUID userId) throws ConfigurationSettingException {
-    String from = configurationSettingService.getStringValue("fulfillment.email.noreply");
+    String from = configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY);
     String to = userReferenceDataService.findOne(userId).getEmail();
     String subject = configurationSettingService
-        .getStringValue("fulfillment.email.order-creation.subject");
+        .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
     String content = createContent(order);
 
     notificationService.send(plainTextNotification(from, to, subject, content));
@@ -287,7 +290,7 @@ public class OrderService {
 
   private String createContent(Order order) throws ConfigurationSettingException {
     String content = configurationSettingService
-        .getStringValue("fulfillment.email.order-creation.body");
+        .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
 
     try {
       List<PropertyDescriptor> descriptors = Arrays

@@ -13,6 +13,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
 import com.google.common.collect.Lists;
 
@@ -333,11 +336,11 @@ public class OrderServiceTest {
     FtpTransferProperties properties = new FtpTransferProperties();
     when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
 
-    when(configurationSettingService.getStringValue("fulfillment.email.noreply"))
+    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY))
         .thenReturn("noreply@openlmis.org");
-    when(configurationSettingService.getStringValue("fulfillment.email.subject.order.creation"))
+    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
         .thenReturn("New order");
-    when(configurationSettingService.getStringValue("fulfilllment.email.body.order.creation"))
+    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
         .thenReturn("Create an order: {id} with status: {status}");
   }
 }
