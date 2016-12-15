@@ -320,6 +320,7 @@ public class OrderService {
     // Is the order associated with a supply line?
     if (null != supplyLine) {
       order.setSupplyLineId(supplyLine.getId());
+      order.setSupplyingFacilityId(supplyLine.getSupplyingFacility());
 
       // Is the supplying facility have the FTP configuration?
       TransferProperties properties = transferPropertiesRepository
