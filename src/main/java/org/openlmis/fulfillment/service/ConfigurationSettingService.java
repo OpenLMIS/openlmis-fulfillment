@@ -22,13 +22,7 @@ public class ConfigurationSettingService {
    * @throws ConfigurationSettingException when setting was not found or value is null.
    */
   public String getStringValue(String key) throws ConfigurationSettingException {
-    ConfigurationSetting configurationSetting = getByKey(key);
-
-    if (configurationSetting.getValue() == null) {
-      throw new ConfigurationSettingException("Configuration setting '" + key + "' not found");
-    }
-
-    return configurationSetting.getValue();
+    return getByKey(key).getValue();
   }
 
   /**
@@ -49,7 +43,7 @@ public class ConfigurationSettingService {
     ConfigurationSetting setting = configurationSettingRepository.findOne(key);
 
     if (null == setting) {
-      throw new ConfigurationSettingException("Configuration setting '" + key + "' not found");
+      throw new ConfigurationSettingNotFoundException(key);
     }
 
     return setting;

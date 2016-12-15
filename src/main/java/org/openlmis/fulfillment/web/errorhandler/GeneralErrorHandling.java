@@ -1,11 +1,11 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
-import org.openlmis.fulfillment.service.ConfigurationSettingException;
-import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
+import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.ReportingException;
+import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -35,6 +35,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
    * Handles the {@link DataIntegrityViolationException} which signals a violation of some sort
    * of a db constraint like unique. Returns error 409 (CONFLICT) and a JSON representation of the
    * error as the body.
+   *
    * @param ex the exception that caused the issue
    * @return the error response
    */
@@ -74,11 +75,11 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Duplicate facility setting", ex);
   }
 
-  @ExceptionHandler(ConfigurationSettingException.class)
+  @ExceptionHandler(ConfigurationSettingNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
-  public ErrorResponse handleConfigurationSettingException(
-      ConfigurationSettingException ex) {
+  public ErrorResponse handleConfigurationSettingNotFoundException(
+      ConfigurationSettingNotFoundException ex) {
     return logErrorAndRespond("Cannot find configuration setting", ex);
   }
 }
