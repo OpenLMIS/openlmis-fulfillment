@@ -2,15 +2,10 @@ package org.openlmis.fulfillment.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
-import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +21,6 @@ import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,9 +57,6 @@ public class Order extends BaseEntity {
   @Type(type = UUID_TYPE)
   private UUID processingPeriodId;
 
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
   @Getter
   @Setter
   private LocalDateTime createdDate;

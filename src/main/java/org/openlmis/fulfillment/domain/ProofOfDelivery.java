@@ -2,14 +2,9 @@ package org.openlmis.fulfillment.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.openlmis.fulfillment.domain.convert.LocalDatePersistenceConverter;
 import org.openlmis.fulfillment.web.util.OrderDto;
 
 import lombok.Getter;
@@ -24,7 +19,6 @@ import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -78,9 +72,6 @@ public class ProofOfDelivery extends BaseEntity {
   @Setter
   private String receivedBy;
 
-  @JsonSerialize(using = LocalDateSerializer.class)
-  @JsonDeserialize(using = LocalDateDeserializer.class)
-  @Convert(converter = LocalDatePersistenceConverter.class)
   @Getter
   @Setter
   private LocalDate receivedDate;
