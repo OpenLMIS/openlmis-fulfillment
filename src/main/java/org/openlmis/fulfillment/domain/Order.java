@@ -181,7 +181,7 @@ public class Order extends BaseEntity {
    * @param importer instance of {@link Order.Importer}
    * @return new instance of requisition.
    */
-  public static Order newInstance(Order.Importer importer) {
+  public static Order newInstance(Importer importer) {
     Order order = new Order();
     order.setId(importer.getId());
     order.setExternalId(importer.getExternalId());
@@ -203,7 +203,7 @@ public class Order extends BaseEntity {
 
     if (importer.getOrderLineItems() != null) {
       importer.getOrderLineItems().forEach(
-          oli -> order.getOrderLineItems().add(OrderLineItem.newOrderLineItem(oli)));
+          oli -> order.getOrderLineItems().add(OrderLineItem.newInstance(oli)));
     }
     return order;
   }
@@ -213,7 +213,7 @@ public class Order extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Order.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setExternalId(externalId);
     exporter.setEmergency(emergency);

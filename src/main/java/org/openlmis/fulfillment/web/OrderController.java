@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.dto.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;

@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.dto;
+package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;

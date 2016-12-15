@@ -81,13 +81,12 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @param importer instance of {@link ProofOfDeliveryLineItem.Importer}
    * @return instance of ProofOfDeliveryLineItem.
    */
-  public static ProofOfDeliveryLineItem newInstance(
-      ProofOfDeliveryLineItem.Importer importer) {
+  public static ProofOfDeliveryLineItem newInstance(Importer importer) {
     ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
 
     proofOfDeliveryLineItem.setId(importer.getId());
     proofOfDeliveryLineItem.setOrderLineItem(
-        OrderLineItem.newOrderLineItem(importer.getOrderLineItem()));
+        OrderLineItem.newInstance(importer.getOrderLineItem()));
     proofOfDeliveryLineItem.setPackToShip(importer.getPackToShip());
     proofOfDeliveryLineItem.setQuantityShipped(importer.getQuantityShipped());
     proofOfDeliveryLineItem.setQuantityReceived(importer.getQuantityReceived());
@@ -103,7 +102,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(ProofOfDeliveryLineItem.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setPackToShip(packToShip);
     exporter.setQuantityShipped(quantityShipped);

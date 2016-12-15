@@ -64,7 +64,7 @@ public class OrderLineItem extends BaseEntity {
    * @param importer instance of {@link OrderLineItem.Importer}
    * @return new instance of OrderLineItem.
    */
-  public static OrderLineItem newOrderLineItem(OrderLineItem.Importer importer) {
+  public static OrderLineItem newInstance(Importer importer) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setId(importer.getId());
     orderLineItem.setOrderableProductId(importer.getOrderableProductId());
@@ -79,7 +79,7 @@ public class OrderLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(OrderLineItem.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setApprovedQuantity(approvedQuantity);
     exporter.setOrderableProductId(orderableProductId);

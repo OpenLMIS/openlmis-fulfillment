@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.dto.TemplateDto;
+import org.openlmis.fulfillment.web.util.TemplateDto;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.TemplateService;

@@ -75,7 +75,7 @@ public class OrderFileColumn extends BaseEntity {
    * @param importer instance of {@link OrderFileColumn.Importer}
    * @return new instance of OrderFileColumn.
    */
-  public static OrderFileColumn newOrderFileColumn(OrderFileColumn.Importer importer) {
+  public static OrderFileColumn newInstance(Importer importer) {
     OrderFileColumn orderFileColumn = new OrderFileColumn();
     orderFileColumn.setId(importer.getId());
     orderFileColumn.setOpenLmisField(importer.getOpenLmisField());
@@ -95,7 +95,7 @@ public class OrderFileColumn extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(OrderFileColumn.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setColumnLabel(columnLabel);
     exporter.setOpenLmisField(openLmisField);

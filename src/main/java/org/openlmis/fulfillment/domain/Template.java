@@ -97,7 +97,7 @@ public class Template extends BaseEntity {
    * @param importer instance of {@link Template.Importer}
    * @return new instance od template.
    */
-  public static Template newInstance(Template.Importer importer) {
+  public static Template newInstance(Importer importer) {
     Template template = new Template();
     template.setId(importer.getId());
     template.setName(importer.getName());
@@ -108,7 +108,7 @@ public class Template extends BaseEntity {
 
     if (importer.getTemplateParameters() != null) {
       importer.getTemplateParameters().forEach(
-          tp -> template.getTemplateParameters().add(TemplateParameter.newTemplateParameter(tp)));
+          tp -> template.getTemplateParameters().add(TemplateParameter.newInstance(tp)));
     }
     return template;
   }
@@ -118,7 +118,7 @@ public class Template extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Template.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setData(data);
     exporter.setDescription(description);
     exporter.setId(id);

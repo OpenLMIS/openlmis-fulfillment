@@ -52,7 +52,7 @@ public class OrderFileTemplate extends BaseEntity {
    * @param importer instance of {@link OrderFileTemplate.Importer}
    * @return new instance of OrderFileTemplate.
    */
-  public static OrderFileTemplate newInstance(OrderFileTemplate.Importer importer) {
+  public static OrderFileTemplate newInstance(Importer importer) {
     OrderFileTemplate orderFileTemplate =  new OrderFileTemplate();
     orderFileTemplate.setId(importer.getId());
     orderFileTemplate.setFilePrefix(importer.getFilePrefix());
@@ -61,7 +61,7 @@ public class OrderFileTemplate extends BaseEntity {
     if (importer.getOrderFileColumns() != null) {
       importer.getOrderFileColumns().forEach(
           ofc -> orderFileTemplate.getOrderFileColumns().add(
-              OrderFileColumn.newOrderFileColumn(ofc)));
+              OrderFileColumn.newInstance(ofc)));
     }
 
     return orderFileTemplate;
@@ -72,7 +72,7 @@ public class OrderFileTemplate extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(OrderFileTemplate.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setFilePrefix(filePrefix);
     exporter.setHeaderInFile(headerInFile);

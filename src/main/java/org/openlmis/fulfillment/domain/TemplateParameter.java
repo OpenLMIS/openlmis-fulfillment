@@ -57,11 +57,11 @@ public class TemplateParameter extends BaseEntity {
   private String description;
 
   /**
-   * Create new instance of TemplateParemater based on given {@link TemplateParameter.Importer}
+   * Create new instance of TemplateParameter based on given {@link TemplateParameter.Importer}
    * @param importer instance of {@link TemplateParameter.Importer}
    * @return instance of TemplateParameter.
    */
-  public static TemplateParameter newTemplateParameter(Importer importer) {
+  public static TemplateParameter newInstance(Importer importer) {
     TemplateParameter templateParameter = new TemplateParameter();
     templateParameter.setId(importer.getId());
     templateParameter.setName(importer.getName());

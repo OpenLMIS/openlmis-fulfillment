@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.dto;
+package org.openlmis.fulfillment.web.util;
 
 
 import org.openlmis.fulfillment.domain.OrderFileColumn;
@@ -61,9 +61,6 @@ public class OrderFileTemplateDto implements OrderFileTemplate.Importer,
    * @return new instance of OrderFileTemplateDto.
    */
   public static OrderFileTemplateDto newInstance(OrderFileTemplate orderFileTemplate) {
-    if (orderFileTemplate == null) {
-      return null;
-    }
     OrderFileTemplateDto orderFileTemplateDto = new OrderFileTemplateDto();
     orderFileTemplate.export(orderFileTemplateDto);
 

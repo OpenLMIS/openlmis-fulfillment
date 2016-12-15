@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.dto.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;

@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web.validator;
 
 import org.openlmis.fulfillment.domain.OrderFileColumn;
-import org.openlmis.fulfillment.dto.OrderFileTemplateDto;
+import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

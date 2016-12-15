@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.dto.OrderFileTemplateDto;
+import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.web.validator.OrderFileTemplateValidator;

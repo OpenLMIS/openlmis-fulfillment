@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.dto;
+package org.openlmis.fulfillment.web.util;
 
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

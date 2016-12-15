@@ -1,6 +1,6 @@
 package org.openlmis.fulfillment.web.validator;
 
-import org.openlmis.fulfillment.dto.OrderNumberConfigurationDto;
+import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

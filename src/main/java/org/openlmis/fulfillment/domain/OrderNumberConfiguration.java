@@ -83,8 +83,7 @@ public class OrderNumberConfiguration extends BaseEntity {
    * @param importer instance of {@link OrderNumberConfiguration.Importer}
    * @return instance of OrderNumberConfiguration.
    */
-  public static OrderNumberConfiguration newOrderNumberConfiguration(
-      OrderNumberConfiguration.Importer importer) {
+  public static OrderNumberConfiguration newInstance(Importer importer) {
     OrderNumberConfiguration orderNumberConfiguration = new OrderNumberConfiguration();
     orderNumberConfiguration.setId(importer.getId());
     orderNumberConfiguration.setIncludeOrderNumberPrefix(importer.getIncludeOrderNumberPrefix());
@@ -100,7 +99,7 @@ public class OrderNumberConfiguration extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(OrderNumberConfiguration.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setIncludeOrderNumberPrefix(includeOrderNumberPrefix);
     exporter.setIncludeProgramCode(includeProgramCode);

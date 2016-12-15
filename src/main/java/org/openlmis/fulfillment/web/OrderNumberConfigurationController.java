@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.dto.OrderNumberConfigurationDto;
+import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.web.validator.OrderNumberConfigurationValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class OrderNumberConfigurationController extends BaseController {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
     OrderNumberConfiguration orderNumberConfiguration = OrderNumberConfiguration
-        .newOrderNumberConfiguration(orderNumberConfigurationDto);
+        .newInstance(orderNumberConfigurationDto);
 
     Iterator<OrderNumberConfiguration> it = orderNumberConfigurationRepository.findAll().iterator();
 
@@ -60,8 +60,8 @@ public class OrderNumberConfigurationController extends BaseController {
     OrderNumberConfiguration savedOrderNumberConfiguration =
         orderNumberConfigurationRepository.save(orderNumberConfiguration);
 
-    OrderNumberConfigurationDto orderNumberConfigurationDto1 = new OrderNumberConfigurationDto();
-    savedOrderNumberConfiguration.export(orderNumberConfigurationDto1);
+    OrderNumberConfigurationDto orderNumberConfigurationDto1 = OrderNumberConfigurationDto
+        .newInstance(savedOrderNumberConfiguration);
 
     return new ResponseEntity<>(orderNumberConfigurationDto1, HttpStatus.OK);
   }

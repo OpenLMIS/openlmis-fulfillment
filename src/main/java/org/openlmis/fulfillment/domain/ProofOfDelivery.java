@@ -10,7 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openlmis.fulfillment.domain.convert.LocalDatePersistenceConverter;
-import org.openlmis.fulfillment.dto.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderDto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -120,7 +120,7 @@ public class ProofOfDelivery extends BaseEntity {
    * @param importer instance of {@link ProofOfDelivery.Importer}
    * @return instance of ProofOfDelivery.
    */
-  public static ProofOfDelivery newInstance(ProofOfDelivery.Importer importer) {
+  public static ProofOfDelivery newInstance(Importer importer) {
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
     proofOfDelivery.setOrder(Order.newInstance(importer.getOrder()));
     proofOfDelivery.setTotalShippedPacks(importer.getTotalShippedPacks());
@@ -145,7 +145,7 @@ public class ProofOfDelivery extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(ProofOfDelivery.Exporter exporter) {
+  public void export(Exporter exporter) {
     exporter.setId(id);
     exporter.setDeliveredBy(deliveredBy);
     exporter.setReceivedBy(receivedBy);
