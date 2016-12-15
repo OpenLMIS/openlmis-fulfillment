@@ -279,7 +279,7 @@ public class OrderService {
     String from = configurationSettingService.getStringValue("fulfillment.email.noreply");
     String to = userReferenceDataService.findOne(userId).getEmail();
     String subject = configurationSettingService
-        .getStringValue("fulfillment.email.subject.order.creation");
+        .getStringValue("fulfillment.email.order-creation.subject");
     String content = createContent(order);
 
     notificationService.send(plainTextNotification(from, to, subject, content));
@@ -287,7 +287,7 @@ public class OrderService {
 
   private String createContent(Order order) throws ConfigurationSettingException {
     String content = configurationSettingService
-        .getStringValue("fulfilllment.email.body.order.creation");
+        .getStringValue("fulfillment.email.order-creation.body");
 
     try {
       List<PropertyDescriptor> descriptors = Arrays
