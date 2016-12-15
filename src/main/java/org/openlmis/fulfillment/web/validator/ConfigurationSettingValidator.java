@@ -3,9 +3,11 @@ package org.openlmis.fulfillment.web.validator;
 import static org.springframework.validation.ValidationUtils.rejectIfEmptyOrWhitespace;
 
 import org.openlmis.fulfillment.web.util.ConfigurationSettingDto;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
+@Component
 public class ConfigurationSettingValidator implements Validator {
 
   @Override

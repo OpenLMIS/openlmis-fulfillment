@@ -28,16 +28,8 @@ public class ConfigurationSettingServiceTest {
   @Mock
   private ConfigurationSetting setting;
 
-  @Test(expected = ConfigurationSettingException.class)
+  @Test(expected = ConfigurationSettingNotFoundException.class)
   public void shouldThrowExceptionIfSettingCannotBeFound() throws ConfigurationSettingException {
-    service.getStringValue(KEY);
-  }
-
-  @Test(expected = ConfigurationSettingException.class)
-  public void shouldThrowExceptionIfSettingValueIsNull() throws ConfigurationSettingException {
-    when(repository.findOne(KEY)).thenReturn(setting);
-    when(setting.getValue()).thenReturn(null);
-
     service.getStringValue(KEY);
   }
 
@@ -54,10 +46,14 @@ public class ConfigurationSettingServiceTest {
     when(repository.findOne(KEY)).thenReturn(setting);
     when(repository.save(any(ConfigurationSetting.class))).thenReturn(setting);
 
-    service.update(new ConfigurationSetting(KEY, VALUE + "2"));
+    ConfigurationSetting setting = new ConfigurationSetting();
+    setting.setKey(KEY);
+    setting.setValue(VALUE + "2");
 
-    verify(setting).setValue(VALUE + "2");
-    verify(repository).save(setting);
+    service.update(setting);
+
+    verify(this.setting).setValue(VALUE + "2");
+    verify(repository).save(this.setting);
 
   }
 }

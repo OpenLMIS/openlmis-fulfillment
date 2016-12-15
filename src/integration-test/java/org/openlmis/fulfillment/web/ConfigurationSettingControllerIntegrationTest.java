@@ -18,7 +18,7 @@ import java.util.Collections;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class ConfigurationSettingControllerIntegrationTest extends BaseWebIntegrationTest {
-  private static final String RESOURCE_URL = "/api/configurationSetting";
+  private static final String RESOURCE_URL = "/api/configurationSettings";
   private static final String ACCESS_TOKEN = "access_token";
 
   private static final String KEY = "key";
@@ -29,8 +29,12 @@ public class ConfigurationSettingControllerIntegrationTest extends BaseWebIntegr
 
   @Test
   public void shouldRetrieveAllSettings() {
+    ConfigurationSetting setting = new ConfigurationSetting();
+    setting.setKey(KEY);
+    setting.setValue(VALUE);
+
     given(configurationSettingRepository.findAll())
-        .willReturn(Collections.singletonList(new ConfigurationSetting(KEY, VALUE)));
+        .willReturn(Collections.singletonList(setting));
 
     ConfigurationSettingDto[] array = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -50,8 +54,12 @@ public class ConfigurationSettingControllerIntegrationTest extends BaseWebIntegr
 
   @Test
   public void shouldUpdateSetting() {
+    ConfigurationSetting setting = new ConfigurationSetting();
+    setting.setKey(KEY);
+    setting.setValue(VALUE);
+
     given(configurationSettingRepository.findOne(KEY))
-        .willReturn(new ConfigurationSetting(KEY, VALUE));
+        .willReturn(setting);
     given(configurationSettingRepository.save(any(ConfigurationSetting.class)))
         .willAnswer(invocation -> invocation.getArguments()[0]);
 
