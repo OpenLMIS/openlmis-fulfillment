@@ -33,31 +33,53 @@ public class ConfigurationSettingRepositoryIntegrationTest {
   private ConfigurationSettingRepository repository;
 
   @Test
-  public void testCreate() {
-    ConfigurationSetting saved = repository.save(generateInstance());
+  public void testUpdate() {
+    // given
+    ConfigurationSetting saved = createConfigurationSetting();
 
-    assertThat(saved, is(notNullValue()));
-    assertThat(repository.exists(saved.getKey()), is(true));
+    // when
+    saved.setValue("my_secret_value");
+
+    ConfigurationSetting newValue = repository.save(saved);
+
+    // then
+    assertThat(newValue, is(notNullValue()));
+    assertThat(repository.exists(newValue.getKey()), is(true));
+    assertThat(newValue.getKey(), is(saved.getKey()));
+    assertThat(newValue.getValue(), is("my_secret_value"));
   }
 
   @Test
   public void testFindOne() {
-    ConfigurationSetting setting = repository.save(generateInstance());
+    // given
+    ConfigurationSetting setting = createConfigurationSetting();
+
+    // when
     ConfigurationSetting found = repository.findOne(setting.getKey());
 
+    // then
     assertThat(found.getKey(), is(equalTo(setting.getKey())));
     assertThat(found.getValue(), is(equalTo(setting.getValue())));
   }
 
   @Test
   public void testFindAll() {
-    IntStream.range(0, 5)
-        .mapToObj(idx -> generateInstance())
-        .forEach(repository::save);
+    // given
+    IntStream.range(0, 5).forEach(idx -> createConfigurationSetting());
 
+    // when
     List<ConfigurationSetting> all = Lists.newArrayList(repository.findAll());
 
+    // then
     assertThat(all, hasSize(5));
+  }
+
+  private ConfigurationSetting createConfigurationSetting() {
+    ConfigurationSetting saved = repository.save(generateInstance());
+
+    assertThat(saved, is(notNullValue()));
+    assertThat(repository.exists(saved.getKey()), is(true));
+    return saved;
   }
 
   private ConfigurationSetting generateInstance() {
