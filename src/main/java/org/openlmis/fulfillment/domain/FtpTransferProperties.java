@@ -37,7 +37,7 @@ public class FtpTransferProperties extends TransferProperties {
   @Setter
   private String serverHost;
 
-  @Column(nullable = false)
+  @Column
   @Getter
   @Setter
   private Integer serverPort;
@@ -52,7 +52,7 @@ public class FtpTransferProperties extends TransferProperties {
   @Setter
   private String localDirectory;
 
-  @Column(nullable = false)
+  @Column
   @Getter
   @Setter
   private Boolean passiveMode;
