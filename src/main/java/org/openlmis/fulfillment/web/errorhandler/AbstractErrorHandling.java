@@ -19,7 +19,7 @@ public abstract class AbstractErrorHandling {
    * @return the error response that should be sent to the client
    */
   protected ErrorResponse logErrorAndRespond(String message, Exception ex) {
-    logger.error(message, ex);
+    logger.debug(message, ex);
     return new ErrorResponse(message, ex.getMessage());
   }
 }
