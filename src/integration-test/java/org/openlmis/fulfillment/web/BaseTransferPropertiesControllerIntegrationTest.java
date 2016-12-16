@@ -16,6 +16,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.util.UUID;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends TransferProperties>
     extends BaseWebIntegrationTest {
   private static final String ACCESS_TOKEN = "access_token";
@@ -74,6 +75,59 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // then
     assertTransferProperties((T) TransferPropertiesFactory.newInstance(response));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateNonexistentProperties() {
+    // given
+    T oldProperties = generateProperties();
+    T newProperties = generateProperties();
+    newProperties.setId(oldProperties.getId());
+    newProperties.setFacilityId(oldProperties.getFacilityId());
+
+    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(null);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", oldProperties.getId())
+        .body(TransferPropertiesFactory.newInstance(newProperties))
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(404);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGet400IfPropertiesHasDifferentFacilityIdWhenUpdate() {
+    // given
+    T oldProperties = generateProperties();
+    T newProperties = generateProperties();
+    T otherProperties = generateProperties();
+    newProperties.setId(oldProperties.getId());
+    newProperties.setFacilityId(oldProperties.getFacilityId());
+
+    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(otherProperties);
+    given(transferPropertiesRepository.save(any(TransferProperties.class)))
+        .willAnswer(new SaveAnswer<TransferProperties>());
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", oldProperties.getId())
+        .body(TransferPropertiesFactory.newInstance(newProperties))
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400);
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

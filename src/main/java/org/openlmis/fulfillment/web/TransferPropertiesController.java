@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
+import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.TransferPropertiesService;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
@@ -68,12 +69,16 @@ public class TransferPropertiesController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
-                                      @PathVariable("id") UUID id) {
+                                      @PathVariable("id") UUID id)
+      throws IncorrectTransferPropertiesException {
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
 
-    if (null == toUpdate
-        || !Objects.equals(toUpdate.getFacilityId(), properties.getFacilityId())) {
-      return ResponseEntity.badRequest().build();
+    if (null == toUpdate) {
+      return ResponseEntity.notFound().build();
+    } else if (!Objects.equals(toUpdate.getFacilityId(), properties.getFacilityId())) {
+      throw new IncorrectTransferPropertiesException(
+          "The facility ID is incorrect for properties with the given id"
+      );
     } else {
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
     }

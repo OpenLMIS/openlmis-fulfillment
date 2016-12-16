@@ -731,10 +731,17 @@ resourceTypes:
                       body:
                         application/json:
                           schema: transferProperties
+                  "404":
+                      headers:
+                        X-Content-Type-Options:
+                        X-XSS-Protection:
                   "400":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
+                      body:
+                        application/json:
+                          schema: errorResponse
       /search:
               get:
                   is: [ secured ]
