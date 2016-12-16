@@ -70,10 +70,9 @@ public class TransferPropertiesController extends BaseController {
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
                                       @PathVariable("id") UUID id) {
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
-    TransferProperties found = transferPropertiesRepository
-        .findFirstByFacilityId(properties.getFacilityId());
 
-    if (null == toUpdate || null == found || !Objects.equals(toUpdate.getId(), found.getId())) {
+    if (null == toUpdate
+        || !Objects.equals(toUpdate.getFacilityId(), properties.getFacilityId())) {
       return ResponseEntity.badRequest().build();
     } else {
       LOGGER.debug("Updating Transfer Properties with id: {}", id);

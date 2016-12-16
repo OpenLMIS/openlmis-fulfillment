@@ -57,8 +57,6 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     newProperties.setFacilityId(oldProperties.getFacilityId());
 
     given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(oldProperties);
-    given(transferPropertiesRepository.findFirstByFacilityId(newProperties.getFacilityId()))
-        .willReturn(oldProperties);
     given(transferPropertiesRepository.save(any(TransferProperties.class)))
         .willAnswer(new SaveAnswer<TransferProperties>());
 
