@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.web;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -19,14 +18,14 @@ import java.util.UUID;
 
 public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends TransferProperties>
     extends BaseWebIntegrationTest {
-  static final String ACCESS_TOKEN = "access_token";
-  static final String RESOURCE_URL = "/api/transferProperties";
-  static final String ID_URL = RESOURCE_URL + "/{id}";
-  static final String SEARCH = RESOURCE_URL + "/search";
-  static final String FACILITY = "facility";
+  private static final String ACCESS_TOKEN = "access_token";
+  private static final String RESOURCE_URL = "/api/transferProperties";
+  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String SEARCH = RESOURCE_URL + "/search";
+  private static final String FACILITY = "facility";
 
   @MockBean
-  TransferPropertiesRepository transferPropertiesRepository;
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @Test
   public void shouldCreateProperties() {
@@ -55,8 +54,11 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     T oldProperties = generateProperties();
     T newProperties = generateProperties();
     newProperties.setId(oldProperties.getId());
+    newProperties.setFacilityId(oldProperties.getFacilityId());
 
-    when(transferPropertiesRepository.findOne(oldProperties.getId())).thenReturn(oldProperties);
+    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(oldProperties);
+    given(transferPropertiesRepository.findFirstByFacilityId(newProperties.getFacilityId()))
+        .willReturn(oldProperties);
     given(transferPropertiesRepository.save(any(TransferProperties.class)))
         .willAnswer(new SaveAnswer<TransferProperties>());
 
@@ -81,7 +83,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldDeleteProperties() {
     // given
     T properties = generateProperties();
-    when(transferPropertiesRepository.findOne(properties.getId())).thenReturn(properties);
+    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(properties);
 
     // when
     restAssured.given()
@@ -101,7 +103,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldNotDeleteNonexistentProperties() {
     // given
     T properties = generateProperties();
-    when(transferPropertiesRepository.findOne(properties.getId())).thenReturn(null);
+    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(null);
 
     // when
     restAssured.given()
@@ -121,7 +123,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldGetChosenProperties() {
     // given
     T properties = generateProperties();
-    when(transferPropertiesRepository.findOne(properties.getId())).thenReturn(properties);
+    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(properties);
 
     // when
     TransferPropertiesDto response = restAssured.given()
@@ -143,7 +145,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldNotGetNonexistentProperties() {
     // given
     T properties = generateProperties();
-    when(transferPropertiesRepository.findOne(properties.getId())).thenReturn(null);
+    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(null);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -160,8 +162,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   @Test
   public void shouldFindPropertiesByFacilityId() {
     T properties = generateProperties();
-    when(transferPropertiesRepository.findFirstByFacilityId(properties.getFacilityId()))
-        .thenReturn(properties);
+    given(transferPropertiesRepository.findFirstByFacilityId(properties.getFacilityId()))
+        .willReturn(properties);
 
     TransferPropertiesDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -178,8 +180,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
   @Test
   public void shouldReturnEmptyListIfPropertiesCannotBeFound() {
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
-        .thenReturn(null);
+    given(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+        .willReturn(null);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
