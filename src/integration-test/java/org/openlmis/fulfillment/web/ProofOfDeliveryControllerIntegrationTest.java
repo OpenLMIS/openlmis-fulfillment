@@ -31,6 +31,7 @@ import org.openlmis.fulfillment.service.referencedata.SupervisoryNodeDto;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -67,6 +68,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
+  private ProofOfDeliveryDto proofOfDeliveryDto = new ProofOfDeliveryDto();
   private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
 
   /**
@@ -151,6 +153,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
     proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
 
+    proofOfDeliveryDto = ProofOfDeliveryDto.newInstance(proofOfDelivery);
+
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId()))
         .willReturn(proofOfDelivery);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId()))
@@ -208,18 +212,18 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldUpdateProofOfDelivery() {
-    proofOfDelivery.setTotalReceivedPacks(2);
+    proofOfDeliveryDto.setTotalReceivedPacks(2);
 
-    ProofOfDelivery response = restAssured.given()
+    ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
-        .body(proofOfDelivery)
+        .body(proofOfDeliveryDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(ProofOfDelivery.class);
+        .extract().as(ProofOfDeliveryDto.class);
 
     assertTrue(response.getTotalReceivedPacks().equals(2));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -230,18 +234,18 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
-    proofOfDelivery.setTotalReceivedPacks(2);
+    proofOfDeliveryDto.setTotalReceivedPacks(2);
 
-    ProofOfDelivery response = restAssured.given()
+    ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
-        .body(proofOfDelivery)
+        .body(proofOfDeliveryDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(ProofOfDelivery.class);
+        .extract().as(ProofOfDeliveryDto.class);
 
     assertTrue(response.getTotalReceivedPacks().equals(2));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -251,16 +255,16 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   public void shouldGetAllProofOfDeliveries() {
     given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
 
-    ProofOfDelivery[] response = restAssured.given()
+    ProofOfDeliveryDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(ProofOfDelivery[].class);
+        .extract().as(ProofOfDeliveryDto[].class);
 
-    Iterable<ProofOfDelivery> proofOfDeliveries = Arrays.asList(response);
+    Iterable<ProofOfDeliveryDto> proofOfDeliveries = Arrays.asList(response);
     assertTrue(proofOfDeliveries.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -268,7 +272,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldGetChosenProofOfDelivery() {
 
-    ProofOfDelivery response = restAssured.given()
+    ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
@@ -276,7 +280,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .get(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(ProofOfDelivery.class);
+        .extract().as(ProofOfDeliveryDto.class);
 
     assertTrue(proofOfDeliveryRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -301,7 +305,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldCreateProofOfDelivery() {
-    proofOfDelivery.getProofOfDeliveryLineItems().clear();
+    proofOfDeliveryDto.getProofOfDeliveryLineItems().clear();
 
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
@@ -309,7 +313,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(proofOfDelivery)
+        .body(proofOfDeliveryDto)
         .when()
         .post(RESOURCE_URL)
         .then()

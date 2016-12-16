@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -30,7 +28,6 @@ import javax.persistence.Table;
 @Table(name = "templates")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Template extends BaseEntity {
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION, unique = true, nullable = false)

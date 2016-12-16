@@ -1,11 +1,9 @@
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
+import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +19,7 @@ import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -33,7 +32,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Order extends BaseEntity {
 
   @Column(nullable = false)
@@ -59,6 +57,7 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
+  @Convert(converter = LocalDateTimePersistenceConverter.class)
   private LocalDateTime createdDate;
 
   @Column(nullable = false)

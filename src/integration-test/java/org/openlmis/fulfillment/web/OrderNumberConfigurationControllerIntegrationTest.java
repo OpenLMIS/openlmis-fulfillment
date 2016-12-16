@@ -14,6 +14,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
@@ -66,21 +67,23 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
 
   @Test
   public void shouldUpdateOrderNumberConfiguration() {
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration("prefix", true, true, true);
+    OrderNumberConfiguration orderNumberConfiguration = generate("prefix", true, true, true);
+    OrderNumberConfigurationDto orderNumberConfigurationDto = OrderNumberConfigurationDto
+        .newInstance(orderNumberConfiguration);
 
-    OrderNumberConfiguration response = restAssured.given()
+    OrderNumberConfigurationDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderNumberConfiguration)
+        .body(orderNumberConfigurationDto)
         .when()
         .post(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract()
-        .as(OrderNumberConfiguration.class);
+        .as(OrderNumberConfigurationDto.class);
+    orderNumberConfigurationDto.setId(response.getId());
 
-    assertEquals(response, orderNumberConfiguration);
+    assertEquals(response, orderNumberConfigurationDto);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -88,10 +91,12 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   public void shouldReturn400WhenSavingConfigurationWithNotAlphanumericPrefix() {
     final String notAlphanumericString = "..dsa2,";
 
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration(notAlphanumericString, true, false, false);
+    OrderNumberConfiguration orderNumberConfiguration = generate(notAlphanumericString, true,
+        false, false);
+    OrderNumberConfigurationDto orderNumberConfigurationDto = OrderNumberConfigurationDto
+        .newInstance(orderNumberConfiguration);
 
-    postForOrderNumberConfiguration(orderNumberConfiguration, 400);
+    postForOrderNumberConfiguration(orderNumberConfigurationDto, 400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -99,14 +104,27 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   public void shouldReturn400WhenSavingConfigurationWithPrefixLongerThan8Characters() {
     final String tooLongPrefix = "123456789";
 
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration(tooLongPrefix, true, false, false);
+    OrderNumberConfiguration orderNumberConfiguration = generate(tooLongPrefix, true, false, false);
+    OrderNumberConfigurationDto orderNumberConfigurationDto = OrderNumberConfigurationDto
+        .newInstance(orderNumberConfiguration);
 
-    postForOrderNumberConfiguration(orderNumberConfiguration, 400);
+    postForOrderNumberConfiguration(orderNumberConfigurationDto, 400);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private void postForOrderNumberConfiguration(OrderNumberConfiguration orderNumberConfiguration,
+  private OrderNumberConfiguration generate(String prefix, Boolean includeOrderNumberPrefix,
+                                            Boolean includeProgramCode, Boolean includeTypeSuffix) {
+    OrderNumberConfiguration orderNumberConfiguration = new OrderNumberConfiguration();
+    orderNumberConfiguration.setId(UUID.randomUUID());
+    orderNumberConfiguration.setOrderNumberPrefix(prefix);
+    orderNumberConfiguration.setIncludeOrderNumberPrefix(includeOrderNumberPrefix);
+    orderNumberConfiguration.setIncludeProgramCode(includeProgramCode);
+    orderNumberConfiguration.setIncludeTypeSuffix(includeTypeSuffix);
+
+    return orderNumberConfiguration;
+  }
+
+  private void postForOrderNumberConfiguration(OrderNumberConfigurationDto orderNumberConfiguration,
                                                Integer code) {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

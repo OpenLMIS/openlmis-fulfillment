@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +22,6 @@ import javax.persistence.Table;
 @Table(name = "order_file_templates")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class OrderFileTemplate extends BaseEntity {
 
   @Column(nullable = false)

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.openlmis.fulfillment.web.util.TemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -35,6 +36,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   private TemplateRepository templateRepository;
 
   private Template template = new Template();
+  private TemplateDto templateDto;
   private Integer currentInstanceNumber;
 
   @Before
@@ -45,6 +47,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
     template.setId(UUID.randomUUID());
     template.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
+    templateDto = TemplateDto.newInstance(template);
 
     given(templateRepository.findOne(template.getId())).willReturn(template);
     given(templateRepository.exists(template.getId())).willReturn(true);
@@ -110,18 +113,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldUpdateTemplate() {
 
-    template.setDescription(TEMPLATE_CONTROLLER_TEST);
+    templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
-    Template response = restAssured.given()
+    TemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
-        .body(template)
+        .body(templateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Template.class);
+        .extract().as(TemplateDto.class);
 
     assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -132,18 +135,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     given(templateRepository.findOne(template.getId())).willReturn(template);
     given(templateRepository.exists(template.getId())).willReturn(true);
 
-    template.setDescription(TEMPLATE_CONTROLLER_TEST);
+    templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
-    Template response = restAssured.given()
+    TemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
-        .body(template)
+        .body(templateDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Template.class);
+        .extract().as(TemplateDto.class);
 
     assertEquals(response.getDescription(), TEMPLATE_CONTROLLER_TEST);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -151,16 +154,16 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetAllTemplates() {
-    Template[] response = restAssured.given()
+    TemplateDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(Template[].class);
+        .extract().as(TemplateDto[].class);
 
-    Iterable<Template> templates = Arrays.asList(response);
+    Iterable<TemplateDto> templates = Arrays.asList(response);
     assertTrue(templates.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -168,7 +171,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetChosenTemplate() {
 
-    Template response = restAssured.given()
+    TemplateDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
@@ -176,7 +179,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Template.class);
+        .extract().as(TemplateDto.class);
 
     assertEquals(template.getId(), response.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

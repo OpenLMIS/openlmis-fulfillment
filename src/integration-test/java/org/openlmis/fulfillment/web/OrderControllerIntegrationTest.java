@@ -23,6 +23,7 @@ import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
@@ -80,6 +81,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
 
+  private OrderDto firstOrderDto;
+
   @Before
   public void setUp() throws ConfigurationSettingException {
     this.setUpBootstrapData();
@@ -108,6 +111,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderLineItems.add(orderLineItem);
     firstOrder.setOrderLineItems(orderLineItems);
     firstOrder.setExternalId(secondOrder.getExternalId());
+
+    firstOrderDto =  OrderDto.newInstance(firstOrder);
 
     given(orderRepository.findAll()).willReturn(
         Lists.newArrayList(firstOrder, secondOrder, thirdOrder)
@@ -224,18 +229,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null))
         .willReturn(Lists.newArrayList(firstOrder));
 
-    Order[] response = restAssured.given()
+    OrderDto[] response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order[].class);
+        .extract().as(OrderDto[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for (Order order : response) {
+    for (OrderDto order : response) {
       assertEquals(
           order.getSupplyingFacilityId(),
           firstOrder.getSupplyingFacilityId());
@@ -248,7 +253,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null
     )).willReturn(Lists.newArrayList(firstOrder));
 
-    Order[] response = restAssured.given()
+    OrderDto[] response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(ACCESS_TOKEN, getToken())
@@ -256,11 +261,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order[].class);
+        .extract().as(OrderDto[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for (Order order : response) {
+    for (OrderDto order : response) {
       assertEquals(
           order.getSupplyingFacilityId(),
           firstOrder.getSupplyingFacilityId());
@@ -277,7 +282,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         firstOrder.getProgramId()
     )).willReturn(Lists.newArrayList(firstOrder));
 
-    Order[] response = restAssured.given()
+    OrderDto[] response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -286,11 +291,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(SEARCH_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order[].class);
+        .extract().as(OrderDto[].class);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(1, response.length);
-    for (Order order : response) {
+    for (OrderDto order : response) {
       assertEquals(
           order.getSupplyingFacilityId(),
           firstOrder.getSupplyingFacilityId());
@@ -337,11 +342,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrderDto =  OrderDto.newInstance(firstOrder);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(firstOrder)
+        .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -352,18 +358,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateOrder() {
-    firstOrder.setQuotedCost(new BigDecimal(NUMBER));
+    firstOrderDto.setQuotedCost(new BigDecimal(NUMBER));
 
-    Order response = restAssured.given()
+    OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
-        .body(firstOrder)
+        .body(firstOrderDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order.class);
+        .extract().as(OrderDto.class);
 
     assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -372,18 +378,19 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldCreateNewOrderIfDoesNotExist() {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
-    firstOrder.setQuotedCost(new BigDecimal(NUMBER));
 
-    Order response = restAssured.given()
+    firstOrderDto.setQuotedCost(new BigDecimal(NUMBER));
+
+    OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
-        .body(firstOrder)
+        .body(firstOrderDto)
         .when()
         .put(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order.class);
+        .extract().as(OrderDto.class);
 
     assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -392,16 +399,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetAllOrders() {
 
-    Order[] response = restAssured.given()
+    OrderDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order[].class);
+        .extract().as(OrderDto[].class);
 
-    Iterable<Order> orders = Arrays.asList(response);
+    Iterable<OrderDto> orders = Arrays.asList(response);
     assertTrue(orders.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -409,7 +416,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetChosenOrder() {
 
-    Order response = restAssured.given()
+    OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
@@ -417,7 +424,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(ID_URL)
         .then()
         .statusCode(200)
-        .extract().as(Order.class);
+        .extract().as(OrderDto.class);
 
     assertTrue(orderRepository.exists(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -448,11 +455,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
     firstOrder.setOrderLineItems(null);
+    firstOrderDto =  OrderDto.newInstance(firstOrder);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(firstOrder)
+        .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
         .then()

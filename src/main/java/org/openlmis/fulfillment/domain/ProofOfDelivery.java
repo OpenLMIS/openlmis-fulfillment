@@ -1,10 +1,9 @@
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.openlmis.fulfillment.domain.convert.LocalDatePersistenceConverter;
 import org.openlmis.fulfillment.web.util.OrderDto;
 
 import lombok.Getter;
@@ -19,6 +18,7 @@ import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -31,7 +31,6 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "proof_of_deliveries")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProofOfDelivery extends BaseEntity {
 
   @OneToOne
@@ -74,6 +73,7 @@ public class ProofOfDelivery extends BaseEntity {
 
   @Getter
   @Setter
+  @Convert(converter = LocalDatePersistenceConverter.class)
   private LocalDate receivedDate;
 
   @PrePersist
