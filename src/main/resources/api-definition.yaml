@@ -254,11 +254,6 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         text/html:
-                    500:
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-
       /search:
               get:
                   is: [ secured ]
@@ -294,10 +289,6 @@ resourceTypes:
                           headers:
                             X-Content-Type-Options:
                             X-XSS-Protection:
-                      "500":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
       /{id}/print:
           uriParameters:
               id:
@@ -324,10 +315,6 @@ resourceTypes:
                         application/pdf:
                         text/csv:
                   "400":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "500":
                       headers:
                         X-Content-Type-Options:
                         X-XSS-Protection:
@@ -483,10 +470,6 @@ resourceTypes:
                         X-XSS-Protection:
                       body:
                         application/pdf:
-                  "500":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
   /orderFileTemplates:
       displayName: OrderFileTemplate
       get:
@@ -542,10 +525,6 @@ resourceTypes:
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
-                "500":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
       get:
             is: [ secured ]
             description: Download Proof Of Delivery report template with jrxml format.
@@ -557,10 +536,6 @@ resourceTypes:
                     body:
                       application/xml:
                 "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -589,10 +564,6 @@ resourceTypes:
                            repeat: false
             responses:
                 "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
-                "500":
                     headers:
                       X-Content-Type-Options:
                       X-XSS-Protection:
@@ -762,10 +733,6 @@ resourceTypes:
                             application/json:
                               schema: transferProperties
                       "404":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                      "500":
                           headers:
                             X-Content-Type-Options:
                             X-XSS-Protection:
