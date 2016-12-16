@@ -35,8 +35,6 @@ import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.SupplyLineDto;
-import org.openlmis.fulfillment.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,9 +78,6 @@ public class OrderService {
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
-
-  @Autowired
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -236,8 +231,7 @@ public class OrderService {
    * @return passed instance after save.
    */
   public Order save(Order order) throws OrderSaveException {
-    SupplyLineDto supplyLine = getSupplyLine(order);
-    setOrderStatus(order, supplyLine);
+    setOrderStatus(order);
     setOrderCode(order);
 
     // save order
@@ -319,15 +313,12 @@ public class OrderService {
     order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
   }
 
-  private void setOrderStatus(Order order, SupplyLineDto supplyLine) {
+  private void setOrderStatus(Order order) {
     // Is the order associated with a supply line?
-    if (null != supplyLine) {
-      order.setSupplyLineId(supplyLine.getId());
-      order.setSupplyingFacilityId(supplyLine.getSupplyingFacility());
-
+    if (null != order.getSupplyingFacilityId()) {
       // Is the supplying facility have the FTP configuration?
       TransferProperties properties = transferPropertiesRepository
-          .findFirstByFacilityId(supplyLine.getSupplyingFacility());
+          .findFirstByFacilityId(order.getSupplyingFacilityId());
 
       if (null == properties) {
         // Set order status as TRANSFER_FAILED
@@ -342,27 +333,6 @@ public class OrderService {
       // Set order status as TRANSFER_FAILED
       order.setStatus(TRANSFER_FAILED);
     }
-  }
-
-  private SupplyLineDto getSupplyLine(Order order) {
-    UUID supplyingFacilityId = order.getSupplyingFacilityId();
-    SupplyLineDto supplyLine;
-
-    // Is the order associated with a specific depot?
-    if (null != supplyingFacilityId) {
-      // Associate the depot's supply line with the order
-      supplyLine = supplyLineReferenceDataService.search(
-          order.getProgramId(), null, supplyingFacilityId
-      ).stream().findFirst().orElse(null);
-    } else {
-      // Get the supply line associated with the requisition's program and supervisory node.
-      // Associate this supply line with the order.
-      supplyLine = supplyLineReferenceDataService.search(
-          order.getProgramId(), order.getSupervisoryNodeId(), null
-      ).stream().findFirst().orElse(null);
-    }
-
-    return supplyLine;
   }
 
 }

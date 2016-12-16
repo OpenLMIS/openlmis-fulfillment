@@ -44,8 +44,6 @@ import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.SupplyLineDto;
-import org.openlmis.fulfillment.service.referencedata.SupplyLineReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 
@@ -83,9 +81,6 @@ public class OrderServiceTest {
 
   @Mock
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
-
-  @Mock
-  private SupplyLineReferenceDataService supplyLineReferenceDataService;
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -126,10 +121,6 @@ public class OrderServiceTest {
         new OrderNumberConfiguration("prefix", true, true, true);
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
-
-    SupplyLineDto supplyLineDto = new SupplyLineDto();
-    when(supplyLineReferenceDataService.search(any(), any(), any()))
-        .thenReturn(Collections.singletonList(supplyLineDto));
 
     Order order = new Order();
     order.setId(UUID.randomUUID());
@@ -181,10 +172,6 @@ public class OrderServiceTest {
         new OrderNumberConfiguration("prefix", true, true, true);
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
-
-    SupplyLineDto supplyLineDto = new SupplyLineDto();
-    when(supplyLineReferenceDataService.search(any(), any(), any()))
-        .thenReturn(Collections.singletonList(supplyLineDto));
 
     Order order = new Order();
     order.setExternalId(UUID.randomUUID());

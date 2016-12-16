@@ -87,14 +87,6 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   @Setter
   private BigDecimal quotedCost;
 
-  @Getter
-  @Setter
-  private UUID supervisoryNodeId;
-
-  @Getter
-  @Setter
-  private UUID supplyLineId;
-
   @Setter
   private List<OrderLineItemDto> orderLineItems;
 

@@ -49,7 +49,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setRequestingFacilityId(UUID.randomUUID());
     order.setReceivingFacilityId(UUID.randomUUID());
     order.setSupplyingFacilityId(UUID.randomUUID());
-    order.setSupervisoryNodeId(UUID.randomUUID());
 
     return order;
   }

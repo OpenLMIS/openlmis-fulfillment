@@ -1,4 +1,5 @@
-{ "type": "object",
+{
+  "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
   "title": "OrderDto",
   "description": "A single order created from requisition",
@@ -16,15 +17,24 @@
       "title": "emergency"
     },
     "facilityId": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "facilityId"
     },
     "processingPeriodId": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "processingPeriodId"
     },
     "createdDate": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "title": "createdDate",
       "items": {
         "type": "number"
@@ -52,27 +62,28 @@
       "title": "supplyingFacilityId"
     },
     "orderCode": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "orderCode"
     },
     "status": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "status"
     },
     "quotedCost": {
       "type": "number",
       "title": "quotedCost"
     },
-    "supervisoryNodeId": {
-      "type": "string",
-      "title": "supervisoryNodeId"
-    },
-    "supplyLineId": {
-      "type": ["string", "null"],
-      "title": "supplyLineId"
-    },
     "orderLineItems": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "title": "orderLineItems",
       "items": {
         "type": "object",
@@ -90,7 +101,6 @@
     "requestingFacilityId",
     "receivingFacilityId",
     "supplyingFacilityId",
-    "status",
     "quotedCost"
   ]
 }

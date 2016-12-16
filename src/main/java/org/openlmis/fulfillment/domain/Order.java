@@ -107,17 +107,6 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  @Type(type = UUID_TYPE)
-  private UUID supervisoryNodeId;
-
-  @Getter
-  @Setter
-  @Type(type = UUID_TYPE)
-  private UUID supplyLineId;
-
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -157,8 +146,6 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
-    this.supervisoryNodeId = order.supervisoryNodeId;
-    this.supplyLineId = order.supplyLineId;
   }
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {
@@ -188,7 +175,6 @@ public class Order extends BaseEntity {
     order.setProcessingPeriodId(importer.getProcessingPeriodId());
     order.setCreatedDate(importer.getCreatedDate());
     order.setCreatedById(importer.getCreatedById());
-    order.setSupervisoryNodeId(importer.getSupervisoryNodeId());
     order.setSupplyingFacilityId(importer.getSupplyingFacilityId());
     order.setOrderLineItems(new ArrayList<>());
 
@@ -219,8 +205,6 @@ public class Order extends BaseEntity {
     exporter.setQuotedCost(quotedCost);
     exporter.setCreatedById(createdById);
     exporter.setCreatedDate(createdDate);
-    exporter.setSupervisoryNodeId(supervisoryNodeId);
-    exporter.setSupplyLineId(supplyLineId);
   }
 
   public interface Exporter {
@@ -251,10 +235,6 @@ public class Order extends BaseEntity {
     void setCreatedDate(LocalDateTime localDateTime);
 
     void setCreatedById(UUID id);
-
-    void setSupervisoryNodeId(UUID supervisoryNodeId);
-
-    void setSupplyLineId(UUID supplyLineId);
 
   }
 
@@ -288,10 +268,6 @@ public class Order extends BaseEntity {
     LocalDateTime getCreatedDate();
 
     UUID getCreatedById();
-
-    UUID getSupervisoryNodeId();
-
-    UUID getSupplyLineId();
 
   }
 }
