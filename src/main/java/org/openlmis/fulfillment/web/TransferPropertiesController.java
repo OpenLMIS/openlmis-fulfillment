@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Controller
@@ -69,14 +70,22 @@ public class TransferPropertiesController extends BaseController {
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
                                       @PathVariable("id") UUID id) {
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
+    TransferProperties found = transferPropertiesRepository
+        .findFirstByFacilityId(properties.getFacilityId());
 
-    if (null == toUpdate) {
+    if (null == toUpdate || null == found || !Objects.equals(toUpdate.getId(), found.getId())) {
       return ResponseEntity.badRequest().build();
     } else {
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
     }
 
-    toUpdate = transferPropertiesRepository.save(TransferPropertiesFactory.newInstance(properties));
+    TransferProperties entity = TransferPropertiesFactory.newInstance(properties);
+
+    if (!Objects.equals(entity.getClass(), toUpdate.getClass())) {
+      transferPropertiesRepository.delete(toUpdate);
+    }
+
+    toUpdate = transferPropertiesRepository.save(entity);
 
     LOGGER.debug("Updated Transfer Properties with id: {}", toUpdate.getId());
 
