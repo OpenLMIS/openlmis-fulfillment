@@ -63,7 +63,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
     return logErrorAndRespond(
         "Error fetching from reference data", ex,
-        ERROR_REFERENCE_DATA_ERROR, ex.getResource(), ex.getStatus(), ex.getResponse()
+        ERROR_REFERENCE_DATA_ERROR, ex.getResource(), ex.getStatus().toString(), ex.getResponse()
     );
   }
 
