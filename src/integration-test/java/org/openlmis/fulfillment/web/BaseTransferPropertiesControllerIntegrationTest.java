@@ -19,14 +19,14 @@ import java.util.UUID;
 @SuppressWarnings({"PMD.TooManyMethods"})
 public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends TransferProperties>
     extends BaseWebIntegrationTest {
-  private static final String ACCESS_TOKEN = "access_token";
+  static final String ACCESS_TOKEN = "access_token";
   private static final String RESOURCE_URL = "/api/transferProperties";
-  private static final String ID_URL = RESOURCE_URL + "/{id}";
+  static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH = RESOURCE_URL + "/search";
   private static final String FACILITY = "facility";
 
   @MockBean
-  private TransferPropertiesRepository transferPropertiesRepository;
+  TransferPropertiesRepository transferPropertiesRepository;
 
   @Test
   public void shouldCreateProperties() {
@@ -245,6 +245,9 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public abstract void shouldUpdateWithDifferentType();
 
   abstract T generateProperties();
 
