@@ -51,7 +51,7 @@ public abstract class BaseWebIntegrationTest {
   protected static final String REFERENCEDATA_API_USERS = "/api/users/";
   protected static final String REFERENCEDATA_API_RIGHTS = "/api/rights/";
   protected static final RamlDefinition ramlDefinition =
-      RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml").ignoringXheaders();
   protected static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
   protected static final String CONTENT_TYPE = "Content-Type";

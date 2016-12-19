@@ -1,8 +1,8 @@
 #%RAML 0.8
 ---
 title: OpenLMIS Fulfillment API
-version: "@version@"
-baseUri: "@baseUrl@"
+version: @version@
+baseUri: @baseUrl@
 
 documentation:
     - title: Getting Started
@@ -76,17 +76,11 @@ resourceTypes:
             responses:
                 200:
                   description: Collection retrieved succesfully
-                  headers:
-                    X-Content-Type-Options:
-                    X-XXS-Protection:
                   body:
                       application/json:
                           schema: <<schema>>
                 404:
                   description: Collection is empty.
-                  headers:
-                    X-Content-Type-Options:
-                    X-XXS-Protection:
         post:
             is: [ secured ]
             body:
@@ -95,9 +89,6 @@ resourceTypes:
             responses:
                 201:
                   description: Item created succesfully
-                  headers:
-                    X-Content-Type-Options:
-                    X-XXS-Protection:
                   body:
                       application/json:
                           schema: <<schema>>
@@ -131,10 +122,7 @@ resourceTypes:
           is: [ secured ]
           description: Get all orders.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: orderDtoArray
@@ -145,21 +133,12 @@ resourceTypes:
               application/json:
                 schema: orderDto
           responses:
-              "201":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              201:
                   body:
                     application/json:
                       schema: orderDto
-              "409":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
-              "403":
-                  headers:
-                    X-Context-Type-Options:
-                    X-XSS-Protection:
+              409:
+              403:
                   body:
                     application/json:
                       schema: errorResponse
@@ -174,33 +153,18 @@ resourceTypes:
               is: [ secured ]
               description: Delete chosen order.
               responses:
-                  "204":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "409":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  204:
+                  404:
+                  409:
           get:
               is: [ secured ]
               description: Get chosen order.
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: orderDto
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  404:
           put:
               is: [ secured ]
               description: Update existing order.
@@ -208,21 +172,12 @@ resourceTypes:
                   application/json:
                     schema: orderDto
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: orderDto
-                  "400":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "409":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  400:
+                  409:
           /export:
               get:
                   is: [ secured ]
@@ -232,26 +187,18 @@ resourceTypes:
                           displayName: type
                           type: string
                           required: false
-                          default: "csv"
+                          default: csv
                           repeat: false
                   responses:
                     200:
                       headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
                         Content-Disposition:
                       body:
                         text/csv:
                     400:
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
                       body:
                         application/json:
                     404:
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
                       body:
                         text/html:
       /search:
@@ -278,17 +225,11 @@ resourceTypes:
                           required: false
                           repeat: false
                   responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
+                      200:
                           body:
                             application/json:
                               schema: orderDtoArray
-                      "404":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
+                      404:
       /{id}/print:
           uriParameters:
               id:
@@ -306,18 +247,13 @@ resourceTypes:
                       required: true
                       repeat: false
               responses:
-                  "200":
+                  200:
                       headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
                         Content-Disposition:
                       body:
                         application/pdf:
                         text/csv:
-                  "400":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  400:
       /{id}/finalize:
               uriParameters:
                   id:
@@ -329,31 +265,19 @@ resourceTypes:
                   is: [ secured ]
                   description: Finalize chosen order.
                   responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
-                      "400":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
+                      200:
+                      400:
   /orderNumberConfigurations:
       displayName: OrderNumberConfiguration
       get:
           is: [ secured ]
           description: Get OrderNumberConfiguration.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: orderNumberConfigurationDto
-              "404":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              404:
       post:
           is: [ secured ]
           description: Create or Update OrderNumberConfiguration.
@@ -362,16 +286,10 @@ resourceTypes:
                 schema: orderNumberConfigurationDto
           responses:
             200:
-              headers:
-                X-Content-Type-Options:
-                X-XSS-Protection:
               body:
                 application/json:
                   schema: orderNumberConfigurationDto
             400:
-              headers:
-                X-Content-Type-Options:
-                X-XSS-Protection:
               body:
                 application/json:
   /proofOfDeliveries:
@@ -380,17 +298,11 @@ resourceTypes:
           is: [ secured ]
           description: Get all proofOfDeliveries.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: proofOfDeliveryDtoArray
-              "404":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              404:
       post:
           is: [ secured ]
           description: Creates new proofOfDelivery.
@@ -398,10 +310,7 @@ resourceTypes:
               application/json:
                 schema: proofOfDeliveryDto
           responses:
-              "201":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              201:
                   body:
                     application/json:
                       schema: proofOfDeliveryDto
@@ -416,29 +325,17 @@ resourceTypes:
               is: [ secured ]
               description: Delete chosen proofOfDelivery.
               responses:
-                  "204":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  204:
+                  404:
           get:
               is: [ secured ]
               description: Get chosen proofOfDelivery.
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  404:
           put:
               is: [ secured ]
               description: Update existing proofOfDelivery.
@@ -446,10 +343,7 @@ resourceTypes:
                   application/json:
                     schema: proofOfDeliveryDto
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
@@ -464,10 +358,7 @@ resourceTypes:
               is: [ secured ]
               description: Print proof of delivery to a pdf file.
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/pdf:
   /orderFileTemplates:
@@ -476,17 +367,11 @@ resourceTypes:
           is: [ secured ]
           description: Get OrderFileTemplate.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: orderFileTemplateDto
-              "404":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              404:
       post:
           is: [ secured ]
           description: Create or update orderFileTemplate.
@@ -494,17 +379,11 @@ resourceTypes:
               application/json:
                 schema: orderFileTemplateDto
           responses:
-              "201":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              201:
                   body:
                     application/json:
                       schema: orderFileTemplateDto
-              "400":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              400:
                   body:
                     application/json:
   /proofOfDeliveryTemplates:
@@ -516,29 +395,20 @@ resourceTypes:
                 multipart/form-data:
                   formParameters:
                       file:
-                           displayName: Template with ".jrxml" format
+                           displayName: Template with .jrxml format
                            type: file
                            required: false
                            repeat: false
             responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                200:
       get:
             is: [ secured ]
             description: Download Proof Of Delivery report template with jrxml format.
             responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                200:
                     body:
                       application/xml:
-                "404":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                404:
   /templates:
       displayName: Report Template
       post:
@@ -548,7 +418,7 @@ resourceTypes:
                 multipart/form-data:
                   formParameters:
                       file:
-                           displayName: Template with ".jrxml" format
+                           displayName: Template with .jrxml format
                            type: file
                            required: false
                            repeat: false
@@ -563,25 +433,16 @@ resourceTypes:
                            required: false
                            repeat: false
             responses:
-                "200":
-                    headers:
-                      X-Content-Type-Options:
-                      X-XSS-Protection:
+                200:
       get:
           is: [ secured ]
           description: Get all templates.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: templateDtoArray
-              "404":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              404:
       /{id}:
           uriParameters:
               id:
@@ -593,29 +454,17 @@ resourceTypes:
               is: [ secured ]
               description: Delete chosen template.
               responses:
-                  "204":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  204:
+                  404:
           get:
               is: [ secured ]
               description: Get chosen template.
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: templateDto
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  404:
           put:
               is: [ secured ]
               description: Update existing template.
@@ -623,10 +472,7 @@ resourceTypes:
                   application/json:
                     schema: templateDto
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: templateDto
@@ -639,17 +485,11 @@ resourceTypes:
               application/json:
                 schema: transferProperties
           responses:
-              "201":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              201:
                   body:
                     application/json:
                       schema: transferProperties
-              "409":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              409:
       /{id}:
           uriParameters:
               id:
@@ -661,33 +501,18 @@ resourceTypes:
               is: [ secured ]
               description: Delete chosen transfer properties.
               responses:
-                  "204":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "409":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  204:
+                  404:
+                  409:
           get:
               is: [ secured ]
               description: Get chosen transfer properties.
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: transferProperties
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  404:
           put:
               is: [ secured ]
               description: Update existing transfer properties.
@@ -695,21 +520,12 @@ resourceTypes:
                   application/json:
                     schema: transferProperties
               responses:
-                  "200":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  200:
                       body:
                         application/json:
                           schema: transferProperties
-                  "404":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
-                  "400":
-                      headers:
-                        X-Content-Type-Options:
-                        X-XSS-Protection:
+                  404:
+                  400:
                       body:
                         application/json:
                           schema: errorResponse
@@ -725,27 +541,18 @@ resourceTypes:
                           required: true
                           repeat: false
                   responses:
-                      "200":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
+                      200:
                           body:
                             application/json:
                               schema: transferProperties
-                      "404":
-                          headers:
-                            X-Content-Type-Options:
-                            X-XSS-Protection:
+                      404:
   /configurationSettings:
       displayName: Configuration settings.
       get:
           is: [ secured ]
           description: Get all configuration settings.
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: configurationSettingArray
@@ -756,17 +563,11 @@ resourceTypes:
             application/json:
                 schema: configurationSetting
           responses:
-              "200":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              200:
                   body:
                     application/json:
                       schema: configurationSetting
-              "404":
-                  headers:
-                    X-Content-Type-Options:
-                    X-XSS-Protection:
+              404:
                   body:
                     application/json:
                       schema: errorResponse
