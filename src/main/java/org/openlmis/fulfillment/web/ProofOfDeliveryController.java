@@ -130,7 +130,7 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> deleteProofOfDelivery(@PathVariable("id") UUID id) {
+  public ResponseEntity deleteProofOfDelivery(@PathVariable("id") UUID id) {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
