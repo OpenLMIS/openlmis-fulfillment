@@ -28,7 +28,7 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
   @Setter
   protected UUID facilityId;
 
-  public interface Exporter {
+  public interface BaseExporter {
 
     void setId(UUID id);
 
@@ -36,7 +36,7 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
 
   }
 
-  public interface Importer {
+  public interface BaseImporter {
 
     UUID getId();
 

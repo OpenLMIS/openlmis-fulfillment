@@ -102,7 +102,7 @@ public class FtpTransferProperties extends TransferProperties {
     exporter.setPassiveMode(passiveMode);
   }
 
-  public interface Exporter extends TransferProperties.Exporter {
+  public interface Exporter extends BaseExporter {
 
     void setProtocol(String protocol);
 
@@ -120,7 +120,7 @@ public class FtpTransferProperties extends TransferProperties {
 
   }
 
-  public interface Importer extends TransferProperties.Importer {
+  public interface Importer extends BaseImporter {
 
     String getProtocol();
 

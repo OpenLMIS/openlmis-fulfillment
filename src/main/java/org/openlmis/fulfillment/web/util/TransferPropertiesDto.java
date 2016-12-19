@@ -15,7 +15,7 @@ import java.util.UUID;
     @JsonSubTypes.Type(value = FtpTransferPropertiesDto.class, name = "ftp"),
     @JsonSubTypes.Type(value = LocalTransferPropertiesDto.class, name = "local")})
 public abstract class TransferPropertiesDto
-    implements TransferProperties.Importer, TransferProperties.Exporter {
+    implements TransferProperties.BaseImporter, TransferProperties.BaseExporter {
 
   @Getter
   @Setter

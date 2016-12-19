@@ -44,13 +44,13 @@ public class LocalTransferProperties extends TransferProperties {
     exporter.setPath(path);
   }
 
-  public interface Exporter extends TransferProperties.Exporter {
+  public interface Exporter extends BaseExporter {
 
     void setPath(String path);
 
   }
 
-  public interface Importer extends TransferProperties.Importer {
+  public interface Importer extends BaseImporter {
 
     String getPath();
 
