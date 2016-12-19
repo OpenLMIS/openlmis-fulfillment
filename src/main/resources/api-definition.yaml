@@ -1,8 +1,8 @@
 #%RAML 0.8
 ---
 title: OpenLMIS Fulfillment API
-version: @version@
-baseUri: @baseUrl@
+version: "@version@"
+baseUri: "@baseUrl@"
 
 documentation:
     - title: Getting Started
