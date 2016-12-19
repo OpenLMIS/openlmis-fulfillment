@@ -4,11 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public class ErrorResponse {
-
-  @Getter
   private String message;
-
-  @Getter
-  private String description;
+  private String messageKey;
+  private String[] params;
 }

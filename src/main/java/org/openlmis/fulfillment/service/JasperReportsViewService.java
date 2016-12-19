@@ -3,6 +3,9 @@ package org.openlmis.fulfillment.service;
 import static java.io.File.createTempFile;
 import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_COULD_NOT_BE_CREATED;
 
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
@@ -83,7 +86,9 @@ public class JasperReportsViewService {
     try {
       tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
     } catch (IOException exp) {
-      throw new JasperReportViewException("a file could not be created", exp);
+      throw new JasperReportViewException(
+          exp, ERROR_JASPER_FILE_COULD_NOT_BE_CREATED
+      );
     }
 
     try (ObjectInputStream inputStream =
@@ -99,9 +104,9 @@ public class JasperReportsViewService {
         return tmpFile.toURI().toURL().toString();
       }
     } catch (IOException exp) {
-      throw new JasperReportViewException("an I/O error occurs", exp);
+      throw new JasperReportViewException(exp, ERROR_IO);
     } catch (ClassNotFoundException exp) {
-      throw new JasperReportViewException("Class of a serialized object cannot be found.", exp);
+      throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND);
     }
   }
 }

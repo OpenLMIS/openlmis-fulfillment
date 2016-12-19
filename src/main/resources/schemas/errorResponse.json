@@ -5,15 +5,25 @@
   "description": "Error response",
   "properties": {
     "message": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "title": "message"
     },
-    "description": {
+    "messageKey": {
       "type": "string",
-      "title": "description"
+      "title": "messageKey"
+    },
+    "params": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "title": "params"
     }
   },
   "required": [
-    "message"
+    "messageKey"
   ]
 }

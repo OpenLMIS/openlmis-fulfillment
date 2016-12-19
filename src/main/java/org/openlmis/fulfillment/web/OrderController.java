@@ -3,14 +3,15 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
-import org.openlmis.fulfillment.service.OrderSaveException;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +64,8 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
 
-  public OrderDto createOrder(@RequestBody OrderDto orderDto) throws OrderSaveException,
-      MissingPermissionException {
+  public OrderDto createOrder(@RequestBody OrderDto orderDto)
+      throws ConfigurationSettingException, OrderStorageException, MissingPermissionException {
     Order order = Order.newInstance(orderDto);
     LOGGER.debug("Checking rights to create order");
     permissionService.canConvertToOrder(order);
@@ -90,14 +91,14 @@ public class OrderController extends BaseController {
   /**
    * Allows updating orders.
    *
-   * @param orderDto   A order bound to the request body
-   * @param orderId UUID of order which we want to update
+   * @param orderDto A order bound to the request body
+   * @param orderId  UUID of order which we want to update
    * @return ResponseEntity containing the updated order
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   @ResponseBody
   public OrderDto updateOrder(@RequestBody OrderDto orderDto,
-                           @PathVariable("id") UUID orderId) {
+                              @PathVariable("id") UUID orderId) {
 
     Order orderToUpdate = orderRepository.findOne(orderId);
     if (orderToUpdate == null) {

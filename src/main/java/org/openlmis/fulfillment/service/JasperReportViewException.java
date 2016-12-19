@@ -1,10 +1,9 @@
 package org.openlmis.fulfillment.service;
 
-import java.io.IOException;
+public class JasperReportViewException extends FulfillmentException {
 
-public class JasperReportViewException extends IOException {
-
-  JasperReportViewException(String message, Throwable cause) {
-    super(message, cause);
+  JasperReportViewException(Throwable cause, String messageKey) {
+    super(cause, messageKey);
   }
+
 }

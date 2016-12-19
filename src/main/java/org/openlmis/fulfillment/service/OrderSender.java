@@ -4,6 +4,6 @@ import org.openlmis.fulfillment.domain.Order;
 
 public interface OrderSender {
 
-  boolean send(Order order) throws OrderSenderException;
+  boolean send(Order order);
 
 }

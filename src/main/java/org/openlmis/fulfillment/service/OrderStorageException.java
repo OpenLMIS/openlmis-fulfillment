@@ -1,9 +1,9 @@
 package org.openlmis.fulfillment.service;
 
-public class OrderStorageException extends Exception {
+public class OrderStorageException extends FulfillmentException {
 
-  public OrderStorageException(String message, Throwable cause) {
-    super(message, cause);
+  public OrderStorageException(Throwable cause, String messageKey) {
+    super(cause, messageKey);
   }
 
 }

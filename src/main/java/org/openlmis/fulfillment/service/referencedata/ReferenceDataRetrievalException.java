@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 public class ReferenceDataRetrievalException extends RuntimeException {
   private final String resource;
-  private final HttpStatus status;
+  private final String status;
   private final String response;
 
   /**
@@ -25,7 +25,7 @@ public class ReferenceDataRetrievalException extends RuntimeException {
     super(String.format("Unable to retrieve %s. Error code: %d, response message: %s",
         resource, status.value(), response));
     this.resource = resource;
-    this.status = status;
+    this.status = status.toString();
     this.response = response;
   }
 }

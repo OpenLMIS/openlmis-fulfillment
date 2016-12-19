@@ -34,7 +34,7 @@ public class OrderFtpSender implements OrderSender {
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Override
-  public boolean send(Order order) throws OrderSenderException {
+  public boolean send(Order order) {
     Path path = orderStorage.getOrderAsPath(order);
     TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());

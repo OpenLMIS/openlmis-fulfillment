@@ -1,8 +1,9 @@
 package org.openlmis.fulfillment.service;
 
-public abstract class ConfigurationSettingException extends Exception {
+public abstract class ConfigurationSettingException extends FulfillmentException {
 
-  public ConfigurationSettingException(String message) {
-    super(message);
+  ConfigurationSettingException(String messageKey, String... params) {
+    super(messageKey, params);
   }
+
 }

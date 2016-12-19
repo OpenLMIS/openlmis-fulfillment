@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.service;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -41,7 +43,7 @@ public class OrderFileStorage implements OrderStorage {
       Files.createDirectories(Paths.get(dir));
       path = Paths.get(dir, fileName);
     } catch (IOException exp) {
-      throw new OrderStorageException("I/O while creating the local directory", exp);
+      throw new OrderStorageException(exp, ERROR_IO);
     }
 
     try (Writer writer = Files.newBufferedWriter(path)) {
@@ -49,7 +51,7 @@ public class OrderFileStorage implements OrderStorage {
       // 2. save generated CSV file in local directory
       csvHelper.writeCsvFile(order, template, writer);
     } catch (IOException exp) {
-      throw new OrderStorageException("I/O while creating the order CSV file", exp);
+      throw new OrderStorageException(exp, ERROR_IO);
     }
   }
 
@@ -58,7 +60,7 @@ public class OrderFileStorage implements OrderStorage {
     try {
       Files.deleteIfExists(getOrderAsPath(order));
     } catch (IOException exp) {
-      throw new OrderStorageException("I/O while deleting the order CSV file", exp);
+      throw new OrderStorageException(exp, ERROR_IO);
     }
   }
 

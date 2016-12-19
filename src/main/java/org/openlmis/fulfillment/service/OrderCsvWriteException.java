@@ -5,7 +5,8 @@ package org.openlmis.fulfillment.service;
  */
 public class OrderCsvWriteException extends OrderFileException {
 
-  public OrderCsvWriteException(String message, Throwable cause) {
-    super(message, cause);
+  OrderCsvWriteException(Throwable cause, String messageKey) {
+    super(cause, messageKey);
   }
+
 }

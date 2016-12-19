@@ -1,10 +1,19 @@
 package org.openlmis.fulfillment.service;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EMPTY_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INCORRECT_FILE_TYPE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INVALID_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_PARAMETER;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_ALREDY_EXIST;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -58,7 +67,7 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfFileNotOfTypeJasperXml() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: type of file.");
+    expectedException.expectMessage(ERROR_REPORTING_INCORRECT_FILE_TYPE);
 
     MockMultipartFile file = new MockMultipartFile("report.pdf", new byte[1]);
     templateService.validateFileAndInsertTemplate(new Template(), file);
@@ -67,7 +76,7 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfFileEmpty() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: empty file.");
+    expectedException.expectMessage(ERROR_REPORTING_EMPTY_FILE);
     MockMultipartFile file = new MockMultipartFile(
         NAME_OF_FILE, NAME_OF_FILE, "", new byte[0]);
 
@@ -77,7 +86,7 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfFileNotPresent() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: missing file.");
+    expectedException.expectMessage(ERROR_REPORTING_MISSING_FILE);
 
     templateService.validateFileAndInsertTemplate(new Template(), null);
   }
@@ -85,7 +94,7 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfFileIsInvalid() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: file invalid.");
+    expectedException.expectMessage(ERROR_REPORTING_INVALID_FILE);
 
     templateService.validateFileAndInsertTemplate(new Template(),
         new MockMultipartFile(NAME_OF_FILE, NAME_OF_FILE, "", new byte[1]));
@@ -96,7 +105,7 @@ public class TemplateServiceTest {
     Template template = new Template();
     template.setName("Name");
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: name of template already exists.");
+    expectedException.expectMessage(ERROR_REPORTING_TEMPLATE_ALREDY_EXIST);
     when(templateRepository.findByName(Matchers.anyObject())).thenReturn(template);
 
     templateService.validateFileAndInsertTemplate(template, null);
@@ -105,7 +114,9 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfDisplayNameOfParameterIsMissing() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: parameter displayName missing.");
+    expectedException.expect(hasProperty("params", arrayContaining("displayName")));
+    expectedException.expectMessage(ERROR_REPORTING_MISSING_PARAMETER);
+
     MultipartFile file = mock(MultipartFile.class);
     when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
 
@@ -134,7 +145,7 @@ public class TemplateServiceTest {
   @Test
   public void shouldThrowErrorIfThereAreExtraParameterProperties() throws Exception {
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage("Report template error: extra properties.");
+    expectedException.expectMessage(ERROR_REPORTING_EXTRA_PROPERTIES);
     MultipartFile file = mock(MultipartFile.class);
     when(file.getOriginalFilename()).thenReturn(NAME_OF_FILE);
 

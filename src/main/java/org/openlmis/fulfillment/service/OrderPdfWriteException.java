@@ -5,7 +5,8 @@ package org.openlmis.fulfillment.service;
  */
 public class OrderPdfWriteException extends OrderFileException {
 
-  public OrderPdfWriteException(String message, Throwable cause) {
-    super(message, cause);
+  OrderPdfWriteException(Throwable cause, String messageKey) {
+    super(cause, messageKey);
   }
+
 }

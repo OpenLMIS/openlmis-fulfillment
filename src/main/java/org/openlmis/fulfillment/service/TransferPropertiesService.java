@@ -1,9 +1,11 @@
 package org.openlmis.fulfillment.service;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DUPLICATE_TRANSFER_PROPERTIES;
+
 import org.apache.commons.lang.NullArgumentException;
 import org.openlmis.fulfillment.domain.TransferProperties;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +47,9 @@ public class TransferPropertiesService {
 
     TransferProperties existent = getByFacility(setting.getFacilityId());
     if (existent != null && existent.getId() != setting.getId()) {
-      throw new DuplicateTransferPropertiesException("A setting for this facility already exists");
+      throw new DuplicateTransferPropertiesException(
+          ERROR_DUPLICATE_TRANSFER_PROPERTIES
+      );
     }
 
     return transferPropertiesRepository.save(setting);

@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+
 import org.apache.commons.io.IOUtils;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.service.ReportingException;
@@ -70,7 +72,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
         IOUtils.copy(bis, response.getOutputStream());
         response.flushBuffer();
       } catch (IOException ex) {
-        throw new ReportingException("Error writing jrxml file to output stream.", ex);
+        throw new ReportingException(ex, ERROR_IO);
       }
     }
   }

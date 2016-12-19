@@ -4,6 +4,16 @@ import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EMPTY_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_ERROR_CREATING_REPORT;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INCORRECT_FILE_TYPE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INCORRECT_PARAMETER_TYPE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INVALID_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_FILE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_PARAMETER;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_ALREDY_EXIST;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -80,7 +90,7 @@ public class TemplateService {
       writeByteArrayToFile(xmlReport, outputStream.toByteArray());
       return xmlReport;
     } catch (JRException | IOException ex) {
-      throw new ReportingException("Error creating xml report", ex);
+      throw new ReportingException(ex, ERROR_REPORTING_ERROR_CREATING_REPORT);
     }
   }
 
@@ -109,9 +119,9 @@ public class TemplateService {
       out.writeObject(report);
       template.setData(bos.toByteArray());
     } catch (JRException ex) {
-      throw new ReportingException("Report template error: file invalid.", ex);
+      throw new ReportingException(ex, ERROR_REPORTING_INVALID_FILE);
     } catch (IOException ex) {
-      throw new ReportingException("Report template error: reading file.", ex);
+      throw new ReportingException(ex, ERROR_IO);
     }
   }
 
@@ -135,18 +145,20 @@ public class TemplateService {
     String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();
     //Check # of properties and that required ones are given.
     if (propertyNames.length > 2) {
-      throw new ReportingException("Report template error: extra properties.");
+      throw new ReportingException(ERROR_REPORTING_EXTRA_PROPERTIES);
     }
     String displayName = jrParameter.getPropertiesMap().getProperty("displayName");
     if (isBlank(displayName)) {
-      throw new ReportingException("Report template error: parameter displayName missing.");
+      throw new ReportingException(
+          ERROR_REPORTING_MISSING_PARAMETER, "displayName");
     }
     //Look for sql for select and that data type is supported string.
     String dataType = jrParameter.getValueClassName();
     String selectSql = jrParameter.getPropertiesMap().getProperty("selectSql");
     //Sql selects need String data type.
     if (isNotBlank(selectSql) && !"java.lang.String".equals(dataType)) {
-      throw new ReportingException("Report template error: parameter sql data type not string.");
+      throw new ReportingException(
+          ERROR_REPORTING_INCORRECT_PARAMETER_TYPE, "sql", "string");
     }
     //Set parameters.
     TemplateParameter templateParameter = new TemplateParameter();
@@ -167,25 +179,25 @@ public class TemplateService {
 
   private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {
     if (templateRepository.findByName(name) != null) {
-      throw new ReportingException("Report template error: name of template already exists.");
+      throw new ReportingException(ERROR_REPORTING_TEMPLATE_ALREDY_EXIST);
     }
   }
 
   private void throwIfFileIsEmpty(MultipartFile file) throws ReportingException {
     if (file.isEmpty()) {
-      throw new ReportingException("Report template error: empty file.");
+      throw new ReportingException(ERROR_REPORTING_EMPTY_FILE);
     }
   }
 
   private void throwIfIncorrectFileType(MultipartFile file) throws ReportingException {
     if (!file.getOriginalFilename().endsWith(".jrxml")) {
-      throw new ReportingException("Report template error: type of file.");
+      throw new ReportingException(ERROR_REPORTING_INCORRECT_FILE_TYPE);
     }
   }
 
   private void throwIfFileIsNull(MultipartFile file) throws ReportingException {
     if (file == null) {
-      throw new ReportingException("Report template error: missing file.");
+      throw new ReportingException(ERROR_REPORTING_MISSING_FILE);
     }
   }
 }

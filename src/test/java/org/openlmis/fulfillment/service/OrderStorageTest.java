@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import org.junit.Before;
@@ -101,7 +102,7 @@ public class OrderStorageTest {
     doThrow(exception).when(csvHelper).writeCsvFile(order, template, writer);
 
     expected.expect(OrderStorageException.class);
-    expected.expectMessage("I/O while creating the order CSV file");
+    expected.expectMessage(ERROR_IO);
     expected.expectCause(is(exception));
 
     orderFileStorage.store(order);
@@ -120,12 +121,12 @@ public class OrderStorageTest {
     assertThat(value.toString(), is(FULL_PATH));
   }
 
-  @Test(expected = OrderFileException.class)
+  @Test
   public void shouldThrowExceptionIfThereIsProblemWithDeletingAnOrder() throws Exception {
     when(Files.deleteIfExists(any(Path.class))).thenThrow(exception);
 
     expected.expect(OrderStorageException.class);
-    expected.expectMessage("I/O while deleting the order CSV file");
+    expected.expectMessage(ERROR_IO);
     expected.expectCause(is(exception));
 
     orderFileStorage.delete(order);

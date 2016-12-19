@@ -2,10 +2,11 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ReportUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -80,8 +80,8 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Allows updating proofOfDeliveries.
    *
-   * @param proofOfDeliveryDto   A proofOfDeliveryDto bound to the request body
-   * @param proofOfDeliveryId UUID of proofOfDelivery which we want to update
+   * @param proofOfDeliveryDto A proofOfDeliveryDto bound to the request body
+   * @param proofOfDeliveryId  UUID of proofOfDelivery which we want to update
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
@@ -143,19 +143,19 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Print to PDF Proof of Delivery.
    *
-   * @param proofOfDeliveryId The UUID of the ProofOfDelivery to print
+   * @param id The UUID of the ProofOfDelivery to print
    * @return ResponseEntity with the "#200 OK" HTTP response status and Pdf file on success, or
    *         ResponseEntity containing the error description status.
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
   @ResponseBody
-  public ModelAndView print(HttpServletRequest request,
-                            @PathVariable("id") UUID proofOfDeliveryId) throws IOException {
+  public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id)
+      throws JasperReportViewException {
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
 
     Map<String, Object> params = ReportUtils.createParametersMap();
-    String formatId = "'" + proofOfDeliveryId + "'";
+    String formatId = "'" + id + "'";
     params.put("pod_id", formatId);
 
     JasperReportsMultiFormatView jasperView =

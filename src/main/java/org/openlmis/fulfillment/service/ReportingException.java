@@ -1,12 +1,17 @@
 package org.openlmis.fulfillment.service;
 
-public class ReportingException extends Exception {
+public class ReportingException extends FulfillmentException {
 
-  public ReportingException(String message) {
-    super(message);
+  public ReportingException(String messageKey) {
+    super(messageKey);
   }
 
-  public ReportingException(String message, Throwable cause) {
-    super(message, cause);
+  public ReportingException(String messageKey, String... params) {
+    super(messageKey, params);
   }
+
+  public ReportingException(Throwable cause, String messageKey) {
+    super(cause, messageKey);
+  }
+
 }

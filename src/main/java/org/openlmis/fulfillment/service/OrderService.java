@@ -4,6 +4,8 @@ import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_ERROR;
 import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -138,7 +140,7 @@ public class OrderService {
         mapWriter.write(row, chosenColumns);
       }
     } catch (IOException ex) {
-      throw new OrderCsvWriteException("I/O while creating the order CSV file", ex);
+      throw new OrderCsvWriteException(ex, ERROR_IO);
     }
   }
 
@@ -156,9 +158,9 @@ public class OrderService {
       try {
         writePdf(rows, chosenColumns, out);
       } catch (JRException ex) {
-        throw new OrderPdfWriteException("Jasper error", ex);
+        throw new OrderPdfWriteException(ex, ERROR_JASPER_ERROR);
       } catch (IOException ex) {
-        throw new OrderPdfWriteException("I/O error", ex);
+        throw new OrderPdfWriteException(ex, ERROR_IO);
       }
     }
   }
@@ -230,44 +232,35 @@ public class OrderService {
    * @param order instance
    * @return passed instance after save.
    */
-  public Order save(Order order) throws OrderSaveException {
+  public Order save(Order order)
+      throws OrderStorageException, ConfigurationSettingException {
     setOrderStatus(order);
     setOrderCode(order);
 
     // save order
     Order saved = orderRepository.save(order);
 
-    try {
-      orderStorage.store(saved);
+    orderStorage.store(saved);
 
-      TransferProperties properties = transferPropertiesRepository
-          .findFirstByFacilityId(order.getSupplyingFacilityId());
+    TransferProperties properties = transferPropertiesRepository
+        .findFirstByFacilityId(order.getSupplyingFacilityId());
 
-      if (properties instanceof FtpTransferProperties) {
-        boolean success = orderSender.send(saved);
+    if (properties instanceof FtpTransferProperties) {
+      boolean success = orderSender.send(saved);
 
-        if (success) {
-          orderStorage.delete(saved);
-        } else {
-          order.setStatus(TRANSFER_FAILED);
-          saved = orderRepository.save(order);
-        }
+      if (success) {
+        orderStorage.delete(saved);
+      } else {
+        order.setStatus(TRANSFER_FAILED);
+        saved = orderRepository.save(order);
       }
-    } catch (OrderStorageException exp) {
-      throw new OrderSaveException("Unable to storage the order", exp);
-    } catch (OrderSenderException exp) {
-      throw new OrderSaveException("Unable to send the order", exp);
     }
 
-    try {
-      // notification via email is sent to the storeroom manager who initiated the requisition
-      // TODO: check OLMIS-1467
+    // notification via email is sent to the storeroom manager who initiated the requisition
+    // TODO: check OLMIS-1467
 
-      // Send an email notification to the user that converted the order
-      sendNotification(saved, saved.getCreatedById());
-    } catch (ConfigurationSettingException exp) {
-      throw new OrderSaveException("Unable to send email notification", exp);
-    }
+    // Send an email notification to the user that converted the order
+    sendNotification(saved, saved.getCreatedById());
 
     return saved;
   }

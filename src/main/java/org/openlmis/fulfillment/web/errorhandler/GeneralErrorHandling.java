@@ -1,10 +1,14 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIOLATION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_ERROR;
+
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
+import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
-import org.openlmis.fulfillment.service.OrderSaveException;
+import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.web.MissingPermissionException;
@@ -44,21 +48,36 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
   public ErrorResponse handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    return logErrorAndRespond("Data integrity violation", ex);
+    return logErrorAndRespond(
+        "Data integrity violation",
+        new FulfillmentException(ex, ERROR_DATA_INTEGRITY_VIOLATION)
+    );
   }
 
+  /**
+   * Handles the {@link ReferenceDataRetrievalException} which we were unable to retrieve
+   * reference data due to a communication error.
+   *
+   * @param ex the exception that caused the issue
+   * @return the error response
+   */
   @ExceptionHandler(ReferenceDataRetrievalException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
   public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
-    return logErrorAndRespond("Error fetching from reference data", ex);
+    return logErrorAndRespond(
+        "Error fetching from reference data",
+        new FulfillmentException(
+            ex, ERROR_REFERENCE_DATA_ERROR,
+            ex.getResource(), ex.getStatus(), ex.getResponse())
+    );
   }
 
-  @ExceptionHandler(OrderSaveException.class)
+  @ExceptionHandler(OrderStorageException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public ErrorResponse handleOrderSaveException(OrderSaveException ex) {
-    return logErrorAndRespond("Unable to save the order", ex);
+  public ErrorResponse handleOrderStorageException(OrderStorageException ex) {
+    return logErrorAndRespond("Unable to storage the order", ex);
   }
 
   @ExceptionHandler(MissingPermissionException.class)
