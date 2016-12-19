@@ -9,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.openlmis.fulfillment.domain.FtpProtocol.FTP;
 import static org.openlmis.fulfillment.web.util.TransferPropertiesFactory.newInstance;
 
+import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -22,7 +23,7 @@ import java.util.UUID;
 public class FtpTransferPropertiesControllerIntegrationTest
     extends BaseTransferPropertiesControllerIntegrationTest<FtpTransferProperties> {
 
-  @Override
+  @Test
   public void shouldUpdateWithDifferentType() {
     // given
     FtpTransferProperties oldProperties = generateProperties();

@@ -246,9 +246,6 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Test
-  public abstract void shouldUpdateWithDifferentType();
-
   abstract T generateProperties();
 
   abstract void assertTransferProperties(T actual);

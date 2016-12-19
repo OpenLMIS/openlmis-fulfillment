@@ -9,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.openlmis.fulfillment.domain.FtpProtocol.FTP;
 import static org.openlmis.fulfillment.web.util.TransferPropertiesFactory.newInstance;
 
+import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -24,7 +25,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
 
   private static final String LOCAL_DIR = "local/dir";
 
-  @Override
+  @Test
   public void shouldUpdateWithDifferentType() {
     // given
     LocalTransferProperties oldProperties = generateProperties();
