@@ -5,7 +5,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_ERR
 
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
-import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
@@ -48,10 +47,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
   public ErrorResponse handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    return logErrorAndRespond(
-        "Data integrity violation",
-        new FulfillmentException(ex, ERROR_DATA_INTEGRITY_VIOLATION)
-    );
+    return logErrorAndRespond("Data integrity violation", ex, ERROR_DATA_INTEGRITY_VIOLATION);
   }
 
   /**
@@ -66,10 +62,8 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
     return logErrorAndRespond(
-        "Error fetching from reference data",
-        new FulfillmentException(
-            ex, ERROR_REFERENCE_DATA_ERROR,
-            ex.getResource(), ex.getStatus(), ex.getResponse())
+        "Error fetching from reference data", ex,
+        ERROR_REFERENCE_DATA_ERROR, ex.getResource(), ex.getStatus(), ex.getResponse()
     );
   }
 

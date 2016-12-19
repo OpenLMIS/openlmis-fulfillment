@@ -30,10 +30,18 @@ abstract class AbstractErrorHandling {
     return new ErrorResponse(getMessage(ex), ex.getMessageKey(), ex.getParams());
   }
 
+  ErrorResponse logErrorAndRespond(String message, Exception ex,
+                                   String messageKey, String... params) {
+    logger.debug(message, ex);
+    return new ErrorResponse(getMessage(messageKey, params), messageKey, params);
+  }
+
   private String getMessage(FulfillmentException ex) {
-    return messageSource.getMessage(
-        ex.getMessageKey(), ex.getParams(), LocaleContextHolder.getLocale()
-    );
+    return getMessage(ex.getMessageKey(), ex.getParams());
+  }
+
+  private String getMessage(String messageKey, String... params) {
+    return messageSource.getMessage(messageKey, params, LocaleContextHolder.getLocale());
   }
 
 }

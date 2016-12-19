@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.service;
 import lombok.Getter;
 
 @Getter
-public class FulfillmentException extends Exception {
+public abstract class FulfillmentException extends Exception {
   private final String messageKey;
   private final String[] params;
 
