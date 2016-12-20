@@ -34,8 +34,8 @@ public abstract class MessageKeys {
       + ".reporting.missing.file";
   public static final String ERROR_REPORTING_MISSING_PARAMETER = ERROR_PREFIX
       + ".reporting.missing.parameter";
-  public static final String ERROR_REPORTING_TEMPLATE_ALREDY_EXIST = ERROR_PREFIX
-      + ".reporting.template.alredy.exist";
+  public static final String ERROR_REPORTING_TEMPLATE_ALREADY_EXIST = ERROR_PREFIX
+      + ".reporting.template.already.exist";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

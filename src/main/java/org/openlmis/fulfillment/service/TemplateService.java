@@ -13,7 +13,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INCORREC
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_INVALID_FILE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_FILE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_MISSING_PARAMETER;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_ALREDY_EXIST;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_ALREADY_EXIST;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -179,7 +179,7 @@ public class TemplateService {
 
   private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {
     if (templateRepository.findByName(name) != null) {
-      throw new ReportingException(ERROR_REPORTING_TEMPLATE_ALREDY_EXIST);
+      throw new ReportingException(ERROR_REPORTING_TEMPLATE_ALREADY_EXIST);
     }
   }
 
