@@ -106,7 +106,7 @@ public class JasperReportsViewService {
     } catch (IOException exp) {
       throw new JasperReportViewException(exp, ERROR_IO);
     } catch (ClassNotFoundException exp) {
-      throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND);
+      throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
     }
   }
 }
