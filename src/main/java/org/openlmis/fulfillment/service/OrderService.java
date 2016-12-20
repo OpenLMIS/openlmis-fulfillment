@@ -140,7 +140,7 @@ public class OrderService {
         mapWriter.write(row, chosenColumns);
       }
     } catch (IOException ex) {
-      throw new OrderCsvWriteException(ex, ERROR_IO);
+      throw new OrderCsvWriteException(ex, ERROR_IO, ex.getMessage());
     }
   }
 
@@ -160,7 +160,7 @@ public class OrderService {
       } catch (JRException ex) {
         throw new OrderPdfWriteException(ex, ERROR_JASPER);
       } catch (IOException ex) {
-        throw new OrderPdfWriteException(ex, ERROR_IO);
+        throw new OrderPdfWriteException(ex, ERROR_IO, ex.getMessage());
       }
     }
   }

@@ -43,7 +43,7 @@ public class OrderFileStorage implements OrderStorage {
       Files.createDirectories(Paths.get(dir));
       path = Paths.get(dir, fileName);
     } catch (IOException exp) {
-      throw new OrderStorageException(exp, ERROR_IO);
+      throw new OrderStorageException(exp, ERROR_IO, exp.getMessage());
     }
 
     try (Writer writer = Files.newBufferedWriter(path)) {
@@ -51,7 +51,7 @@ public class OrderFileStorage implements OrderStorage {
       // 2. save generated CSV file in local directory
       csvHelper.writeCsvFile(order, template, writer);
     } catch (IOException exp) {
-      throw new OrderStorageException(exp, ERROR_IO);
+      throw new OrderStorageException(exp, ERROR_IO, exp.getMessage());
     }
   }
 
@@ -60,7 +60,7 @@ public class OrderFileStorage implements OrderStorage {
     try {
       Files.deleteIfExists(getOrderAsPath(order));
     } catch (IOException exp) {
-      throw new OrderStorageException(exp, ERROR_IO);
+      throw new OrderStorageException(exp, ERROR_IO, exp.getMessage());
     }
   }
 

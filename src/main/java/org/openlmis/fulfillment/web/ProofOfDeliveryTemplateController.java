@@ -72,7 +72,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
         IOUtils.copy(bis, response.getOutputStream());
         response.flushBuffer();
       } catch (IOException ex) {
-        throw new ReportingException(ex, ERROR_IO);
+        throw new ReportingException(ex, ERROR_IO, ex.getMessage());
       }
     }
   }

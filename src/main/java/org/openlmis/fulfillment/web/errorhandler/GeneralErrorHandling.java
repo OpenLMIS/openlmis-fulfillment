@@ -46,8 +46,11 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(DataIntegrityViolationException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
-  public Message.LocalizedMessage handleDataIntegrityViolation() {
-    return logErrorAndRespond("Data integrity violation", ERROR_DATA_INTEGRITY_VIOLATION);
+  public Message.LocalizedMessage handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+    return logErrorAndRespond(
+        "Data integrity violation",
+        ERROR_DATA_INTEGRITY_VIOLATION, ex.getMessage()
+    );
   }
 
   /**

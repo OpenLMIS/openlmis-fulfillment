@@ -121,7 +121,7 @@ public class TemplateService {
     } catch (JRException ex) {
       throw new ReportingException(ex, ERROR_REPORTING_FILE_INVALID);
     } catch (IOException ex) {
-      throw new ReportingException(ex, ERROR_IO);
+      throw new ReportingException(ex, ERROR_IO, ex.getMessage());
     }
   }
 

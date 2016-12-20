@@ -104,7 +104,7 @@ public class JasperReportsViewService {
         return tmpFile.toURI().toURL().toString();
       }
     } catch (IOException exp) {
-      throw new JasperReportViewException(exp, ERROR_IO);
+      throw new JasperReportViewException(exp, ERROR_IO, exp.getMessage());
     } catch (ClassNotFoundException exp) {
       throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
     }
