@@ -71,7 +71,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
   public ErrorResponse handleOrderStorageException(OrderStorageException ex) {
-    return logErrorAndRespond("Unable to storage the order", ex);
+    return logErrorAndRespond("Unable to store the order", ex);
   }
 
   @ExceptionHandler(MissingPermissionException.class)
