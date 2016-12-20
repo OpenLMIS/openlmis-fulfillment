@@ -5,10 +5,7 @@
   "description": "Error response",
   "properties": {
     "message": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": "string",
       "title": "message"
     },
     "messageKey": {
@@ -24,6 +21,7 @@
     }
   },
   "required": [
+    "message",
     "messageKey"
   ]
 }
