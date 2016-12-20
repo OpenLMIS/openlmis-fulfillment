@@ -5,8 +5,8 @@ package org.openlmis.fulfillment.service;
  */
 public abstract class OrderFileException extends FulfillmentException {
 
-  OrderFileException(Throwable cause, String messageKey) {
-    super(cause, messageKey);
+  OrderFileException(Throwable cause, String messageKey, String... params) {
+    super(cause, messageKey, params);
   }
 
 }

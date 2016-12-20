@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_TRANSFER_PROPERTIES_INCORRECT;
-
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
@@ -78,9 +76,7 @@ public class TransferPropertiesController extends BaseController {
     if (null == toUpdate) {
       return ResponseEntity.notFound().build();
     } else if (!Objects.equals(toUpdate.getFacilityId(), properties.getFacilityId())) {
-      throw new IncorrectTransferPropertiesException(
-          ERROR_TRANSFER_PROPERTIES_INCORRECT
-      );
+      throw new IncorrectTransferPropertiesException();
     } else {
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
     }

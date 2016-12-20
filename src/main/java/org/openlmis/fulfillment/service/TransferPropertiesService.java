@@ -1,7 +1,5 @@
 package org.openlmis.fulfillment.service;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_TRANSFER_PROPERTIES_DUPLICATE;
-
 import org.apache.commons.lang.NullArgumentException;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -47,9 +45,7 @@ public class TransferPropertiesService {
 
     TransferProperties existent = getByFacility(setting.getFacilityId());
     if (existent != null && existent.getId() != setting.getId()) {
-      throw new DuplicateTransferPropertiesException(
-          ERROR_TRANSFER_PROPERTIES_DUPLICATE
-      );
+      throw new DuplicateTransferPropertiesException();
     }
 
     return transferPropertiesRepository.save(setting);
