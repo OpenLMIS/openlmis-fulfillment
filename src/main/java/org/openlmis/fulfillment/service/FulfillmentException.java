@@ -8,7 +8,6 @@ import lombok.Getter;
 public class FulfillmentException extends Exception {
   private final String messageKey;
   private final String[] params;
-  private final Message message;
 
   /**
    * Creates new Fulfillment exception with message key and params.
@@ -20,7 +19,6 @@ public class FulfillmentException extends Exception {
     super(messageKey);
     this.messageKey = messageKey;
     this.params = params;
-    this.message = new Message(messageKey, (Object[]) params);
   }
 
   /**
@@ -34,11 +32,10 @@ public class FulfillmentException extends Exception {
     super(messageKey, cause);
     this.messageKey = messageKey;
     this.params = params;
-    this.message = new Message(messageKey, (Object[]) params);
   }
 
   public Message asMessage() {
-    return message;
+    return new Message(messageKey, params);
   }
 
   /**
@@ -48,6 +45,6 @@ public class FulfillmentException extends Exception {
    */
   @Override
   public String getMessage() {
-    return this.message.toString();
+    return asMessage().toString();
   }
 }
