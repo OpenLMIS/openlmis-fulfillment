@@ -17,6 +17,8 @@ public abstract class MessageKeys {
 
   public static final String ERROR_PERMISSION_MISSING = ERROR_PREFIX + ".permission.missing";
 
+  public static final String ERROR_STATUS_INVALID = ERROR_PREFIX + ".status.invalid";
+
   public static final String ERROR_REFERENCE_DATA_RETRIEVE = ERROR_PREFIX
       + ".reference-data.retrieve";
 

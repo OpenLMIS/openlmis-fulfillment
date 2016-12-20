@@ -10,6 +10,7 @@ import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -166,6 +167,27 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .delete(ID_URL)
         .then()
         .statusCode(404);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotDeletePropertiesWithConflicts() {
+    // given
+    T properties = generateProperties();
+    given(transferPropertiesRepository.findOne(properties.getId())).willThrow(
+        DataIntegrityViolationException.class);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", properties.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(409);
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

@@ -138,6 +138,9 @@ resourceTypes:
                     application/json:
                       schema: orderDto
               409:
+                  body:
+                    application/json:
+                      schema: localizedMessage
               403:
                   body:
                     application/json:
@@ -156,6 +159,9 @@ resourceTypes:
                   204:
                   404:
                   409:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen order.
@@ -176,8 +182,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: orderDto
-                  400:
                   409:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           /export:
               get:
                   is: [ secured ]
@@ -200,7 +208,7 @@ resourceTypes:
                         application/json:
                     404:
                       body:
-                        text/html:
+                        application/json:
       /search:
               get:
                   is: [ secured ]
@@ -229,7 +237,6 @@ resourceTypes:
                           body:
                             application/json:
                               schema: orderDtoArray
-                      404:
       /{id}/print:
           uriParameters:
               id:
@@ -254,6 +261,8 @@ resourceTypes:
                         application/pdf:
                         text/csv:
                   400:
+                      body:
+                        application/json:
       /{id}/finalize:
               uriParameters:
                   id:
@@ -267,6 +276,9 @@ resourceTypes:
                   responses:
                       200:
                       400:
+                        body:
+                            application/json:
+                              schema: localizedMessage
   /orderNumberConfigurations:
       displayName: OrderNumberConfiguration
       get:
@@ -409,6 +421,8 @@ resourceTypes:
                     body:
                       application/xml:
                 404:
+                    body:
+                      application/json:
   /templates:
       displayName: Report Template
       post:
@@ -504,6 +518,9 @@ resourceTypes:
                   204:
                   404:
                   409:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen transfer properties.

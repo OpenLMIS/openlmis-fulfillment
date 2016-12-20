@@ -11,6 +11,7 @@ import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
+import org.openlmis.fulfillment.web.InvalidOrderStatusException;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -106,5 +107,13 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   public Message.LocalizedMessage handleConfigurationSettingNotFoundException(
       ConfigurationSettingNotFoundException ex) {
     return logErrorAndRespond("Cannot find configuration setting", ex);
+  }
+
+  @ExceptionHandler(InvalidOrderStatusException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public Message.LocalizedMessage handleInvalidOrderStatusException(
+      InvalidOrderStatusException ex) {
+    return logErrorAndRespond("Cannot update status for this order", ex);
   }
 }

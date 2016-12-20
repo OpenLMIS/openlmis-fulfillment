@@ -87,6 +87,7 @@ public class OrderFileColumn extends BaseEntity {
     orderFileColumn.setKeyPath(importer.getKeyPath());
     orderFileColumn.setRelated(importer.getRelated());
     orderFileColumn.setRelatedKeyPath(importer.getRelatedKeyPath());
+    orderFileColumn.setFormat(importer.getFormat());
     return orderFileColumn;
   }
 
@@ -97,6 +98,7 @@ public class OrderFileColumn extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setId(id);
+    exporter.setFormat(format);
     exporter.setColumnLabel(columnLabel);
     exporter.setOpenLmisField(openLmisField);
     exporter.setDataFieldLabel(dataFieldLabel);

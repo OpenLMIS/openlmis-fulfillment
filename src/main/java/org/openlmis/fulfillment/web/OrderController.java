@@ -179,12 +179,13 @@ public class OrderController extends BaseController {
    *         containing the error description and "#400 Bad Request" status
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<?> finalizeOrder(@PathVariable("id") UUID orderId)
+      throws InvalidOrderStatusException {
 
     Order order = orderRepository.findOne(orderId);
 
     if (order == null || order.getStatus() != OrderStatus.ORDERED) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      throw new InvalidOrderStatusException(order.getStatus().toString());
     }
 
     LOGGER.debug("Finalizing the order with id: {}", order);

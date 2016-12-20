@@ -1,11 +1,15 @@
 package org.openlmis.fulfillment.web;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
@@ -178,6 +182,32 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return orderLineItem;
   }
 
+  private void denyUserAllRights() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
+  @Test
+  public void shouldFinalizeOrder() {
+    firstOrder.setStatus(OrderStatus.ORDERED);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .contentType("application/json")
+        .when()
+        .put("/api/orders/{id}/finalize")
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+
+  }
+
   @Test
   public void shouldNotFinalizeIfWrongOrderStatus() {
     firstOrder.setStatus(OrderStatus.SHIPPED);
@@ -220,6 +250,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get("/api/orders/{id}/print")
         .then()
         .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfThereIsNoOrderToPrint() {
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+
+    restAssured.given()
+        .queryParam("format", "pdf")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .when()
+        .get("/api/orders/{id}/print")
+        .then()
+        .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -339,6 +385,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnConflictCodeForExistingOrder() {
+
+    doThrow(DataIntegrityViolationException.class).when(orderRepository).delete(any(Order.class));
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(409);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
@@ -394,6 +457,34 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnConflictWhenUpdatingOrderCode() {
+    given(orderRepository.save(any(Order.class))).willThrow(DataIntegrityViolationException.class);
+
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+    firstOrder.setOrderLineItems(null);
+    firstOrderDto =  OrderDto.newInstance(firstOrder);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", ID)
+        .body(firstOrderDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(409);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestCodeWhenUpdatingOrder() {
+
   }
 
   @Test
@@ -465,6 +556,24 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .post(RESOURCE_URL)
         .then()
         .statusCode(409);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnForbiddenWhenUserHasNoRightsToCreateOrder() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(firstOrderDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -519,6 +628,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(ID_EXPORT)
         .then()
         .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfThereIsNoOrderToExport() {
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId())
+        .queryParam("type", "csv")
+        .when()
+        .get(ID_EXPORT)
+        .then()
+        .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

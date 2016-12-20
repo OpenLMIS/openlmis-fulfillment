@@ -56,7 +56,8 @@ public class OrderFileTemplateController extends BaseController {
     OrderFileTemplate savedTemplate = orderFileTemplateRepository.save(orderFileTemplate);
 
     LOGGER.debug("Saved Order File Template with id: " + orderFileTemplate.getId());
-    return new ResponseEntity<>( OrderFileTemplateDto.newInstance(savedTemplate), HttpStatus.OK);
+    return new ResponseEntity<>( OrderFileTemplateDto.newInstance(savedTemplate),
+        HttpStatus.CREATED);
   }
 
   /**

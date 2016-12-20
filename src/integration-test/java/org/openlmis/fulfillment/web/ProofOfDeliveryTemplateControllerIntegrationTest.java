@@ -98,6 +98,22 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldReturnNotFoundWhenThereIsNoProofOfDeliveryTemplate() {
+
+    given(templateRepository.findByName(anyString())).willReturn(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType("application/xml")
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   private TemplateParameter createParameter(JRParameter jrParameter) throws ReportingException {
     String displayName = jrParameter.getPropertiesMap().getProperty("displayName");
     String dataType = jrParameter.getValueClassName();

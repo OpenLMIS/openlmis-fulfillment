@@ -2,9 +2,12 @@ package org.openlmis.fulfillment.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +24,7 @@ import org.springframework.http.MediaType;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -34,6 +38,9 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   private OrderRepository orderRepository;
 
   private UUID facility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
+
+  OrderNumberConfiguration firstOrderNumberConfiguration;
+  OrderNumberConfiguration secondOrderNumberConfiguration;
 
   @Before
   public void setUp() {
@@ -58,11 +65,53 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     order.setStatus(OrderStatus.ORDERED);
     order.setQuotedCost(BigDecimal.ONE);
 
+    firstOrderNumberConfiguration =  new OrderNumberConfiguration("prefix", true, true, true);
+    secondOrderNumberConfiguration =  new OrderNumberConfiguration("prefix", false, false, false);
+
+
     given(orderRepository.findOne(order.getId())).willReturn(order);
     given(orderRepository.exists(order.getId())).willReturn(true);
 
     given(orderNumberConfigurationRepository.save(any(OrderNumberConfiguration.class)))
         .willAnswer(new SaveAnswer<OrderNumberConfiguration>());
+
+
+  }
+
+  @Test
+  public void shouldGetOrderNumberConfiguration() {
+    given(orderNumberConfigurationRepository.findAll()).willReturn(Lists.newArrayList(
+        firstOrderNumberConfiguration, secondOrderNumberConfiguration));
+
+    given(orderNumberConfigurationRepository.exists(firstOrderNumberConfiguration.getId()))
+        .willReturn(true);
+
+    OrderNumberConfigurationDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderNumberConfigurationDto.class);
+
+    assertTrue(orderNumberConfigurationRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundWHenThereIsNoOrderNumberConfiguration() {
+    given(orderNumberConfigurationRepository.findAll()).willReturn(new ArrayList());
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

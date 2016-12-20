@@ -70,6 +70,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryDto proofOfDeliveryDto = new ProofOfDeliveryDto();
   private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
+  private UUID proofOfDeliveryId = UUID.randomUUID();
 
   /**
    * Prepare the test environment.
@@ -157,6 +158,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId()))
         .willReturn(proofOfDelivery);
+    given(proofOfDeliveryRepository.findOne(proofOfDeliveryId)).willReturn(null);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId()))
         .willReturn(true);
 
@@ -206,6 +208,20 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .delete(ID_URL)
         .then()
         .statusCode(204);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundWhenThereIsNoProofOfDelivery() {
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDeliveryId.toString())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
