@@ -10,6 +10,7 @@ import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
+import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class GeneralErrorHandling extends AbstractErrorHandling {
 
   @ExceptionHandler(OrderFileException.class)
-  public ErrorResponse handleOrderFileGenerationError(OrderFileException ex) {
+  public Message.LocalizedMessage handleOrderFileGenerationError(OrderFileException ex) {
     return logErrorAndRespond("Unable to generate the order file", ex);
   }
 
   @ExceptionHandler(ReportingException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponse handlerReportingException(ReportingException ex) {
+  public Message.LocalizedMessage handlerReportingException(ReportingException ex) {
     return logErrorAndRespond("Reporting error", ex);
   }
 
@@ -40,14 +41,13 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
    * of a db constraint like unique. Returns error 409 (CONFLICT) and a JSON representation of the
    * error as the body.
    *
-   * @param ex the exception that caused the issue
-   * @return the error response
+   * @return the localized message
    */
   @ExceptionHandler(DataIntegrityViolationException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   @ResponseBody
-  public ErrorResponse handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    return logErrorAndRespond("Data integrity violation", ex, ERROR_DATA_INTEGRITY_VIOLATION);
+  public Message.LocalizedMessage handleDataIntegrityViolation() {
+    return logErrorAndRespond("Data integrity violation", ERROR_DATA_INTEGRITY_VIOLATION);
   }
 
   /**
@@ -60,9 +60,9 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(ReferenceDataRetrievalException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public ErrorResponse handleRefDataException(ReferenceDataRetrievalException ex) {
+  public Message.LocalizedMessage handleRefDataException(ReferenceDataRetrievalException ex) {
     return logErrorAndRespond(
-        "Error fetching from reference data", ex,
+        "Error fetching from reference data",
         ERROR_REFERENCE_DATA_ERROR, ex.getResource(), ex.getStatus().toString(), ex.getResponse()
     );
   }
@@ -70,21 +70,21 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(OrderStorageException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public ErrorResponse handleOrderStorageException(OrderStorageException ex) {
+  public Message.LocalizedMessage handleOrderStorageException(OrderStorageException ex) {
     return logErrorAndRespond("Unable to store the order", ex);
   }
 
   @ExceptionHandler(MissingPermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
-  public ErrorResponse handleMissingPermissionException(MissingPermissionException ex) {
+  public Message.LocalizedMessage handleMissingPermissionException(MissingPermissionException ex) {
     return logErrorAndRespond("Missing permission for this action", ex);
   }
 
   @ExceptionHandler(DuplicateTransferPropertiesException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ErrorResponse handleDuplicateTransferPropertiesException(
+  public Message.LocalizedMessage handleDuplicateTransferPropertiesException(
       DuplicateTransferPropertiesException ex) {
     return logErrorAndRespond("Duplicate facility transfer properties", ex);
   }
@@ -92,7 +92,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(IncorrectTransferPropertiesException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ErrorResponse handleIncorrectTransferPropertiesException(
+  public Message.LocalizedMessage handleIncorrectTransferPropertiesException(
       IncorrectTransferPropertiesException ex) {
     return logErrorAndRespond("Incorrect facility transfer properties", ex);
   }
@@ -100,7 +100,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   @ExceptionHandler(ConfigurationSettingNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
-  public ErrorResponse handleConfigurationSettingNotFoundException(
+  public Message.LocalizedMessage handleConfigurationSettingNotFoundException(
       ConfigurationSettingNotFoundException ex) {
     return logErrorAndRespond("Cannot find configuration setting", ex);
   }

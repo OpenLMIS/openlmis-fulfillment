@@ -1,11 +1,14 @@
 package org.openlmis.fulfillment.service;
 
+import org.openlmis.fulfillment.util.Message;
+
 import lombok.Getter;
 
 @Getter
-public abstract class FulfillmentException extends Exception {
+public class FulfillmentException extends Exception {
   private final String messageKey;
   private final String[] params;
+  private final Message message;
 
   /**
    * Creates new Fulfillment exception with message key and params.
@@ -17,6 +20,7 @@ public abstract class FulfillmentException extends Exception {
     super(messageKey);
     this.messageKey = messageKey;
     this.params = params;
+    this.message = new Message(messageKey, (Object[]) params);
   }
 
   /**
@@ -30,6 +34,20 @@ public abstract class FulfillmentException extends Exception {
     super(messageKey, cause);
     this.messageKey = messageKey;
     this.params = params;
+    this.message = new Message(messageKey, (Object[]) params);
   }
 
+  public Message asMessage() {
+    return message;
+  }
+
+  /**
+   * Overrides Exception's public String getMessage().
+   *
+   * @return a localized string description
+   */
+  @Override
+  public String getMessage() {
+    return this.message.toString();
+  }
 }
