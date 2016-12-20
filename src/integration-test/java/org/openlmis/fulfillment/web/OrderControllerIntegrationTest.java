@@ -225,6 +225,24 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotFinalizeIfOrderDoesNotExist() {
+    UUID id = UUID.randomUUID();
+
+    given(orderRepository.findOne(id)).willReturn(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", id.toString())
+        .contentType("application/json")
+        .when()
+        .put("/api/orders/{id}/finalize")
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
         .queryParam("format", "csv")
@@ -480,11 +498,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(409);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnBadRequestCodeWhenUpdatingOrder() {
-
   }
 
   @Test

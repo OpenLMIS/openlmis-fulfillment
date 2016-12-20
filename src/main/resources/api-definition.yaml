@@ -279,6 +279,7 @@ resourceTypes:
                         body:
                             application/json:
                               schema: localizedMessage
+                      404:
   /orderNumberConfigurations:
       displayName: OrderNumberConfiguration
       get:
