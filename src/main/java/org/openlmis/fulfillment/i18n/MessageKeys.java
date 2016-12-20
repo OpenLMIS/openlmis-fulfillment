@@ -1,8 +1,8 @@
 package org.openlmis.fulfillment.i18n;
 
 public abstract class MessageKeys {
-  private static final String PREFIX = "fulfillment";
-  private static final String ERROR_PREFIX = PREFIX + ".error";
+  private static final String SERVICE_PREFIX = "fulfillment";
+  private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
 
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class.not.found";
   public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
