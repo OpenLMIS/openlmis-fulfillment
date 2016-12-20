@@ -5,7 +5,7 @@ import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USIN
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_COULD_NOT_BE_CREATED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
 
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
@@ -87,7 +87,7 @@ public class JasperReportsViewService {
       tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
     } catch (IOException exp) {
       throw new JasperReportViewException(
-          exp, ERROR_JASPER_FILE_COULD_NOT_BE_CREATED
+          exp, ERROR_JASPER_FILE_CREATION
       );
     }
 

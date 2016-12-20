@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIOLATION;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_ERROR;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
 
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
@@ -63,7 +63,7 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
   public Message.LocalizedMessage handleRefDataException(ReferenceDataRetrievalException ex) {
     return logErrorAndRespond(
         "Error fetching from reference data",
-        ERROR_REFERENCE_DATA_ERROR, ex.getResource(), ex.getStatus().toString(), ex.getResponse()
+        ERROR_REFERENCE_DATA_RETRIEVE, ex.getResource(), ex.getStatus().toString(), ex.getResponse()
     );
   }
 

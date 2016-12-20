@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_PERMISSION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 
 import org.junit.Before;
@@ -98,7 +98,7 @@ public class PermissionServiceTest {
   private void expectException(String rightName) {
     exception.expect(MissingPermissionException.class);
     exception.expect(hasProperty("params", arrayContaining(rightName)));
-    exception.expectMessage(ERROR_MISSING_PERMISSION);
+    exception.expectMessage(ERROR_PERMISSION_MISSING);
   }
 
   private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId) {

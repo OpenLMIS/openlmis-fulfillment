@@ -4,40 +4,46 @@ public abstract class MessageKeys {
   private static final String SERVICE_PREFIX = "fulfillment";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
 
-  public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class.not.found";
-  public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
-      + ".configuration.setting.not.found";
+  public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
-      + ".data.integrity.violation";
-  public static final String ERROR_DUPLICATE_TRANSFER_PROPERTIES = ERROR_PREFIX
-      + ".duplicate.transfer.properties";
-  public static final String ERROR_INCORRECT_TRANSFER_PROPERTIES = ERROR_PREFIX
-      + ".incorrect.transfer.properties";
+      + ".data-integrity-violation";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
+
+  public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
+      + ".configuration.setting-not-found";
+
   public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
-  public static final String ERROR_JASPER_FILE_COULD_NOT_BE_CREATED = ERROR_PREFIX
-      + ".jasper.file.could.not.be.created";
-  public static final String ERROR_MISSING_PERMISSION = ERROR_PREFIX + ".missing.permission";
-  public static final String ERROR_REFERENCE_DATA_ERROR = ERROR_PREFIX + ".reference.data.error";
-  public static final String ERROR_REPORTING_EMPTY_FILE = ERROR_PREFIX + ".reporting.empty.file";
-  public static final String ERROR_REPORTING_ERROR_CREATING_REPORT = ERROR_PREFIX
-      + ".reporting.error.creating.report";
+  public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
+
+  public static final String ERROR_PERMISSION_MISSING = ERROR_PREFIX + ".permission.missing";
+
+  public static final String ERROR_REFERENCE_DATA_RETRIEVE = ERROR_PREFIX
+      + ".reference-data.retrieve";
+
+  public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
   public static final String ERROR_REPORTING_EXTRA_PROPERTIES = ERROR_PREFIX
-      + ".reporting.extra.properties";
-  public static final String ERROR_REPORTING_INCORRECT_FILE_TYPE = ERROR_PREFIX
-      + ".reporting.incorrect.file.type";
-  public static final String ERROR_REPORTING_INCORRECT_PARAMETER_TYPE = ERROR_PREFIX
-      + ".reporting.incorrect.parameter.type";
-  public static final String ERROR_REPORTING_INVALID_FILE = ERROR_PREFIX
-      + ".reporting.invalid.file";
-  public static final String ERROR_REPORTING_MISSING_FILE = ERROR_PREFIX
-      + ".reporting.missing.file";
-  public static final String ERROR_REPORTING_MISSING_PARAMETER = ERROR_PREFIX
-      + ".reporting.missing.parameter";
-  public static final String ERROR_REPORTING_TEMPLATE_ALREADY_EXIST = ERROR_PREFIX
-      + ".reporting.template.already.exist";
+      + ".reporting.extra-properties";
+  public static final String ERROR_REPORTING_FILE_EMPTY = ERROR_PREFIX + ".reporting.file.empty";
+  public static final String ERROR_REPORTING_FILE_INCORRECT_TYPE = ERROR_PREFIX
+      + ".reporting.file.incorrect-type";
+  public static final String ERROR_REPORTING_FILE_INVALID = ERROR_PREFIX
+      + ".reporting.file.invalid";
+  public static final String ERROR_REPORTING_FILE_MISSING = ERROR_PREFIX
+      + ".reporting.file.missing";
+  public static final String ERROR_REPORTING_PARAMETER_INCORRECT_TYPE = ERROR_PREFIX
+      + ".reporting.parameter.incorrect-type";
+  public static final String ERROR_REPORTING_PARAMETER_MISSING = ERROR_PREFIX
+      + ".reporting.parameter.missing";
+  public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX
+      + ".reporting.template.exist";
+
+  public static final String ERROR_TRANSFER_PROPERTIES_DUPLICATE = ERROR_PREFIX
+      + ".transfer-properties.duplicate";
+  public static final String ERROR_TRANSFER_PROPERTIES_INCORRECT = ERROR_PREFIX
+      + ".transfer-properties.incorrect";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }
+
 }
