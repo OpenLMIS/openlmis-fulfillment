@@ -5,7 +5,7 @@ import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_ERROR;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER;
 import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -158,7 +158,7 @@ public class OrderService {
       try {
         writePdf(rows, chosenColumns, out);
       } catch (JRException ex) {
-        throw new OrderPdfWriteException(ex, ERROR_JASPER_ERROR);
+        throw new OrderPdfWriteException(ex, ERROR_JASPER);
       } catch (IOException ex) {
         throw new OrderPdfWriteException(ex, ERROR_IO);
       }

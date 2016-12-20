@@ -14,7 +14,7 @@ public abstract class MessageKeys {
   public static final String ERROR_INCORRECT_TRANSFER_PROPERTIES = ERROR_PREFIX
       + ".incorrect.transfer.properties";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
-  public static final String ERROR_JASPER_ERROR = ERROR_PREFIX + ".jasper.error";
+  public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
   public static final String ERROR_JASPER_FILE_COULD_NOT_BE_CREATED = ERROR_PREFIX
       + ".jasper.file.could.not.be.created";
   public static final String ERROR_MISSING_PERMISSION = ERROR_PREFIX + ".missing.permission";
