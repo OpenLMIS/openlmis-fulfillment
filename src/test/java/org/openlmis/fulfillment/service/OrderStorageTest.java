@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
@@ -106,6 +107,17 @@ public class OrderStorageTest {
     expected.expectCause(is(exception));
 
     orderFileStorage.store(order);
+  }
+
+  @Test
+  public void shouldHandleSituationWhenPropertiesDoesNotExist() throws OrderStorageException {
+    when(transferPropertiesRepository.findFirstByFacilityId(order.getFacilityId()))
+        .thenReturn(null);
+
+    orderFileStorage.store(order);
+
+    verify(transferPropertiesRepository).findFirstByFacilityId(order.getFacilityId());
+    verifyZeroInteractions(orderFileTemplateService, csvHelper);
   }
 
   @Test

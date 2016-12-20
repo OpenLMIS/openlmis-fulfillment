@@ -6,6 +6,8 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,7 @@ import java.nio.file.Paths;
 
 @Component
 public class OrderFileStorage implements OrderStorage {
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderFileStorage.class);
 
   @Autowired
   private OrderCsvHelper csvHelper;
@@ -29,13 +32,20 @@ public class OrderFileStorage implements OrderStorage {
 
   @Override
   public void store(Order order) throws OrderStorageException {
-    // retrieve order file template
-    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
-    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
-
     TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
+    if (null == properties) {
+      LOGGER.warn(
+          "Can't store the order {} because there is no transfer properties",
+          order.getId()
+      );
+      return;
+    }
+
+    // retrieve order file template
+    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
+    String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
     Path path;
 
     try {
