@@ -50,7 +50,7 @@ schemas:
         }
   - transferProperties: !include schemas/transferProperties.json
 
-  - errorResponse: !include schemas/errorResponse.json
+  - localizedMessage: !include schemas/localizedMessage.json
 
   - configurationSetting: !include schemas/configurationSetting.json
   - configurationSettingArray: |
@@ -141,7 +141,7 @@ resourceTypes:
               403:
                   body:
                     application/json:
-                      schema: errorResponse
+                      schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -528,7 +528,7 @@ resourceTypes:
                   400:
                       body:
                         application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
       /search:
               get:
                   is: [ secured ]
@@ -570,4 +570,4 @@ resourceTypes:
               404:
                   body:
                     application/json:
-                      schema: errorResponse
+                      schema: localizedMessage

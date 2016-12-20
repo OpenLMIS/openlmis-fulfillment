@@ -1,8 +1,8 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "ErrorResponse",
-  "description": "Error response",
+  "title": "LocalizedMessage",
+  "description": "Localized message",
   "properties": {
     "message": {
       "type": "string",
@@ -11,13 +11,6 @@
     "messageKey": {
       "type": "string",
       "title": "messageKey"
-    },
-    "params": {
-      "type": [
-        "array",
-        "null"
-      ],
-      "title": "params"
     }
   },
   "required": [
