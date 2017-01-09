@@ -4,15 +4,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
 
@@ -26,14 +31,15 @@ import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
+import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,14 +53,21 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+
   private static final String ID_URL = RESOURCE_URL + "/{id}";
+  private static final String ID_EXPORT = ID_URL + "/export";
+  private static final String ID_RETRY = ID_URL + "/retry";
+  private static final String ID_FINALIZE = ID_URL + "/finalize";
+  private static final String API_ORDERS_ID_PRINT = ID_URL + "/print";
+
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROGRAM = "program";
-  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String NUMBER = "10.90";
-  private static final String ID_EXPORT = "/api/orders/{id}/export";
+  private static final String FORMAT = "format";
+
+  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
@@ -198,9 +211,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId().toString())
-        .contentType("application/json")
+        .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put("/api/orders/{id}/finalize")
+        .put(ID_FINALIZE)
         .then()
         .statusCode(200);
 
@@ -215,9 +228,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId().toString())
-        .contentType("application/json")
+        .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put("/api/orders/{id}/finalize")
+        .put(ID_FINALIZE)
         .then()
         .statusCode(400);
 
@@ -233,9 +246,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", id.toString())
-        .contentType("application/json")
+        .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put("/api/orders/{id}/finalize")
+        .put(ID_FINALIZE)
         .then()
         .statusCode(404);
 
@@ -245,11 +258,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
-        .queryParam("format", "csv")
+        .queryParam(FORMAT, "csv")
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
-        .get("/api/orders/{id}/print")
+        .get(API_ORDERS_ID_PRINT)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -261,11 +274,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldPrintOrderAsPdf() {
     restAssured.given()
-        .queryParam("format", "pdf")
+        .queryParam(FORMAT, "pdf")
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", thirdOrder.getId().toString())
         .when()
-        .get("/api/orders/{id}/print")
+        .get(API_ORDERS_ID_PRINT)
         .then()
         .statusCode(200);
 
@@ -277,11 +290,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     restAssured.given()
-        .queryParam("format", "pdf")
+        .queryParam(FORMAT, "pdf")
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId().toString())
         .when()
-        .get("/api/orders/{id}/print")
+        .get(API_ORDERS_ID_PRINT)
         .then()
         .statusCode(400);
 
@@ -376,7 +389,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldDeleteOrder() {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
         .delete(ID_URL)
@@ -392,7 +405,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
         .delete(ID_URL)
@@ -409,7 +422,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
         .delete(ID_URL)
@@ -427,7 +440,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
@@ -443,7 +456,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .body(firstOrderDto)
         .when()
@@ -464,7 +477,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
         .body(firstOrderDto)
         .when()
@@ -489,7 +502,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
         .body(firstOrderDto)
         .when()
@@ -505,7 +518,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     OrderDto[] response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -522,7 +535,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     OrderDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
         .get(ID_URL)
@@ -540,7 +553,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
         .get(ID_URL)
@@ -563,7 +576,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
@@ -579,7 +592,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
@@ -657,6 +670,80 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(ID_EXPORT)
         .then()
         .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturn404ForRetryEndpointWhenOrderDoesNotExist() {
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(ID_RETRY)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotAllowToRetryIfOrderHasIncorrectStatus() {
+    firstOrder.setStatus(OrderStatus.READY_TO_PACK);
+
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+
+    String message = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(ID_RETRY)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path("messageKey");
+
+    assertThat(message, equalTo(ERROR_ORDER_RETRY_INVALID_STATUS));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnErrorMessageIfThereWillBeProblemWithRetry() throws OrderStorageException {
+    firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
+
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+    willThrow(new OrderStorageException(new IOException(), ERROR_IO, ""))
+        .given(orderStorage).store(any(Order.class));
+
+    String message = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(ID_RETRY)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path("messageKey");
+
+    assertThat(message, equalTo(ERROR_IO));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldAllowToDoManuallyRetry() {
+    firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
+
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(ID_RETRY)
+        .then()
+        .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

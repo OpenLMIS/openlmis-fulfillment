@@ -232,10 +232,26 @@ public class OrderService {
    * @param order instance
    * @return passed instance after save.
    */
-  public Order save(Order order)
-      throws OrderStorageException, ConfigurationSettingException {
-    setOrderStatus(order);
+  public Order save(Order order) throws OrderStorageException, ConfigurationSettingException {
     setOrderCode(order);
+    Order saved = store(order);
+
+    // Send an email notification to the user that converted the order
+    sendNotification(saved, saved.getCreatedById());
+
+    return saved;
+  }
+
+  /**
+   * Store an order in locally directory and try to send (if there are FTP transfer properties) to
+   * a FTP server.
+   *
+   * @param order instance
+   * @return passed order with modified status
+   * @throws OrderStorageException if there will be any problem with store an order.
+   */
+  public Order store(Order order) throws OrderStorageException {
+    setOrderStatus(order);
 
     // save order
     Order saved = orderRepository.save(order);
@@ -255,12 +271,6 @@ public class OrderService {
         saved = orderRepository.save(order);
       }
     }
-
-    // notification via email is sent to the storeroom manager who initiated the requisition
-    // TODO: check OLMIS-1467
-
-    // Send an email notification to the user that converted the order
-    sendNotification(saved, saved.getCreatedById());
 
     return saved;
   }

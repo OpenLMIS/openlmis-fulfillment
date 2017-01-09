@@ -19,6 +19,9 @@ public abstract class MessageKeys {
 
   public static final String ERROR_ORDER_INVALID_STATUS = ERROR_PREFIX + ".order.invalid-status";
 
+  public static final String ERROR_ORDER_RETRY_INVALID_STATUS = ERROR_PREFIX
+      + ".order-retry.invalid-status";
+
   public static final String ERROR_REFERENCE_DATA_RETRIEVE = ERROR_PREFIX
       + ".reference-data.retrieve";
 

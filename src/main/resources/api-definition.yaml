@@ -209,6 +209,17 @@ resourceTypes:
                     404:
                       body:
                         application/json:
+          /retry:
+              get:
+                  is: [ secured ]
+                  description: Manually retry for transferring order file via FTP after updating or checking the FTP transfer properties.
+                  responses:
+                    200:
+                    404:
+                    400:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /search:
               get:
                   is: [ secured ]
