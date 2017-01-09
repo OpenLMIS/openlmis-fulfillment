@@ -14,8 +14,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 
 public abstract class BaseCommunicationService {
   protected static final String ACCESS_TOKEN = "access_token";
@@ -32,13 +30,6 @@ public abstract class BaseCommunicationService {
   private String authorizationUrl;
 
   protected String obtainAccessToken() {
-    HttpServletRequest httpServletRequest = HttpContextHelper.getCurrentHttpRequest();
-    if (httpServletRequest != null) {
-      String token = httpServletRequest.getParameter(ACCESS_TOKEN);
-      if (token != null) {
-        return token;
-      }
-    }
     String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
