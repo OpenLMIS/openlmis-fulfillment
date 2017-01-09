@@ -243,8 +243,8 @@ public class OrderService {
   }
 
   /**
-   * Store an order in locally directory and try to send (if there are FTP transfer properties) to
-   * a FTP server.
+   * Store an order in local directory and try to send (if there are FTP transfer properties) to
+   * an FTP server. Also, the status field in the order will be updated.
    *
    * @param order instance
    * @return passed order with modified status
