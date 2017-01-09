@@ -55,18 +55,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
 
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-  private static final String ID_EXPORT = ID_URL + "/export";
-  private static final String ID_RETRY = ID_URL + "/retry";
-  private static final String ID_FINALIZE = ID_URL + "/finalize";
-  private static final String API_ORDERS_ID_PRINT = ID_URL + "/print";
+  private static final String EXPORT_URL = ID_URL + "/export";
+  private static final String RETRY_URL = ID_URL + "/retry";
+  private static final String FINALIZE_URL = ID_URL + "/finalize";
+  private static final String PRINT_URL = ID_URL + "/print";
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROGRAM = "program";
-  private static final String NUMBER = "10.90";
   private static final String FORMAT = "format";
 
+  private static final String NUMBER = "10.90";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   private UUID facility = UUID.randomUUID();
@@ -213,7 +213,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put(ID_FINALIZE)
+        .put(FINALIZE_URL)
         .then()
         .statusCode(200);
 
@@ -230,7 +230,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put(ID_FINALIZE)
+        .put(FINALIZE_URL)
         .then()
         .statusCode(400);
 
@@ -248,7 +248,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", id.toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
-        .put(ID_FINALIZE)
+        .put(FINALIZE_URL)
         .then()
         .statusCode(404);
 
@@ -262,7 +262,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
-        .get(API_ORDERS_ID_PRINT)
+        .get(PRINT_URL)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -278,7 +278,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", thirdOrder.getId().toString())
         .when()
-        .get(API_ORDERS_ID_PRINT)
+        .get(PRINT_URL)
         .then()
         .statusCode(200);
 
@@ -294,7 +294,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId().toString())
         .when()
-        .get(API_ORDERS_ID_PRINT)
+        .get(PRINT_URL)
         .then()
         .statusCode(400);
 
@@ -608,7 +608,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
-        .get(ID_EXPORT)
+        .get(EXPORT_URL)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -634,7 +634,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", secondOrder.getId())
         .queryParam("type", "csv")
         .when()
-        .get(ID_EXPORT)
+        .get(EXPORT_URL)
         .then()
         .statusCode(200)
         .extract().body().asString();
@@ -651,7 +651,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", secondOrder.getId())
         .queryParam("type", "pdf")
         .when()
-        .get(ID_EXPORT)
+        .get(EXPORT_URL)
         .then()
         .statusCode(400);
 
@@ -667,7 +667,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .pathParam("id", firstOrder.getId())
         .queryParam("type", "csv")
         .when()
-        .get(ID_EXPORT)
+        .get(EXPORT_URL)
         .then()
         .statusCode(404);
 
@@ -682,7 +682,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
-        .get(ID_RETRY)
+        .get(RETRY_URL)
         .then()
         .statusCode(404);
 
@@ -699,7 +699,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
-        .get(ID_RETRY)
+        .get(RETRY_URL)
         .then()
         .statusCode(400)
         .extract()
@@ -721,7 +721,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
-        .get(ID_RETRY)
+        .get(RETRY_URL)
         .then()
         .statusCode(400)
         .extract()
@@ -741,7 +741,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
-        .get(ID_RETRY)
+        .get(RETRY_URL)
         .then()
         .statusCode(200);
 
