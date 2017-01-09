@@ -1,11 +1,13 @@
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
+import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
+import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.FulfillmentException;
@@ -15,7 +17,6 @@ import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
-import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +58,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private PermissionService permissionService;
-
-  @Autowired
-  private MessageService messageService;
 
   /**
    * Allows creating new orders.
@@ -196,12 +194,12 @@ public class OrderController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    if (order.getStatus() != OrderStatus.ORDERED) {
-      throw new InvalidOrderStatusException(OrderStatus.ORDERED.toString());
+    if (order.getStatus() != ORDERED) {
+      throw new InvalidOrderStatusException(ERROR_ORDER_INVALID_STATUS, ORDERED);
     }
 
     LOGGER.debug("Finalizing the order with id: {}", order);
-    order.setStatus(OrderStatus.SHIPPED);
+    order.setStatus(SHIPPED);
     orderRepository.save(order);
 
     return new ResponseEntity<>(HttpStatus.OK);
@@ -297,31 +295,21 @@ public class OrderController extends BaseController {
    * transfer properties.
    *
    * @param id  UUID of order
-   * @return ResponseEntity with the "#200 OK" HTTP response status on success or ResponseEntity
-   *         containing the error description and "#400 Bad Request" status or ResponseEntity
-   *         with the "#404 Not found" HTTP status if order does not exist.
    */
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
-  public ResponseEntity manuallyRetry(@PathVariable("id") UUID id) {
+  @ResponseStatus(HttpStatus.OK)
+  public void manuallyRetry(@PathVariable("id") UUID id) throws FulfillmentException {
     Order order = orderRepository.findOne(id);
 
     if (null == order) {
-      return ResponseEntity.notFound().build();
+      throw new OrderNotFoundException(id);
     }
 
-    if (OrderStatus.TRANSFER_FAILED != order.getStatus()) {
-      Message message = new Message(ERROR_ORDER_RETRY_INVALID_STATUS);
-      return ResponseEntity.badRequest().body(messageService.localize(message));
+    if (TRANSFER_FAILED != order.getStatus()) {
+      throw new InvalidOrderStatusException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED);
     }
 
-    try {
-      orderService.store(order);
-    } catch (FulfillmentException exp) {
-      LOGGER.error("Can't store an order with id {}", order.getId(), exp);
-      return ResponseEntity.badRequest().body(messageService.localize(exp.asMessage()));
-    }
-
-    return ResponseEntity.ok().build();
+    orderService.store(order);
   }
 
 }

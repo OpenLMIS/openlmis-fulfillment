@@ -9,10 +9,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -31,7 +30,6 @@ import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
-import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,7 +37,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -65,6 +62,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROGRAM = "program";
   private static final String FORMAT = "format";
+  private static final String MESSAGE_KEY = "messageKey";
 
   private static final String NUMBER = "10.90";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
@@ -678,14 +676,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldReturn404ForRetryEndpointWhenOrderDoesNotExist() {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
-    restAssured.given()
+    String message = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
         .get(RETRY_URL)
         .then()
-        .statusCode(404);
+        .statusCode(404)
+        .extract()
+        .path(MESSAGE_KEY);
 
+    assertThat(message, equalTo(ERROR_ORDER_NOT_FOUND));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -703,31 +704,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(400)
         .extract()
-        .path("messageKey");
+        .path(MESSAGE_KEY);
 
     assertThat(message, equalTo(ERROR_ORDER_RETRY_INVALID_STATUS));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnErrorMessageIfThereWillBeProblemWithRetry() throws OrderStorageException {
-    firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
-
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
-    willThrow(new OrderStorageException(new IOException(), ERROR_IO, ""))
-        .given(orderStorage).store(any(Order.class));
-
-    String message = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .get(RETRY_URL)
-        .then()
-        .statusCode(400)
-        .extract()
-        .path("messageKey");
-
-    assertThat(message, equalTo(ERROR_IO));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -11,8 +11,6 @@ import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.InvalidOrderStatusException;
-import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,10 +19,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Controller advice responsible for handling errors specific to fulfilment.
+ * Controller advice responsible for handling errors from service layer.
  */
 @ControllerAdvice
-public class GeneralErrorHandling extends AbstractErrorHandling {
+public class ServiceErrorHandling extends AbstractErrorHandling {
 
   @ExceptionHandler(OrderFileException.class)
   public Message.LocalizedMessage handleOrderFileGenerationError(OrderFileException ex) {
@@ -78,13 +76,6 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Unable to store the order", ex);
   }
 
-  @ExceptionHandler(MissingPermissionException.class)
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  @ResponseBody
-  public Message.LocalizedMessage handleMissingPermissionException(MissingPermissionException ex) {
-    return logErrorAndRespond("Missing permission for this action", ex);
-  }
-
   @ExceptionHandler(DuplicateTransferPropertiesException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
@@ -109,11 +100,4 @@ public class GeneralErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Cannot find configuration setting", ex);
   }
 
-  @ExceptionHandler(InvalidOrderStatusException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
-  public Message.LocalizedMessage handleInvalidOrderStatusException(
-      InvalidOrderStatusException ex) {
-    return logErrorAndRespond("Cannot update status for this order", ex);
-  }
 }
