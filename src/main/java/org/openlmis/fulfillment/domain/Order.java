@@ -4,6 +4,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -150,6 +151,10 @@ public class Order extends BaseEntity {
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  public void setOrderCode(ProgramDto program, OrderNumberConfiguration configuration) {
+    this.orderCode = configuration.generateOrderNumber(this, program);
   }
 
   /**

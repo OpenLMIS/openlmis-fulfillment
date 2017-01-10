@@ -25,9 +25,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
-import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.TransferProperties;
-import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
@@ -35,8 +33,6 @@ import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableProductReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,13 +66,7 @@ public class OrderService {
   private OrderRepository orderRepository;
 
   @Autowired
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
 
   @Autowired
   private OrderableProductReferenceDataService orderableProductReferenceDataService;
@@ -227,30 +217,16 @@ public class OrderService {
   }
 
   /**
-   * Saves a new instance of order.
+   * Saves a new instance of order. The method also stores the order in local directory and try
+   * to send (if there are FTP transfer properties) to an FTP server. Also, the status field in
+   * the order will be updated.
    *
    * @param order instance
    * @return passed instance after save.
+   * @throws OrderStorageException if there will be any problem with store an order.
+   * @throws ConfigurationSettingException if there will be any problem with configuration settings.
    */
   public Order save(Order order) throws OrderStorageException, ConfigurationSettingException {
-    setOrderCode(order);
-    Order saved = store(order);
-
-    // Send an email notification to the user that converted the order
-    sendNotification(saved, saved.getCreatedById());
-
-    return saved;
-  }
-
-  /**
-   * Store an order in local directory and try to send (if there are FTP transfer properties) to
-   * an FTP server. Also, the status field in the order will be updated.
-   *
-   * @param order instance
-   * @return passed order with modified status
-   * @throws OrderStorageException if there will be any problem with store an order.
-   */
-  public Order store(Order order) throws OrderStorageException {
     setOrderStatus(order);
 
     // save order
@@ -271,6 +247,9 @@ public class OrderService {
         saved = orderRepository.save(order);
       }
     }
+
+    // Send an email notification to the user that converted the order
+    sendNotification(saved, saved.getCreatedById());
 
     return saved;
   }
@@ -305,15 +284,6 @@ public class OrderService {
       throw new IllegalStateException("Can't get access to getter method", exp);
     }
     return content;
-  }
-
-  private void setOrderCode(Order order) {
-    // set order code
-    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.findAll().iterator().next();
-
-    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
   }
 
   private void setOrderStatus(Order order) {

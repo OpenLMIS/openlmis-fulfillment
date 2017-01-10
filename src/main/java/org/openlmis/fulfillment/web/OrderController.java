@@ -8,6 +8,8 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALI
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.FulfillmentException;
@@ -17,6 +19,8 @@ import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +63,12 @@ public class OrderController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -77,7 +87,13 @@ public class OrderController extends BaseController {
     permissionService.canConvertToOrder(order);
 
     LOGGER.debug("Creating new order");
+
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
+
     order.setId(null);
+    order.setOrderCode(program, orderNumberConfiguration);
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
     return OrderDto.newInstance(newOrder);
@@ -309,7 +325,7 @@ public class OrderController extends BaseController {
       throw new InvalidOrderStatusException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED);
     }
 
-    orderService.store(order);
+    orderService.save(order);
   }
 
 }
