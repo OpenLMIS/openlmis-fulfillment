@@ -314,7 +314,7 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public void retryTransferringOrder(@PathVariable("id") UUID id) throws FulfillmentException {
+  public void retryOrderTransfer(@PathVariable("id") UUID id) throws FulfillmentException {
     Order order = orderRepository.findOne(id);
 
     if (null == order) {
