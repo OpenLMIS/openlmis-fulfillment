@@ -673,7 +673,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldReturn404ForRetryEndpointWhenOrderDoesNotExist() {
+  public void shouldReturnNotFoundErrorMessageForRetryEndpointWhenOrderDoesNotExist() {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     String message = restAssured.given()
