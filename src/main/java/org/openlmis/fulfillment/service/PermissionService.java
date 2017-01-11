@@ -1,7 +1,6 @@
 package org.openlmis.fulfillment.service;
 
 
-
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.service.referencedata.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
@@ -17,6 +16,7 @@ import java.util.UUID;
 @Service
 public class PermissionService {
   static final String REQUISITION_CONVERT_TO_ORDER = "REQUISITION_CONVERT_TO_ORDER";
+  static final String FULFILLMENT_TRANSFER_ORDER = "FULFILLMENT_TRANSFER_ORDER";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -24,15 +24,19 @@ public class PermissionService {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
-
   /**
    * Checks if user has permission to create order.
+   *
    * @param order checked if can be created by user.
    * @throws MissingPermissionException when used do not have permission.
    */
   public void canConvertToOrder(Order order) throws MissingPermissionException {
     hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
         order.getSupplyingFacilityId());
+  }
+
+  public void canTransferOrder(Order order) throws MissingPermissionException {
+    hasPermission(FULFILLMENT_TRANSFER_ORDER, null, null, order.getSupplyingFacilityId());
   }
 
   private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
@@ -43,7 +47,7 @@ public class PermissionService {
         user.getId(), right.getId(), program, facility, warehouse
     );
 
-    if (null == result || !result.getResult().booleanValue()) {
+    if (null == result || !result.getResult()) {
       throw new MissingPermissionException(rightName);
     }
   }

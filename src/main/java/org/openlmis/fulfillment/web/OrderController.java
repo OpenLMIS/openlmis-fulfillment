@@ -321,6 +321,8 @@ public class OrderController extends BaseController {
       throw new OrderNotFoundException(id);
     }
 
+    permissionService.canTransferOrder(order);
+
     if (TRANSFER_FAILED != order.getStatus()) {
       throw new InvalidOrderStatusException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED);
     }

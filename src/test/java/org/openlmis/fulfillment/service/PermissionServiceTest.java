@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
+import static org.openlmis.fulfillment.service.PermissionService.FULFILLMENT_TRANSFER_ORDER;
 import static org.openlmis.fulfillment.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 
 import org.junit.Before;
@@ -48,8 +49,12 @@ public class PermissionServiceTest {
   @Mock
   private RightDto requisitionConvertRight;
 
+  @Mock
+  private RightDto fulfillmentTransferOrderRight;
+
   private UUID userId = UUID.randomUUID();
   private UUID requisitionConvertRightId = UUID.randomUUID();
+  private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private Order order =  new Order();
@@ -64,11 +69,14 @@ public class PermissionServiceTest {
     when(user.getId()).thenReturn(userId);
 
     when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
+    when(fulfillmentTransferOrderRight.getId()).thenReturn(fulfillmentTransferOrderRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
     when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
         requisitionConvertRight);
+    when(authenticationHelper.getRight(FULFILLMENT_TRANSFER_ORDER)).thenReturn(
+        fulfillmentTransferOrderRight);
   }
 
   @Test
@@ -86,6 +94,23 @@ public class PermissionServiceTest {
     expectException(REQUISITION_CONVERT_TO_ORDER);
 
     permissionService.canConvertToOrder(order);
+  }
+
+  @Test
+  public void canTransferOrder() throws Exception {
+    mockFulfillmentHasRight(fulfillmentTransferOrderRightId, true);
+
+    permissionService.canTransferOrder(order);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, FULFILLMENT_TRANSFER_ORDER, fulfillmentTransferOrderRightId);
+  }
+
+  @Test
+  public void cannotTransferOrder() throws Exception {
+    expectException(FULFILLMENT_TRANSFER_ORDER);
+
+    permissionService.canTransferOrder(order);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign) {
