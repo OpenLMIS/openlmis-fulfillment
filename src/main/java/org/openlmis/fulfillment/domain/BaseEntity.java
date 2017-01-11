@@ -2,6 +2,8 @@ package org.openlmis.fulfillment.domain;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import org.openlmis.util.View;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
