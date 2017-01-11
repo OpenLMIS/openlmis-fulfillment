@@ -153,10 +153,6 @@ public class Order extends BaseEntity {
         .ifPresent(list -> list.forEach(consumer));
   }
 
-  public void setOrderCode(ProgramDto program, OrderNumberConfiguration configuration) {
-    this.orderCode = configuration.generateOrderNumber(this, program);
-  }
-
   /**
    * Create a new instance of Order based on data from {@link Order.Importer}
    *

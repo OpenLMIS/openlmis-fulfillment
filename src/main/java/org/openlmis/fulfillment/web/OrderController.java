@@ -93,7 +93,7 @@ public class OrderController extends BaseController {
         orderNumberConfigurationRepository.findAll().iterator().next();
 
     order.setId(null);
-    order.setOrderCode(program, orderNumberConfiguration);
+    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
     return OrderDto.newInstance(newOrder);
