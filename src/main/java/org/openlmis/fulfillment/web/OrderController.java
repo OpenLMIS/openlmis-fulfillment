@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -80,11 +81,14 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
 
-  public OrderDto createOrder(@RequestBody OrderDto orderDto)
+  public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication)
       throws ConfigurationSettingException, OrderStorageException, MissingPermissionException {
     Order order = Order.newInstance(orderDto);
-    LOGGER.debug("Checking rights to create order");
-    permissionService.canConvertToOrder(order);
+
+    if (!authentication.isClientOnly()) {
+      LOGGER.debug("Checking rights to create order");
+      permissionService.canConvertToOrder(order);
+    }
 
     LOGGER.debug("Creating new order");
 
