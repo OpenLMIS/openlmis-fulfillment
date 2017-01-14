@@ -438,7 +438,7 @@ resourceTypes:
                 404:
                     body:
                       application/json:
-  /templates:
+  /reports/templates/fulfillment:
       displayName: Report Template
       post:
             is: [ secured ]

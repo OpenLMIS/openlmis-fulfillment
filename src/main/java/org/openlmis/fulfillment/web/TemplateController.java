@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 @Controller
+@RequestMapping("/api/reports/templates/fulfillment")
 public class TemplateController extends BaseController {
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
@@ -41,7 +42,7 @@ public class TemplateController extends BaseController {
    * @param name        Name of file in database
    * @param description Description of the file
    */
-  @RequestMapping(value = "/templates", method = RequestMethod.POST)
+  @RequestMapping(method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public void createJasperReportTemplate(@RequestPart("file") MultipartFile file,
                                          String name, String description)
@@ -55,7 +56,7 @@ public class TemplateController extends BaseController {
    *
    * @return Templates.
    */
-  @RequestMapping(value = "/templates", method = RequestMethod.GET)
+  @RequestMapping(method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Iterable<TemplateDto>> getAllTemplates() {
     Iterable<TemplateDto> templates = TemplateDto.newInstance(templateRepository.findAll());
@@ -69,7 +70,7 @@ public class TemplateController extends BaseController {
    * @param templateId UUID of template which we want to update
    * @return ResponseEntity containing the updated template
    */
-  @RequestMapping(value = "/templates/{id}", method = RequestMethod.PUT)
+  @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
   public ResponseEntity<TemplateDto> updateTemplate(@RequestBody TemplateDto templateDto,
                                           @PathVariable("id") UUID templateId) {
     Template template = Template.newInstance(templateDto);
@@ -94,7 +95,7 @@ public class TemplateController extends BaseController {
    * @param templateId UUID of template which we want to get
    * @return Template.
    */
-  @RequestMapping(value = "/templates/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   public ResponseEntity<TemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
     Template template =
         templateRepository.findOne(templateId);
@@ -111,7 +112,7 @@ public class TemplateController extends BaseController {
    * @param templateId UUID of template which we want to delete
    * @return ResponseEntity containing the HTTP Status
    */
-  @RequestMapping(value = "/templates/{id}", method = RequestMethod.DELETE)
+  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id")
                                               UUID templateId) {
     Template template =

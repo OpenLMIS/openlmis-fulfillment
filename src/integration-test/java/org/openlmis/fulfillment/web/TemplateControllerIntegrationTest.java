@@ -26,7 +26,7 @@ import java.util.UUID;
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/templates";
+  private static final String RESOURCE_URL = "/api/reports/templates/fulfillment";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TEMPLATE_CONTROLLER_TEST = "TemplateControllerIntegrationTest";
