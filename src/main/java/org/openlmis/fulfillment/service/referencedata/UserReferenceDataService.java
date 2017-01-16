@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.service.referencedata;
 
+import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.util.BooleanUtils;
 import org.springframework.stereotype.Service;
 

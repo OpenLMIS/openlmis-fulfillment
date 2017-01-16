@@ -1,4 +1,4 @@
-package org.openlmis.fulfillment.service.referencedata;
+package org.openlmis.fulfillment.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

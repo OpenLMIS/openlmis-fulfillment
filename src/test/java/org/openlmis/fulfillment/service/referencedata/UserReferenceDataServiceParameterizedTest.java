@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.MockitoAnnotations;
+import org.openlmis.fulfillment.service.ResultDto;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
