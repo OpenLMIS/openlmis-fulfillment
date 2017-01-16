@@ -19,6 +19,7 @@ import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -317,8 +318,9 @@ public class OrderController extends BaseController {
    * @param id  UUID of order
    */
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  public void retryOrderTransfer(@PathVariable("id") UUID id) throws FulfillmentException {
+  @ResponseBody
+  public ResultDto<Boolean> retryOrderTransfer(@PathVariable("id") UUID id)
+      throws FulfillmentException {
     Order order = orderRepository.findOne(id);
 
     if (null == order) {
@@ -332,6 +334,7 @@ public class OrderController extends BaseController {
     }
 
     orderService.save(order);
+    return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
   }
 
 }

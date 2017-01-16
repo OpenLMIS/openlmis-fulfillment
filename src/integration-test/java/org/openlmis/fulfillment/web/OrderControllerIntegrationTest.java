@@ -5,6 +5,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +33,7 @@ import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
+import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -716,14 +720,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
 
-    restAssured.given()
+    ResultDto result = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
         .when()
         .get(RETRY_URL)
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .extract()
+        .body()
+        .as(ResultDto.class);
 
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getResult(), is(notNullValue()));
+    assertThat(result.getResult(), is(instanceOf(Boolean.class)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }

@@ -59,6 +59,8 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/configurationSetting.json" }
       }
 
+  - resultDto: !include schemas/resultDto.json
+
 traits:
     - secured:
           queryParameters:
@@ -215,6 +217,9 @@ resourceTypes:
                   description: Manually retry for transferring order file via FTP after updating or checking the FTP transfer properties.
                   responses:
                     200:
+                      body:
+                        application/json:
+                          schema: resultDto
                     404:
                       body:
                         application/json:
