@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,6 @@ public abstract class TransferPropertiesDto
 
   @Getter
   @Setter
-  private UUID facilityId;
+  private FacilityDto facility;
 
 }

@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 final class LocalTransferPropertiesConverter
     implements TransferPropertiesConverter<LocalTransferProperties, LocalTransferPropertiesDto> {
@@ -17,9 +18,10 @@ final class LocalTransferPropertiesConverter
   }
 
   @Override
-  public LocalTransferPropertiesDto toDto(LocalTransferProperties domain) {
+  public LocalTransferPropertiesDto toDto(LocalTransferProperties domain,
+                                          ExporterBuilder exporter) {
     LocalTransferPropertiesDto dto = new LocalTransferPropertiesDto();
-    domain.export(dto);
+    exporter.export(domain, dto);
 
     return dto;
   }

@@ -1,5 +1,7 @@
 package org.openlmis.fulfillment.domain;
 
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,7 +34,7 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
 
     void setId(UUID id);
 
-    void setFacilityId(UUID facilityId);
+    void setFacility(FacilityDto facility);
 
   }
 
@@ -40,7 +42,7 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
 
     UUID getId();
 
-    UUID getFacilityId();
+    FacilityDto getFacility();
 
   }
 

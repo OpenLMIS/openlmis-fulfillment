@@ -15,6 +15,8 @@ public class UserDto {
   private String lastName;
   private String email;
   private boolean verified;
+  private boolean active;
+  private boolean loginRestricted;
   private FacilityDto homeFacility;
   private Set<RoleAssignmentDto> roleAssignments;
 }

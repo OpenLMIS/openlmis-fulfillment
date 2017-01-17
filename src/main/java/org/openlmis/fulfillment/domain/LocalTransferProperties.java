@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -27,21 +29,13 @@ public class LocalTransferProperties extends TransferProperties {
   public static LocalTransferProperties newInstance(Importer importer) {
     LocalTransferProperties local = new LocalTransferProperties();
     local.id = importer.getId();
-    local.facilityId = importer.getFacilityId();
+
+    Optional.ofNullable(importer.getFacility())
+        .ifPresent(facility -> local.setFacilityId(facility.getId()));
+
     local.path = importer.getPath();
 
     return local;
-  }
-
-  /**
-   * Exports current data from this Local Transfer Properties.
-   *
-   * @param exporter instance that implement {@link Exporter}
-   */
-  public void export(Exporter exporter) {
-    exporter.setId(id);
-    exporter.setFacilityId(facilityId);
-    exporter.setPath(path);
   }
 
   public interface Exporter extends BaseExporter {

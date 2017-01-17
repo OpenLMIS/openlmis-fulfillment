@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.web.util;
 
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,12 +32,14 @@ public class ProofOfDeliveryLineItemDto implements ProofOfDeliveryLineItem.Impor
    * @return new instance of ProofOfDeliveryLineItemDto.
    */
   public static ProofOfDeliveryLineItemDto newInstance(
-      ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
+      ProofOfDeliveryLineItem proofOfDeliveryLineItem, ExporterBuilder exporter) {
+
+    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
+    exporter.export(proofOfDeliveryLineItem.getOrderLineItem(), orderLineItemDto);
+
     ProofOfDeliveryLineItemDto proofOfDeliveryLineItemDto = new ProofOfDeliveryLineItemDto();
     proofOfDeliveryLineItem.export(proofOfDeliveryLineItemDto);
 
-    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
-    proofOfDeliveryLineItem.getOrderLineItem().export(orderLineItemDto);
     proofOfDeliveryLineItemDto.setOrderLineItem(orderLineItemDto);
 
     return proofOfDeliveryLineItemDto;

@@ -11,9 +11,10 @@
       ],
       "title": "id"
     },
-    "facilityId": {
-      "type": "string",
-      "title": "facilityId"
+    "facility": {
+      "type": "object",
+      "title": "facility",
+      "$ref": "facilityDto.json"
     },
     "type": {
       "type": "string",
@@ -60,7 +61,7 @@
         }
       },
       "required": [
-        "facilityId",
+        "facility",
         "protocol",
         "username",
         "serverHost",
@@ -78,7 +79,7 @@
         }
       },
       "required": [
-        "facilityId",
+        "facility",
         "path"
       ]
     }

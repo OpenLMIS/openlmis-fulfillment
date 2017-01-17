@@ -1,6 +1,8 @@
 package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,19 +16,20 @@ import java.util.UUID;
 public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.Exporter {
 
   private UUID id;
-  private UUID orderableProductId;
+  private OrderableProductDto orderableProduct;
   private Long orderedQuantity;
   private Long filledQuantity;
   private Long approvedQuantity;
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}
-   * @param orderLineItem instance of Template
+   * @param line instance of Template
    * @return new instance of TemplateDto.
    */
-  public static OrderLineItemDto newInstance(OrderLineItem orderLineItem) {
+  public static OrderLineItemDto newInstance(OrderLineItem line, ExporterBuilder exporter) {
     OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
-    orderLineItem.export(orderLineItemDto);
+    exporter.export(line, orderLineItemDto);
+
     return orderLineItemDto;
   }
 }

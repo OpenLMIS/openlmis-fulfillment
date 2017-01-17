@@ -40,7 +40,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(TransferPropertiesFactory.newInstance(properties))
+        .body(TransferPropertiesFactory.newInstance(properties, exporter))
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -67,7 +67,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties))
+        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
         .when()
         .put(ID_URL)
         .then()
@@ -94,7 +94,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties))
+        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
         .when()
         .put(ID_URL)
         .then()
@@ -118,11 +118,14 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .willAnswer(new SaveAnswer<TransferProperties>());
 
     // when
+    TransferPropertiesDto object = TransferPropertiesFactory.newInstance(newProperties, exporter);
+    object.getFacility().setId(UUID.randomUUID());
+
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties))
+        .body(object)
         .when()
         .put(ID_URL)
         .then()

@@ -4,6 +4,10 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -163,18 +167,34 @@ public class Order extends BaseEntity {
     order.setId(importer.getId());
     order.setExternalId(importer.getExternalId());
     order.setEmergency(importer.getEmergency());
-    order.setFacilityId(importer.getFacilityId());
-    order.setProgramId(importer.getProgramId());
-    order.setRequestingFacilityId(importer.getRequestingFacilityId());
-    order.setReceivingFacilityId(importer.getReceivingFacilityId());
-    order.setSupplyingFacilityId(importer.getSupplyingFacilityId());
+
+    Optional.ofNullable(importer.getFacility())
+        .ifPresent(facility -> order.setFacilityId(facility.getId()));
+
+    Optional.ofNullable(importer.getProgram())
+        .ifPresent(program -> order.setProgramId(program.getId()));
+
+    Optional.ofNullable(importer.getRequestingFacility())
+        .ifPresent(facility -> order.setRequestingFacilityId(facility.getId()));
+
+    Optional.ofNullable(importer.getReceivingFacility())
+        .ifPresent(facility -> order.setReceivingFacilityId(facility.getId()));
+
+    Optional.ofNullable(importer.getSupplyingFacility())
+        .ifPresent(facility -> order.setSupplyingFacilityId(facility.getId()));
+
     order.setOrderCode(importer.getOrderCode());
     order.setStatus(importer.getStatus());
     order.setQuotedCost(importer.getQuotedCost());
-    order.setProcessingPeriodId(importer.getProcessingPeriodId());
+
+    Optional.ofNullable(importer.getProcessingPeriod())
+        .ifPresent(period -> order.setProcessingPeriodId(period.getId()));
+
     order.setCreatedDate(importer.getCreatedDate());
-    order.setCreatedById(importer.getCreatedById());
-    order.setSupplyingFacilityId(importer.getSupplyingFacilityId());
+
+    Optional.ofNullable(importer.getCreatedBy())
+        .ifPresent(user -> order.setCreatedById(user.getId()));
+
     order.setOrderLineItems(new ArrayList<>());
 
     if (importer.getOrderLineItems() != null) {
@@ -184,28 +204,6 @@ public class Order extends BaseEntity {
     return order;
   }
 
-  /**
-   * Export this object to the specified exporter (DTO).
-   *
-   * @param exporter exporter to export to
-   */
-  public void export(Exporter exporter) {
-    exporter.setId(id);
-    exporter.setExternalId(externalId);
-    exporter.setEmergency(emergency);
-    exporter.setFacilityId(facilityId);
-    exporter.setProgramId(programId);
-    exporter.setProcessingPeriodId(processingPeriodId);
-    exporter.setRequestingFacilityId(requestingFacilityId);
-    exporter.setReceivingFacilityId(receivingFacilityId);
-    exporter.setSupplyingFacilityId(supplyingFacilityId);
-    exporter.setOrderCode(orderCode);
-    exporter.setStatus(status);
-    exporter.setQuotedCost(quotedCost);
-    exporter.setCreatedById(createdById);
-    exporter.setCreatedDate(createdDate);
-  }
-
   public interface Exporter {
     void setId(UUID id);
 
@@ -213,15 +211,15 @@ public class Order extends BaseEntity {
 
     void setEmergency(Boolean emergency);
 
-    void setFacilityId(UUID facilityId);
+    void setFacility(FacilityDto facility);
 
-    void setProgramId(UUID programId);
+    void setProgram(ProgramDto program);
 
-    void setRequestingFacilityId(UUID requestingFacilityId);
+    void setRequestingFacility(FacilityDto requestingFacility);
 
-    void setReceivingFacilityId(UUID receivingFacilityId);
+    void setReceivingFacility(FacilityDto receivingFacility);
 
-    void setSupplyingFacilityId(UUID supplyingFacilityId);
+    void setSupplyingFacility(FacilityDto supplyingFacility);
 
     void setOrderCode(String orderCode);
 
@@ -229,11 +227,11 @@ public class Order extends BaseEntity {
 
     void setQuotedCost(BigDecimal quotedCost);
 
-    void setProcessingPeriodId(UUID id);
+    void setProcessingPeriod(ProcessingPeriodDto period);
 
     void setCreatedDate(LocalDateTime localDateTime);
 
-    void setCreatedById(UUID id);
+    void setCreatedBy(UserDto user);
 
   }
 
@@ -244,15 +242,15 @@ public class Order extends BaseEntity {
 
     Boolean getEmergency();
 
-    UUID getFacilityId();
+    FacilityDto getFacility();
 
-    UUID getProgramId();
+    ProgramDto getProgram();
 
-    UUID getRequestingFacilityId();
+    FacilityDto getRequestingFacility();
 
-    UUID getReceivingFacilityId();
+    FacilityDto getReceivingFacility();
 
-    UUID getSupplyingFacilityId();
+    FacilityDto getSupplyingFacility();
 
     String getOrderCode();
 
@@ -262,11 +260,11 @@ public class Order extends BaseEntity {
 
     List<OrderLineItem.Importer> getOrderLineItems();
 
-    UUID getProcessingPeriodId();
+    ProcessingPeriodDto getProcessingPeriod();
 
     LocalDateTime getCreatedDate();
 
-    UUID getCreatedById();
+    UserDto getCreatedBy();
 
   }
 }

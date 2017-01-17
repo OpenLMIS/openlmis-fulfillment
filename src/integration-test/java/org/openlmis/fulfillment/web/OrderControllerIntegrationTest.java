@@ -131,7 +131,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setOrderLineItems(orderLineItems);
     firstOrder.setExternalId(secondOrder.getExternalId());
 
-    firstOrderDto =  OrderDto.newInstance(firstOrder);
+    firstOrderDto =  OrderDto.newInstance(firstOrder, exporter);
 
     given(orderRepository.findAll()).willReturn(
         Lists.newArrayList(firstOrder, secondOrder, thirdOrder)
@@ -305,6 +305,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacility() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+
     given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null))
         .willReturn(Lists.newArrayList(firstOrder));
 
@@ -321,13 +323,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for (OrderDto order : response) {
       assertEquals(
-          order.getSupplyingFacilityId(),
+          order.getSupplyingFacility().getId(),
           firstOrder.getSupplyingFacilityId());
     }
   }
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null
     )).willReturn(Lists.newArrayList(firstOrder));
@@ -346,16 +351,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for (OrderDto order : response) {
       assertEquals(
-          order.getSupplyingFacilityId(),
+          order.getSupplyingFacility().getId(),
           firstOrder.getSupplyingFacilityId());
       assertEquals(
-          order.getRequestingFacilityId(),
+          order.getRequestingFacility().getId(),
           firstOrder.getRequestingFacilityId());
     }
   }
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setProgramId(UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611"));
+
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId()
@@ -376,13 +385,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertEquals(1, response.length);
     for (OrderDto order : response) {
       assertEquals(
-          order.getSupplyingFacilityId(),
+          order.getSupplyingFacility().getId(),
           firstOrder.getSupplyingFacilityId());
       assertEquals(
-          order.getRequestingFacilityId(),
+          order.getRequestingFacility().getId(),
           firstOrder.getRequestingFacilityId());
       assertEquals(
-          order.getProgramId(),
+          order.getProgram().getId(),
           firstOrder.getProgramId());
     }
   }
@@ -438,7 +447,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrderDto =  OrderDto.newInstance(firstOrder);
+    firstOrderDto =  OrderDto.newInstance(firstOrder, exporter);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -500,7 +509,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
     firstOrder.setOrderLineItems(null);
-    firstOrderDto =  OrderDto.newInstance(firstOrder);
+    firstOrderDto =  OrderDto.newInstance(firstOrder, exporter);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -574,7 +583,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
     firstOrder.setOrderLineItems(null);
-    firstOrderDto =  OrderDto.newInstance(firstOrder);
+    firstOrderDto =  OrderDto.newInstance(firstOrder, exporter);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

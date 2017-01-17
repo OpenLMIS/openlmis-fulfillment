@@ -7,9 +7,10 @@
       "type": "string",
       "title": "id"
     },
-    "orderableProductId": {
-      "type": "string",
-      "title": "orderableProductId"
+    "orderableProduct": {
+      "type": "object",
+      "title": "orderableProduct",
+      "$ref": "orderableProductDto.json"
     },
     "orderedQuantity": {
       "type": "integer",
@@ -26,7 +27,7 @@
   },
   "required": [
     "id",
-    "orderableProductId",
+    "orderableProduct",
     "orderedQuantity",
     "filledQuantity",
     "approvedQuantity"

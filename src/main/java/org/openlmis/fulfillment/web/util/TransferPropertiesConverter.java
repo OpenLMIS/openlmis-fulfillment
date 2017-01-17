@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 interface TransferPropertiesConverter
     <A extends TransferProperties, B extends TransferPropertiesDto> {
@@ -9,6 +10,6 @@ interface TransferPropertiesConverter
 
   A toDomain(B dto);
 
-  B toDto(A domain);
+  B toDto(A domain, ExporterBuilder exporter);
 
 }

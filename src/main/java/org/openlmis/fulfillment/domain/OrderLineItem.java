@@ -1,11 +1,13 @@
 package org.openlmis.fulfillment.domain;
 
 import org.hibernate.annotations.Type;
+import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -67,30 +69,21 @@ public class OrderLineItem extends BaseEntity {
   public static OrderLineItem newInstance(Importer importer) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setId(importer.getId());
-    orderLineItem.setOrderableProductId(importer.getOrderableProductId());
+
+    Optional.ofNullable(importer.getOrderableProduct())
+        .ifPresent(product -> orderLineItem.setOrderableProductId(product.getId()));
+
     orderLineItem.setOrderedQuantity(importer.getOrderedQuantity());
     orderLineItem.setFilledQuantity(importer.getFilledQuantity());
     orderLineItem.setApprovedQuantity(importer.getApprovedQuantity());
-    return orderLineItem;
-  }
 
-  /**
-   * Export this object to the specified exporter (DTO).
-   *
-   * @param exporter exporter to export to
-   */
-  public void export(Exporter exporter) {
-    exporter.setId(id);
-    exporter.setApprovedQuantity(approvedQuantity);
-    exporter.setOrderableProductId(orderableProductId);
-    exporter.setFilledQuantity(filledQuantity);
-    exporter.setOrderedQuantity(orderedQuantity);
+    return orderLineItem;
   }
 
   public interface Exporter {
     void setId(UUID id);
 
-    void setOrderableProductId(UUID orderableProductId);
+    void setOrderableProduct(OrderableProductDto orderableProduct);
 
     void setOrderedQuantity(Long orderedQuantity);
 
@@ -103,7 +96,7 @@ public class OrderLineItem extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    UUID getOrderableProductId();
+    OrderableProductDto getOrderableProduct();
 
     Long getOrderedQuantity();
 

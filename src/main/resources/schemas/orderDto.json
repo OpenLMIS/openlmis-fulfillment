@@ -16,19 +16,15 @@
       "type": "boolean",
       "title": "emergency"
     },
-    "facilityId": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "title": "facilityId"
+    "facility": {
+      "type": "object",
+      "title": "facility",
+      "$ref": "facilityDto.json"
     },
-    "processingPeriodId": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "title": "processingPeriodId"
+    "processingPeriod": {
+      "type": "object",
+      "title": "processingPeriod",
+      "$ref": "processingPeriodDto.json"
     },
     "createdDate": {
       "type": [
@@ -41,25 +37,30 @@
       },
       "uniqueItems": false
     },
-    "createdById": {
-      "type": "string",
-      "title": "createdById"
+    "createdBy": {
+      "type": "object",
+      "title": "createdBy",
+      "$ref": "userDto.json"
     },
-    "programId": {
-      "type": "string",
-      "title": "programId"
+    "program": {
+      "type": "object",
+      "title": "program",
+      "$ref": "programDto.json"
     },
-    "requestingFacilityId": {
-      "type": "string",
-      "title": "requestingFacilityId"
+    "requestingFacility": {
+      "type": "object",
+      "title": "requestingFacility",
+      "$ref": "facilityDto.json"
     },
-    "receivingFacilityId": {
-      "type": "string",
-      "title": "receivingFacilityId"
+    "receivingFacility": {
+      "type": "object",
+      "title": "receivingFacility",
+      "$ref": "facilityDto.json"
     },
-    "supplyingFacilityId": {
-      "type": "string",
-      "title": "supplyingFacilityId"
+    "supplyingFacility": {
+      "type": "object",
+      "title": "supplyingFacility",
+      "$ref": "facilityDto.json"
     },
     "orderCode": {
       "type": [
@@ -96,11 +97,11 @@
     "id",
     "externalId",
     "emergency",
-    "createdById",
-    "programId",
-    "requestingFacilityId",
-    "receivingFacilityId",
-    "supplyingFacilityId",
+    "createdBy",
+    "program",
+    "requestingFacility",
+    "receivingFacility",
+    "supplyingFacility",
     "quotedCost"
   ]
 }

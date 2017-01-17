@@ -41,7 +41,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(newInstance(newProperties))
+        .body(newInstance(newProperties, exporter))
         .when()
         .put(ID_URL)
         .then()
@@ -57,7 +57,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
   FtpTransferProperties generateProperties() {
     FtpTransferProperties ftp = new FtpTransferProperties();
     ftp.setId(UUID.randomUUID());
-    ftp.setFacilityId(UUID.randomUUID());
+    ftp.setFacilityId(UUID.fromString(FACILITY_ID));
     ftp.setProtocol(FTP);
     ftp.setServerHost("host");
     ftp.setServerPort(21);

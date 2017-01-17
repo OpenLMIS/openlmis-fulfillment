@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 final class FtpTransferPropertiesConverter
     implements TransferPropertiesConverter<FtpTransferProperties, FtpTransferPropertiesDto> {
@@ -17,9 +18,10 @@ final class FtpTransferPropertiesConverter
   }
 
   @Override
-  public FtpTransferPropertiesDto toDto(FtpTransferProperties domain) {
+  public FtpTransferPropertiesDto toDto(FtpTransferProperties domain,
+                                        ExporterBuilder exporter) {
     FtpTransferPropertiesDto dto = new FtpTransferPropertiesDto();
-    domain.export(dto);
+    exporter.export(domain, dto);
 
     return dto;
   }

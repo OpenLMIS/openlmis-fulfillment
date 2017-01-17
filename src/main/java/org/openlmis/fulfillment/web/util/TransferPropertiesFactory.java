@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.web.util;
 import com.google.common.collect.Lists;
 
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 import java.util.List;
 
@@ -41,7 +42,8 @@ public final class TransferPropertiesFactory {
    * @param domain an instance of {@link TransferProperties}.
    * @return new instance of {@link TransferPropertiesDto}.
    */
-  public static TransferPropertiesDto newInstance(TransferProperties domain) {
+  public static TransferPropertiesDto newInstance(TransferProperties domain,
+                                                  ExporterBuilder exporter) {
     TransferPropertiesConverter converter = CONVERTERS
         .stream()
         .filter(c -> c.supports(domain.getClass()))
@@ -54,7 +56,7 @@ public final class TransferPropertiesFactory {
       );
     }
 
-    return converter.toDto(domain);
+    return converter.toDto(domain, exporter);
   }
 
 }

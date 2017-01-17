@@ -9,6 +9,11 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,11 +48,11 @@ public class OrderDto implements Order.Importer, Order.Exporter {
 
   @Getter
   @Setter
-  private UUID facilityId;
+  private FacilityDto facility;
 
   @Getter
   @Setter
-  private UUID processingPeriodId;
+  private ProcessingPeriodDto processingPeriod;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class)
   @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -57,23 +62,23 @@ public class OrderDto implements Order.Importer, Order.Exporter {
 
   @Getter
   @Setter
-  private UUID createdById;
+  private UserDto createdBy;
 
   @Getter
   @Setter
-  private UUID programId;
+  private ProgramDto program;
 
   @Getter
   @Setter
-  private UUID requestingFacilityId;
+  private FacilityDto requestingFacility;
 
   @Getter
   @Setter
-  private UUID receivingFacilityId;
+  private FacilityDto receivingFacility;
 
   @Getter
   @Setter
-  private UUID supplyingFacilityId;
+  private FacilityDto supplyingFacility;
 
   @Getter
   @Setter
@@ -102,9 +107,10 @@ public class OrderDto implements Order.Importer, Order.Exporter {
    * @param orders list on orders
    * @return list of OrderDto.
    */
-  public static Iterable<OrderDto> newInstance(Iterable<Order> orders) {
+  public static Iterable<OrderDto> newInstance(Iterable<Order> orders,
+                                               ExporterBuilder exporter) {
     List<OrderDto> orderDtos = new ArrayList<>();
-    orders.forEach(o -> orderDtos.add(newInstance(o)));
+    orders.forEach(o -> orderDtos.add(newInstance(o, exporter)));
     return orderDtos;
   }
 
@@ -113,14 +119,15 @@ public class OrderDto implements Order.Importer, Order.Exporter {
    * @param order instance of Order
    * @return new instance od OrderDto.
    */
-  public static OrderDto newInstance(Order order) {
+  public static OrderDto newInstance(Order order, ExporterBuilder exporter) {
     OrderDto orderDto =  new OrderDto();
-    order.export(orderDto);
+    exporter.export(order, orderDto);
 
     if (order.getOrderLineItems() != null) {
       orderDto.setOrderLineItems(order.getOrderLineItems().stream()
-          .map(OrderLineItemDto::newInstance).collect(Collectors.toList()));
+          .map(item -> OrderLineItemDto.newInstance(item, exporter)).collect(Collectors.toList()));
     }
+
     return orderDto;
   }
 }

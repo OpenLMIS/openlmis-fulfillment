@@ -50,7 +50,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(newInstance(newProperties))
+        .body(newInstance(newProperties, exporter))
         .when()
         .put(ID_URL)
         .then()
@@ -66,7 +66,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
   LocalTransferProperties generateProperties() {
     LocalTransferProperties local = new LocalTransferProperties();
     local.setId(UUID.randomUUID());
-    local.setFacilityId(UUID.randomUUID());
+    local.setFacilityId(UUID.fromString(FACILITY_ID));
     local.setPath(LOCAL_DIR);
 
     return local;

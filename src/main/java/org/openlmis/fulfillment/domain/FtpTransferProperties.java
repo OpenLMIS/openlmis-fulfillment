@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -72,7 +74,10 @@ public class FtpTransferProperties extends TransferProperties {
   public static FtpTransferProperties newInstance(Importer importer) {
     FtpTransferProperties ftp = new FtpTransferProperties();
     ftp.id = importer.getId();
-    ftp.facilityId = importer.getFacilityId();
+
+    Optional.ofNullable(importer.getFacility())
+        .ifPresent(facility -> ftp.facilityId = facility.getId());
+
     ftp.protocol = FtpProtocol.fromString(importer.getProtocol());
     ftp.username = importer.getUsername();
     ftp.password = importer.getPassword();
@@ -83,23 +88,6 @@ public class FtpTransferProperties extends TransferProperties {
     ftp.passiveMode = importer.getPassiveMode();
 
     return ftp;
-  }
-
-  /**
-   * Exports current data from this Ftp Transfer Properties.
-   *
-   * @param exporter instance that implement {@link Exporter}
-   */
-  public void export(Exporter exporter) {
-    exporter.setId(id);
-    exporter.setFacilityId(facilityId);
-    exporter.setProtocol(protocol.name());
-    exporter.setUsername(username);
-    exporter.setServerHost(serverHost);
-    exporter.setServerPort(serverPort);
-    exporter.setRemoteDirectory(remoteDirectory);
-    exporter.setLocalDirectory(localDirectory);
-    exporter.setPassiveMode(passiveMode);
   }
 
   public interface Exporter extends BaseExporter {

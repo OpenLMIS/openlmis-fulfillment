@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
@@ -43,6 +44,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
+  @Autowired
+  private ExporterBuilder exporter;
+
 
   /**
    * Allows creating new proofOfDeliveries.
@@ -61,8 +65,10 @@ public class ProofOfDeliveryController extends BaseController {
     ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
 
     LOGGER.debug("Created new proofOfDelivery with id: " + pod.getId());
-    return new ResponseEntity<>(ProofOfDeliveryDto.newInstance(newProofOfDelivery), HttpStatus
-        .CREATED);
+    return new ResponseEntity<>(
+        ProofOfDeliveryDto.newInstance(newProofOfDelivery,exporter),
+        HttpStatus.CREATED
+    );
   }
 
   /**
@@ -74,7 +80,10 @@ public class ProofOfDeliveryController extends BaseController {
   @ResponseBody
   public ResponseEntity<Collection<ProofOfDeliveryDto>> getAllProofOfDeliveries() {
     Iterable<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
-    return new ResponseEntity<>(ProofOfDeliveryDto.newInstance(proofOfDeliveries), HttpStatus.OK);
+    return new ResponseEntity<>(
+        ProofOfDeliveryDto.newInstance(proofOfDeliveries, exporter),
+        HttpStatus.OK
+    );
   }
 
   /**
@@ -103,8 +112,10 @@ public class ProofOfDeliveryController extends BaseController {
     proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
 
     LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
-    return new ResponseEntity<>(ProofOfDeliveryDto.newInstance(proofOfDeliveryToUpdate), HttpStatus
-        .OK);
+    return new ResponseEntity<>(
+        ProofOfDeliveryDto.newInstance(proofOfDeliveryToUpdate, exporter),
+        HttpStatus.OK
+    );
   }
 
   /**
@@ -119,7 +130,10 @@ public class ProofOfDeliveryController extends BaseController {
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(ProofOfDeliveryDto.newInstance(proofOfDelivery), HttpStatus.OK);
+      return new ResponseEntity<>(
+          ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter),
+          HttpStatus.OK
+      );
     }
   }
 

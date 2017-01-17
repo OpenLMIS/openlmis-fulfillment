@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.TransferPropertiesService;
@@ -34,6 +35,9 @@ public class TransferPropertiesController extends BaseController {
   @Autowired
   private TransferPropertiesService transferPropertiesService;
 
+  @Autowired
+  private ExporterBuilder exporter;
+
   /**
    * Allows creating new transfer properties.
    * If the id is specified, it will be ignored.
@@ -55,7 +59,7 @@ public class TransferPropertiesController extends BaseController {
 
     LOGGER.debug("Created new Transfer Properties with id: {}", saved.getId());
 
-    return TransferPropertiesFactory.newInstance(saved);
+    return TransferPropertiesFactory.newInstance(saved, exporter);
   }
 
   /**
@@ -75,7 +79,8 @@ public class TransferPropertiesController extends BaseController {
 
     if (null == toUpdate) {
       return ResponseEntity.notFound().build();
-    } else if (!Objects.equals(toUpdate.getFacilityId(), properties.getFacilityId())) {
+    } else if (null == properties.getFacility()
+        || !Objects.equals(toUpdate.getFacilityId(), properties.getFacility().getId())) {
       throw new IncorrectTransferPropertiesException();
     } else {
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
@@ -91,7 +96,7 @@ public class TransferPropertiesController extends BaseController {
 
     LOGGER.debug("Updated Transfer Properties with id: {}", toUpdate.getId());
 
-    return ResponseEntity.ok(TransferPropertiesFactory.newInstance(toUpdate));
+    return ResponseEntity.ok(TransferPropertiesFactory.newInstance(toUpdate, exporter));
   }
 
   /**
@@ -105,7 +110,7 @@ public class TransferPropertiesController extends BaseController {
     TransferProperties properties = transferPropertiesRepository.findOne(id);
     return properties == null
         ? ResponseEntity.notFound().build()
-        : ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties));
+        : ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties, exporter));
   }
 
   /**
@@ -139,7 +144,7 @@ public class TransferPropertiesController extends BaseController {
     if (properties == null) {
       return ResponseEntity.notFound().build();
     } else {
-      return ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties));
+      return ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties, exporter));
     }
   }
 }

@@ -7,12 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -77,10 +77,10 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
    * @return new instance ProofOfDeliveryDto.
    */
   public static Collection<ProofOfDeliveryDto> newInstance(
-      Iterable<ProofOfDelivery> proofOfDeliveries) {
+      Iterable<ProofOfDelivery> proofOfDeliveries, ExporterBuilder exporter) {
 
     Collection<ProofOfDeliveryDto> proofOfDeliveryDtos = new ArrayList<>();
-    proofOfDeliveries.forEach(pod -> proofOfDeliveryDtos.add(newInstance(pod)));
+    proofOfDeliveries.forEach(pod -> proofOfDeliveryDtos.add(newInstance(pod, exporter)));
     return proofOfDeliveryDtos;
   }
 
@@ -89,15 +89,17 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
    * @param proofOfDelivery instance of ProofOfDelivery
    * @return new instance od ProofOfDeliveryDto.
    */
-  public static ProofOfDeliveryDto newInstance(ProofOfDelivery proofOfDelivery) {
+  public static ProofOfDeliveryDto newInstance(ProofOfDelivery proofOfDelivery,
+                                               ExporterBuilder exporter) {
     ProofOfDeliveryDto proofOfDeliveryDto = new ProofOfDeliveryDto();
     proofOfDelivery.export(proofOfDeliveryDto);
 
-    proofOfDeliveryDto.setOrder(OrderDto.newInstance(proofOfDelivery.getOrder()));
+    proofOfDeliveryDto.setOrder(OrderDto.newInstance(proofOfDelivery.getOrder(), exporter));
 
     if (proofOfDelivery.getProofOfDeliveryLineItems() != null) {
       proofOfDeliveryDto.setProofOfDeliveryLineItems(proofOfDelivery.getProofOfDeliveryLineItems()
-          .stream().map(ProofOfDeliveryLineItemDto::newInstance).collect(Collectors.toList()));
+          .stream().map(item -> ProofOfDeliveryLineItemDto.newInstance(item, exporter))
+          .collect(Collectors.toList()));
     }
     return proofOfDeliveryDto;
   }

@@ -154,7 +154,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
     proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
 
-    proofOfDeliveryDto = ProofOfDeliveryDto.newInstance(proofOfDelivery);
+    proofOfDeliveryDto = ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter);
 
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId()))
         .willReturn(proofOfDelivery);

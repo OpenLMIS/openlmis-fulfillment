@@ -12,6 +12,7 @@ import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingException;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -71,6 +72,9 @@ public class OrderController extends BaseController {
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
+  @Autowired
+  private ExporterBuilder exporter;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -101,7 +105,7 @@ public class OrderController extends BaseController {
     order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
     Order newOrder = orderService.save(order);
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return OrderDto.newInstance(newOrder);
+    return OrderDto.newInstance(newOrder, exporter);
   }
 
   /**
@@ -112,7 +116,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<OrderDto> getAllOrders() {
-    return OrderDto.newInstance(orderRepository.findAll());
+    return OrderDto.newInstance(orderRepository.findAll(), exporter);
   }
 
   /**
@@ -142,7 +146,7 @@ public class OrderController extends BaseController {
 
     LOGGER.debug("Saved order with id: {}", orderToUpdate.getId());
 
-    return OrderDto.newInstance(orderToUpdate);
+    return OrderDto.newInstance(orderToUpdate, exporter);
   }
 
   /**
@@ -157,7 +161,7 @@ public class OrderController extends BaseController {
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(OrderDto.newInstance(order), HttpStatus.OK);
+      return new ResponseEntity<>(OrderDto.newInstance(order, exporter), HttpStatus.OK);
     }
   }
 
@@ -195,7 +199,7 @@ public class OrderController extends BaseController {
       @RequestParam(value = "program", required = false) UUID program) {
 
     return OrderDto.newInstance(orderService.searchOrders(supplyingFacility, requestingFacility,
-        program));
+        program), exporter);
   }
 
   /**

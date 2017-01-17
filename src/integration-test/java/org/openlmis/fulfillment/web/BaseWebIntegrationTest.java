@@ -25,6 +25,8 @@ import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.repository.OrderFileColumnRepository;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
+import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -90,6 +92,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Program Code\","
       + " \"name\":\"Program Name\","
+      + " \"active\": true,"
+      + " \"showNonFullSupplyTab\": false,"
       + " \"periodsSkippable\":true"
       + "}";
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
@@ -97,7 +101,31 @@ public abstract class BaseWebIntegrationTest {
       + " \"code\":\"facilityCode\",\n"
       + " \"name\":\"facilityNameA\",\n"
       + " \"active\":true,\n"
-      + " \"enabled\":true\n"
+      + " \"enabled\":true,\n"
+      + " \"operator\": {\n"
+      + "  \"id\": \"9456c3e9-c4a6-4a28-9e08-47ceb16a4121\",\n"
+      + "  \"code\": \"moh\",\n"
+      + "  \"name\": \"Ministry of Health\",\n"
+      + "  \"displayOrder\": 1\n"
+      + " },\n"
+      + " \"type\": {\n"
+      + "  \"id\": \"ac1d268b-ce10-455f-bf87-9c667da8f060\",\n"
+      + "  \"code\": \"health_center\",\n"
+      + "  \"name\": \"Health Center\",\n"
+      + "  \"active\": \"true\",\n"
+      + "  \"displayOrder\": 1\n"
+      + " },\n"
+      + " \"geographicZone\": {\n"
+      + "  \"id\": \"4e471242-da63-436c-8157-ade3e615c848\",\n"
+      + "  \"code\": \"Mal\",\n"
+      + "  \"name\": \"Malawi\",\n"
+      + "  \"level\": {\n"
+      + "    \"id\": \"6b78e6c6-292e-4733-bb9c-3d802ad61206\",\n"
+      + "    \"name\": \"Country\",\n"
+      + "    \"code\": \"Country\",\n"
+      + "    \"levelNumber\": 1\n"
+      + "  }\n"
+      + " }\n"
       + "}";
   protected static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
       + MOCK_FIND_FACILITY_RESULT + "]";
@@ -108,16 +136,6 @@ public abstract class BaseWebIntegrationTest {
       + " \"displayOrder\":1\n"
       + "}]";
 
-  private static final String MOCK_USER_SEARCH_RESULT = "[{"
-      + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
-      + "\"username\":\"admin\","
-      + "\"firstName\":\"Admin\","
-      + "\"lastName\":\"User\","
-      + "\"email\":\"example@mail.com\","
-      + "\"verified\":false,"
-      + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
-      + "}]";
-
   private static final String MOCK_FIND_USER_RESULT = "{"
       + "\"id\":\"35316636-6264-6331-2d34-3933322d3462\","
       + "\"username\":\"admin\","
@@ -125,8 +143,13 @@ public abstract class BaseWebIntegrationTest {
       + "\"lastName\":\"User\","
       + "\"email\":\"example@mail.com\","
       + "\"verified\":false,"
+      + "\"active\": true,"
+      + "\"loginRestricted\": false,"
+      + "\"homeFacility\": " + MOCK_FIND_FACILITY_RESULT + ","
       + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
       + "}";
+
+  private static final String MOCK_USER_SEARCH_RESULT = "[" + MOCK_FIND_USER_RESULT + "]";
 
   private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""
@@ -239,6 +262,9 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected OrderFileColumnRepository orderFileColumnRepository;
+
+  @Autowired
+  ExporterBuilder exporter;
 
   /**
    * Constructor for test.
