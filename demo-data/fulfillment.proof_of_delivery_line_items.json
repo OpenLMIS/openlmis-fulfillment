@@ -2,7 +2,7 @@
   {
     "id": "bcc0fe6d-7063-4567-a461-32c9c2e0d744",
     "proofOfDelivery": { "id": "b204aa9e-5c95-4962-b418-571dbdf7796e" },
-    "orderLineItem": { "id": "7b1b735d-c29a-4486-8352-04d3034e0d77" },
+    "orderLineItem": { "id": "9a4c65f9-f834-44bb-9e75-2c18c9a2a9cf" },
     "packToShip": 300,
     "quantityShipped": 100,
     "quantityReceived": 100,
@@ -18,15 +18,5 @@
     "quantityReceived": 50,
     "quantityReturned": 0,
     "replacedProductCode": "P2"
-  },
-  {
-    "id": "2ef4f619-a086-4517-ae27-0395ad2f794a",
-    "proofOfDelivery": { "id": "b204aa9e-5c95-4962-b418-571dbdf7796e" },
-    "orderLineItem": { "id": "5a38bb94-b206-4575-9555-883d4eecc5cc" },
-    "packToShip": 1000,
-    "quantityShipped": 800,
-    "quantityReceived": 800,
-    "quantityReturned": 0,
-    "replacedProductCode": "P3"
   }
 ]
