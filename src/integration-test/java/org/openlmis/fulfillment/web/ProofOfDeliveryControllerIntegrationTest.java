@@ -139,7 +139,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryLineItem.setQuantityShipped(100L);
     proofOfDeliveryLineItem.setQuantityReturned(100L);
     proofOfDeliveryLineItem.setQuantityReceived(100L);
-    proofOfDeliveryLineItem.setPackToShip(100L);
+    proofOfDeliveryLineItem.setPacksToShip(100L);
     proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
     proofOfDeliveryLineItem.setNotes("Notes");
 

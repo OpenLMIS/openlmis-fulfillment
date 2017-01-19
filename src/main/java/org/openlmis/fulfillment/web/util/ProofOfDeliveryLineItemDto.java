@@ -1,12 +1,12 @@
 package org.openlmis.fulfillment.web.util;
 
 
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.service.ExporterBuilder;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public class ProofOfDeliveryLineItemDto implements ProofOfDeliveryLineItem.Impor
 
   private UUID id;
   private OrderLineItemDto orderLineItem;
-  private Long packToShip;
+  private Long packsToShip;
   private Long quantityShipped;
   private Long quantityReceived;
   private Long quantityReturned;

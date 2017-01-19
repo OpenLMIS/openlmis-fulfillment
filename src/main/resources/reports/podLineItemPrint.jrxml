@@ -56,7 +56,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT	podl.packtoship,
+		<![CDATA[SELECT	podl.packstoship,
                     podl.quantityshipped,
                     podl.quantityreceived,
                     podl.quantityreturned,
@@ -75,7 +75,7 @@
              WHERE  podl.proofofdeliveryid  = $P!{pod_id}
              ORDER BY prod.name, LOWER(prod.name), prod.name NULLS LAST, LOWER(prod.name)]]>
 	</queryString>
-	<field name="packtoship" class="java.lang.Long"/>
+	<field name="packstoship" class="java.lang.Long"/>
 	<field name="quantityshipped" class="java.lang.Long"/>
 	<field name="quantityreceived" class="java.lang.Long"/>
 	<field name="quantityreturned" class="java.lang.Long"/>
@@ -392,7 +392,7 @@
 					<font size="8"/>
 					<paragraph rightIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{packtoship}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{packstoship}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="537" y="0" width="48" height="30" uuid="2d97d1a7-f057-497d-98f4-376032bdf48f"/>

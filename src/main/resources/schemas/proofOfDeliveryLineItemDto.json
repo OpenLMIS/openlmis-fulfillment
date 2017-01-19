@@ -7,9 +7,9 @@
       "type": "string",
       "title": "id"
     },
-    "packToShip": {
+    "packsToShip": {
       "type": "integer",
-      "title": "packToShip"
+      "title": "packsToShip"
     },
     "quantityShipped": {
       "type": "integer",

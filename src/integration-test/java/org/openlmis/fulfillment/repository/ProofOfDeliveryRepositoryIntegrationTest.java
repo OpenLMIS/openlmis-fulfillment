@@ -77,7 +77,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     line.setQuantityShipped(100L);
     line.setQuantityReturned(100L);
     line.setQuantityReceived(100L);
-    line.setPackToShip(100L);
+    line.setPacksToShip(100L);
     line.setReplacedProductCode("replaced product code");
     line.setNotes("Notes");
 

@@ -32,7 +32,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Column
   @Getter
   @Setter
-  private Long packToShip;
+  private Long packsToShip;
 
   @Column
   @Getter
@@ -67,7 +67,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   public void updateFrom(ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
     this.orderLineItem = proofOfDeliveryLineItem.getOrderLineItem();
     this.proofOfDelivery = proofOfDeliveryLineItem.getProofOfDelivery();
-    this.packToShip = proofOfDeliveryLineItem.getPackToShip();
+    this.packsToShip = proofOfDeliveryLineItem.getPacksToShip();
     this.quantityShipped = proofOfDeliveryLineItem.getQuantityShipped();
     this.quantityReceived = proofOfDeliveryLineItem.getQuantityReceived();
     this.quantityReturned = proofOfDeliveryLineItem.getQuantityReturned();
@@ -87,7 +87,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     proofOfDeliveryLineItem.setId(importer.getId());
     proofOfDeliveryLineItem.setOrderLineItem(
         OrderLineItem.newInstance(importer.getOrderLineItem()));
-    proofOfDeliveryLineItem.setPackToShip(importer.getPackToShip());
+    proofOfDeliveryLineItem.setPacksToShip(importer.getPacksToShip());
     proofOfDeliveryLineItem.setQuantityShipped(importer.getQuantityShipped());
     proofOfDeliveryLineItem.setQuantityReceived(importer.getQuantityReceived());
     proofOfDeliveryLineItem.setQuantityReturned(importer.getQuantityReturned());
@@ -104,7 +104,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setId(id);
-    exporter.setPackToShip(packToShip);
+    exporter.setPacksToShip(packsToShip);
     exporter.setQuantityShipped(quantityShipped);
     exporter.setQuantityReceived(quantityReceived);
     exporter.setQuantityReturned(quantityReturned);
@@ -115,7 +115,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    Long getPackToShip();
+    Long getPacksToShip();
 
     OrderLineItem.Importer getOrderLineItem();
 
@@ -134,7 +134,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   public interface Exporter {
     void setId(UUID id);
 
-    void setPackToShip(Long packToShip);
+    void setPacksToShip(Long packsToShip);
 
     void setQuantityShipped(Long quantityShipped);
 
