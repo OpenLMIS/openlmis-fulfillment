@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -99,11 +100,36 @@ public class ProofOfDelivery extends BaseEntity {
     this.deliveredBy = proofOfDelivery.getDeliveredBy();
     this.receivedBy = proofOfDelivery.getReceivedBy();
     this.receivedDate = proofOfDelivery.getReceivedDate();
+
+    updateLines(proofOfDelivery.getProofOfDeliveryLineItems());
+
   }
 
   public void forEachLine(Consumer<ProofOfDeliveryLineItem> consumer) {
     Optional.ofNullable(proofOfDeliveryLineItems)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  private void updateLines(Collection<ProofOfDeliveryLineItem> newLineItems) {
+    if (null == newLineItems) {
+      return;
+    }
+
+    if (null == proofOfDeliveryLineItems) {
+      proofOfDeliveryLineItems = new ArrayList<>();
+    }
+
+    for (ProofOfDeliveryLineItem item : newLineItems) {
+      ProofOfDeliveryLineItem existing = proofOfDeliveryLineItems
+          .stream()
+          .filter(l -> l.getId().equals(item.getId()))
+          .findFirst().orElse(null);
+
+      if (null != existing) {
+        existing.setProofOfDelivery(this);
+        existing.updateFrom(item);
+      }
+    }
   }
 
   /**
