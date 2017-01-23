@@ -35,7 +35,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Setter
   private Long quantityShipped;
 
-  @Column(nullable = false)
   @Getter
   @Setter
   private Long quantityReceived;
