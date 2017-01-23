@@ -48,7 +48,6 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long approvedQuantity;
 
-  @Column(nullable = false)
   @Getter
   @Setter
   private Long packsToShip;
