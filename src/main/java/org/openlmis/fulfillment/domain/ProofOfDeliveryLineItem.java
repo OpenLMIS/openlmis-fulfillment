@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.domain;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
@@ -14,6 +15,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
+@NoArgsConstructor
 @Table(name = "proof_of_delivery_line_items")
 public class ProofOfDeliveryLineItem extends BaseEntity {
 
@@ -29,22 +31,15 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Setter
   private ProofOfDelivery proofOfDelivery;
 
-  @Column
-  @Getter
-  @Setter
-  private Long packsToShip;
-
-  @Column
   @Getter
   @Setter
   private Long quantityShipped;
 
-  @Column
+  @Column(nullable = false)
   @Getter
   @Setter
   private Long quantityReceived;
 
-  @Column
   @Getter
   @Setter
   private Long quantityReturned;
@@ -59,19 +54,19 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Setter
   private String notes;
 
+  public ProofOfDeliveryLineItem(ProofOfDelivery parent, OrderLineItem item) {
+    this.proofOfDelivery = parent;
+    this.orderLineItem = item;
+  }
+
   /**
    * Copy values of attributes into new or updated ProofOfDeliveryLineItem.
    *
    * @param proofOfDeliveryLineItem ProofOfDeliveryLineItem with new values.
    */
   public void updateFrom(ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
-    this.orderLineItem = proofOfDeliveryLineItem.getOrderLineItem();
-    this.proofOfDelivery = proofOfDeliveryLineItem.getProofOfDelivery();
-    this.packsToShip = proofOfDeliveryLineItem.getPacksToShip();
-    this.quantityShipped = proofOfDeliveryLineItem.getQuantityShipped();
     this.quantityReceived = proofOfDeliveryLineItem.getQuantityReceived();
     this.quantityReturned = proofOfDeliveryLineItem.getQuantityReturned();
-    this.replacedProductCode = proofOfDeliveryLineItem.getReplacedProductCode();
     this.notes = proofOfDeliveryLineItem.getNotes();
   }
 
@@ -87,7 +82,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     proofOfDeliveryLineItem.setId(importer.getId());
     proofOfDeliveryLineItem.setOrderLineItem(
         OrderLineItem.newInstance(importer.getOrderLineItem()));
-    proofOfDeliveryLineItem.setPacksToShip(importer.getPacksToShip());
     proofOfDeliveryLineItem.setQuantityShipped(importer.getQuantityShipped());
     proofOfDeliveryLineItem.setQuantityReceived(importer.getQuantityReceived());
     proofOfDeliveryLineItem.setQuantityReturned(importer.getQuantityReturned());
@@ -104,7 +98,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setId(id);
-    exporter.setPacksToShip(packsToShip);
     exporter.setQuantityShipped(quantityShipped);
     exporter.setQuantityReceived(quantityReceived);
     exporter.setQuantityReturned(quantityReturned);
@@ -114,8 +107,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   public interface Importer {
     UUID getId();
-
-    Long getPacksToShip();
 
     OrderLineItem.Importer getOrderLineItem();
 
@@ -133,8 +124,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   public interface Exporter {
     void setId(UUID id);
-
-    void setPacksToShip(Long packsToShip);
 
     void setQuantityShipped(Long quantityShipped);
 

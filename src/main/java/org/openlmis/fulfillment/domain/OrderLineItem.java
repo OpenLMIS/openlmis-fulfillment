@@ -48,18 +48,10 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long approvedQuantity;
 
-  /**
-   * Copy values of attributes into new or updated OrderLineItem.
-   *
-   * @param orderLineItem OrderLineItem with new values.
-   */
-  public void updateFrom(OrderLineItem orderLineItem) {
-    this.order = orderLineItem.getOrder();
-    this.orderableProductId = orderLineItem.getOrderableProductId();
-    this.orderedQuantity = orderLineItem.getOrderedQuantity();
-    this.filledQuantity = orderLineItem.getFilledQuantity();
-    this.approvedQuantity = orderLineItem.getApprovedQuantity();
-  }
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private Long packsToShip;
 
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}
@@ -76,6 +68,7 @@ public class OrderLineItem extends BaseEntity {
     orderLineItem.setOrderedQuantity(importer.getOrderedQuantity());
     orderLineItem.setFilledQuantity(importer.getFilledQuantity());
     orderLineItem.setApprovedQuantity(importer.getApprovedQuantity());
+    orderLineItem.setPacksToShip(importer.getPacksToShip());
 
     return orderLineItem;
   }
@@ -91,6 +84,8 @@ public class OrderLineItem extends BaseEntity {
 
     void setApprovedQuantity(Long approvedQuantity);
 
+    void setPacksToShip(Long packsToShip);
+
   }
 
   public interface Importer {
@@ -103,6 +98,8 @@ public class OrderLineItem extends BaseEntity {
     Long getFilledQuantity();
 
     Long getApprovedQuantity();
+    
+    Long getPacksToShip();
 
   }
 }

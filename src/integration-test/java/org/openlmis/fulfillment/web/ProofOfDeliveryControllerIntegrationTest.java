@@ -1,6 +1,8 @@
 package org.openlmis.fulfillment.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -22,15 +24,15 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
+import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableProductDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingScheduleDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.SupervisoryNodeDto;
-import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
@@ -133,21 +135,18 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
     orderLineItem.setApprovedQuantity(0L);
+    orderLineItem.setPacksToShip(100L);
 
     proofOfDeliveryLineItem.setId(UUID.randomUUID());
     proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
     proofOfDeliveryLineItem.setQuantityShipped(100L);
     proofOfDeliveryLineItem.setQuantityReturned(100L);
     proofOfDeliveryLineItem.setQuantityReceived(100L);
-    proofOfDeliveryLineItem.setPacksToShip(100L);
     proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
     proofOfDeliveryLineItem.setNotes("Notes");
 
     proofOfDelivery.setId(UUID.randomUUID());
     proofOfDelivery.setOrder(order);
-    proofOfDelivery.setTotalShippedPacks(100);
-    proofOfDelivery.setTotalReceivedPacks(100);
-    proofOfDelivery.setTotalReturnedPacks(10);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
     proofOfDelivery.setReceivedDate(LocalDate.now());
@@ -228,7 +227,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldUpdateProofOfDelivery() {
-    proofOfDeliveryDto.setTotalReceivedPacks(2);
+    String somebody = "Somebody";
+    proofOfDeliveryDto.setDeliveredBy(somebody);
 
     ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -241,7 +241,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .statusCode(200)
         .extract().as(ProofOfDeliveryDto.class);
 
-    assertTrue(response.getTotalReceivedPacks().equals(2));
+    assertThat(response.getDeliveredBy(), is(equalTo(somebody)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -250,7 +250,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
-    proofOfDeliveryDto.setTotalReceivedPacks(2);
+    String somebody = "Somebody";
+    proofOfDeliveryDto.setDeliveredBy(somebody);
 
     ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -263,7 +264,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .statusCode(200)
         .extract().as(ProofOfDeliveryDto.class);
 
-    assertTrue(response.getTotalReceivedPacks().equals(2));
+    assertThat(response.getDeliveredBy(), is(equalTo(somebody)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

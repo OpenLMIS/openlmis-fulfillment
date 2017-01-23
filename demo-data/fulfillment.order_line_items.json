@@ -5,7 +5,8 @@
     "orderableProductId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
     "orderedQuantity": 50,
     "filledQuantity": 100,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "7b1b735d-c29a-4486-8352-04d3034e0d77",
@@ -13,7 +14,8 @@
     "orderableProductId": "23819693-0670-4c4b-b400-28e009b86b51",
     "orderedQuantity": 0,
     "filledQuantity": 50,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "5a38bb94-b206-4575-9555-883d4eecc5cc",
@@ -21,7 +23,8 @@
     "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
     "orderedQuantity": 0,
     "filledQuantity": 800,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "657686c4-dbf7-4c1d-b491-1f650002fa39",
@@ -29,7 +32,8 @@
     "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "orderedQuantity": 0,
     "filledQuantity": 250,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "c57e407a-7bad-4e52-aee4-6f1742468d61",
@@ -37,7 +41,8 @@
     "orderableProductId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
     "orderedQuantity": 50,
     "filledQuantity": 50,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "0e30fa6e-dca8-4b43-aa78-bf5fc3a09ef3",
@@ -45,7 +50,8 @@
     "orderableProductId": "23819693-0670-4c4b-b400-28e009b86b51",
     "orderedQuantity": 0,
     "filledQuantity": 70,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "241e50a9-14c3-4b04-b161-915aa20d49da",
@@ -53,7 +59,8 @@
     "orderableProductId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
     "orderedQuantity": 0,
     "filledQuantity": 30,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   },
   {
     "id": "739a2eb5-705a-4d0a-a7e9-a01146e1441b",
@@ -61,6 +68,7 @@
     "orderableProductId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "orderedQuantity": 0,
     "filledQuantity": 1200,
-    "approvedQuantity": 0
+    "approvedQuantity": 0,
+    "packsToShip": 0
   }
 ]

@@ -223,8 +223,9 @@ public class OrderService {
    *
    * @param order instance
    * @return passed instance after save.
-   * @throws OrderStorageException if there will be any problem with store an order.
-   * @throws ConfigurationSettingException if there will be any problem with configuration settings.
+   * @throws OrderStorageException         if there will be any problem with store an order.
+   * @throws ConfigurationSettingException if there will be any problem with configuration
+   *                                       settings.
    */
   public Order save(Order order) throws OrderStorageException, ConfigurationSettingException {
     setOrderStatus(order);

@@ -9,8 +9,10 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALI
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FulfillmentException;
@@ -75,6 +77,9 @@ public class OrderController extends BaseController {
   @Autowired
   private ExporterBuilder exporter;
 
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -104,6 +109,10 @@ public class OrderController extends BaseController {
     order.setId(null);
     order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
     Order newOrder = orderService.save(order);
+
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
+    proofOfDeliveryRepository.save(proofOfDelivery);
+
     LOGGER.debug("Created new order with id: {}", order.getId());
     return OrderDto.newInstance(newOrder, exporter);
   }

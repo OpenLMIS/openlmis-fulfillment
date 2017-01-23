@@ -20,6 +20,7 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
   private Long orderedQuantity;
   private Long filledQuantity;
   private Long approvedQuantity;
+  private Long packsToShip;
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}

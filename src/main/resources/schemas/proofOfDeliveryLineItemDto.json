@@ -7,10 +7,6 @@
       "type": "string",
       "title": "id"
     },
-    "packsToShip": {
-      "type": "integer",
-      "title": "packsToShip"
-    },
     "quantityShipped": {
       "type": "integer",
       "title": "quantityShipped"
@@ -32,6 +28,25 @@
       "title": "notes"
     }
   },
+  "oneOf": [
+    {
+      "properties": {
+        "orderLineItem": {
+          "type": ["string", "null"],
+          "title": "orderLineItem"
+        }
+      }
+    },
+    {
+      "properties": {
+        "orderLineItem": {
+          "type": "object",
+          "$ref": "orderLineItemDto.json",
+          "title": "orderLineItem"
+        }
+      }
+    }
+  ],
   "required": [
     "id",
     "orderLineItem"

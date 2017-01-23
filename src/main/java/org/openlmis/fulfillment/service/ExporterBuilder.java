@@ -65,6 +65,7 @@ public class ExporterBuilder {
     exporter.setOrderableProduct(getIfPresent(products, item.getOrderableProductId()));
     exporter.setFilledQuantity(item.getFilledQuantity());
     exporter.setOrderedQuantity(item.getOrderedQuantity());
+    exporter.setPacksToShip(item.getPacksToShip());
   }
 
   /**

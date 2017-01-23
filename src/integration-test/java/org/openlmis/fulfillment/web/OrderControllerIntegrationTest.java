@@ -29,6 +29,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
@@ -95,6 +96,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private ConfigurationSettingService configurationSettingService;
+
+  @MockBean
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -191,6 +195,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderLineItem.setOrderedQuantity(orderedQuantity);
     orderLineItem.setFilledQuantity(filledQuantity);
     orderLineItem.setApprovedQuantity(3L);
+    orderLineItem.setPacksToShip(0L);
 
     order.getOrderLineItems().add(orderLineItem);
 

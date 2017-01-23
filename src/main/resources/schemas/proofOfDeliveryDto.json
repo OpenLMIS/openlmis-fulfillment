@@ -16,18 +16,6 @@
       },
       "uniqueItems": false
     },
-    "totalShippedPacks": {
-      "type": "integer",
-      "title": "totalShippedPacks"
-    },
-    "totalReceivedPacks": {
-      "type": "integer",
-      "title": "totalReceivedPacks"
-    },
-    "totalReturnedPacks": {
-      "type": "integer",
-      "title": "totalReturnedPacks"
-    },
     "deliveredBy": {
       "type": "string",
       "title": "deliveredBy"

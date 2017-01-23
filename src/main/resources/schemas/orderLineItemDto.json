@@ -1,4 +1,5 @@
-{ "type": "object",
+{
+  "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
   "title": "OrderLineItemDto",
   "description": "A single orderLineItem representing ordered product",
@@ -23,6 +24,10 @@
     "approvedQuantity": {
       "type": "integer",
       "title": "approvedQuantity"
+    },
+    "packsToShip": {
+      "type": "integer",
+      "title": "packsToShip"
     }
   },
   "required": [
@@ -30,6 +35,7 @@
     "orderableProduct",
     "orderedQuantity",
     "filledQuantity",
-    "approvedQuantity"
+    "approvedQuantity",
+    "packsToShip"
   ]
 }

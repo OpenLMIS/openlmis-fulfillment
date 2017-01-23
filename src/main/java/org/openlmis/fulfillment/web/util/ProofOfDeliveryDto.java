@@ -26,42 +26,17 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDelivery.Importer {
-  @Getter
-  @Setter
   private UUID id;
-
-  @Getter
-  @Setter
   private OrderDto order;
-
-  @Setter
   private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
-
-  @Getter
-  @Setter
-  private Integer totalShippedPacks;
-
-  @Getter
-  @Setter
-  private Integer totalReceivedPacks;
-
-  @Getter
-  @Setter
-  private Integer totalReturnedPacks;
-
-  @Getter
-  @Setter
   private String deliveredBy;
-
-  @Getter
-  @Setter
   private String receivedBy;
 
   @JsonSerialize(using = LocalDateSerializer.class)
   @JsonDeserialize(using = LocalDateDeserializer.class)
-  @Getter
-  @Setter
   private LocalDate receivedDate;
 
   @Override
