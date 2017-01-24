@@ -120,15 +120,27 @@ public class Order extends BaseEntity {
   @Setter
   private List<OrderLineItem> orderLineItems;
 
+  @OneToMany(
+      mappedBy = "order",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
+  @Fetch(FetchMode.SELECT)
+  @Getter
+  @Setter
+  private List<StatusMessage> statusMessages;
+
   @PrePersist
   private void prePersist() {
     this.createdDate = LocalDateTime.now();
     forEachLine(line -> line.setOrder(this));
+    forEachStatus(status -> status.setOrder(this));
   }
 
   @PreUpdate
   private void preUpdate() {
     forEachLine(line -> line.setOrder(this));
+    forEachStatus(status -> status.setOrder(this));
   }
 
   /**
@@ -153,6 +165,11 @@ public class Order extends BaseEntity {
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
+        .ifPresent(list -> list.forEach(consumer));
+  }
+
+  public void forEachStatus(Consumer<StatusMessage> consumer) {
+    Optional.ofNullable(statusMessages)
         .ifPresent(list -> list.forEach(consumer));
   }
 
@@ -196,11 +213,18 @@ public class Order extends BaseEntity {
         .ifPresent(user -> order.setCreatedById(user.getId()));
 
     order.setOrderLineItems(new ArrayList<>());
+    order.setStatusMessages(new ArrayList<>());
 
     if (importer.getOrderLineItems() != null) {
       importer.getOrderLineItems().forEach(
           oli -> order.getOrderLineItems().add(OrderLineItem.newInstance(oli)));
     }
+
+    if (importer.getStatusMessages() != null) {
+      importer.getStatusMessages().forEach(
+          sm -> order.getStatusMessages().add(StatusMessage.newInstance(sm)));
+    }
+
     return order;
   }
 
@@ -259,6 +283,8 @@ public class Order extends BaseEntity {
     BigDecimal getQuotedCost();
 
     List<OrderLineItem.Importer> getOrderLineItems();
+
+    List<StatusMessage.Importer> getStatusMessages();
 
     ProcessingPeriodDto getProcessingPeriod();
 

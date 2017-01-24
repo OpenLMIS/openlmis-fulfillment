@@ -92,6 +92,18 @@
         "$ref": "orderLineItemDto.json"
       },
       "uniqueItems": false
+    },
+    "statusMessages": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "title": "statusMessages",
+      "items": {
+        "type": "object",
+        "$ref": "statusMessageDto.json"
+      },
+      "uniqueItems": false
     }
   },
   "required": [
