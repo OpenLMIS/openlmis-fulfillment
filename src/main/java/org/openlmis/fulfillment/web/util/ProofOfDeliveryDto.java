@@ -1,10 +1,5 @@
 package org.openlmis.fulfillment.web.util;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.service.ExporterBuilder;
@@ -34,9 +29,6 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
   private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
   private String deliveredBy;
   private String receivedBy;
-
-  @JsonSerialize(using = LocalDateSerializer.class)
-  @JsonDeserialize(using = LocalDateDeserializer.class)
   private LocalDate receivedDate;
 
   @Override

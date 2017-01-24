@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.service.referencedata;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,8 +15,8 @@ public class FacilityDto {
   private String name;
   private String description;
   private Boolean active;
-  private Date goLiveDate;
-  private Date goDownDate;
+  private LocalDate goLiveDate;
+  private LocalDate goDownDate;
   private String comment;
   private Boolean enabled;
   private Boolean openLmisAccessible;

@@ -29,6 +29,7 @@
     "createdDate": {
       "type": [
         "array",
+        "string",
         "null"
       ],
       "title": "createdDate",

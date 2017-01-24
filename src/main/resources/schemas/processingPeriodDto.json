@@ -22,11 +22,11 @@
       "title": "description"
     },
     "startDate": {
-      "type": "array",
+      "type": "string",
       "title": "startDate"
     },
     "endDate": {
-      "type": "array",
+      "type": "string",
       "title": "endDate"
     },
     "durationInMonths": {

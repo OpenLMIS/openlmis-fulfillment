@@ -25,8 +25,8 @@
       "title": "receivedBy"
     },
     "receivedDate": {
-      "type": ["array", "null"],
-      "title": "createdDate",
+      "type": ["array", "string", "null"],
+      "title": "receivedDate",
       "items": {
         "type": "number"
       },
