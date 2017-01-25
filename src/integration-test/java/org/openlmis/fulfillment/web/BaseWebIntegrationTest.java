@@ -10,8 +10,11 @@ import static org.mockito.BDDMockito.given;
 
 import com.google.common.collect.Lists;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.ObjectMapperConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -266,6 +269,9 @@ public abstract class BaseWebIntegrationTest {
   @Autowired
   ExporterBuilder exporter;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   /**
    * Constructor for test.
    */
@@ -418,6 +424,10 @@ public abstract class BaseWebIntegrationTest {
   public void init() {
     RestAssured.baseURI = BASE_URL;
     RestAssured.port = randomPort;
+    RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+        new ObjectMapperConfig().jackson2ObjectMapperFactory((clazz, charset) -> objectMapper)
+    );
+
     restAssured = ramlDefinition.createRestAssured();
   }
 
