@@ -10,13 +10,10 @@
     },
     "authorId": {
       "type": "string",
-      "title": "authorId"
+      "title": "authorId"e
     },
     "status": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": "string",
       "title": "status"
     },
     "body": {
