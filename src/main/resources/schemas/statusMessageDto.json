@@ -10,7 +10,7 @@
     },
     "authorId": {
       "type": "string",
-      "title": "authorId"e
+      "title": "authorId"
     },
     "status": {
       "type": "string",
