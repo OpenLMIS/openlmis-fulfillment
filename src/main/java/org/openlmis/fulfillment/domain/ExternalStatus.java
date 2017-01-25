@@ -2,7 +2,7 @@ package org.openlmis.fulfillment.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public enum RequisitionStatus {
+public enum ExternalStatus {
   INITIATED(1),
   SUBMITTED(2),
   AUTHORIZED(3),
@@ -12,7 +12,7 @@ public enum RequisitionStatus {
 
   private int value;
 
-  RequisitionStatus(int value) {
+  ExternalStatus(int value) {
     this.value = value;
   }
 

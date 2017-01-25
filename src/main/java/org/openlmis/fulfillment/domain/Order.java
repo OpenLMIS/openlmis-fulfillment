@@ -8,6 +8,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.web.util.StatusMessageDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -256,6 +257,8 @@ public class Order extends BaseEntity {
     void setCreatedDate(LocalDateTime localDateTime);
 
     void setCreatedBy(UserDto user);
+
+    void setStatusMessages(List<StatusMessageDto> statusMessages);
 
   }
 

@@ -37,7 +37,7 @@ public class StatusMessage extends BaseEntity {
   @Enumerated(EnumType.STRING)
   @Getter
   @Setter
-  private RequisitionStatus status;
+  private ExternalStatus status;
 
   @Column(nullable = false)
   @Getter
@@ -77,7 +77,7 @@ public class StatusMessage extends BaseEntity {
 
     void setBody(String body);
 
-    void setStatus(RequisitionStatus requisitionStatus);
+    void setStatus(ExternalStatus status);
   }
 
   public interface Importer {
@@ -87,7 +87,7 @@ public class StatusMessage extends BaseEntity {
 
     String getBody();
 
-    RequisitionStatus getStatus();
+    ExternalStatus getStatus();
   }
 
 }

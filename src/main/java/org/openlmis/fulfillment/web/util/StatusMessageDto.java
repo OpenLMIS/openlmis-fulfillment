@@ -1,7 +1,7 @@
 package org.openlmis.fulfillment.web.util;
 
 
-import org.openlmis.fulfillment.domain.RequisitionStatus;
+import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.StatusMessage;
 
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.UUID;
 public class StatusMessageDto implements StatusMessage.Exporter, StatusMessage.Importer {
   private UUID id;
   private UUID authorId;
-  private RequisitionStatus status;
+  private ExternalStatus status;
   private String body;
 
   /**
