@@ -27,16 +27,8 @@
       "$ref": "processingPeriodDto.json"
     },
     "createdDate": {
-      "type": [
-        "array",
-        "string",
-        "null"
-      ],
-      "title": "createdDate",
-      "items": {
-        "type": "number"
-      },
-      "uniqueItems": false
+      "type": "string",
+      "title": "createdDate"
     },
     "createdBy": {
       "type": "object",
