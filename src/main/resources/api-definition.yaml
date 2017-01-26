@@ -346,6 +346,9 @@ resourceTypes:
                   body:
                     application/json:
                       schema: proofOfDeliveryDto
+              400:
+                  body:
+                    application/json:
       /{id}:
           uriParameters:
               id:
@@ -379,6 +382,9 @@ resourceTypes:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
+                  400:
+                      body:
+                        application/json:
       /{id}/print:
           uriParameters:
                 id:

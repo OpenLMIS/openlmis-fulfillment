@@ -48,6 +48,11 @@ public abstract class MessageKeys {
   public static final String ERROR_TRANSFER_PROPERTIES_INCORRECT = ERROR_PREFIX
       + ".transfer-properties.incorrect";
 
+  public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
+      ERROR_PREFIX + ".validationError.mustContainValue";
+  public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO =
+      ERROR_PREFIX + ".validationError.mustBeGreaterThanOrEqualZero";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }

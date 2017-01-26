@@ -17,7 +17,7 @@
       "uniqueItems": false
     },
     "deliveredBy": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "deliveredBy"
     },
     "receivedBy": {

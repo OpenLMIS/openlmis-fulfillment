@@ -18,6 +18,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "proof_of_delivery_line_items")
 public class ProofOfDeliveryLineItem extends BaseEntity {
+  public static final String QUANTITY_RECEIVED = "quantityReceived";
 
   @OneToOne
   @JoinColumn(name = "orderLineItemId", nullable = false)

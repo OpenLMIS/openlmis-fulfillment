@@ -9,12 +9,16 @@ import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ReportUtils;
+import org.openlmis.fulfillment.web.validator.ProofOfDeliveryValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @Controller
 public class ProofOfDeliveryController extends BaseController {
@@ -47,6 +52,13 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private ExporterBuilder exporter;
 
+  @Autowired
+  private ProofOfDeliveryValidator validator;
+
+  @InitBinder
+  protected void initBinder(final WebDataBinder binder) {
+    binder.addValidators(validator);
+  }
 
   /**
    * Allows creating new proofOfDeliveries.
@@ -56,8 +68,12 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the created proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
-  public ResponseEntity<ProofOfDeliveryDto> createProofOfDelivery(
-      @RequestBody ProofOfDeliveryDto pod) {
+  public ResponseEntity createProofOfDelivery(@RequestBody @Valid ProofOfDeliveryDto pod,
+                                              BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return ResponseEntity.badRequest().body(getErrors(bindingResult));
+    }
+
     LOGGER.debug("Creating new proofOfDelivery");
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(pod);
 
@@ -89,16 +105,19 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Allows updating proofOfDeliveries.
    *
-   * @param proofOfDeliveryDto A proofOfDeliveryDto bound to the request body
    * @param proofOfDeliveryId  UUID of proofOfDelivery which we want to update
+   * @param dto A proofOfDeliveryDto bound to the request body
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
-  public ResponseEntity<ProofOfDeliveryDto> updateProofOfDelivery(
-      @RequestBody ProofOfDeliveryDto proofOfDeliveryDto,
-      @PathVariable("id") UUID proofOfDeliveryId) {
+  public ResponseEntity updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
+                                              @RequestBody @Valid ProofOfDeliveryDto dto,
+                                              BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return ResponseEntity.badRequest().body(getErrors(bindingResult));
+    }
 
-    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(proofOfDeliveryDto);
+    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
     ProofOfDelivery proofOfDeliveryToUpdate =
         proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     if (proofOfDeliveryToUpdate == null) {

@@ -339,6 +339,39 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldRejectCreateRequestIfObjectIsNotValid() {
+    proofOfDeliveryDto.setReceivedDate(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(proofOfDeliveryDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectUpdateRequestIfObjectIsNotValid() {
+    proofOfDeliveryDto.setDeliveredBy(null);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .body(proofOfDeliveryDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   private TemplateParameter createParameter(JRParameter jrParameter) {
     TemplateParameter templateParameter = new TemplateParameter();
     templateParameter.setName(jrParameter.getName());

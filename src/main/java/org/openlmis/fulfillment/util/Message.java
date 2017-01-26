@@ -8,7 +8,6 @@ import org.springframework.context.MessageSource;
 
 import java.util.Locale;
 
-
 /**
  * Immutable value object for a message that is localizable.
  */
@@ -23,7 +22,8 @@ public class Message {
   /**
    * Creates a new Message with parameters that optionally may be used when the message is
    * localized.
-   * @param messageKey the key of the message
+   *
+   * @param messageKey        the key of the message
    * @param messageParameters the ordered parameters for substitution in a localized message.
    */
   public Message(String messageKey, Object... messageParameters) {
@@ -39,11 +39,12 @@ public class Message {
 
   /**
    * Gets the localized version of this message as it's intended for a human.
+   *
    * @param messageSource the source of localized text.
-   * @param locale the locale to determine which localized text to use.
+   * @param locale        the locale to determine which localized text to use.
    * @return this message localized in a format suitable for serialization.
-   * @throws org.springframework.context.NoSuchMessageException if the message doesn't exist in
-   *     the messageSource.
+   * @throws org.springframework.context.NoSuchMessageException if the message doesn't exist in the
+   *                                                            messageSource.
    */
   public LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
     return new LocalizedMessage(messageSource.getMessage(key, params, locale));
@@ -78,7 +79,11 @@ public class Message {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String message;
 
-    LocalizedMessage(String message) {
+    /**
+     * Creates new LocalizedMessage based on given String.
+     * @param message message.
+     */
+    public LocalizedMessage(String message) {
       Validate.notBlank(message);
       this.messageKey = Message.this.key;
       this.message = message;
