@@ -61,6 +61,16 @@ schemas:
 
   - resultDto: !include schemas/resultDto.json
 
+  - proofOfDeliverySubmitBadRequest: |
+      {
+        "type": "object",
+        "oneOf": [{
+          "$ref": "schemas/validationMessage.json"
+        }, {
+          "$ref": "schemas/localizedMessage.json"
+        }]
+      }
+
 traits:
     - secured:
           queryParameters:
@@ -346,9 +356,6 @@ resourceTypes:
                   body:
                     application/json:
                       schema: proofOfDeliveryDto
-              400:
-                  body:
-                    application/json:
       /{id}:
           uriParameters:
               id:
@@ -382,9 +389,6 @@ resourceTypes:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
-                  400:
-                      body:
-                        application/json:
       /{id}/print:
           uriParameters:
                 id:
@@ -399,6 +403,29 @@ resourceTypes:
                   200:
                       body:
                         application/pdf:
+      /{id}/submit:
+          uriParameters:
+                id:
+                    displayName: proofOfDeliveryId
+                    type: string
+                    required: true
+                    repeat: false
+          post:
+              is: [ secured ]
+              description: Submit proof of delivery.
+              responses:
+                  200:
+                      body:
+                          application/json:
+                              schema: proofOfDeliveryDto
+                  400:
+                      body:
+                          application/json:
+                              schema: proofOfDeliverySubmitBadRequest
+                  404:
+                      body:
+                          application/json:
+                              schema: localizedMessage
   /orderFileTemplates:
       displayName: OrderFileTemplate
       get:

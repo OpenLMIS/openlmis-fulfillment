@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Field error",
+  "description": "Object contains field name and field error",
+  "properties": {
+    "field": {
+      "type": "string",
+      "title": "field"
+    },
+    "error": {
+      "type": "object",
+      "$ref": "localizedMessage.json",
+      "title": "error"
+    }
+  },
+  "required": [
+    "field",
+    "error"
+  ]
+}

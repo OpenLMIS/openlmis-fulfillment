@@ -102,7 +102,6 @@ public class ProofOfDelivery extends BaseEntity {
    * @param proofOfDelivery ProofOfDelivery with new values.
    */
   public void updateFrom(ProofOfDelivery proofOfDelivery) {
-    this.order = proofOfDelivery.order;
     this.deliveredBy = proofOfDelivery.getDeliveredBy();
     this.receivedBy = proofOfDelivery.getReceivedBy();
     this.receivedDate = proofOfDelivery.getReceivedDate();

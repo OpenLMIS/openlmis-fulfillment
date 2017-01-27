@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.i18n;
 public abstract class MessageKeys {
   private static final String SERVICE_PREFIX = "fulfillment";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
+  private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
 
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
@@ -48,10 +49,17 @@ public abstract class MessageKeys {
   public static final String ERROR_TRANSFER_PROPERTIES_INCORRECT = ERROR_PREFIX
       + ".transfer-properties.incorrect";
 
+  public static final String ERROR_PROOF_OF_DELIVERY_NOT_FOUND =
+      ERROR_PREFIX + ".proofOfDelivery.notFound";
+  public static final String ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED =
+      ERROR_PREFIX + ".proofOfDelivery.alreadySubmitted";
+  public static final String ERROR_PROOF_OD_DELIVERY_VALIDATION =
+      ERROR_PREFIX + ".proofOdDelivery.validation";
+
   public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
-      ERROR_PREFIX + ".validationError.mustContainValue";
+      VALIDATION_ERROR + ".mustContainValue";
   public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO =
-      ERROR_PREFIX + ".validationError.mustBeGreaterThanOrEqualToZero";
+      VALIDATION_ERROR + ".mustBeGreaterThanOrEqualToZero";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

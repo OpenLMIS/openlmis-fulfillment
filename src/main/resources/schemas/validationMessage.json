@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Validation message",
+  "description": "Object contains general information about validation and list of field errors",
+  "properties": {
+    "message": {
+      "type": "object",
+      "$ref": "localizedMessage.json",
+      "title": "message"
+    },
+    "fieldErrors": {
+      "type": "array",
+      "title": "fieldErrors",
+      "items": {
+        "type": "object",
+        "$ref": "fieldError.json"
+      },
+      "uniqueItems": false
+    }
+  },
+  "required": [
+    "message",
+    "fieldErrors"
+  ]
+}

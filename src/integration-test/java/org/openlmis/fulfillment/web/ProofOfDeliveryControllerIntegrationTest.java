@@ -7,6 +7,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OD_DELIVERY_VALIDATION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 
 import com.google.common.collect.Lists;
 
@@ -55,6 +57,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String RESOURCE_URL = "/api/proofOfDeliveries";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String PRINT_URL = RESOURCE_URL + "/{id}/print";
+  private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
@@ -340,35 +343,74 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldRejectCreateRequestIfObjectIsNotValid() {
-    proofOfDeliveryDto.setReceivedDate(null);
-
-    restAssured.given()
+  public void shouldSubmitValidObject() {
+    ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(proofOfDeliveryDto)
+        .pathParam("id", proofOfDelivery.getId())
         .when()
-        .post(RESOURCE_URL)
+        .post(SUBMIT_URL)
         .then()
-        .statusCode(400);
+        .statusCode(200)
+        .extract().as(ProofOfDeliveryDto.class);
 
+    assertThat(response.getOrder().getStatus(), is(OrderStatus.RECEIVED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldRejectUpdateRequestIfObjectIsNotValid() {
-    proofOfDeliveryDto.setDeliveredBy(null);
+  public void shouldNotSubmitIfObjectDoesNotExist() {
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
-        .body(proofOfDeliveryDto)
         .when()
-        .put(ID_URL)
+        .post(SUBMIT_URL)
         .then()
-        .statusCode(400);
+        .statusCode(404);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitIfObjectIsNotValid() {
+    proofOfDelivery.setDeliveredBy(null);
+
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .extract().path("message.messageKey");
+
+    assertThat(response, is(equalTo(ERROR_PROOF_OD_DELIVERY_VALIDATION)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSubmitIfObjectHasBeenSubmittedEarilier() {
+    proofOfDelivery.getOrder().setStatus(OrderStatus.RECEIVED);
+
+    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(400)
+        .extract().path("messageKey");
+
+    assertThat(response, is(equalTo(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

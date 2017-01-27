@@ -1,42 +1,52 @@
 package org.openlmis.fulfillment.web.validator;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasToString;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.DELIVERED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_LINE_ITEMS;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
 import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OD_DELIVERY_VALIDATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
-import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
-import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryValidatorTest {
   private static final String MUST_CONTAIN_A_VALUE = "must contain a value";
   private static final String MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO =
       "must contain a value that is greater than or equal to zero";
+
+  private static final String MESSAGE_KEY = "messageKey";
+  private static final String DETAILS = "details";
+  private static final String FIELD = "field";
+  private static final String ERROR = "error";
+
+  @Rule
+  public ExpectedException expected = ExpectedException.none();
 
   @Mock
   private MessageService messageService;
@@ -44,18 +54,15 @@ public class ProofOfDeliveryValidatorTest {
   @InjectMocks
   private ProofOfDeliveryValidator validator;
 
-  @Mock
-  private Errors errors;
-
-  private ProofOfDeliveryDto pod;
-  private ProofOfDeliveryLineItemDto line;
+  private ProofOfDelivery pod;
+  private ProofOfDeliveryLineItem line;
 
   @Before
   public void setUp() throws Exception {
-    line = new ProofOfDeliveryLineItemDto();
+    line = new ProofOfDeliveryLineItem();
     line.setQuantityReceived(10L);
 
-    pod = new ProofOfDeliveryDto();
+    pod = new ProofOfDelivery();
     pod.setDeliveredBy("Deliver guy");
     pod.setReceivedBy("Receiver");
     pod.setReceivedDate(LocalDate.now());
@@ -89,81 +96,101 @@ public class ProofOfDeliveryValidatorTest {
   }
 
   @Test
-  public void shouldSupportOnlyProofOfDelivery() throws Exception {
-    assertThat(validator.supports(ProofOfDeliveryDto.class), is(true));
+  public void shouldRejectIfDeliveredByIsNull() throws Exception {
+    expectValidationException(DELIVERED_BY, MUST_CONTAIN_A_VALUE);
+
+    pod.setDeliveredBy(null);
+    validator.validate(pod);
   }
 
   @Test
-  public void shouldRejectIfDeliveredByIsBlank() throws Exception {
-    pod.setDeliveredBy(null);
-    validator.validate(pod, errors);
+  public void shouldRejectIfDeliveredByIsEmpty() throws Exception {
+    expectValidationException(DELIVERED_BY, MUST_CONTAIN_A_VALUE);
 
     pod.setDeliveredBy("");
-    validator.validate(pod, errors);
-
-    pod.setDeliveredBy("    ");
-    validator.validate(pod, errors);
-
-    verifyError(3, DELIVERED_BY, MUST_CONTAIN_A_VALUE);
+    validator.validate(pod);
   }
 
   @Test
-  public void shouldRejectIfReceivedByIsBlank() throws Exception {
+  public void shouldRejectIfDeliveredByHasOnlyWhitespaces() throws Exception {
+    expectValidationException(DELIVERED_BY, MUST_CONTAIN_A_VALUE);
+
+    pod.setDeliveredBy("     ");
+    validator.validate(pod);
+  }
+
+  @Test
+  public void shouldRejectIfReceivedByIsNull() throws Exception {
+    expectValidationException(RECEIVED_BY, MUST_CONTAIN_A_VALUE);
+
     pod.setReceivedBy(null);
-    validator.validate(pod, errors);
+    validator.validate(pod);
+  }
+
+  @Test
+  public void shouldRejectIfReceivedByIsEmpty() throws Exception {
+    expectValidationException(RECEIVED_BY, MUST_CONTAIN_A_VALUE);
 
     pod.setReceivedBy("");
-    validator.validate(pod, errors);
+    validator.validate(pod);
+  }
 
-    pod.setReceivedBy("      ");
-    validator.validate(pod, errors);
+  @Test
+  public void shouldRejectIfReceivedByHasOnlyWhitespaces() throws Exception {
+    expectValidationException(RECEIVED_BY, MUST_CONTAIN_A_VALUE);
 
-    verifyError(3, RECEIVED_BY, MUST_CONTAIN_A_VALUE);
+    pod.setReceivedBy("     ");
+    validator.validate(pod);
   }
 
   @Test
   public void shouldRejectIfDeliveredDateIsNull() throws Exception {
-    pod.setReceivedDate(null);
-    validator.validate(pod, errors);
+    expectValidationException(RECEIVED_DATE, MUST_CONTAIN_A_VALUE);
 
-    verifyError(RECEIVED_DATE, MUST_CONTAIN_A_VALUE);
+    pod.setReceivedDate(null);
+    validator.validate(pod);
   }
 
   @Test
   public void shouldRejectIfQuantityReceivedIsNull() throws Exception {
-    line.setQuantityReceived(null);
-    validator.validate(pod, errors);
-
-    verifyError(
+    expectValidationException(
         PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED,
         MUST_CONTAIN_A_VALUE
     );
+
+    line.setQuantityReceived(null);
+    validator.validate(pod);
   }
 
   @Test
   public void shouldRejectIfQuantityReceivedIsLessThanZero() throws Exception {
-    line.setQuantityReceived(-5L);
-    validator.validate(pod, errors);
-
-    verifyError(
+    expectValidationException(
         PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED,
         MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO
     );
+
+    line.setQuantityReceived(-5L);
+    validator.validate(pod);
   }
 
   @Test
   public void shouldValidate() throws Exception {
-    validator.validate(pod, errors);
+    expected = ExpectedException.none();
 
-    verifyZeroInteractions(errors);
+    validator.validate(pod);
   }
 
-  private void verifyError(String field, String error) {
-    verifyError(1, field, error);
-  }
-
-  private void verifyError(int times, String field, String error) {
-    verify(errors, times(times)).rejectValue(eq(field), contains(error));
+  private void expectValidationException(String field, String error) {
+    expected.expect(ValidationException.class);
+    expected.expect(allOf(
+        hasProperty(MESSAGE_KEY, equalTo(ERROR_PROOF_OD_DELIVERY_VALIDATION)),
+        hasProperty(DETAILS, hasItem(
+            allOf(
+                hasProperty(FIELD, equalTo(field)),
+                hasProperty(ERROR, hasToString(containsString(error)))
+            )
+        ))
+    ));
   }
 
   private void mockLocalizedErrorMessage(Message message, String error) {
