@@ -63,12 +63,13 @@ schemas:
 
   - proofOfDeliverySubmitBadRequest: |
       {
-        "type": "object",
-        "oneOf": [{
-          "$ref": "schemas/validationMessage.json"
-        }, {
-          "$ref": "schemas/localizedMessage.json"
-        }]
+          "oneOf": [{
+            "type": "object",
+            "$ref": "schemas/validationMessage.json"
+          }, {
+            "type": "object",
+            "$ref": "schemas/localizedMessage.json"
+          }]
       }
 
 traits:
