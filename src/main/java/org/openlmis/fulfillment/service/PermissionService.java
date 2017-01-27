@@ -2,6 +2,7 @@ package org.openlmis.fulfillment.service;
 
 
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class PermissionService {
   static final String REQUISITION_CONVERT_TO_ORDER = "REQUISITION_CONVERT_TO_ORDER";
   static final String FULFILLMENT_TRANSFER_ORDER = "FULFILLMENT_TRANSFER_ORDER";
+  static final String PODS_MANAGE = "PODS_MANAGE";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -36,6 +38,10 @@ public class PermissionService {
 
   public void canTransferOrder(Order order) throws MissingPermissionException {
     hasPermission(FULFILLMENT_TRANSFER_ORDER, null, null, order.getSupplyingFacilityId());
+  }
+
+  public void canManagePod(ProofOfDelivery proofOfDelivery) throws MissingPermissionException {
+    hasPermission(PODS_MANAGE, null, null, proofOfDelivery.getOrder().getSupplyingFacilityId());
   }
 
   private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
