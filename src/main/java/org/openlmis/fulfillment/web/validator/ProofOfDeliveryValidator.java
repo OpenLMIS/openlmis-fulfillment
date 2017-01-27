@@ -6,7 +6,7 @@ import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
 import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
@@ -52,7 +52,7 @@ public class ProofOfDeliveryValidator implements Validator {
       errors.rejectValue(field, getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
     } else if (value.doubleValue() < 0) {
       errors.rejectValue(
-          field, getErrorMessage(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO, field)
+          field, getErrorMessage(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field)
       );
     }
   }

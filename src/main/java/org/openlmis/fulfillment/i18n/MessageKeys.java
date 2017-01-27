@@ -50,8 +50,8 @@ public abstract class MessageKeys {
 
   public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
       ERROR_PREFIX + ".validationError.mustContainValue";
-  public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO =
-      ERROR_PREFIX + ".validationError.mustBeGreaterThanOrEqualZero";
+  public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO =
+      ERROR_PREFIX + ".validationError.mustBeGreaterThanOrEqualToZero";
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

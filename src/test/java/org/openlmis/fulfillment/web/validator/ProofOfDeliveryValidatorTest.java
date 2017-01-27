@@ -13,7 +13,7 @@ import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
 import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
@@ -81,7 +81,7 @@ public class ProofOfDeliveryValidatorTest {
         MUST_CONTAIN_A_VALUE
     );
     mockLocalizedErrorMessage(new Message(
-            VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_ZERO,
+            VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO,
             PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED
         ),
         MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO
