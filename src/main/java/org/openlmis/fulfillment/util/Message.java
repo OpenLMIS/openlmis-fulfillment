@@ -8,7 +8,6 @@ import org.springframework.context.MessageSource;
 
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -81,7 +80,7 @@ public class Message {
     private String messageKey;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String[] params;
+    private Object[] params;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String message;
@@ -92,10 +91,7 @@ public class Message {
      */
     public LocalizedMessage(String message) {
       this.messageKey = Message.this.key;
-      this.params = Arrays
-          .stream(Message.this.params)
-          .map(Object::toString)
-          .toArray(String[]::new);
+      this.params = Message.this.params;
 
       Validate.notBlank(message);
       this.message = message;
