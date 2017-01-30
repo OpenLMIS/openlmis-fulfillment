@@ -346,6 +346,10 @@ resourceTypes:
                     application/json:
                       schema: proofOfDeliveryDtoArray
               404:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       post:
           is: [ secured ]
           description: Creates new proofOfDelivery.
@@ -357,6 +361,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: proofOfDeliveryDto
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -370,6 +378,10 @@ resourceTypes:
               responses:
                   204:
                   404:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen proofOfDelivery.
@@ -379,6 +391,10 @@ resourceTypes:
                         application/json:
                           schema: proofOfDeliveryDto
                   404:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           put:
               is: [ secured ]
               description: Update existing proofOfDelivery.
@@ -390,6 +406,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /{id}/print:
           uriParameters:
                 id:
@@ -404,6 +424,10 @@ resourceTypes:
                   200:
                       body:
                         application/pdf:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /{id}/submit:
           uriParameters:
                 id:
@@ -427,6 +451,10 @@ resourceTypes:
                       body:
                           application/json:
                               schema: localizedMessage
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
   /orderFileTemplates:
       displayName: OrderFileTemplate
       get:

@@ -1,8 +1,5 @@
 package org.openlmis.fulfillment.web;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -200,15 +197,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.getOrderLineItems().add(orderLineItem);
 
     return orderLineItem;
-  }
-
-  private void denyUserAllRights() {
-    wireMockRule.stubFor(
-        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
-            .willReturn(aResponse()
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .withBody("{ \"result\":\"false\" }"))
-    );
   }
 
   @Test

@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.service;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
@@ -25,6 +26,9 @@ public class PermissionService {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
   /**
    * Checks if user has permission to create order.
    *
@@ -38,6 +42,22 @@ public class PermissionService {
 
   public void canTransferOrder(Order order) throws MissingPermissionException {
     hasPermission(FULFILLMENT_TRANSFER_ORDER, null, null, order.getSupplyingFacilityId());
+  }
+
+  /**
+   * Checks if user has permission to manage POD.
+   *
+   * @param proofOfDeliveryId ID of Proof of delivery
+   * @throws MissingPermissionException when used do not have permission.
+   */
+  public void canManagePod(UUID proofOfDeliveryId) throws MissingPermissionException {
+    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+
+    if (null == proofOfDelivery) {
+      throw new MissingPermissionException(PODS_MANAGE);
+    }
+
+    canManagePod(proofOfDelivery);
   }
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) throws MissingPermissionException {

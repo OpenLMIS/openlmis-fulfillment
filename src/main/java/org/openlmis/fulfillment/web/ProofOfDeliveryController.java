@@ -78,7 +78,7 @@ public class ProofOfDeliveryController extends BaseController {
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(pod);
 
     if (!authentication.isClientOnly()) {
-      canManagePod(proofOfDelivery);
+      permissionService.canManagePod(proofOfDelivery);
     }
 
     LOGGER.debug("Creating new proofOfDelivery");
@@ -103,10 +103,8 @@ public class ProofOfDeliveryController extends BaseController {
       OAuth2Authentication authentication) throws MissingPermissionException {
     Iterable<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
 
-    if (!authentication.isClientOnly()) {
-      for (ProofOfDelivery proofOfDelivery : proofOfDeliveries) {
-        canManagePod(proofOfDelivery);
-      }
+    for (ProofOfDelivery proofOfDelivery : proofOfDeliveries) {
+      canManagePod(authentication, proofOfDelivery.getId());
     }
 
     return new ResponseEntity<>(
@@ -128,18 +126,18 @@ public class ProofOfDeliveryController extends BaseController {
                                               OAuth2Authentication authentication)
       throws MissingPermissionException {
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
-
-    if (!authentication.isClientOnly()) {
-      canManagePod(proofOfDelivery);
-    }
-
     ProofOfDelivery proofOfDeliveryToUpdate =
         proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     if (proofOfDeliveryToUpdate == null) {
       proofOfDeliveryToUpdate = new ProofOfDelivery();
       proofOfDeliveryToUpdate.setOrder(proofOfDelivery.getOrder());
+
+      if (!authentication.isClientOnly()) {
+        permissionService.canManagePod(proofOfDeliveryToUpdate);
+      }
       LOGGER.debug("Creating new proofOfDelivery");
     } else {
+      canManagePod(authentication, proofOfDeliveryId);
       LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
     }
 
@@ -161,17 +159,13 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.GET)
   public ResponseEntity<ProofOfDeliveryDto> getProofOfDelivery(@PathVariable("id") UUID id,
-                                                            OAuth2Authentication authentication)
+                                                               OAuth2Authentication authentication)
       throws MissingPermissionException {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
-
-    if (null != proofOfDelivery && !authentication.isClientOnly()) {
-      canManagePod(proofOfDelivery);
-    }
-
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
+      canManagePod(authentication, id);
       return new ResponseEntity<>(
           ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter),
           HttpStatus.OK
@@ -190,15 +184,10 @@ public class ProofOfDeliveryController extends BaseController {
                                               OAuth2Authentication authentication)
       throws MissingPermissionException {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
-
-    if (null != proofOfDelivery && !authentication.isClientOnly()) {
-      canManagePod(proofOfDelivery);
-    }
-
-
     if (proofOfDelivery == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
+      canManagePod(authentication, id);
       proofOfDeliveryRepository.delete(proofOfDelivery);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -216,11 +205,7 @@ public class ProofOfDeliveryController extends BaseController {
   public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id,
                             OAuth2Authentication authentication)
       throws FulfillmentException {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
-
-    if (null != proofOfDelivery && !authentication.isClientOnly()) {
-      canManagePod(proofOfDelivery);
-    }
+    canManagePod(authentication, id);
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
 
@@ -249,14 +234,11 @@ public class ProofOfDeliveryController extends BaseController {
       throws FulfillmentException {
     ProofOfDelivery pod = proofOfDeliveryRepository.findOne(id);
 
-    if (null != pod && !authentication.isClientOnly()) {
-      canManagePod(pod);
-    }
-
     if (null == pod) {
       throw new ProofOfDeliveryNotFoundException(id);
     }
 
+    canManagePod(authentication, id);
     validator.validate(pod);
 
     Order order = pod.getOrder();
@@ -271,8 +253,11 @@ public class ProofOfDeliveryController extends BaseController {
     return ProofOfDeliveryDto.newInstance(pod, exporter);
   }
 
-  private void canManagePod(ProofOfDelivery pod) throws MissingPermissionException {
-    LOGGER.debug("Checking rights to manage POD: {}", pod.getId());
-    permissionService.canManagePod(pod);
+  private void canManagePod(OAuth2Authentication authentication, UUID id)
+      throws MissingPermissionException {
+    if (!authentication.isClientOnly()) {
+      LOGGER.debug("Checking rights to manage POD: {}", id);
+      permissionService.canManagePod(id);
+    }
   }
 }

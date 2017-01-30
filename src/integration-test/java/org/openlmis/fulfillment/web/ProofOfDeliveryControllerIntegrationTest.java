@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OD_DELIVERY_VALIDATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 
@@ -62,6 +63,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+  private static final String MESSAGE_KEY = "messageKey";
 
   @MockBean
   private TemplateRepository templateRepository;
@@ -408,9 +410,143 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .post(SUBMIT_URL)
         .then()
         .statusCode(400)
-        .extract().path("messageKey");
+        .extract().path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectGetAllRequestIfUserHasNoRight() {
+    given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
+    
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectCreateRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(proofOfDeliveryDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectDeleteRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectGetRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectUpdateRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .body(proofOfDeliveryDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectPrintRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .pathParam("id", proofOfDelivery.getId())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectSubmitRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .post(SUBMIT_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -534,6 +534,15 @@ public abstract class BaseWebIntegrationTest {
     return UUID.fromString("aaf12a5a-8b16-11e6-ae22-56b6b6499611");
   }
 
+  void denyUserAllRights() {
+    wireMockRule.stubFor(
+        get(urlMatching(REFERENCEDATA_API_USERS + UUID_REGEX + "/hasRight.*"))
+            .willReturn(aResponse()
+                .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
   static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
 
     @Override
