@@ -422,7 +422,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldReturnConflictCodeForExistingOrder() {
 
-    doThrow(DataIntegrityViolationException.class).when(orderRepository).delete(any(Order.class));
+    doThrow(new DataIntegrityViolationException("This exception is required by IT"))
+        .when(orderRepository)
+        .delete(any(Order.class));
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -496,7 +498,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnConflictWhenUpdatingOrderCode() {
-    given(orderRepository.save(any(Order.class))).willThrow(DataIntegrityViolationException.class);
+    given(orderRepository.save(any(Order.class)))
+        .willThrow(new DataIntegrityViolationException("This exception is required by IT"));
 
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
@@ -569,7 +572,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnConflictForExistingOrderCode() {
-    given(orderRepository.save(any(Order.class))).willThrow(DataIntegrityViolationException.class);
+    given(orderRepository.save(any(Order.class)))
+        .willThrow(new DataIntegrityViolationException("This exception is required by IT"));
 
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));

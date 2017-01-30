@@ -13,6 +13,7 @@ import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ReportUtils;
 import org.openlmis.fulfillment.web.validator.ProofOfDeliveryValidator;
@@ -32,6 +33,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -229,8 +231,8 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}/submit", method = RequestMethod.POST)
   @ResponseBody
-  public ProofOfDeliveryDto submit(@PathVariable("id") UUID id,
-                                   OAuth2Authentication authentication)
+  public ResponseEntity submit(@PathVariable("id") UUID id,
+                               OAuth2Authentication authentication)
       throws FulfillmentException {
     ProofOfDelivery pod = proofOfDeliveryRepository.findOne(id);
 
@@ -239,18 +241,22 @@ public class ProofOfDeliveryController extends BaseController {
     }
 
     canManagePod(authentication, id);
-    validator.validate(pod);
+    List<Message.LocalizedMessage> errors = validator.validate(pod);
+
+    if (!errors.isEmpty()) {
+      return ResponseEntity.badRequest().body(errors);
+    }
 
     Order order = pod.getOrder();
 
     if (OrderStatus.RECEIVED == order.getStatus()) {
-      throw new ProofOfDeliverySubmitException(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED);
+      throw new ValidationException(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED);
     }
 
     order.setStatus(OrderStatus.RECEIVED);
     orderRepository.save(order);
 
-    return ProofOfDeliveryDto.newInstance(pod, exporter);
+    return ResponseEntity.ok(ProofOfDeliveryDto.newInstance(pod, exporter));
   }
 
   private void canManagePod(OAuth2Authentication authentication, UUID id)

@@ -6,6 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.MessageSource;
 
+import lombok.Getter;
+
+import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -72,9 +75,13 @@ public class Message {
   /**
    * Value class of a localized message.  Useful for JSON serialization, logging, etc...
    */
+  @Getter
   public final class LocalizedMessage {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String messageKey;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String[] params;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String message;
@@ -84,8 +91,13 @@ public class Message {
      * @param message message.
      */
     public LocalizedMessage(String message) {
-      Validate.notBlank(message);
       this.messageKey = Message.this.key;
+      this.params = Arrays
+          .stream(Message.this.params)
+          .map(Object::toString)
+          .toArray(String[]::new);
+
+      Validate.notBlank(message);
       this.message = message;
     }
 

@@ -6,9 +6,10 @@ import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
 import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OD_DELIVERY_VALIDATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
+
+import com.google.common.collect.Lists;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
@@ -17,6 +18,7 @@ import org.openlmis.fulfillment.util.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -29,10 +31,9 @@ public class ProofOfDeliveryValidator {
    * Valides the given proof of delivery.
    *
    * @param target instance of {@link ProofOfDelivery} that should be validated.
-   * @throws ValidationException if passed object is not valid.
    */
-  public void validate(ProofOfDelivery target) throws ValidationException {
-    ValidationErrors errors = new ValidationErrors();
+  public List<Message.LocalizedMessage> validate(ProofOfDelivery target) {
+    List<Message.LocalizedMessage> errors = Lists.newArrayList();
 
     rejectIfBlank(errors, target.getDeliveredBy(), DELIVERED_BY);
     rejectIfBlank(errors, target.getReceivedBy(), RECEIVED_BY);
@@ -41,34 +42,31 @@ public class ProofOfDeliveryValidator {
     Optional.ofNullable(target.getProofOfDeliveryLineItems())
         .ifPresent(list -> list.forEach(line -> validateLine(line, errors)));
 
-    if (errors.hasErrors()) {
-      throw new ValidationException(ERROR_PROOF_OD_DELIVERY_VALIDATION, errors);
-    }
+    return errors;
   }
 
-  private void validateLine(ProofOfDeliveryLineItem line, ValidationErrors errors) {
+  private void validateLine(ProofOfDeliveryLineItem line, List<Message.LocalizedMessage> errors) {
     rejectIfLessThanZero(errors, line.getQuantityReceived(), getLineField(QUANTITY_RECEIVED));
   }
 
-  private void rejectIfLessThanZero(ValidationErrors errors, Number value, String field) {
+  private void rejectIfLessThanZero(List<Message.LocalizedMessage> errors, Number value,
+                                    String field) {
     if (null == value) {
-      errors.rejectValue(field, getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
     } else if (value.doubleValue() < 0) {
-      errors.rejectValue(
-          field, getErrorMessage(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field)
-      );
+      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field));
     }
   }
 
-  private void rejectIfNull(ValidationErrors errors, Object value, String field) {
+  private void rejectIfNull(List<Message.LocalizedMessage> errors, Object value, String field) {
     if (null == value) {
-      errors.rejectValue(field, getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
     }
   }
 
-  private void rejectIfBlank(ValidationErrors errors, String value, String field) {
+  private void rejectIfBlank(List<Message.LocalizedMessage> errors, String value, String field) {
     if (isBlank(value)) {
-      errors.rejectValue(field, getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
     }
   }
 
@@ -76,7 +74,7 @@ public class ProofOfDeliveryValidator {
     return PROOF_OF_DELIVERY_LINE_ITEMS + '.' + field;
   }
 
-  private Message.LocalizedMessage getErrorMessage(String key, String... params) {
+  private Message.LocalizedMessage getErrorMessage(String key, Object... params) {
     return messageService.localize(new Message(key, params));
   }
 

@@ -180,7 +180,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     // given
     T properties = generateProperties();
     given(transferPropertiesRepository.findOne(properties.getId())).willThrow(
-        DataIntegrityViolationException.class);
+        new DataIntegrityViolationException("This exception is required by IT"));
 
     // when
     restAssured.given()

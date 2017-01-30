@@ -8,8 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OD_DELIVERY_VALIDATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
 
@@ -390,9 +390,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .post(SUBMIT_URL)
         .then()
         .statusCode(400)
-        .extract().path("message.messageKey");
+        .extract().path("[0].messageKey");
 
-    assertThat(response, is(equalTo(ERROR_PROOF_OD_DELIVERY_VALIDATION)));
+    assertThat(response, is(equalTo(VALIDATION_ERROR_MUST_CONTAIN_VALUE)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

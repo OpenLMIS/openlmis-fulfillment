@@ -61,14 +61,14 @@ schemas:
 
   - resultDto: !include schemas/resultDto.json
 
-  - proofOfDeliverySubmitBadRequest: |
+  - badRequestResponse: |
       {
           "oneOf": [{
             "type": "object",
-            "$ref": "schemas/validationMessage.json"
-          }, {
-            "type": "object",
             "$ref": "schemas/localizedMessage.json"
+          }, {
+            "type": "array",
+            "items": { "type": "object", "$ref": "schemas/localizedMessage.json" }
           }]
       }
 
@@ -446,7 +446,7 @@ resourceTypes:
                   400:
                       body:
                           application/json:
-                              schema: proofOfDeliverySubmitBadRequest
+                              schema: badRequestResponse
                   404:
                       body:
                           application/json:
