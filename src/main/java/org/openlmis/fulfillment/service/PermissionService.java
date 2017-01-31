@@ -1,6 +1,8 @@
 package org.openlmis.fulfillment.service;
 
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -37,12 +39,12 @@ public class PermissionService {
    * @throws MissingPermissionException when used do not have permission.
    */
   public void canConvertToOrder(Order order) throws MissingPermissionException {
-    hasPermission(REQUISITION_CONVERT_TO_ORDER, null, null,
+    throwIfMissingPermission(REQUISITION_CONVERT_TO_ORDER,
         order.getSupplyingFacilityId());
   }
 
   public void canTransferOrder(Order order) throws MissingPermissionException {
-    hasPermission(FULFILLMENT_TRANSFER_ORDER, null, null, order.getSupplyingFacilityId());
+    throwIfMissingPermission(FULFILLMENT_TRANSFER_ORDER, order.getSupplyingFacilityId());
   }
 
   /**
@@ -62,22 +64,34 @@ public class PermissionService {
   }
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) throws MissingPermissionException {
-    hasPermission(PODS_MANAGE, null, null, proofOfDelivery.getOrder().getSupplyingFacilityId());
+    throwIfMissingPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId());
   }
 
   public void canViewOrder(Order order) throws MissingPermissionException {
-    hasPermission(ORDERS_VIEW, null, null, order.getSupplyingFacilityId());
+    canViewOrder(order.getSupplyingFacilityId());
   }
 
-  private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)
-      throws MissingPermissionException {
+  public void canViewOrder(UUID supplyingFacility) throws MissingPermissionException {
+    throwIfMissingPermission(ORDERS_VIEW, supplyingFacility);
+  }
+
+  public boolean checkIfCanViewOrder(Order order) {
+    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId());
+  }
+
+  private boolean hasPermission(String rightName, UUID warehouse) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
-    ResultDto<Boolean> result = userReferenceDataService.hasRight(
-        user.getId(), right.getId(), program, facility, warehouse
+    ResultDto<Boolean> result =  userReferenceDataService.hasRight(
+        user.getId(), right.getId(), null, null, warehouse
     );
 
-    if (null == result || !result.getResult()) {
+    return null != result && isTrue(result.getResult());
+  }
+
+  private void throwIfMissingPermission(String rightName, UUID warehouse)
+      throws MissingPermissionException {
+    if (!hasPermission(rightName, warehouse)) {
       throw new MissingPermissionException(rightName);
     }
   }

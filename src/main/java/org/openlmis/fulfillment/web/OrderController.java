@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -210,12 +211,13 @@ public class OrderController extends BaseController {
           UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program)
       throws MissingPermissionException {
+    permissionService.canViewOrder(supplyingFacility);
 
-    List<Order> orders = orderService.searchOrders(supplyingFacility, requestingFacility, program);
-
-    for (Order order : orders) {
-      permissionService.canViewOrder(order);
-    }
+    List<Order> orders = orderService
+        .searchOrders(supplyingFacility, requestingFacility, program)
+        .stream()
+        .filter(permissionService::checkIfCanViewOrder)
+        .collect(Collectors.toList());
 
     return OrderDto.newInstance(orders, exporter);
   }
