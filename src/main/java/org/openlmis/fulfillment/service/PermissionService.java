@@ -19,6 +19,7 @@ public class PermissionService {
   static final String REQUISITION_CONVERT_TO_ORDER = "REQUISITION_CONVERT_TO_ORDER";
   static final String FULFILLMENT_TRANSFER_ORDER = "FULFILLMENT_TRANSFER_ORDER";
   static final String PODS_MANAGE = "PODS_MANAGE";
+  static final String ORDERS_VIEW = "ORDERS_VIEW";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -62,6 +63,10 @@ public class PermissionService {
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) throws MissingPermissionException {
     hasPermission(PODS_MANAGE, null, null, proofOfDelivery.getOrder().getSupplyingFacilityId());
+  }
+
+  public void canViewOrder(Order order) throws MissingPermissionException {
+    hasPermission(ORDERS_VIEW, null, null, order.getSupplyingFacilityId());
   }
 
   private void hasPermission(String rightName, UUID program, UUID facility, UUID warehouse)

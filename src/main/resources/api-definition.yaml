@@ -139,6 +139,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: orderDtoArray
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       post:
           is: [ secured ]
           description: Creates new order.
@@ -184,6 +188,10 @@ resourceTypes:
                         application/json:
                           schema: orderDto
                   404:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
           put:
               is: [ secured ]
               description: Update existing order.
@@ -219,6 +227,10 @@ resourceTypes:
                     400:
                       body:
                         application/json:
+                    403:
+                        body:
+                          application/json:
+                            schema: localizedMessage
                     404:
                       body:
                         application/json:
@@ -267,6 +279,10 @@ resourceTypes:
                           body:
                             application/json:
                               schema: orderDtoArray
+                      403:
+                          body:
+                            application/json:
+                              schema: localizedMessage
       /{id}/print:
           uriParameters:
               id:
@@ -293,6 +309,10 @@ resourceTypes:
                   400:
                       body:
                         application/json:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /{id}/finalize:
               uriParameters:
                   id:

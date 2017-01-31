@@ -6,6 +6,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.FULFILLMENT_TRANSFER_ORDER;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 
@@ -58,10 +59,14 @@ public class PermissionServiceTest {
   @Mock
   private RightDto fulfillmentManagePodRight;
 
+  @Mock
+  private RightDto fulfillmentOrdersViewRight;
+
   private UUID userId = UUID.randomUUID();
   private UUID requisitionConvertRightId = UUID.randomUUID();
   private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
   private UUID fulfillmentManagePodRightId = UUID.randomUUID();
+  private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private Order order =  new Order();
@@ -82,6 +87,7 @@ public class PermissionServiceTest {
     when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
     when(fulfillmentTransferOrderRight.getId()).thenReturn(fulfillmentTransferOrderRightId);
     when(fulfillmentManagePodRight.getId()).thenReturn(fulfillmentManagePodRightId);
+    when(fulfillmentOrdersViewRight.getId()).thenReturn(fulfillmentOrdersViewRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
@@ -91,6 +97,8 @@ public class PermissionServiceTest {
         fulfillmentTransferOrderRight);
     when(authenticationHelper.getRight(PODS_MANAGE)).thenReturn(
         fulfillmentManagePodRight);
+    when(authenticationHelper.getRight(ORDERS_VIEW)).thenReturn(
+        fulfillmentOrdersViewRight);
   }
 
   @Test
@@ -142,6 +150,23 @@ public class PermissionServiceTest {
     expectException(PODS_MANAGE);
 
     permissionService.canManagePod(proofOfDelivery);
+  }
+
+  @Test
+  public void canViewOrder() throws Exception {
+    mockFulfillmentHasRight(fulfillmentOrdersViewRightId, true);
+
+    permissionService.canViewOrder(order);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, ORDERS_VIEW, fulfillmentOrdersViewRightId);
+  }
+
+  @Test
+  public void cannotViewOrder() throws Exception {
+    expectException(ORDERS_VIEW);
+
+    permissionService.canViewOrder(order);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign) {

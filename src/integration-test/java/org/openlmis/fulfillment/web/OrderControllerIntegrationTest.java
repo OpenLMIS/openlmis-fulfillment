@@ -13,6 +13,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
@@ -68,6 +69,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String NUMBER = "10.90";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
+
+  private static final String CSV = "csv";
 
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
@@ -253,7 +256,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
-        .queryParam(FORMAT, "csv")
+        .queryParam(FORMAT, CSV)
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
         .when()
@@ -640,7 +643,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     String csvContent = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", secondOrder.getId())
-        .queryParam("type", "csv")
+        .queryParam("type", CSV)
         .when()
         .get(EXPORT_URL)
         .then()
@@ -673,7 +676,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId())
-        .queryParam("type", "csv")
+        .queryParam("type", CSV)
         .when()
         .get(EXPORT_URL)
         .then()
@@ -742,4 +745,80 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(result.getResult(), is(instanceOf(Boolean.class)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldRejectSearchRequestWhenUserHasNoRights() {
+    denyUserAllRights();
+
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+
+    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null))
+        .willReturn(Lists.newArrayList(firstOrder));
+
+    String response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectGetRequestWhenUserHasNoRights() {
+    denyUserAllRights();
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectPrintRequestWhenUserHasNoRights() {
+    denyUserAllRights();
+
+    String response = restAssured.given()
+        .queryParam(FORMAT, CSV)
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectExportRequestWhenUserHasNoRights() {
+    denyUserAllRights();
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", secondOrder.getId())
+        .when()
+        .get(EXPORT_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+  
 }

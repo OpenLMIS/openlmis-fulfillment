@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
@@ -165,11 +166,13 @@ public class OrderController extends BaseController {
    * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId)
+      throws MissingPermissionException {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
+      permissionService.canViewOrder(order);
       return new ResponseEntity<>(OrderDto.newInstance(order, exporter), HttpStatus.OK);
     }
   }
@@ -205,10 +208,16 @@ public class OrderController extends BaseController {
       @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
       @RequestParam(value = "requestingFacility", required = false)
           UUID requestingFacility,
-      @RequestParam(value = "program", required = false) UUID program) {
+      @RequestParam(value = "program", required = false) UUID program)
+      throws MissingPermissionException {
 
-    return OrderDto.newInstance(orderService.searchOrders(supplyingFacility, requestingFacility,
-        program), exporter);
+    List<Order> orders = orderService.searchOrders(supplyingFacility, requestingFacility, program);
+
+    for (Order order : orders) {
+      permissionService.canViewOrder(order);
+    }
+
+    return OrderDto.newInstance(orders, exporter);
   }
 
   /**
@@ -251,13 +260,15 @@ public class OrderController extends BaseController {
   public void printOrder(@PathVariable("id") UUID orderId,
                          @RequestParam("format") String format,
                          HttpServletResponse response)
-      throws IOException, OrderFileException {
+      throws IOException, OrderFileException, MissingPermissionException {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
       return;
     }
+
+    permissionService.canViewOrder(order);
 
     String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
     if ("pdf".equals(format)) {
@@ -282,14 +293,9 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/export", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public void export(
-      @PathVariable("id") UUID orderId,
-      @RequestParam(value = "type", required = false, defaultValue = "csv") String type,
-      HttpServletResponse response) throws IOException {
-
-    Order order = orderRepository.findOne(orderId);
-    OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
-
+  public void export(@PathVariable("id") UUID orderId,
+                  @RequestParam(value = "type", required = false, defaultValue = "csv") String type,
+                     HttpServletResponse response) throws IOException, FulfillmentException {
     if (!"csv".equals(type)) {
       String msg = "Export type: " + type + " not allowed";
       LOGGER.warn(msg);
@@ -297,12 +303,18 @@ public class OrderController extends BaseController {
       return;
     }
 
+    Order order = orderRepository.findOne(orderId);
+
     if (order == null) {
       String msg = "Order does not exist.";
       LOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
       return;
     }
+
+    permissionService.canViewOrder(order);
+
+    OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
 
     if (orderFileTemplate == null) {
       String msg = "Could not export Order, because Order Template File not found";
@@ -328,7 +340,7 @@ public class OrderController extends BaseController {
    * Manually retry for transferring order file via FTP after updating or checking the FTP
    * transfer properties.
    *
-   * @param id  UUID of order
+   * @param id UUID of order
    */
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
   @ResponseBody
