@@ -543,6 +543,17 @@ public abstract class BaseWebIntegrationTest {
     );
   }
 
+  void denyUserAllRightsForWarehouse(UUID warehouse) {
+    String url = String.format(
+        "%s%s/hasRight.*warehouseId=%s.*",
+        REFERENCEDATA_API_USERS, UUID_REGEX, warehouse
+    );
+    wireMockRule.stubFor(get(urlMatching(url)).willReturn(aResponse()
+        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withBody("{ \"result\":\"false\" }"))
+    );
+  }
+
   static class SaveAnswer<T extends BaseEntity> implements Answer<T> {
 
     @Override

@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.web;
 
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
@@ -765,6 +767,31 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRemoveOrdersFromSearchResultWhenUserHasNoRightsForFacility() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    secondOrder.setSupplyingFacilityId(UUID.randomUUID());
+    thirdOrder.setSupplyingFacilityId(secondOrder.getSupplyingFacilityId());
+
+    denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
+
+    given(orderRepository.searchOrders(any(UUID.class), eq(null), eq(null)))
+        .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
+
+    Order[] response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(Order[].class);
+
+    assertThat(response, arrayWithSize(1));
+    assertThat(response[0].getId(), is(equalTo(firstOrder.getId())));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
