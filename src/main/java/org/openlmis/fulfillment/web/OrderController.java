@@ -17,7 +17,6 @@ import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
-import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.OrderStorageException;
@@ -262,12 +261,11 @@ public class OrderController extends BaseController {
   public void printOrder(@PathVariable("id") UUID orderId,
                          @RequestParam("format") String format,
                          HttpServletResponse response)
-      throws IOException, OrderFileException, MissingPermissionException {
+      throws IOException, FulfillmentException {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order does not exist.");
-      return;
+      throw new OrderNotFoundException(orderId);
     }
 
     permissionService.canViewOrder(order);

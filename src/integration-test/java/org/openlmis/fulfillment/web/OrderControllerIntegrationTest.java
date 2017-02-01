@@ -286,7 +286,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldReturnBadRequestIfThereIsNoOrderToPrint() {
+  public void shouldReturnNotFoundErrorIfThereIsNoOrderToPrint() {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     restAssured.given()
@@ -296,7 +296,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .when()
         .get(PRINT_URL)
         .then()
-        .statusCode(400);
+        .statusCode(404);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

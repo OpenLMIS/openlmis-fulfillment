@@ -306,9 +306,10 @@ resourceTypes:
                       body:
                         application/pdf:
                         text/csv:
-                  400:
+                  404:
                       body:
                         application/json:
+                          schema: localizedMessage
                   403:
                       body:
                         application/json:
