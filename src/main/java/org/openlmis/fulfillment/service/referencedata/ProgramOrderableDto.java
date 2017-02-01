@@ -11,8 +11,8 @@ public class ProgramOrderableDto {
   private UUID programId;
   private UUID productId;
   private UUID orderableDisplayCategoryId;
-  private String orderableDisplayCategoryDisplayName;
-  private Integer orderableDisplayCategoryDisplayOrder;
+  private String productCategoryDisplayName;
+  private Integer productCategoryDisplayOrder;
   private Boolean active;
   private Boolean fullSupply;
   private Integer displayOrder;
