@@ -13,6 +13,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.openlmis.fulfillment.domain.Order.STATUS;
+import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INCORRECT_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
@@ -305,7 +308,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldFindBySupplyingFacility() {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
-    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null))
+    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null, null))
         .willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -332,7 +335,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -365,7 +368,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId()
+        firstOrder.getProgramId(), null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -392,6 +395,67 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           order.getProgram().getId(),
           firstOrder.getProgramId());
     }
+  }
+
+  @Test
+  public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatus() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setProgramId(UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611"));
+    firstOrder.setStatus(READY_TO_PACK);
+
+    given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), READY_TO_PACK
+    )).willReturn(Lists.newArrayList(firstOrder));
+
+    OrderDto[] response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(1, response.length);
+    for (OrderDto order : response) {
+      assertEquals(
+          order.getSupplyingFacility().getId(),
+          firstOrder.getSupplyingFacilityId());
+      assertEquals(
+          order.getRequestingFacility().getId(),
+          firstOrder.getRequestingFacilityId());
+      assertEquals(
+          order.getProgram().getId(),
+          firstOrder.getProgramId());
+      assertEquals(
+          order.getStatus(),
+          firstOrder.getStatus()
+      );
+    }
+  }
+
+  @Test
+  public void shouldRejectSearchRequestIfStatusIsIncorrect() {
+    String response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam(STATUS, "abc")
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_ORDER_INCORRECT_STATUS)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -707,7 +771,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotAllowToRetryIfOrderHasIncorrectStatus() {
-    firstOrder.setStatus(OrderStatus.READY_TO_PACK);
+    firstOrder.setStatus(READY_TO_PACK);
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
 
@@ -754,7 +818,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
-    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null))
+    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null, null))
         .willReturn(Lists.newArrayList(firstOrder));
 
     String response = restAssured.given()
@@ -778,7 +842,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(any(UUID.class), eq(null), eq(null)))
+    given(orderRepository.searchOrders(any(UUID.class), eq(null), eq(null), eq(null)))
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     Order[] response = restAssured.given()

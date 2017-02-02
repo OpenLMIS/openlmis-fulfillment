@@ -274,11 +274,21 @@ resourceTypes:
                           type: string
                           required: false
                           repeat: false
+                      status:
+                          displayName: status
+                          description: Order status
+                          type: string
+                          required: false
+                          repeat: false
                   responses:
                       200:
                           body:
                             application/json:
                               schema: orderDtoArray
+                      400:
+                          body:
+                            application/json:
+                              schema: localizedMessage
                       403:
                           body:
                             application/json:

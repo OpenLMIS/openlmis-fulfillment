@@ -1,6 +1,12 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
+import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
+import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
+import static org.openlmis.fulfillment.domain.Order.STATUS;
+import static org.openlmis.fulfillment.domain.Order.SUPPLYING_FACILITY_ID;
+
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
 
 import java.util.List;
@@ -24,33 +30,39 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param supplyingFacility  supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
    * @param program            program of searched Orders.
+   * @param status             order status. One of {@link OrderStatus}.
    * @return List of Orders with matched parameters.
    */
   @Override
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-                                  UUID program) {
+                                  UUID program, OrderStatus status) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
     Root<Order> root = query.from(Order.class);
     Predicate predicate = builder.conjunction();
+
     if (supplyingFacility != null) {
       predicate = builder.and(
-          predicate,
-          builder.equal(
-              root.get("supplyingFacilityId"), supplyingFacility));
+          predicate, builder.equal(root.get(SUPPLYING_FACILITY_ID), supplyingFacility)
+      );
     }
+
     if (requestingFacility != null) {
       predicate = builder.and(
-          predicate,
-          builder.equal(
-              root.get("requestingFacilityId"), requestingFacility));
+          predicate, builder.equal(root.get(REQUESTING_FACILITY_ID), requestingFacility)
+      );
     }
+
     if (program != null) {
-      predicate = builder.and(predicate,
-          builder.equal(
-              root.get("programId"), program));
+      predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
     }
+
+    if (status != null) {
+      predicate = builder.and(predicate, builder.equal(root.get(STATUS), status));
+    }
+
     query.where(predicate);
+
     return entityManager.createQuery(query).getResultList();
   }
 

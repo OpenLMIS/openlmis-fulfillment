@@ -85,24 +85,29 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order two = orderRepository.save(generateInstance());
     Order three = orderRepository.save(generateInstance());
 
-    List<Order> list = orderRepository.searchOrders(null, null, null);
+    List<Order> list = orderRepository.searchOrders(null, null, null, null);
 
     assertThat(list, hasSize(3));
     assertThat(list, hasItem(hasProperty("id", isOneOf(one.getId(), two.getId(), three.getId()))));
 
-    list = orderRepository.searchOrders(one.getSupplyingFacilityId(), null, null);
+    list = orderRepository.searchOrders(one.getSupplyingFacilityId(), null, null, null);
 
     assertThat(list, hasSize(1));
     assertThat(list, hasItem(hasProperty("id", is(one.getId()))));
 
-    list = orderRepository.searchOrders(null, two.getRequestingFacilityId(), null);
+    list = orderRepository.searchOrders(null, two.getRequestingFacilityId(), null, null);
 
     assertThat(list, hasSize(1));
     assertThat(list, hasItem(hasProperty("id", is(two.getId()))));
 
-    list = orderRepository.searchOrders(null, null, three.getProgramId());
+    list = orderRepository.searchOrders(null, null, three.getProgramId(), null);
 
     assertThat(list, hasSize(1));
     assertThat(list, hasItem(hasProperty("id", is(three.getId()))));
+
+    list = orderRepository.searchOrders(null, null, null, OrderStatus.PICKING);
+
+    assertThat(list, hasSize(3));
+    assertThat(list, hasItem(hasProperty("id", isOneOf(one.getId(), two.getId(), three.getId()))));
   }
 }

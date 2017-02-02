@@ -209,12 +209,14 @@ public class OrderServiceTest {
     Order order = generateOrder();
 
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId()))
-        .thenReturn(Collections.singletonList(order));
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getStatus())
+    ).thenReturn(Collections.singletonList(order));
 
     // when
     List<Order> receivedOrders = orderService.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId());
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getStatus());
 
     // then
     assertEquals(1, receivedOrders.size());
@@ -222,7 +224,8 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.get(0).getRequestingFacilityId(), order.getRequestingFacilityId());
     assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
 
-    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
+    verify(orderRepository, atLeastOnce())
+        .searchOrders(anyObject(), anyObject(), anyObject(), any(OrderStatus.class));
   }
 
   @Test

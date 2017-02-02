@@ -20,6 +20,7 @@ public abstract class MessageKeys {
 
   public static final String ERROR_ORDER_NOT_FOUND = ERROR_PREFIX + ".order.not-found";
   public static final String ERROR_ORDER_INVALID_STATUS = ERROR_PREFIX + ".order.invalid-status";
+  public static final String ERROR_ORDER_INCORRECT_STATUS = ERROR_PREFIX + ".order.incorrectStatus";
 
   public static final String ERROR_ORDER_RETRY_INVALID_STATUS = ERROR_PREFIX
       + ".order-retry.invalid-status";

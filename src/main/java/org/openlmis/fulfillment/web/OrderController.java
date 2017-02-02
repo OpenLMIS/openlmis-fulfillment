@@ -1,14 +1,17 @@
 package org.openlmis.fulfillment.web;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INCORRECT_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -200,20 +203,31 @@ public class OrderController extends BaseController {
    * @param supplyingFacility  supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
    * @param program            program of searched Orders.
+   * @param status          order status.
    * @return ResponseEntity with list of all Orders matching provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<OrderDto> searchOrders(
       @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
-      @RequestParam(value = "requestingFacility", required = false)
-          UUID requestingFacility,
-      @RequestParam(value = "program", required = false) UUID program)
-      throws MissingPermissionException {
+      @RequestParam(value = "requestingFacility", required = false) UUID requestingFacility,
+      @RequestParam(value = "program", required = false) UUID program,
+      @RequestParam(value = "status", required = false) String status)
+      throws FulfillmentException {
     permissionService.canViewOrder(supplyingFacility);
 
+    OrderStatus orderStatus = null;
+
+    if (isNotBlank(status)) {
+      orderStatus = OrderStatus.fromString(status);
+
+      if (null == orderStatus) {
+        throw new ValidationException(ERROR_ORDER_INCORRECT_STATUS, status);
+      }
+    }
+
     List<Order> orders = orderService
-        .searchOrders(supplyingFacility, requestingFacility, program)
+        .searchOrders(supplyingFacility, requestingFacility, program, orderStatus)
         .stream()
         .filter(permissionService::checkIfCanViewOrder)
         .collect(Collectors.toList());

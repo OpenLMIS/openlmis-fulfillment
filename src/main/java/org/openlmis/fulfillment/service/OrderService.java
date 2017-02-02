@@ -25,6 +25,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -95,14 +96,13 @@ public class OrderService {
    * @param supplyingFacility  supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
    * @param program            program of searched Orders.
+   * @param status             order status. One of {@link OrderStatus}.
    * @return ist of Orders with matched parameters.
    */
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-                                  UUID program) {
+                                  UUID program, OrderStatus status) {
     return orderRepository.searchOrders(
-        supplyingFacility,
-        requestingFacility,
-        program);
+        supplyingFacility, requestingFacility, program, status);
   }
 
   /**
