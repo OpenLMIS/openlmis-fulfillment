@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.domain;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
-import org.openlmis.fulfillment.domain.convert.ZonedDateTimeAttributeConverter;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -24,7 +23,6 @@ import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -66,7 +64,6 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
-  @Convert(converter = ZonedDateTimeAttributeConverter.class)
   @Column(columnDefinition = "timestamp with time zone")
   private ZonedDateTime createdDate;
 
