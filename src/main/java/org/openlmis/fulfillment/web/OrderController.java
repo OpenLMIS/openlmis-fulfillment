@@ -101,7 +101,7 @@ public class OrderController extends BaseController {
 
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to create order");
-      permissionService.canConvertToOrder(order);
+      permissionService.canEditOrder(order);
     }
 
     LOGGER.debug("Creating new order");
@@ -142,15 +142,15 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   @ResponseBody
   public OrderDto updateOrder(@RequestBody OrderDto orderDto,
-                              @PathVariable("id") UUID orderId) {
+                              @PathVariable("id") UUID orderId) throws FulfillmentException {
 
     Order orderToUpdate = orderRepository.findOne(orderId);
-    if (orderToUpdate == null) {
-      orderToUpdate = new Order();
-      LOGGER.info("Creating new order");
-    } else {
-      LOGGER.debug("Updating order with id: {}", orderId);
+
+    if (null == orderToUpdate) {
+      throw new OrderNotFoundException(orderId);
     }
+
+    permissionService.canEditOrder(orderToUpdate);
 
     Order order = Order.newInstance(orderDto);
 
@@ -187,11 +187,13 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId)
+      throws MissingPermissionException {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
+      permissionService.canEditOrder(order);
       orderRepository.delete(order);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -244,13 +246,15 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
   public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId)
-      throws ValidationException {
+      throws FulfillmentException {
 
     Order order = orderRepository.findOne(orderId);
 
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    permissionService.canEditOrder(order);
 
     if (order.getStatus() != ORDERED) {
       throw new ValidationException(ERROR_ORDER_INCORRECT_STATUS);

@@ -6,9 +6,9 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.FULFILLMENT_TRANSFER_ORDER;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
-import static org.openlmis.fulfillment.service.PermissionService.REQUISITION_CONVERT_TO_ORDER;
 
 import com.google.common.collect.Lists;
 
@@ -51,7 +51,7 @@ public class PermissionServiceTest {
   private UserDto user;
 
   @Mock
-  private RightDto requisitionConvertRight;
+  private RightDto fulfillmentOrdersEditRight;
 
   @Mock
   private RightDto fulfillmentTransferOrderRight;
@@ -63,10 +63,10 @@ public class PermissionServiceTest {
   private RightDto fulfillmentOrdersViewRight;
 
   private UUID userId = UUID.randomUUID();
-  private UUID requisitionConvertRightId = UUID.randomUUID();
   private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
   private UUID fulfillmentManagePodRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
+  private UUID fulfillmentOrdersEditRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private Order order =  new Order();
@@ -84,38 +84,21 @@ public class PermissionServiceTest {
 
     when(user.getId()).thenReturn(userId);
 
-    when(requisitionConvertRight.getId()).thenReturn(requisitionConvertRightId);
     when(fulfillmentTransferOrderRight.getId()).thenReturn(fulfillmentTransferOrderRightId);
     when(fulfillmentManagePodRight.getId()).thenReturn(fulfillmentManagePodRightId);
     when(fulfillmentOrdersViewRight.getId()).thenReturn(fulfillmentOrdersViewRightId);
+    when(fulfillmentOrdersEditRight.getId()).thenReturn(fulfillmentOrdersEditRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
-    when(authenticationHelper.getRight(REQUISITION_CONVERT_TO_ORDER)).thenReturn(
-        requisitionConvertRight);
     when(authenticationHelper.getRight(FULFILLMENT_TRANSFER_ORDER)).thenReturn(
         fulfillmentTransferOrderRight);
     when(authenticationHelper.getRight(PODS_MANAGE)).thenReturn(
         fulfillmentManagePodRight);
     when(authenticationHelper.getRight(ORDERS_VIEW)).thenReturn(
         fulfillmentOrdersViewRight);
-  }
-
-  @Test
-  public void canConvertToOrder() throws Exception {
-    mockFulfillmentHasRight(requisitionConvertRightId, true);
-
-    permissionService.canConvertToOrder(order);
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, REQUISITION_CONVERT_TO_ORDER, requisitionConvertRightId);
-  }
-
-  @Test
-  public void cannotConvertToOrder() throws Exception {
-    expectException(REQUISITION_CONVERT_TO_ORDER);
-
-    permissionService.canConvertToOrder(order);
+    when(authenticationHelper.getRight(ORDERS_EDIT)).thenReturn(
+        fulfillmentOrdersEditRight);
   }
 
   @Test
@@ -167,6 +150,23 @@ public class PermissionServiceTest {
     expectException(ORDERS_VIEW);
 
     permissionService.canViewOrder(order);
+  }
+
+  @Test
+  public void canEditOrder() throws Exception {
+    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true);
+
+    permissionService.canEditOrder(order);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId);
+  }
+
+  @Test
+  public void cannotEditOrder() throws Exception {
+    expectException(ORDERS_EDIT);
+
+    permissionService.canEditOrder(order);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign) {

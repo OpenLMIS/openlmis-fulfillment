@@ -18,10 +18,10 @@ import java.util.UUID;
 
 @Service
 public class PermissionService {
-  static final String REQUISITION_CONVERT_TO_ORDER = "REQUISITION_CONVERT_TO_ORDER";
   static final String FULFILLMENT_TRANSFER_ORDER = "FULFILLMENT_TRANSFER_ORDER";
   static final String PODS_MANAGE = "PODS_MANAGE";
   static final String ORDERS_VIEW = "ORDERS_VIEW";
+  static final String ORDERS_EDIT = "ORDERS_EDIT";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -31,17 +31,6 @@ public class PermissionService {
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  /**
-   * Checks if user has permission to create order.
-   *
-   * @param order checked if can be created by user.
-   * @throws MissingPermissionException when used do not have permission.
-   */
-  public void canConvertToOrder(Order order) throws MissingPermissionException {
-    throwIfMissingPermission(REQUISITION_CONVERT_TO_ORDER,
-        order.getSupplyingFacilityId());
-  }
 
   public void canTransferOrder(Order order) throws MissingPermissionException {
     throwIfMissingPermission(FULFILLMENT_TRANSFER_ORDER, order.getSupplyingFacilityId());
@@ -73,6 +62,10 @@ public class PermissionService {
 
   public void canViewOrder(UUID supplyingFacility) throws MissingPermissionException {
     throwIfMissingPermission(ORDERS_VIEW, supplyingFacility);
+  }
+
+  public void canEditOrder(Order order) throws MissingPermissionException {
+    throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
   }
 
   public boolean checkIfCanViewOrder(Order order) {
