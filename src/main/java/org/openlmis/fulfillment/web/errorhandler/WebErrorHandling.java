@@ -1,7 +1,6 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.InvalidOrderStatusException;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.OrderNotFoundException;
 import org.openlmis.fulfillment.web.ProofOfDeliveryNotFoundException;
@@ -23,14 +22,6 @@ public class WebErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public Message.LocalizedMessage handleMissingPermissionException(MissingPermissionException ex) {
     return logErrorAndRespond("Missing permission for this action", ex);
-  }
-
-  @ExceptionHandler(InvalidOrderStatusException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
-  public Message.LocalizedMessage handleInvalidOrderStatusException(
-      InvalidOrderStatusException ex) {
-    return logErrorAndRespond("Cannot update status for this order", ex);
   }
 
   @ExceptionHandler(OrderNotFoundException.class)

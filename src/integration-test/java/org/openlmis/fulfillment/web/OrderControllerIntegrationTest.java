@@ -15,7 +15,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INCORRECT_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
@@ -454,8 +454,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(400)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_ORDER_INCORRECT_STATUS)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(response, is(equalTo(ERROR_ORDER_INVALID_STATUS)));
   }
 
   @Test

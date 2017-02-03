@@ -222,7 +222,7 @@ public class OrderController extends BaseController {
       orderStatus = OrderStatus.fromString(status);
 
       if (null == orderStatus) {
-        throw new ValidationException(ERROR_ORDER_INCORRECT_STATUS, status);
+        throw new ValidationException(ERROR_ORDER_INVALID_STATUS, status);
       }
     }
 
@@ -244,7 +244,7 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
   public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId)
-      throws InvalidOrderStatusException {
+      throws ValidationException {
 
     Order order = orderRepository.findOne(orderId);
 
@@ -253,7 +253,7 @@ public class OrderController extends BaseController {
     }
 
     if (order.getStatus() != ORDERED) {
-      throw new InvalidOrderStatusException(ERROR_ORDER_INVALID_STATUS, ORDERED);
+      throw new ValidationException(ERROR_ORDER_INCORRECT_STATUS);
     }
 
     LOGGER.debug("Finalizing the order with id: {}", order);
@@ -369,7 +369,7 @@ public class OrderController extends BaseController {
     permissionService.canTransferOrder(order);
 
     if (TRANSFER_FAILED != order.getStatus()) {
-      throw new InvalidOrderStatusException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED);
+      throw new ValidationException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED.toString());
     }
 
     orderService.save(order);
