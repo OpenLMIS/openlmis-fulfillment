@@ -3,7 +3,7 @@ package org.openlmis.fulfillment.domain;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
-import org.openlmis.fulfillment.domain.convert.LocalDateTimePersistenceConverter;
+import org.openlmis.fulfillment.domain.convert.ZonedDateTimeAttributeConverter;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,8 +66,9 @@ public class Order extends BaseEntity {
 
   @Getter
   @Setter
-  @Convert(converter = LocalDateTimePersistenceConverter.class)
-  private LocalDateTime createdDate;
+  @Convert(converter = ZonedDateTimeAttributeConverter.class)
+  @Column(columnDefinition = "timestamp with time zone")
+  private ZonedDateTime createdDate;
 
   @Column(nullable = false)
   @Getter
@@ -137,7 +138,7 @@ public class Order extends BaseEntity {
 
   @PrePersist
   private void prePersist() {
-    this.createdDate = LocalDateTime.now();
+    this.createdDate = ZonedDateTime.now();
     forEachLine(line -> line.setOrder(this));
     forEachStatus(status -> status.setOrder(this));
   }
@@ -258,7 +259,7 @@ public class Order extends BaseEntity {
 
     void setProcessingPeriod(ProcessingPeriodDto period);
 
-    void setCreatedDate(LocalDateTime localDateTime);
+    void setCreatedDate(ZonedDateTime zonedDateTime);
 
     void setCreatedBy(UserDto user);
 
@@ -295,7 +296,7 @@ public class Order extends BaseEntity {
 
     ProcessingPeriodDto getProcessingPeriod();
 
-    LocalDateTime getCreatedDate();
+    ZonedDateTime getCreatedDate();
 
     UserDto getCreatedBy();
 

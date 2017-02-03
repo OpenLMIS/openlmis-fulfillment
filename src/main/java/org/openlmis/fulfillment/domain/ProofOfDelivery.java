@@ -3,14 +3,14 @@ package org.openlmis.fulfillment.domain;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.openlmis.fulfillment.domain.convert.LocalDatePersistenceConverter;
+import org.openlmis.fulfillment.domain.convert.ZonedDateTimeAttributeConverter;
 import org.openlmis.fulfillment.web.util.OrderDto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -69,8 +69,9 @@ public class ProofOfDelivery extends BaseEntity {
 
   @Getter
   @Setter
-  @Convert(converter = LocalDatePersistenceConverter.class)
-  private LocalDate receivedDate;
+  @Convert(converter = ZonedDateTimeAttributeConverter.class)
+  @Column(columnDefinition = "timestamp with time zone")
+  private ZonedDateTime receivedDate;
 
   /**
    * Creates a new instance of Proof Of Delivery based on the passed order.
@@ -179,7 +180,7 @@ public class ProofOfDelivery extends BaseEntity {
 
     void setReceivedBy(String receivedBy);
 
-    void setReceivedDate(LocalDate receivedDate);
+    void setReceivedDate(ZonedDateTime zonedDateTime);
 
   }
 
@@ -194,7 +195,7 @@ public class ProofOfDelivery extends BaseEntity {
 
     String getReceivedBy();
 
-    LocalDate getReceivedDate();
+    ZonedDateTime getReceivedDate();
 
   }
 }

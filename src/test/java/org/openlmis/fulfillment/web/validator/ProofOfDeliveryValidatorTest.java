@@ -34,7 +34,7 @@ import org.openlmis.fulfillment.i18n.ExposedMessageSource;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.util.Message;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,7 +74,7 @@ public class ProofOfDeliveryValidatorTest {
     pod = new ProofOfDelivery();
     pod.setDeliveredBy("Deliver guy");
     pod.setReceivedBy("Receiver");
-    pod.setReceivedDate(LocalDate.now());
+    pod.setReceivedDate(ZonedDateTime.now());
     pod.setProofOfDeliveryLineItems(Lists.newArrayList(line));
 
     mockMessageSource(VALIDATION_ERROR_MUST_CONTAIN_VALUE, DELIVERED_BY, MUST_CONTAIN_A_VALUE);

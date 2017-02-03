@@ -45,8 +45,8 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -122,7 +122,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     order.setProcessingPeriodId(period.getId());
     order.setEmergency(false);
     order.setStatus(OrderStatus.SHIPPED);
-    order.setCreatedDate(LocalDateTime.now());
+    order.setCreatedDate(ZonedDateTime.now());
     order.setCreatedById(UUID.randomUUID());
     order.setOrderCode("O1");
     order.setProgramId(program.getId());
@@ -154,7 +154,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.setOrder(order);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
-    proofOfDelivery.setReceivedDate(LocalDate.now());
+    proofOfDelivery.setReceivedDate(ZonedDateTime.now());
     proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
     proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
 

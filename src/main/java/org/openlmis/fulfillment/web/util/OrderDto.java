@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +52,7 @@ public class OrderDto implements Order.Importer, Order.Exporter {
 
   @Getter
   @Setter
-  private LocalDateTime createdDate;
+  private ZonedDateTime createdDate;
 
   @Getter
   @Setter

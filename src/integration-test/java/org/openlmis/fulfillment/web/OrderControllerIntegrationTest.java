@@ -46,7 +46,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +151,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
           @Override
           void extraSteps(Order obj) {
-            obj.setCreatedDate(LocalDateTime.now());
+            obj.setCreatedDate(ZonedDateTime.now());
           }
 
         });
@@ -178,7 +178,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.setQuotedCost(cost);
     order.setStatus(orderStatus);
     order.setProgramId(program);
-    order.setCreatedDate(LocalDateTime.now());
+    order.setCreatedDate(ZonedDateTime.now());
     order.setCreatedById(user);
     order.setRequestingFacilityId(requestingFacility);
     order.setReceivingFacilityId(receivingFacility);

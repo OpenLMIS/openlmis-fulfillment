@@ -25,8 +25,9 @@ import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -185,7 +186,7 @@ public class OrderCsvHelperTest {
 
     Order order = new Order();
     order.setOrderCode("code");
-    order.setCreatedDate(LocalDateTime.of(2016, Month.JANUARY, 1, 0, 0));
+    order.setCreatedDate(ZonedDateTime.of(2016, 1, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
     order.setExternalId(UUID.randomUUID());
     order.setProcessingPeriodId(UUID.randomUUID());
     order.setFacilityId(UUID.randomUUID());

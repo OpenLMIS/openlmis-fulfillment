@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +29,7 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
   private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
   private String deliveredBy;
   private String receivedBy;
-  private LocalDate receivedDate;
+  private ZonedDateTime receivedDate;
 
   @Override
   public List<ProofOfDeliveryLineItem.Importer> getProofOfDeliveryLineItems() {

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -104,8 +104,8 @@ public class OrderCsvHelper {
       }
       Object columnValue = getColumnValue(counter, orderContext, lineItemContext, orderFileColumn);
 
-      if (columnValue instanceof LocalDateTime) {
-        columnValue = ((LocalDateTime) columnValue).format(ofPattern(orderFileColumn.getFormat()));
+      if (columnValue instanceof ZonedDateTime) {
+        columnValue = ((ZonedDateTime) columnValue).format(ofPattern(orderFileColumn.getFormat()));
       } else if (columnValue instanceof LocalDate) {
         columnValue = ((LocalDate) columnValue).format(ofPattern(orderFileColumn.getFormat()));
       }

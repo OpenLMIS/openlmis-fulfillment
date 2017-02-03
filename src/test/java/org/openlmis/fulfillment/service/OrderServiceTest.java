@@ -55,7 +55,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,7 +235,7 @@ public class OrderServiceTest {
     when(order.getRequestingFacilityId()).thenReturn(UUID.randomUUID());
 
     //Creation date has to be static because we need to read expected csv from file
-    order.setCreatedDate(ZonedDateTime.parse("2016-08-27T11:30Z").toLocalDateTime());
+    order.setCreatedDate(ZonedDateTime.parse("2016-08-27T11:30Z"));
 
     List<String> header = new ArrayList<>();
     header.add(OrderService.DEFAULT_COLUMNS[0]);
@@ -267,7 +266,7 @@ public class OrderServiceTest {
     int number = new Random().nextInt();
     Order order = new Order();
     order.setProgramId(program.getId());
-    order.setCreatedDate(LocalDateTime.now().plusDays(number));
+    order.setCreatedDate(ZonedDateTime.now().plusDays(number));
     order.setCreatedById(UUID.randomUUID());
     order.setQuotedCost(BigDecimal.valueOf(1));
     order.setOrderCode("OrderCode " + number);

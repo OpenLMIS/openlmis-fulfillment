@@ -46,7 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -192,7 +192,7 @@ public class OrderService {
     FacilityDto requestingFacility = facilityReferenceDataService.findOne(
         order.getRequestingFacilityId());
     String facilityCode = requestingFacility.getCode();
-    LocalDateTime createdDate = order.getCreatedDate();
+    ZonedDateTime createdDate = order.getCreatedDate();
 
     for (OrderLineItem orderLineItem : orderLineItems) {
       Map<String, Object> row = new HashMap<>();
