@@ -280,6 +280,16 @@ resourceTypes:
                           type: string
                           required: false
                           repeat: false
+                          enum:
+                              - ORDERED
+                              - IN_TRANSIT
+                              - PICKING
+                              - PICKED
+                              - SHIPPED
+                              - RECEIVED
+                              - TRANSFER_FAILED
+                              - IN_ROUTE
+                              - READY_TO_PACK
                   responses:
                       200:
                           body:
