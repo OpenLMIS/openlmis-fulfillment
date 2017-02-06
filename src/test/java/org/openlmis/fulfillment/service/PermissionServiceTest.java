@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
-import static org.openlmis.fulfillment.service.PermissionService.FULFILLMENT_TRANSFER_ORDER;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
@@ -91,7 +91,7 @@ public class PermissionServiceTest {
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
-    when(authenticationHelper.getRight(FULFILLMENT_TRANSFER_ORDER)).thenReturn(
+    when(authenticationHelper.getRight(ORDERS_TRANSFER)).thenReturn(
         fulfillmentTransferOrderRight);
     when(authenticationHelper.getRight(PODS_MANAGE)).thenReturn(
         fulfillmentManagePodRight);
@@ -108,12 +108,12 @@ public class PermissionServiceTest {
     permissionService.canTransferOrder(order);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, FULFILLMENT_TRANSFER_ORDER, fulfillmentTransferOrderRightId);
+    verifyFulfillmentRight(order, ORDERS_TRANSFER, fulfillmentTransferOrderRightId);
   }
 
   @Test
   public void cannotTransferOrder() throws Exception {
-    expectException(FULFILLMENT_TRANSFER_ORDER);
+    expectException(ORDERS_TRANSFER);
 
     permissionService.canTransferOrder(order);
   }

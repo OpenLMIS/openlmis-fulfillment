@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 public class PermissionService {
-  static final String FULFILLMENT_TRANSFER_ORDER = "FULFILLMENT_TRANSFER_ORDER";
+  static final String ORDERS_TRANSFER = "ORDERS_TRANSFER";
   static final String PODS_MANAGE = "PODS_MANAGE";
   static final String ORDERS_VIEW = "ORDERS_VIEW";
   static final String ORDERS_EDIT = "ORDERS_EDIT";
@@ -33,7 +33,7 @@ public class PermissionService {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   public void canTransferOrder(Order order) {
-    throwIfMissingPermission(FULFILLMENT_TRANSFER_ORDER, order.getSupplyingFacilityId());
+    throwIfMissingPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId());
   }
 
   /**
