@@ -5,7 +5,7 @@ import org.openlmis.fulfillment.util.Message;
 import lombok.Getter;
 
 @Getter
-public class FulfillmentException extends Exception {
+public class FulfillmentException extends RuntimeException {
   private final String messageKey;
   private final String[] params;
 

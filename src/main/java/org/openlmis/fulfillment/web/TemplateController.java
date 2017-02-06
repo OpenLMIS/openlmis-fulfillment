@@ -4,12 +4,12 @@ import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.web.util.TemplateDto;
 import org.openlmis.fulfillment.repository.TemplateRepository;
-import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 @Controller
+@Transactional
 @RequestMapping("/api/reports/templates/fulfillment")
 public class TemplateController extends BaseController {
 
@@ -45,8 +46,7 @@ public class TemplateController extends BaseController {
   @RequestMapping(method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public void createJasperReportTemplate(@RequestPart("file") MultipartFile file,
-                                         String name, String description)
-      throws ReportingException {
+                                         String name, String description) {
     Template template = new Template(name, null, null, CONSISTENCY_REPORT, description);
     templateService.validateFileAndInsertTemplate(template, file);
   }

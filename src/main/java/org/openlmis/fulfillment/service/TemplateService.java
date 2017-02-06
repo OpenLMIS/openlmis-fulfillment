@@ -51,8 +51,7 @@ public class TemplateService {
   /**
    * Validate ".jrmxl" file and insert this template to database.
    */
-  public void validateFileAndInsertTemplate(Template template, MultipartFile file)
-      throws ReportingException {
+  public void validateFileAndInsertTemplate(Template template, MultipartFile file) {
     throwIfTemplateWithSameNameAlreadyExists(template.getName());
     validateFile(template, file);
     saveWithParameters(template);
@@ -62,8 +61,7 @@ public class TemplateService {
    * Validate ".jrmxl" file and insert if template not exist.
    * If this name of template already exist, remove older template and insert new.
    */
-  public void validateFileAndSaveTemplate(Template template, MultipartFile file)
-      throws ReportingException {
+  public void validateFileAndSaveTemplate(Template template, MultipartFile file) {
     Template templateTmp = templateRepository.findByName(template.getName());
     if (templateTmp != null) {
       templateRepository.delete(templateTmp.getId());
@@ -82,7 +80,7 @@ public class TemplateService {
   /**
    * Convert template from ".jasper" format in database to ".jrxml"(extension) format.
    */
-  public File convertJasperToXml(Template template) throws ReportingException {
+  public File convertJasperToXml(Template template) {
     try (InputStream inputStream = new ByteArrayInputStream(template.getData());
          ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       JasperCompileManager.writeReportToXmlStream(inputStream, outputStream);
@@ -101,7 +99,7 @@ public class TemplateService {
    * Save report file as ".jasper" in byte array in Template class.
    * If report is not valid throw exception.
    */
-  private void validateFile(Template template, MultipartFile file) throws ReportingException {
+  private void validateFile(Template template, MultipartFile file) {
     throwIfFileIsNull(file);
     throwIfIncorrectFileType(file);
     throwIfFileIsEmpty(file);
@@ -125,8 +123,7 @@ public class TemplateService {
     }
   }
 
-  private void setTemplateParameters(Template template, JRParameter[] jrParameters)
-      throws ReportingException {
+  private void setTemplateParameters(Template template, JRParameter[] jrParameters) {
     ArrayList<TemplateParameter> parameters = new ArrayList<>();
 
     for (JRParameter jrParameter : jrParameters) {
@@ -141,7 +138,7 @@ public class TemplateService {
   /**
    * Create new report parameter of report which is not defined in Jasper system.
    */
-  private TemplateParameter createParameter(JRParameter jrParameter) throws ReportingException {
+  private TemplateParameter createParameter(JRParameter jrParameter) {
     String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();
     //Check # of properties and that required ones are given.
     if (propertyNames.length > 2) {
@@ -177,25 +174,25 @@ public class TemplateService {
     return templateParameter;
   }
 
-  private void throwIfTemplateWithSameNameAlreadyExists(String name) throws ReportingException {
+  private void throwIfTemplateWithSameNameAlreadyExists(String name) {
     if (templateRepository.findByName(name) != null) {
       throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXIST);
     }
   }
 
-  private void throwIfFileIsEmpty(MultipartFile file) throws ReportingException {
+  private void throwIfFileIsEmpty(MultipartFile file) {
     if (file.isEmpty()) {
       throw new ReportingException(ERROR_REPORTING_FILE_EMPTY);
     }
   }
 
-  private void throwIfIncorrectFileType(MultipartFile file) throws ReportingException {
+  private void throwIfIncorrectFileType(MultipartFile file) {
     if (!file.getOriginalFilename().endsWith(".jrxml")) {
       throw new ReportingException(ERROR_REPORTING_FILE_INCORRECT_TYPE);
     }
   }
 
-  private void throwIfFileIsNull(MultipartFile file) throws ReportingException {
+  private void throwIfFileIsNull(MultipartFile file) {
     if (file == null) {
       throw new ReportingException(ERROR_REPORTING_FILE_MISSING);
     }

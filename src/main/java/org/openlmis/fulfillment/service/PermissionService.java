@@ -32,7 +32,7 @@ public class PermissionService {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-  public void canTransferOrder(Order order) throws MissingPermissionException {
+  public void canTransferOrder(Order order) {
     throwIfMissingPermission(FULFILLMENT_TRANSFER_ORDER, order.getSupplyingFacilityId());
   }
 
@@ -40,9 +40,8 @@ public class PermissionService {
    * Checks if user has permission to manage POD.
    *
    * @param proofOfDeliveryId ID of Proof of delivery
-   * @throws MissingPermissionException when used do not have permission.
    */
-  public void canManagePod(UUID proofOfDeliveryId) throws MissingPermissionException {
+  public void canManagePod(UUID proofOfDeliveryId) {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
 
     if (null == proofOfDelivery) {
@@ -52,19 +51,19 @@ public class PermissionService {
     canManagePod(proofOfDelivery);
   }
 
-  public void canManagePod(ProofOfDelivery proofOfDelivery) throws MissingPermissionException {
+  public void canManagePod(ProofOfDelivery proofOfDelivery) {
     throwIfMissingPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId());
   }
 
-  public void canViewOrder(Order order) throws MissingPermissionException {
+  public void canViewOrder(Order order) {
     canViewOrder(order.getSupplyingFacilityId());
   }
 
-  public void canViewOrder(UUID supplyingFacility) throws MissingPermissionException {
+  public void canViewOrder(UUID supplyingFacility) {
     throwIfMissingPermission(ORDERS_VIEW, supplyingFacility);
   }
 
-  public void canEditOrder(Order order) throws MissingPermissionException {
+  public void canEditOrder(Order order) {
     throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
   }
 
@@ -82,8 +81,7 @@ public class PermissionService {
     return null != result && isTrue(result.getResult());
   }
 
-  private void throwIfMissingPermission(String rightName, UUID warehouse)
-      throws MissingPermissionException {
+  private void throwIfMissingPermission(String rightName, UUID warehouse) {
     if (!hasPermission(rightName, warehouse)) {
       throw new MissingPermissionException(rightName);
     }

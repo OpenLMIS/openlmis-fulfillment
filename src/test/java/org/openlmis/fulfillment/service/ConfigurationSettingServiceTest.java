@@ -29,12 +29,12 @@ public class ConfigurationSettingServiceTest {
   private ConfigurationSetting setting;
 
   @Test(expected = ConfigurationSettingNotFoundException.class)
-  public void shouldThrowExceptionIfSettingCannotBeFound() throws ConfigurationSettingException {
+  public void shouldThrowExceptionIfSettingCannotBeFound() {
     service.getStringValue(KEY);
   }
 
   @Test
-  public void shouldReturnStringValue() throws ConfigurationSettingException {
+  public void shouldReturnStringValue() {
     when(repository.findOne(KEY)).thenReturn(setting);
     when(setting.getValue()).thenReturn(VALUE);
 

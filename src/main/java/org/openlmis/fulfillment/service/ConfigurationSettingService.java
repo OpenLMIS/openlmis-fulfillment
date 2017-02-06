@@ -19,9 +19,8 @@ public class ConfigurationSettingService {
    *
    * @param key String value indicates key.
    * @return String value of given key.
-   * @throws ConfigurationSettingException when setting was not found or value is null.
    */
-  public String getStringValue(String key) throws ConfigurationSettingException {
+  public String getStringValue(String key) {
     return getByKey(key).getValue();
   }
 
@@ -29,17 +28,15 @@ public class ConfigurationSettingService {
    * Update configuration setting.
    *
    * @param setting contains new value for the given key
-   * @throws ConfigurationSettingException when setting was not found.
    */
-  public ConfigurationSetting update(ConfigurationSetting setting)
-      throws ConfigurationSettingException {
+  public ConfigurationSetting update(ConfigurationSetting setting) {
     ConfigurationSetting found = getByKey(setting.getKey());
     found.setValue(setting.getValue());
 
     return configurationSettingRepository.save(found);
   }
 
-  private ConfigurationSetting getByKey(String key) throws ConfigurationSettingException {
+  private ConfigurationSetting getByKey(String key) {
     ConfigurationSetting setting = configurationSettingRepository.findOne(key);
 
     if (null == setting) {

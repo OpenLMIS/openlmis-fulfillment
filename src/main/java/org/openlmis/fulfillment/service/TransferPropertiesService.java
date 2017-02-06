@@ -37,8 +37,7 @@ public class TransferPropertiesService {
    * @param setting an instance of TransferProperties to be saved.
    * @return saved instance of TransferProperties.
    */
-  public TransferProperties save(TransferProperties setting)
-      throws DuplicateTransferPropertiesException {
+  public TransferProperties save(TransferProperties setting) {
     if (facilityReferenceDataService.findOne(setting.getFacilityId()) == null) {
       throw new IllegalArgumentException("Facility with given ID does not exist.");
     }

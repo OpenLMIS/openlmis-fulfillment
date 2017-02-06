@@ -33,7 +33,6 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
@@ -112,7 +111,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private OrderDto firstOrderDto;
 
   @Before
-  public void setUp() throws ConfigurationSettingException {
+  public void setUp() {
     this.setUpBootstrapData();
 
     firstOrder = addOrder(UUID.randomUUID(), facility, period1, "orderCode", UUID.randomUUID(),

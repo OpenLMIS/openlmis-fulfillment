@@ -31,7 +31,7 @@ public class OrderFileStorage implements OrderStorage {
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Override
-  public void store(Order order) throws OrderStorageException {
+  public void store(Order order) {
     TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 
@@ -66,7 +66,7 @@ public class OrderFileStorage implements OrderStorage {
   }
 
   @Override
-  public void delete(Order order) throws OrderStorageException {
+  public void delete(Order order) {
     try {
       Files.deleteIfExists(getOrderAsPath(order));
     } catch (IOException exp) {

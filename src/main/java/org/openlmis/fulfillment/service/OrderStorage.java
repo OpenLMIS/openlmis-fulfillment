@@ -6,9 +6,9 @@ import java.nio.file.Path;
 
 public interface OrderStorage {
 
-  void store(Order order) throws OrderStorageException;
+  void store(Order order);
 
-  void delete(Order order) throws OrderStorageException;
+  void delete(Order order);
 
   default Path getOrderAsPath(Order order) {
     throw new UnsupportedOperationException();

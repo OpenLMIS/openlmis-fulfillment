@@ -3,7 +3,6 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
-import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.TransferPropertiesService;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Controller
+@Transactional
 public class TransferPropertiesController extends BaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(TransferPropertiesController.class);
 
@@ -48,8 +49,7 @@ public class TransferPropertiesController extends BaseController {
   @RequestMapping(value = "/transferProperties", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public TransferPropertiesDto create(@RequestBody TransferPropertiesDto properties)
-      throws DuplicateTransferPropertiesException {
+  public TransferPropertiesDto create(@RequestBody TransferPropertiesDto properties) {
     LOGGER.debug("Creating new Transfer Properties");
 
     properties.setId(null);
@@ -73,8 +73,7 @@ public class TransferPropertiesController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
-                                      @PathVariable("id") UUID id)
-      throws IncorrectTransferPropertiesException {
+                                      @PathVariable("id") UUID id) {
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
 
     if (null == toUpdate) {

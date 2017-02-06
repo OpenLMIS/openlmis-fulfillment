@@ -43,11 +43,9 @@ public class JasperReportsViewService {
    * @param template template that will be used to create a view
    * @param request it is used to take web application context
    * @return created jasper view.
-   * @throws JasperReportViewException if there will be any problem with creating the view.
    */
   public JasperReportsMultiFormatView getJasperReportsView(Template template,
-                                                           HttpServletRequest request)
-      throws JasperReportViewException {
+                                                           HttpServletRequest request) {
     JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
     setExportParams(jasperView);
     jasperView.setJdbcDataSource(replicationDataSource);
@@ -80,7 +78,7 @@ public class JasperReportsViewService {
    *
    * @return Url to ".jasper" file.
    */
-  private String getReportUrlForReportData(Template template) throws JasperReportViewException {
+  private String getReportUrlForReportData(Template template) {
     File tmpFile;
 
     try {

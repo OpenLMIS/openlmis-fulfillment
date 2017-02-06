@@ -9,6 +9,7 @@ import org.openlmis.fulfillment.service.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@Transactional
 public class ProofOfDeliveryTemplateController extends BaseController {
 
   private static final String PRINT_POD = "Print POD";
@@ -41,8 +43,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  public void saveTemplateOfPod(@RequestPart("file") MultipartFile file)
-      throws ReportingException {
+  public void saveTemplateOfPod(@RequestPart("file") MultipartFile file) {
     Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
     templateService.validateFileAndSaveTemplate(template, file);
   }
@@ -55,7 +56,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.GET)
   @ResponseBody
   public void downloadPodXmlTemlate(HttpServletResponse response)
-      throws IOException, ReportingException {
+      throws IOException {
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
     if (podPrintTemplate == null) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND,

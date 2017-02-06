@@ -16,14 +16,10 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
-import org.openlmis.fulfillment.service.OrderCsvWriteException;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
-import org.openlmis.fulfillment.service.OrderPdfWriteException;
 import org.openlmis.fulfillment.service.OrderService;
-import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -37,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +50,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@Transactional
 public class OrderController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
@@ -95,9 +93,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-
-  public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication)
-      throws ConfigurationSettingException, OrderStorageException, MissingPermissionException {
+  public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
     Order order = Order.newInstance(orderDto);
 
     if (!authentication.isClientOnly()) {
@@ -143,8 +139,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
   @ResponseBody
   public OrderDto updateOrder(@RequestBody OrderDto orderDto,
-                              @PathVariable("id") UUID orderId)
-      throws MissingPermissionException, OrderNotFoundException {
+                              @PathVariable("id") UUID orderId) {
 
     Order order = Order.newInstance(orderDto);
     Order orderToUpdate = orderRepository.findOne(orderId);
@@ -173,8 +168,7 @@ public class OrderController extends BaseController {
    * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId)
-      throws MissingPermissionException {
+  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -191,8 +185,7 @@ public class OrderController extends BaseController {
    * @return ResponseEntity containing the HTTP Status
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId)
-      throws MissingPermissionException {
+  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -218,8 +211,7 @@ public class OrderController extends BaseController {
       @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
       @RequestParam(value = "requestingFacility", required = false) UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program,
-      @RequestParam(value = "status", required = false) String status)
-      throws ValidationException, MissingPermissionException {
+      @RequestParam(value = "status", required = false) String status) {
     permissionService.canViewOrder(supplyingFacility);
 
     OrderStatus orderStatus = null;
@@ -249,8 +241,7 @@ public class OrderController extends BaseController {
    *         containing the error description and "#400 Bad Request" status
    */
   @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId)
-      throws ValidationException, MissingPermissionException {
+  public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId) {
 
     Order order = orderRepository.findOne(orderId);
 
@@ -282,9 +273,7 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   public void printOrder(@PathVariable("id") UUID orderId,
                          @RequestParam("format") String format,
-                         HttpServletResponse response)
-      throws IOException, OrderPdfWriteException, OrderCsvWriteException,
-      MissingPermissionException, OrderNotFoundException {
+                         HttpServletResponse response) throws IOException {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
@@ -318,7 +307,7 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   public void export(@PathVariable("id") UUID orderId,
                   @RequestParam(value = "type", required = false, defaultValue = "csv") String type,
-                     HttpServletResponse response) throws IOException, MissingPermissionException {
+                     HttpServletResponse response) throws IOException {
     if (!"csv".equals(type)) {
       String msg = "Export type: " + type + " not allowed";
       LOGGER.warn(msg);
@@ -367,9 +356,7 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
   @ResponseBody
-  public ResultDto<Boolean> retryOrderTransfer(@PathVariable("id") UUID id)
-      throws OrderNotFoundException, MissingPermissionException, ValidationException,
-      ConfigurationSettingException, OrderStorageException {
+  public ResultDto<Boolean> retryOrderTransfer(@PathVariable("id") UUID id) {
     Order order = orderRepository.findOne(id);
 
     if (null == order) {

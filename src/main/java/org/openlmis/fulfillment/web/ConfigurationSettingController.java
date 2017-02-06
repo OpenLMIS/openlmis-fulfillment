@@ -2,7 +2,6 @@ package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.ConfigurationSetting;
 import org.openlmis.fulfillment.repository.ConfigurationSettingRepository;
-import org.openlmis.fulfillment.service.ConfigurationSettingException;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.web.util.ConfigurationSettingDto;
 import org.openlmis.fulfillment.web.validator.ConfigurationSettingValidator;
@@ -10,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 
 @Controller
+@Transactional
 public class ConfigurationSettingController extends BaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
@@ -61,8 +62,7 @@ public class ConfigurationSettingController extends BaseController {
    */
   @RequestMapping(value = "/configurationSettings", method = RequestMethod.PUT)
   @ResponseBody
-  public ConfigurationSettingDto update(@RequestBody @Valid ConfigurationSettingDto dto)
-      throws ConfigurationSettingException {
+  public ConfigurationSettingDto update(@RequestBody @Valid ConfigurationSettingDto dto) {
     LOGGER.debug("Updating configuration setting with key: {}", dto.getKey());
 
     ConfigurationSetting update = service.update(ConfigurationSetting.newInstance(dto));

@@ -112,7 +112,7 @@ public class OrderService {
    * @param chosenColumns String array containing names of columns to be taken from order
    */
   public void orderToCsv(Order order, String[] chosenColumns,
-                         Writer writer) throws OrderCsvWriteException {
+                         Writer writer) {
     if (null == order) {
       return;
     }
@@ -141,8 +141,7 @@ public class OrderService {
    * @param chosenColumns String array containing names of columns to be taken from order
    * @param out           OutputStream to which the pdf file content will be written
    */
-  public void orderToPdf(Order order, String[] chosenColumns, OutputStream out)
-      throws OrderPdfWriteException {
+  public void orderToPdf(Order order, String[] chosenColumns, OutputStream out) {
     if (order != null) {
       List<Map<String, Object>> rows = orderToRows(order);
       try {
@@ -223,11 +222,8 @@ public class OrderService {
    *
    * @param order instance
    * @return passed instance after save.
-   * @throws OrderStorageException         if there will be any problem with store an order.
-   * @throws ConfigurationSettingException if there will be any problem with configuration
-   *                                       settings.
    */
-  public Order save(Order order) throws OrderStorageException, ConfigurationSettingException {
+  public Order save(Order order) {
     setOrderStatus(order);
 
     // save order
@@ -255,7 +251,7 @@ public class OrderService {
     return saved;
   }
 
-  private void sendNotification(Order order, UUID userId) throws ConfigurationSettingException {
+  private void sendNotification(Order order, UUID userId) {
     String from = configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY);
     String to = userReferenceDataService.findOne(userId).getEmail();
     String subject = configurationSettingService
@@ -265,7 +261,7 @@ public class OrderService {
     notificationService.send(plainTextNotification(from, to, subject, content));
   }
 
-  private String createContent(Order order) throws ConfigurationSettingException {
+  private String createContent(Order order) {
     String content = configurationSettingService
         .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
 

@@ -109,7 +109,7 @@ public class OrderServiceTest {
   private ArgumentCaptor<NotificationRequest> notificationCaptor;
 
   @Before
-  public void setUp() throws ConfigurationSettingException {
+  public void setUp() {
     generateMocks();
   }
 
@@ -309,7 +309,7 @@ public class OrderServiceTest {
     assertEquals(expectedLineItem.getOrderableId(), actualLineItem.getOrderableId());
   }
 
-  private void generateMocks() throws ConfigurationSettingException {
+  private void generateMocks() {
     ProgramDto programDto = new ProgramDto();
     programDto.setCode("programCode");
     when(programReferenceDataService.findOne(any())).thenReturn(programDto);

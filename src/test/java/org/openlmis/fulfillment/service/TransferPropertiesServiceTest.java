@@ -35,7 +35,7 @@ public class TransferPropertiesServiceTest {
   private TransferPropertiesService transferPropertiesService;
 
   @Test
-  public void shouldSaveSetting() throws DuplicateTransferPropertiesException {
+  public void shouldSaveSetting() {
     // given
     final TransferProperties properties = randomSetting();
     final FacilityDto facility = mock(FacilityDto.class);
@@ -53,8 +53,7 @@ public class TransferPropertiesServiceTest {
   }
 
   @Test(expected = DuplicateTransferPropertiesException.class)
-  public void shouldNotSaveSettingIfFacilityIdDuplicated()
-      throws DuplicateTransferPropertiesException {
+  public void shouldNotSaveSettingIfFacilityIdDuplicated() {
     // given
     final TransferProperties properties = randomSetting();
     final TransferProperties duplicate = randomSetting();
@@ -70,8 +69,7 @@ public class TransferPropertiesServiceTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldNotSaveSettingIfFacilityDoesNotExist()
-      throws DuplicateTransferPropertiesException {
+  public void shouldNotSaveSettingIfFacilityDoesNotExist() {
     // given
     TransferProperties properties = randomSetting();
 
