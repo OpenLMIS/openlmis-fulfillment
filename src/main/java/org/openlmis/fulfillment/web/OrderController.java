@@ -146,15 +146,17 @@ public class OrderController extends BaseController {
                               @PathVariable("id") UUID orderId)
       throws MissingPermissionException, OrderNotFoundException {
 
+    Order order = Order.newInstance(orderDto);
     Order orderToUpdate = orderRepository.findOne(orderId);
 
     if (null == orderToUpdate) {
-      throw new OrderNotFoundException(orderId);
+      LOGGER.info("Creating new order");
+      orderToUpdate = new Order();
+      permissionService.canEditOrder(order);
+    } else {
+      LOGGER.debug("Updating order with id: {}", orderId);
+      permissionService.canEditOrder(orderToUpdate);
     }
-
-    permissionService.canEditOrder(orderToUpdate);
-
-    Order order = Order.newInstance(orderDto);
 
     orderToUpdate.updateFrom(order);
     orderToUpdate = orderRepository.save(orderToUpdate);
