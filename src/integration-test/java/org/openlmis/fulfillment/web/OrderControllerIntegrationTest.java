@@ -544,6 +544,27 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldCreateNewOrderIfDoesNotExist() {
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+
+    firstOrderDto.setQuotedCost(new BigDecimal(NUMBER));
+
+    OrderDto response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", ID)
+        .body(firstOrderDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto.class);
+
+    assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldReturnConflictWhenUpdatingOrderCode() {
     firstOrder.setId(ID);
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
