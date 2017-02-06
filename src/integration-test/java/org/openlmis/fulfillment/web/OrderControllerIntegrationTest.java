@@ -13,6 +13,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
@@ -28,9 +29,11 @@ import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
@@ -103,6 +106,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Mock
+  private ProofOfDelivery proofOfDelivery;
 
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
@@ -220,7 +226,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
-
   }
 
   @Test
@@ -487,8 +492,25 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldReturnConflictCodeForExistingOrder() {
+  public void shouldNotDeleteOrderInUse() {
+    List<ProofOfDelivery> pods = new ArrayList<>();
+    pods.add(proofOfDelivery);
+    when(proofOfDeliveryRepository.findByOrderId(firstOrder.getId())).thenReturn(pods);
 
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnConflictCodeForExistingOrder() {
     doThrow(new DataIntegrityViolationException("This exception is required by IT"))
         .when(orderRepository)
         .delete(any(Order.class));

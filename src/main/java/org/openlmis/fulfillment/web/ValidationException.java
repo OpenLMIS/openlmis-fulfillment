@@ -4,7 +4,7 @@ import org.openlmis.fulfillment.service.FulfillmentException;
 
 public class ValidationException extends FulfillmentException {
 
-  ValidationException(String messageKey, String... params) {
+  public ValidationException(String messageKey, String... params) {
     super(messageKey, params);
   }
 

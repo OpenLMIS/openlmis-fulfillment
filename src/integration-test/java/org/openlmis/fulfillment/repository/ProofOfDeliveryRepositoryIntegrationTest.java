@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.repository;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -15,6 +16,7 @@ import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public class ProofOfDeliveryRepositoryIntegrationTest extends
@@ -57,7 +59,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     order.setOrderLineItems(Lists.newArrayList(orderLineItem));
 
-    orderRepository.save(order);
+    order = orderRepository.save(order);
   }
 
   @Override
@@ -92,5 +94,29 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.delete(instanceId);
 
     assertFalse(proofOfDeliveryRepository.exists(instanceId));
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveriesByOrderId() {
+    Order anotherOrder = new Order();
+    anotherOrder.setOrderCode("Another Code");
+    anotherOrder.setExternalId(UUID.randomUUID());
+    anotherOrder.setEmergency(true);
+    anotherOrder.setQuotedCost(new BigDecimal("1.29"));
+    anotherOrder.setStatus(OrderStatus.PICKING);
+    anotherOrder.setProgramId(UUID.randomUUID());
+    anotherOrder.setCreatedById(UUID.randomUUID());
+    anotherOrder.setRequestingFacilityId(UUID.randomUUID());
+    anotherOrder.setReceivingFacilityId(UUID.randomUUID());
+    anotherOrder.setSupplyingFacilityId(UUID.randomUUID());
+    orderRepository.save(anotherOrder);
+
+    ProofOfDelivery instance = generateInstance();
+    instance = proofOfDeliveryRepository.save(instance);
+
+    List<ProofOfDelivery> actual = proofOfDeliveryRepository.findByOrderId(order.getId());
+
+    assertEquals(1, actual.size());
+    assertEquals(instance, actual.get(0));
   }
 }

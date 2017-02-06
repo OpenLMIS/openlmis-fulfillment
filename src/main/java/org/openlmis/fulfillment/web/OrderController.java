@@ -191,7 +191,7 @@ public class OrderController extends BaseController {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       permissionService.canEditOrder(order);
-      orderRepository.delete(order);
+      orderService.delete(order);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
   }

@@ -6,6 +6,7 @@ import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_IN_USE;
 import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -28,6 +29,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -35,6 +37,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.supercsv.io.CsvMapWriter;
@@ -89,6 +92,9 @@ public class OrderService {
 
   @Autowired
   private OrderSender orderSender;
+
+  @Autowired
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   /**
    * Finds orders matching all of provided parameters.
@@ -151,6 +157,20 @@ public class OrderService {
       } catch (IOException ex) {
         throw new OrderPdfWriteException(ex, ERROR_IO, ex.getMessage());
       }
+    }
+  }
+
+  /**
+   * Safe delete of an order. If the order is linked to an existing proof of delivery, a
+   * {@link ValidationException} signals that it cannot be removed.
+   *
+   * @param order the order to remove
+   */
+  public void delete(Order order) {
+    if (!proofOfDeliveryRepository.findByOrderId(order.getId()).isEmpty()) {
+      throw new ValidationException(ERROR_ORDER_IN_USE, order.getId().toString());
+    } else {
+      orderRepository.delete(order);
     }
   }
 

@@ -33,8 +33,10 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationRequest;
 import org.openlmis.fulfillment.service.notification.NotificationService;
@@ -46,6 +48,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.web.ValidationException;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -98,6 +101,9 @@ public class OrderServiceTest {
 
   @Mock
   private OrderSender orderSender;
+
+  @Mock
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @InjectMocks
   private OrderService orderService;
@@ -262,9 +268,36 @@ public class OrderServiceTest {
     assertEquals(expectedOutput, receivedOutput);
   }
 
+  @Test
+  public void shouldDeleteOrderIfNotUsed() {
+    //given
+    Order order = generateOrder();
+    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(new ArrayList<>());
+
+    //when
+    orderService.delete(order);
+
+    //then
+    verify(orderRepository).delete(order);
+  }
+
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenAttemptingToDeleteOrderInUse() {
+    //given
+    Order order = generateOrder();
+    ProofOfDelivery pod = new ProofOfDelivery();
+    List<ProofOfDelivery> podList = new ArrayList<>();
+    podList.add(pod);
+    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(podList);
+
+    //when
+    orderService.delete(order);
+  }
+
   private Order generateOrder() {
     int number = new Random().nextInt();
     Order order = new Order();
+    order.setId(UUID.randomUUID());
     order.setProgramId(program.getId());
     order.setCreatedDate(ZonedDateTime.now().plusDays(number));
     order.setCreatedById(UUID.randomUUID());
