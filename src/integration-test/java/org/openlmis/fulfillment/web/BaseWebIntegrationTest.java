@@ -248,14 +248,7 @@ public abstract class BaseWebIntegrationTest {
 
   protected RestAssuredClient restAssured;
 
-  protected static final String BASE_URL;
-
-  static {
-    String baseUrl = System.getenv("BASE_URL");
-    BASE_URL = baseUrl.lastIndexOf(':') != -1
-        ? baseUrl.substring(0, baseUrl.lastIndexOf(':'))
-        : baseUrl;
-  }
+  protected static final String BASE_URL = System.getenv("BASE_URL");
 
   @MockBean
   protected OrderNumberConfigurationRepository orderNumberConfigurationRepository;
