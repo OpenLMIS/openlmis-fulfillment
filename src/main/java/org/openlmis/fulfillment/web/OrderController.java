@@ -210,11 +210,10 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<OrderDto> searchOrders(
-      @RequestParam(value = "supplyingFacility") UUID supplyingFacility,
+      @RequestParam(value = "supplyingFacility", required = false) UUID supplyingFacility,
       @RequestParam(value = "requestingFacility", required = false) UUID requestingFacility,
       @RequestParam(value = "program", required = false) UUID program,
       @RequestParam(value = "status", required = false) String status) {
-    permissionService.canViewOrder(supplyingFacility);
 
     OrderStatus orderStatus = null;
 
@@ -229,7 +228,7 @@ public class OrderController extends BaseController {
     List<Order> orders = orderService
         .searchOrders(supplyingFacility, requestingFacility, program, orderStatus)
         .stream()
-        .filter(permissionService::checkIfCanViewOrder)
+        .filter(permissionService::canViewOrderOrManagePod)
         .collect(Collectors.toList());
 
     return OrderDto.newInstance(orders, exporter);

@@ -837,28 +837,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldRejectSearchRequestWhenUserHasNoRights() {
-    denyUserAllRights();
-
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-
-    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null, null))
-        .willReturn(Lists.newArrayList(firstOrder));
-
-    String response = restAssured.given()
-        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
-        .queryParam(ACCESS_TOKEN, getToken())
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldRemoveOrdersFromSearchResultWhenUserHasNoRightsForFacility() {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     secondOrder.setSupplyingFacilityId(UUID.randomUUID());
@@ -866,11 +844,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(any(UUID.class), eq(null), eq(null), eq(null)))
+    given(orderRepository.searchOrders(eq(null), eq(null), eq(null), eq(null)))
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     Order[] response = restAssured.given()
-        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(ACCESS_TOKEN, getToken())
         .when()
         .get(SEARCH_URL)

@@ -67,8 +67,9 @@ public class PermissionService {
     throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
   }
 
-  public boolean checkIfCanViewOrder(Order order) {
-    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId());
+  public boolean canViewOrderOrManagePod(Order order) {
+    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId())
+        || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId());
   }
 
   private boolean hasPermission(String rightName, UUID warehouse) {

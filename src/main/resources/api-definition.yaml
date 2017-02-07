@@ -283,13 +283,13 @@ resourceTypes:
       /search:
               get:
                   is: [ secured ]
-                  description: Find Orders with matched parameters.
+                  description: Find Orders with matched parameters. Filtered by warehouses for which the user has ORDERS_VIEW or PODS_MANAGE right.
                   queryParameters:
                       supplyingFacility:
                           displayName: supplyingFacility
                           description: supplyingFacility ID
                           type: string
-                          required: true
+                          required: false
                           repeat: false
                       requestingFacility:
                           displayName: requestingFacility
@@ -325,10 +325,6 @@ resourceTypes:
                             application/json:
                               schema: orderDtoArray
                       400:
-                          body:
-                            application/json:
-                              schema: localizedMessage
-                      403:
                           body:
                             application/json:
                               schema: localizedMessage
