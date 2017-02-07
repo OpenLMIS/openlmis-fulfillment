@@ -42,6 +42,7 @@ import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -52,6 +53,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +68,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String FINALIZE_URL = ID_URL + "/finalize";
   private static final String PRINT_URL = ID_URL + "/print";
+  private static final String POD_URL = ID_URL + "/proofOfDeliveries";
 
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
@@ -1006,4 +1009,59 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldGetPodsForTheGivenOrder() {
+    given(proofOfDelivery.getOrder()).willReturn(firstOrder);
+    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+    given(proofOfDeliveryRepository.findByOrderId(firstOrder.getId()))
+        .willReturn(Collections.singletonList(proofOfDelivery));
+
+    ProofOfDeliveryDto[] response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .get(POD_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(ProofOfDeliveryDto[].class);
+
+    assertThat(response, arrayWithSize(1));
+  }
+
+  @Test
+  public void shouldRejectGetPodRequestIfUserHasNoRight() {
+    denyUserAllRights();
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .get(POD_URL)
+        .then()
+        .statusCode(403)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundErrorIfOrderCannotBeFound() {
+    given(orderRepository.findOne(any(UUID.class))).willReturn(null);
+
+    String response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .pathParam("id", firstOrder.getId().toString())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .get(POD_URL)
+        .then()
+        .statusCode(404)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(ERROR_ORDER_NOT_FOUND)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 }

@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -371,6 +373,26 @@ public class OrderController extends BaseController {
 
     orderService.save(order);
     return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
+  }
+
+  /**
+   * Gets proof of deliveries related with the given order.
+   *
+   * @param id UUID of order
+   */
+  @RequestMapping(value = "/orders/{id}/proofOfDeliveries", method = RequestMethod.GET)
+  @ResponseBody
+  public Collection<ProofOfDeliveryDto> getProofOfDeliveries(@PathVariable("id") UUID id) {
+    Order order = orderRepository.findOne(id);
+
+    if (null == order) {
+      throw new OrderNotFoundException(id);
+    }
+
+    permissionService.canViewOrder(order);
+
+    List<ProofOfDelivery> deliveries = proofOfDeliveryRepository.findByOrderId(id);
+    return ProofOfDeliveryDto.newInstance(deliveries, exporter);
   }
 
 }

@@ -263,6 +263,23 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+          /proofOfDeliveries:
+              get:
+                  is: [ secured ]
+                  description: Gets proof of deliveries related with the given order.
+                  responses:
+                    200:
+                      body:
+                        application/json:
+                          schema: proofOfDeliveryDtoArray
+                    404:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                    403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
       /search:
               get:
                   is: [ secured ]
