@@ -7,9 +7,6 @@ CREATE TABLE configuration_settings (
     "value" character varying(255) NOT NULL
 );
 
-
-ALTER TABLE configuration_settings OWNER TO postgres;
-
 --
 -- Name: order_file_columns; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -29,9 +26,6 @@ CREATE TABLE order_file_columns (
     orderfiletemplateid uuid NOT NULL
 );
 
-
-ALTER TABLE order_file_columns OWNER TO postgres;
-
 --
 -- Name: order_file_templates; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -41,9 +35,6 @@ CREATE TABLE order_file_templates (
     fileprefix character varying(255) NOT NULL,
     headerinfile boolean NOT NULL
 );
-
-
-ALTER TABLE order_file_templates OWNER TO postgres;
 
 --
 -- Name: order_line_items; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
@@ -59,9 +50,6 @@ CREATE TABLE order_line_items (
     orderid uuid NOT NULL
 );
 
-
-ALTER TABLE order_line_items OWNER TO postgres;
-
 --
 -- Name: order_number_configurations; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -73,9 +61,6 @@ CREATE TABLE order_number_configurations (
     includetypesuffix boolean NOT NULL,
     ordernumberprefix character varying(255)
 );
-
-
-ALTER TABLE order_number_configurations OWNER TO postgres;
 
 --
 -- Name: orders; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
@@ -98,9 +83,6 @@ CREATE TABLE orders (
     supplyingfacilityid uuid NOT NULL
 );
 
-
-ALTER TABLE orders OWNER TO postgres;
-
 --
 -- Name: proof_of_deliveries; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -112,9 +94,6 @@ CREATE TABLE proof_of_deliveries (
     receiveddate timestamp with time zone,
     orderid uuid NOT NULL
 );
-
-
-ALTER TABLE proof_of_deliveries OWNER TO postgres;
 
 --
 -- Name: proof_of_delivery_line_items; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
@@ -131,9 +110,6 @@ CREATE TABLE proof_of_delivery_line_items (
     proofofdeliveryid uuid NOT NULL
 );
 
-
-ALTER TABLE proof_of_delivery_line_items OWNER TO postgres;
-
 --
 -- Name: status_messages; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -145,9 +121,6 @@ CREATE TABLE status_messages (
     status character varying(255) NOT NULL,
     orderid uuid NOT NULL
 );
-
-
-ALTER TABLE status_messages OWNER TO postgres;
 
 --
 -- Name: template_parameters; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
@@ -164,9 +137,6 @@ CREATE TABLE template_parameters (
     templateid uuid NOT NULL
 );
 
-
-ALTER TABLE template_parameters OWNER TO postgres;
-
 --
 -- Name: templates; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
 --
@@ -178,9 +148,6 @@ CREATE TABLE templates (
     name text NOT NULL,
     type text
 );
-
-
-ALTER TABLE templates OWNER TO postgres;
 
 --
 -- Name: transfer_properties; Type: TABLE; Schema: fulfillment; Owner: postgres; Tablespace:
@@ -200,10 +167,6 @@ CREATE TABLE transfer_properties (
     username text,
     path text
 );
-
-
-ALTER TABLE transfer_properties OWNER TO postgres;
-
 
 --
 -- Name: configuration_settings_pkey; Type: CONSTRAINT; Schema: fulfillment; Owner: postgres; Tablespace:
