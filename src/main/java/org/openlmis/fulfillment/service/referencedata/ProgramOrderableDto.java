@@ -16,7 +16,6 @@ public class ProgramOrderableDto {
   private Boolean active;
   private Boolean fullSupply;
   private Integer displayOrder;
-  private Integer maxMonthsOfStock;
-  private Integer dosesPerMonth;
+  private Integer dosesPerPatient;
   private MoneyDto value;
 }

@@ -213,7 +213,7 @@ public abstract class BaseWebIntegrationTest {
       + " \"id\":\"d0d5e0d6-8962-11e6-ae22-56b6b6499611\","
       + " \"facilityType\":" + MOCK_FIND_FACILITY_TYPE + ","
       + " \"programOrderable\":" + MOCK_FIND_PROGRAM_ORDERABLE + ","
-      + " \"maxMonthStock\": 2"
+      + " \"maxPeriodsOfStock\": 2"
       + "}]";
 
   private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
