@@ -286,9 +286,8 @@ public class OrderServiceTest {
     //given
     Order order = generateOrder();
     ProofOfDelivery pod = new ProofOfDelivery();
-    List<ProofOfDelivery> podList = new ArrayList<>();
-    podList.add(pod);
-    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(podList);
+    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(
+        Collections.singletonList(pod));
 
     //when
     orderService.delete(order);

@@ -98,6 +98,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Test
   public void shouldFindProofOfDeliveriesByOrderId() {
+    //given
     Order anotherOrder = new Order();
     anotherOrder.setOrderCode("Another Code");
     anotherOrder.setExternalId(UUID.randomUUID());
@@ -111,11 +112,14 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     anotherOrder.setSupplyingFacilityId(UUID.randomUUID());
     orderRepository.save(anotherOrder);
 
+    // This generates POD linked to order declared in @Before
     ProofOfDelivery instance = generateInstance();
     instance = proofOfDeliveryRepository.save(instance);
 
+    //when
     List<ProofOfDelivery> actual = proofOfDeliveryRepository.findByOrderId(order.getId());
 
+    //then
     assertEquals(1, actual.size());
     assertEquals(instance, actual.get(0));
   }
