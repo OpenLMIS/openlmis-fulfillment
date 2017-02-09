@@ -1,8 +1,10 @@
 package org.openlmis.fulfillment.web;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -57,8 +59,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private static final String RESOURCE_URL = "/api/proofOfDeliveries";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
-  private static final String PRINT_URL = RESOURCE_URL + "/{id}/print";
-  private static final String SUBMIT_URL = RESOURCE_URL + "/{id}/submit";
+  private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  
+  private static final String PRINT_URL = ID_URL + "/print";
+  private static final String SUBMIT_URL = ID_URL + "/submit";
+
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
   private static final String ACCESS_TOKEN = "access_token";
@@ -547,6 +552,45 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract().path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnProofOfDeliveriesRelatedWihExternalId() {
+    UUID externalId = proofOfDelivery.getOrder().getExternalId();
+
+    assertThat(externalId, is(notNullValue()));
+
+    given(proofOfDeliveryRepository.searchByExternalId(externalId))
+        .willReturn(Lists.newArrayList(proofOfDelivery));
+
+    ProofOfDeliveryDto[] response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("externalId", externalId)
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(ProofOfDeliveryDto[].class);
+
+    assertThat(response, arrayWithSize(1));
+    assertThat(response[0].getId(), is(proofOfDelivery.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnEmptyListIfExternalIdWasNotProvided() {
+    ProofOfDeliveryDto[] response = restAssured
+        .given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(ProofOfDeliveryDto[].class);
+
+    assertThat(response, arrayWithSize(0));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
