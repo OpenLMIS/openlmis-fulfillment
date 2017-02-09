@@ -4,6 +4,7 @@ import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TransferPropertiesService;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
@@ -39,6 +40,9 @@ public class TransferPropertiesController extends BaseController {
   @Autowired
   private ExporterBuilder exporter;
 
+  @Autowired
+  private PermissionService permissionService;
+
   /**
    * Allows creating new transfer properties.
    * If the id is specified, it will be ignored.
@@ -50,6 +54,10 @@ public class TransferPropertiesController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public TransferPropertiesDto create(@RequestBody TransferPropertiesDto properties) {
+
+    LOGGER.debug("Checking right to create transfer properties");
+    permissionService.canManageSystemSettings();
+
     LOGGER.debug("Creating new Transfer Properties");
 
     properties.setId(null);
@@ -82,6 +90,8 @@ public class TransferPropertiesController extends BaseController {
         || !Objects.equals(toUpdate.getFacilityId(), properties.getFacility().getId())) {
       throw new IncorrectTransferPropertiesException();
     } else {
+      LOGGER.debug("Checking right to update transfer properties ");
+      permissionService.canManageSystemSettings();
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
     }
 
@@ -106,6 +116,10 @@ public class TransferPropertiesController extends BaseController {
    */
   @RequestMapping(value = "/transferProperties/{id}", method = RequestMethod.GET)
   public ResponseEntity retrieve(@PathVariable("id") UUID id) {
+
+    LOGGER.debug("Checking right to view transfer properties");
+    permissionService.canManageSystemSettings();
+
     TransferProperties properties = transferPropertiesRepository.findOne(id);
     return properties == null
         ? ResponseEntity.notFound().build()
@@ -120,6 +134,10 @@ public class TransferPropertiesController extends BaseController {
    */
   @RequestMapping(value = "/transferProperties/{id}", method = RequestMethod.DELETE)
   public ResponseEntity delete(@PathVariable("id") UUID id) {
+
+    LOGGER.debug("Checking right to delete transfer properties");
+    permissionService.canManageSystemSettings();
+
     TransferProperties toDelete = transferPropertiesRepository.findOne(id);
 
     if (toDelete == null) {
@@ -138,6 +156,10 @@ public class TransferPropertiesController extends BaseController {
    */
   @RequestMapping(value = "/transferProperties/search", method = RequestMethod.GET)
   public ResponseEntity search(@RequestParam("facility") UUID facility) {
+
+    LOGGER.debug("Checking right to view transfer properties");
+    permissionService.canManageSystemSettings();
+
     TransferProperties properties = transferPropertiesRepository.findFirstByFacilityId(facility);
 
     if (properties == null) {

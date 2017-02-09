@@ -4,8 +4,11 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 
 import org.apache.commons.io.IOUtils;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -29,12 +32,18 @@ import javax.servlet.http.HttpServletResponse;
 @Transactional
 public class ProofOfDeliveryTemplateController extends BaseController {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderFileTemplateController.class);
+
+
   private static final String PRINT_POD = "Print POD";
   private static final String DESCRIPTION_POD = "Template to print Proof Of Delivery";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
 
   @Autowired
   private TemplateService templateService;
+
+  @Autowired
+  private PermissionService permissionService;
 
   /**
    * Add Proof Of Delivery report templates with ".jrxml" format(extension) to database.
@@ -44,6 +53,10 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public void saveTemplateOfPod(@RequestPart("file") MultipartFile file) {
+
+    LOGGER.debug("Checking right to create proof of delivery template");
+    permissionService.canManageSystemSettings();
+
     Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
     templateService.validateFileAndSaveTemplate(template, file);
   }
@@ -62,6 +75,10 @@ public class ProofOfDeliveryTemplateController extends BaseController {
       response.sendError(HttpServletResponse.SC_NOT_FOUND,
           "Proof Of Delivery template does not exist.");
     } else {
+
+      LOGGER.debug("Checking right to view proof of delivery template");
+      permissionService.canManageSystemSettings();
+
       response.setContentType("application/xml");
       response.addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
 

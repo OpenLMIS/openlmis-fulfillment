@@ -390,6 +390,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: orderNumberConfigurationDto
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
               404:
       post:
           is: [ secured ]
@@ -405,6 +409,10 @@ resourceTypes:
             400:
               body:
                 application/json:
+            403:
+              body:
+                application/json:
+                  schema: localizedMessage
   /proofOfDeliveries:
       displayName: Proof Of Delivery
       get:
@@ -552,6 +560,10 @@ resourceTypes:
                     application/json:
                       schema: orderFileTemplateDto
               404:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       post:
           is: [ secured ]
           description: Create or update orderFileTemplate.
@@ -566,6 +578,10 @@ resourceTypes:
               400:
                   body:
                     application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
   /proofOfDeliveryTemplates:
       displayName: Proof of delivery report template.
       post:
@@ -581,6 +597,10 @@ resourceTypes:
                            repeat: false
             responses:
                 200:
+                403:
+                    body:
+                      application/json:
+                        schema: localizedMessage
       get:
             is: [ secured ]
             description: Download Proof Of Delivery report template with jrxml format.
@@ -588,6 +608,10 @@ resourceTypes:
                 200:
                     body:
                       application/xml:
+                403:
+                    body:
+                      application/json:
+                        schema: localizedMessage
                 404:
                     body:
                       application/json:
@@ -671,6 +695,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: transferProperties
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
               409:
       /{id}:
           uriParameters:
@@ -684,6 +712,10 @@ resourceTypes:
               description: Delete chosen transfer properties.
               responses:
                   204:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   404:
                   409:
                       body:
@@ -697,6 +729,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: transferProperties
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   404:
           put:
               is: [ secured ]
@@ -710,6 +746,10 @@ resourceTypes:
                         application/json:
                           schema: transferProperties
                   404:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   400:
                       body:
                         application/json:
@@ -730,6 +770,10 @@ resourceTypes:
                           body:
                             application/json:
                               schema: transferProperties
+                      403:
+                          body:
+                            application/json:
+                              schema: localizedMessage
                       404:
   /configurationSettings:
       displayName: Configuration settings.
@@ -741,6 +785,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: configurationSettingArray
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       put:
           is: [ secured ]
           description: update configuration setting with the given key.
@@ -753,6 +801,10 @@ resourceTypes:
                     application/json:
                       schema: configurationSetting
               404:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+              403:
                   body:
                     application/json:
                       schema: localizedMessage

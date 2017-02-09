@@ -3,6 +3,7 @@ package org.openlmis.fulfillment.web;
 import org.openlmis.fulfillment.domain.ConfigurationSetting;
 import org.openlmis.fulfillment.repository.ConfigurationSettingRepository;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.web.util.ConfigurationSettingDto;
 import org.openlmis.fulfillment.web.validator.ConfigurationSettingValidator;
 import org.slf4j.Logger;
@@ -36,6 +37,9 @@ public class ConfigurationSettingController extends BaseController {
   @Autowired
   private ConfigurationSettingValidator validator;
 
+  @Autowired
+  private PermissionService permissionService;
+
   @InitBinder
   protected void initBinder(final WebDataBinder binder) {
     binder.addValidators(validator);
@@ -49,6 +53,10 @@ public class ConfigurationSettingController extends BaseController {
   @RequestMapping(value = "/configurationSettings", method = RequestMethod.GET)
   @ResponseBody
   public Iterable<ConfigurationSettingDto> retrieveAll() {
+
+    LOGGER.debug("Checking rights to view Configuration Settings");
+    permissionService.canManageSystemSettings();
+
     return StreamSupport.stream(configurationSettingRepository.findAll().spliterator(), false)
         .map(ConfigurationSettingDto::newInstance)
         .collect(Collectors.toList());
@@ -63,6 +71,10 @@ public class ConfigurationSettingController extends BaseController {
   @RequestMapping(value = "/configurationSettings", method = RequestMethod.PUT)
   @ResponseBody
   public ConfigurationSettingDto update(@RequestBody @Valid ConfigurationSettingDto dto) {
+
+    LOGGER.debug("Checking rights to update Configuration Settings");
+    permissionService.canManageSystemSettings();
+
     LOGGER.debug("Updating configuration setting with key: {}", dto.getKey());
 
     ConfigurationSetting update = service.update(ConfigurationSetting.newInstance(dto));

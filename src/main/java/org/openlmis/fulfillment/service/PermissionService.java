@@ -12,6 +12,8 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -22,6 +24,7 @@ public class PermissionService {
   static final String PODS_MANAGE = "PODS_MANAGE";
   static final String ORDERS_VIEW = "ORDERS_VIEW";
   static final String ORDERS_EDIT = "ORDERS_EDIT";
+  static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -33,7 +36,7 @@ public class PermissionService {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   public void canTransferOrder(Order order) {
-    throwIfMissingPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId());
+    throwIfMissingPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
   }
 
   /**
@@ -52,7 +55,12 @@ public class PermissionService {
   }
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) {
-    throwIfMissingPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId());
+    throwIfMissingPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId(),
+        false);
+  }
+
+  public void canManageSystemSettings() {
+    throwIfMissingPermission(SYSTEM_SETTINGS_MANAGE, null, true);
   }
 
   public void canViewOrder(Order order) {
@@ -60,19 +68,26 @@ public class PermissionService {
   }
 
   public void canViewOrder(UUID supplyingFacility) {
-    throwIfMissingPermission(ORDERS_VIEW, supplyingFacility);
+    throwIfMissingPermission(ORDERS_VIEW, supplyingFacility, false);
   }
 
   public void canEditOrder(Order order) {
-    throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
+    throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId(), false);
   }
 
   public boolean canViewOrderOrManagePod(Order order) {
-    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId())
-        || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId());
+    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId(), false)
+        || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId(), false);
   }
 
-  private boolean hasPermission(String rightName, UUID warehouse) {
+  private boolean hasPermission(String rightName, UUID warehouse, boolean allowServiceTokens) {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+        .getAuthentication();
+    if (allowServiceTokens && authentication.isClientOnly()) {
+      return true;
+    } else if (!allowServiceTokens && authentication.isClientOnly()) {
+      return false;
+    }
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result =  userReferenceDataService.hasRight(
@@ -82,8 +97,9 @@ public class PermissionService {
     return null != result && isTrue(result.getResult());
   }
 
-  private void throwIfMissingPermission(String rightName, UUID warehouse) {
-    if (!hasPermission(rightName, warehouse)) {
+  private void throwIfMissingPermission(String rightName, UUID warehouse, boolean
+      allowServiceTokens) {
+    if (!hasPermission(rightName, warehouse, allowServiceTokens)) {
       throw new MissingPermissionException(rightName);
     }
   }

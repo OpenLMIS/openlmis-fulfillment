@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
@@ -33,6 +34,8 @@ public class OrderFileTemplateController extends BaseController {
   private OrderFileTemplateRepository orderFileTemplateRepository;
   @Autowired
   private OrderFileTemplateService orderFileTemplateService;
+  @Autowired
+  private PermissionService permissionService;
 
   @InitBinder
   protected void initBinder(WebDataBinder binder) {
@@ -51,6 +54,11 @@ public class OrderFileTemplateController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+
+    LOGGER.debug("Checking right to update order file template");
+    permissionService.canManageSystemSettings();
+
+
     LOGGER.debug("Saving Order File Template");
     OrderFileTemplate orderFileTemplate = OrderFileTemplate.newInstance(
         orderFileTemplateDto);
@@ -69,6 +77,10 @@ public class OrderFileTemplateController extends BaseController {
    */
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.GET)
   public ResponseEntity<OrderFileTemplateDto> getOrderFileTemplate() {
+
+    LOGGER.debug("Checking right to view order file template");
+    permissionService.canManageSystemSettings();
+
     OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
     if (orderFileTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);

@@ -1,9 +1,12 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.web.validator.OrderNumberConfigurationValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +28,17 @@ import javax.validation.Valid;
 @Transactional
 public class OrderNumberConfigurationController extends BaseController {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(OrderFileTemplateController.class);
+
+
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @Autowired
   private OrderNumberConfigurationValidator validator;
+
+  @Autowired
+  private PermissionService permissionService;
 
   @InitBinder
   protected void initBinder(final WebDataBinder binder) {
@@ -50,6 +59,10 @@ public class OrderNumberConfigurationController extends BaseController {
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
+
+    LOGGER.debug("Checking right to update order number configuration");
+    permissionService.canManageSystemSettings();
+
     OrderNumberConfiguration orderNumberConfiguration = OrderNumberConfiguration
         .newInstance(orderNumberConfigurationDto);
 
@@ -81,6 +94,9 @@ public class OrderNumberConfigurationController extends BaseController {
     if (!it.hasNext()) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    LOGGER.debug("Checking right to view order number configuration");
+    permissionService.canManageSystemSettings();
 
     OrderNumberConfigurationDto orderNumberConfigurationDto = new OrderNumberConfigurationDto();
     it.next().export(orderNumberConfigurationDto);
