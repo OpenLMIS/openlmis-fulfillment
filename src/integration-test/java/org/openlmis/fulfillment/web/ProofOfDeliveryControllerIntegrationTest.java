@@ -561,8 +561,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertThat(externalId, is(notNullValue()));
 
-    given(proofOfDeliveryRepository.searchByExternalId(externalId))
-        .willReturn(Lists.newArrayList(proofOfDelivery));
+    given(proofOfDeliveryRepository.findByExternalId(externalId))
+        .willReturn(proofOfDelivery);
 
     ProofOfDeliveryDto[] response = restAssured
         .given()

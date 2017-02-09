@@ -127,29 +127,14 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   @Test
   public void shouldFindProofOfDeliveriesByExternalId() {
     //given
-    Order anotherOrder = new Order();
-    anotherOrder.setOrderCode("Another Code");
-    anotherOrder.setExternalId(UUID.randomUUID());
-    anotherOrder.setEmergency(true);
-    anotherOrder.setQuotedCost(new BigDecimal("1.29"));
-    anotherOrder.setStatus(OrderStatus.PICKING);
-    anotherOrder.setProgramId(UUID.randomUUID());
-    anotherOrder.setCreatedById(UUID.randomUUID());
-    anotherOrder.setRequestingFacilityId(UUID.randomUUID());
-    anotherOrder.setReceivingFacilityId(UUID.randomUUID());
-    anotherOrder.setSupplyingFacilityId(UUID.randomUUID());
-    orderRepository.save(anotherOrder);
-
     // This generates POD linked to order declared in @Before
     ProofOfDelivery instance = generateInstance();
     instance = proofOfDeliveryRepository.save(instance);
 
     //when
-    List<ProofOfDelivery> actual = proofOfDeliveryRepository
-        .searchByExternalId(order.getExternalId());
+    ProofOfDelivery actual = proofOfDeliveryRepository.findByExternalId(order.getExternalId());
 
     //then
-    assertEquals(1, actual.size());
-    assertEquals(instance, actual.get(0));
+    assertEquals(instance, actual);
   }
 }

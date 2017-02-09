@@ -7,10 +7,10 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.custom.ProofOfDeliveryRepositoryCustom;
 
-import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -28,7 +28,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
    * list will be returned.
    */
   @Override
-  public List<ProofOfDelivery> searchByExternalId(UUID externalId) {
+  public ProofOfDelivery findByExternalId(UUID externalId) {
     checkNotNull(externalId);
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -41,7 +41,11 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
 
     query.where(predicate);
 
-    return entityManager.createQuery(query).getResultList();
+    try {
+      return entityManager.createQuery(query).getSingleResult();
+    } catch (NoResultException ignored) {
+      return null;
+    }
   }
-  
+
 }

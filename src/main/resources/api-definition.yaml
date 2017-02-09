@@ -459,6 +459,10 @@ resourceTypes:
                           body:
                             application/json:
                               schema: proofOfDeliveryDtoArray
+                      403:
+                          body:
+                            application/json:
+                              schema: localizedMessage
       /{id}:
           uriParameters:
               id:

@@ -2,6 +2,8 @@ package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 
+import com.google.common.collect.Lists;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -123,18 +125,15 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries/search", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<Collection<ProofOfDeliveryDto>> getAllProofOfDeliveries(
+  public ResponseEntity<Collection<ProofOfDeliveryDto>> search(
       @RequestParam(value = "externalId", required = false) UUID externalId,
       OAuth2Authentication authentication) {
     if (null != externalId) {
-      List<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository
-          .searchByExternalId(externalId);
+      ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findByExternalId(externalId);
+      canManagePod(authentication, proofOfDelivery.getId());
 
-      for (ProofOfDelivery proofOfDelivery : proofOfDeliveries) {
-        canManagePod(authentication, proofOfDelivery.getId());
-      }
-
-      return ResponseEntity.ok(ProofOfDeliveryDto.newInstance(proofOfDeliveries, exporter));
+      ProofOfDeliveryDto dto = ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter);
+      return ResponseEntity.ok(Lists.newArrayList(dto));
     } else {
       return ResponseEntity.ok(Collections.emptyList());
     }
