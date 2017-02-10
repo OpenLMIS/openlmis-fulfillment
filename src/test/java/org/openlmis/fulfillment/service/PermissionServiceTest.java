@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
@@ -145,10 +146,15 @@ public class PermissionServiceTest {
   @Test
   public void canManageSystemSettingsByServiceToken() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
-    /*If endpoint does not allow for service level token authorization, method will throw Exception.
-    When using service level token PermissionService does not use AuthenticationHelper nor
-    UserReferenceDataService.*/
+    //If endpoint does not allow for service level token authorization, method will throw Exception.
     permissionService.canManageSystemSettings();
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+
+    order.verify(authenticationHelper, never()).getCurrentUser();
+    order.verify(authenticationHelper, never()).getRight(SYSTEM_SETTINGS_MANAGE);
+    order.verify(userReferenceDataService, never()).hasRight(userId, systemSettingsManageRightId,
+        null, null, null);
   }
 
   @Test
