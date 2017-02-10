@@ -56,12 +56,12 @@ public class OrderNumberConfigurationController extends BaseController {
       @RequestBody @Valid OrderNumberConfigurationDto orderNumberConfigurationDto,
       BindingResult bindingResult) {
 
+    LOGGER.debug("Checking right to update order number configuration");
+    permissionService.canManageSystemSettings();
+
     if (bindingResult.hasErrors()) {
       return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
     }
-
-    LOGGER.debug("Checking right to update order number configuration");
-    permissionService.canManageSystemSettings();
 
     OrderNumberConfiguration orderNumberConfiguration = OrderNumberConfiguration
         .newInstance(orderNumberConfigurationDto);
@@ -89,14 +89,15 @@ public class OrderNumberConfigurationController extends BaseController {
   @RequestMapping(value = "/orderNumberConfigurations", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<OrderNumberConfigurationDto> getOrderFileTemplate() {
+
+    LOGGER.debug("Checking right to view order number configuration");
+    permissionService.canManageSystemSettings();
+
     Iterator<OrderNumberConfiguration> it = orderNumberConfigurationRepository.findAll().iterator();
 
     if (!it.hasNext()) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-    LOGGER.debug("Checking right to view order number configuration");
-    permissionService.canManageSystemSettings();
 
     OrderNumberConfigurationDto orderNumberConfigurationDto = new OrderNumberConfigurationDto();
     it.next().export(orderNumberConfigurationDto);

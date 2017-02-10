@@ -36,7 +36,7 @@ public class PermissionService {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   public void canTransferOrder(Order order) {
-    throwIfMissingPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
+    checkPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
   }
 
   /**
@@ -55,12 +55,12 @@ public class PermissionService {
   }
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) {
-    throwIfMissingPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId(),
+    checkPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId(),
         false);
   }
 
   public void canManageSystemSettings() {
-    throwIfMissingPermission(SYSTEM_SETTINGS_MANAGE, null, true);
+    checkPermission(SYSTEM_SETTINGS_MANAGE, null, true);
   }
 
   public void canViewOrder(Order order) {
@@ -68,11 +68,11 @@ public class PermissionService {
   }
 
   public void canViewOrder(UUID supplyingFacility) {
-    throwIfMissingPermission(ORDERS_VIEW, supplyingFacility, false);
+    checkPermission(ORDERS_VIEW, supplyingFacility, false);
   }
 
   public void canEditOrder(Order order) {
-    throwIfMissingPermission(ORDERS_EDIT, order.getSupplyingFacilityId(), false);
+    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId(), false);
   }
 
   public boolean canViewOrderOrManagePod(Order order) {
@@ -83,10 +83,8 @@ public class PermissionService {
   private boolean hasPermission(String rightName, UUID warehouse, boolean allowServiceTokens) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
         .getAuthentication();
-    if (allowServiceTokens && authentication.isClientOnly()) {
-      return true;
-    } else if (!allowServiceTokens && authentication.isClientOnly()) {
-      return false;
+    if (authentication.isClientOnly()) {
+      return allowServiceTokens;
     }
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
@@ -97,7 +95,7 @@ public class PermissionService {
     return null != result && isTrue(result.getResult());
   }
 
-  private void throwIfMissingPermission(String rightName, UUID warehouse, boolean
+  private void checkPermission(String rightName, UUID warehouse, boolean
       allowServiceTokens) {
     if (!hasPermission(rightName, warehouse, allowServiceTokens)) {
       throw new MissingPermissionException(rightName);

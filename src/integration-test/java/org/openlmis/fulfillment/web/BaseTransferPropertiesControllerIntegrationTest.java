@@ -271,6 +271,95 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToViewTransferProperties() {
+    denyUserAllRights();
+    T properties = generateProperties();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", properties.getId())
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToCreateOrderFileTemplate() {
+    denyUserAllRights();
+    T properties = generateProperties();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(TransferPropertiesFactory.newInstance(properties, exporter))
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
+    denyUserAllRights();
+    T oldProperties = generateProperties();
+    T newProperties = generateProperties();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", oldProperties.getId())
+        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToDeleteOrderFileTemplate() {
+    denyUserAllRights();
+    T properties = generateProperties();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", properties.getId())
+        .when()
+        .delete(ID_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToSearchTransferProperties() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam(FACILITY, UUID.randomUUID())
+        .when()
+        .get(SEARCH)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
   abstract T generateProperties();
 
   abstract void assertTransferProperties(T actual);

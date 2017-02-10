@@ -10,6 +10,7 @@ import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
 
 import com.google.common.collect.Lists;
 
@@ -68,17 +69,22 @@ public class PermissionServiceTest {
   @Mock
   private RightDto fulfillmentOrdersViewRight;
 
+  @Mock
+  private RightDto systemSettingsManageRight;
+
   private UUID userId = UUID.randomUUID();
   private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
   private UUID fulfillmentManagePodRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersEditRightId = UUID.randomUUID();
+  private UUID systemSettingsManageRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
   private Order order =  new Order();
   private ProofOfDelivery proofOfDelivery;
   private SecurityContext securityContext;
   private OAuth2Authentication userClient;
+  private OAuth2Authentication trustedClient;
 
   @Before
   public void setUp() {
@@ -86,6 +92,7 @@ public class PermissionServiceTest {
     securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
     userClient = new OAuth2Authentication(mock(OAuth2Request.class), mock(Authentication.class));
+    trustedClient = new OAuth2Authentication(mock(OAuth2Request.class), null);
     order.setCreatedById(userId);
     order.setProgramId(programId);
     order.setSupplyingFacilityId(facilityId);
@@ -99,6 +106,7 @@ public class PermissionServiceTest {
     when(fulfillmentManagePodRight.getId()).thenReturn(fulfillmentManagePodRightId);
     when(fulfillmentOrdersViewRight.getId()).thenReturn(fulfillmentOrdersViewRightId);
     when(fulfillmentOrdersEditRight.getId()).thenReturn(fulfillmentOrdersEditRightId);
+    when(systemSettingsManageRight.getId()).thenReturn(systemSettingsManageRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
@@ -110,18 +118,20 @@ public class PermissionServiceTest {
         fulfillmentOrdersViewRight);
     when(authenticationHelper.getRight(ORDERS_EDIT)).thenReturn(
         fulfillmentOrdersEditRight);
+    when(authenticationHelper.getRight(SYSTEM_SETTINGS_MANAGE)).thenReturn(
+        systemSettingsManageRight);
   }
 
   @Test
   public void canTransferOrder() throws Exception {
     when(securityContext.getAuthentication()).thenReturn(userClient);
 
-    mockFulfillmentHasRight(fulfillmentTransferOrderRightId, true);
+    mockFulfillmentHasRight(fulfillmentTransferOrderRightId, true, facilityId);
 
     permissionService.canTransferOrder(order);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_TRANSFER, fulfillmentTransferOrderRightId);
+    verifyFulfillmentRight(order, ORDERS_TRANSFER, fulfillmentTransferOrderRightId, facilityId);
   }
 
   @Test
@@ -133,15 +143,42 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canManageSystemSettingsByServiceToken() {
+    when(securityContext.getAuthentication()).thenReturn(trustedClient);
+
+    permissionService.canManageSystemSettings();
+  }
+
+  @Test
+  public void canManageSystemSettingsByUserToken() {
+    when(securityContext.getAuthentication()).thenReturn(userClient);
+
+    mockFulfillmentHasRight(systemSettingsManageRightId, true, null);
+
+    permissionService.canManageSystemSettings();
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, SYSTEM_SETTINGS_MANAGE, systemSettingsManageRightId, null);
+  }
+
+  @Test
+  public void cannotManageSystemSettingsByUserToken() throws Exception {
+    when(securityContext.getAuthentication()).thenReturn(userClient);
+    expectException(SYSTEM_SETTINGS_MANAGE);
+
+    permissionService.canManageSystemSettings();
+  }
+
+  @Test
   public void canManagePod() throws Exception {
-    mockFulfillmentHasRight(fulfillmentManagePodRightId, true);
+    mockFulfillmentHasRight(fulfillmentManagePodRightId, true, facilityId);
     when(securityContext.getAuthentication()).thenReturn(userClient);
 
 
     permissionService.canManagePod(proofOfDelivery);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, PODS_MANAGE, fulfillmentManagePodRightId);
+    verifyFulfillmentRight(order, PODS_MANAGE, fulfillmentManagePodRightId, facilityId);
   }
 
   @Test
@@ -157,12 +194,12 @@ public class PermissionServiceTest {
   public void canViewOrder() throws Exception {
     when(securityContext.getAuthentication()).thenReturn(userClient);
 
-    mockFulfillmentHasRight(fulfillmentOrdersViewRightId, true);
+    mockFulfillmentHasRight(fulfillmentOrdersViewRightId, true, facilityId);
 
     permissionService.canViewOrder(order);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_VIEW, fulfillmentOrdersViewRightId);
+    verifyFulfillmentRight(order, ORDERS_VIEW, fulfillmentOrdersViewRightId, facilityId);
   }
 
   @Test
@@ -178,12 +215,12 @@ public class PermissionServiceTest {
   public void canEditOrder() throws Exception {
     when(securityContext.getAuthentication()).thenReturn(userClient);
 
-    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true);
+    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
 
     permissionService.canEditOrder(order);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId);
+    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
   }
 
   @Test
@@ -195,10 +232,10 @@ public class PermissionServiceTest {
     permissionService.canEditOrder(order);
   }
 
-  private void mockFulfillmentHasRight(UUID rightId, boolean assign) {
+  private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {
     ResultDto<Boolean> resultDto = new ResultDto<>(assign);
     when(userReferenceDataService
-        .hasRight(userId, rightId, null, null, facilityId)
+        .hasRight(userId, rightId, null, null, facility)
     ).thenReturn(resultDto);
   }
 
@@ -208,10 +245,11 @@ public class PermissionServiceTest {
     exception.expectMessage(ERROR_PERMISSION_MISSING);
   }
 
-  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId) {
+  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId,
+                                      UUID facility) {
     order.verify(authenticationHelper).getCurrentUser();
     order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, facilityId);
+    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, facility);
   }
 
 }

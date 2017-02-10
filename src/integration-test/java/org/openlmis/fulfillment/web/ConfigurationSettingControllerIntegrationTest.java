@@ -81,6 +81,39 @@ public class ConfigurationSettingControllerIntegrationTest extends BaseWebIntegr
   }
 
   @Test
+  public void shouldReturn403WhenUserHasNoRightsToViewSettings() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToUpdateSettings() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(new ConfigurationSettingDto(KEY, VALUE))
+        .when()
+        .put(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
   public void shouldReturn404IfSettingNotExist() {
     given(configurationSettingRepository.findOne(KEY)).willReturn(null);
 

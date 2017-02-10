@@ -51,13 +51,13 @@ public class OrderFileTemplateController extends BaseController {
   @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.POST)
   public ResponseEntity<Object> savedOrderFileTemplate(
       @RequestBody @Valid OrderFileTemplateDto orderFileTemplateDto, BindingResult bindingResult) {
-    if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
-    }
 
     LOGGER.debug("Checking right to update order file template");
     permissionService.canManageSystemSettings();
 
+    if (bindingResult.hasErrors()) {
+      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+    }
 
     LOGGER.debug("Saving Order File Template");
     OrderFileTemplate orderFileTemplate = OrderFileTemplate.newInstance(

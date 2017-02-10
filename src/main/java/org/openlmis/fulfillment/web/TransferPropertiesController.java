@@ -82,6 +82,8 @@ public class TransferPropertiesController extends BaseController {
   @ResponseBody
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
                                       @PathVariable("id") UUID id) {
+    LOGGER.debug("Checking right to update transfer properties ");
+    permissionService.canManageSystemSettings();
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
 
     if (null == toUpdate) {
@@ -90,8 +92,6 @@ public class TransferPropertiesController extends BaseController {
         || !Objects.equals(toUpdate.getFacilityId(), properties.getFacility().getId())) {
       throw new IncorrectTransferPropertiesException();
     } else {
-      LOGGER.debug("Checking right to update transfer properties ");
-      permissionService.canManageSystemSettings();
       LOGGER.debug("Updating Transfer Properties with id: {}", id);
     }
 

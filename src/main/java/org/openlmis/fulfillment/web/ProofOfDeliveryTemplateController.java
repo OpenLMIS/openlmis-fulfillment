@@ -70,15 +70,13 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   @ResponseBody
   public void downloadPodXmlTemlate(HttpServletResponse response)
       throws IOException {
+    LOGGER.debug("Checking right to view proof of delivery template");
+    permissionService.canManageSystemSettings();
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
     if (podPrintTemplate == null) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND,
           "Proof Of Delivery template does not exist.");
     } else {
-
-      LOGGER.debug("Checking right to view proof of delivery template");
-      permissionService.canManageSystemSettings();
-
       response.setContentType("application/xml");
       response.addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
 

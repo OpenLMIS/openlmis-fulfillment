@@ -114,6 +114,39 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToViewOrderFileTemplate() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType("application/xml")
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() throws IOException {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType("multipart/form-data")
+        .multiPart("file", podReport.getFilename(), podReport.getInputStream())
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
   private TemplateParameter createParameter(JRParameter jrParameter) throws ReportingException {
     String displayName = jrParameter.getPropertiesMap().getProperty("displayName");
     String dataType = jrParameter.getValueClassName();

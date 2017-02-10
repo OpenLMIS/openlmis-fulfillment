@@ -129,4 +129,38 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToViewOrderFileTemplate() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
+    denyUserAllRights();
+    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(orderFileTemplateDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
 }
