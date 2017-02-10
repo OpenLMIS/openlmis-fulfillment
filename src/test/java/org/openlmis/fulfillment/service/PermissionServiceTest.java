@@ -145,7 +145,9 @@ public class PermissionServiceTest {
   @Test
   public void canManageSystemSettingsByServiceToken() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
-
+    /*If endpoint does not allow for service level token authorization, method will throw Exception.
+    When using service level token PermissionService does not use AuthenticationHelper nor
+    UserReferenceDataService.*/
     permissionService.canManageSystemSettings();
   }
 
