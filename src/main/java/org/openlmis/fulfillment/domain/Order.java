@@ -42,7 +42,7 @@ public class Order extends BaseEntity {
   public static final String STATUS = "status";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   @Getter
   @Setter
   @Type(type = UUID_TYPE)
