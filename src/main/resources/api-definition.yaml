@@ -303,6 +303,12 @@ resourceTypes:
                           type: string
                           required: false
                           repeat: false
+                      processingPeriod:
+                          displayName: processingPeriod
+                          description: processingPeriod ID
+                          type: string
+                          required: false
+                          repeat: false
                       status:
                           displayName: status
                           description: Order status

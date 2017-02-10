@@ -1,5 +1,6 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
+import static org.openlmis.fulfillment.domain.Order.PROCESSING_PERIOD_ID;
 import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
 import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
@@ -30,40 +31,34 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param supplyingFacility  supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
    * @param program            program of searched Orders.
+   * @param processingPeriod   UUID of processing period
    * @param status             order status. One of {@link OrderStatus}.
    * @return List of Orders with matched parameters.
    */
   @Override
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-                                  UUID program, OrderStatus status) {
+                                  UUID program, UUID processingPeriod, OrderStatus status) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
     Root<Order> root = query.from(Order.class);
+
     Predicate predicate = builder.conjunction();
-
-    if (supplyingFacility != null) {
-      predicate = builder.and(
-          predicate, builder.equal(root.get(SUPPLYING_FACILITY_ID), supplyingFacility)
-      );
-    }
-
-    if (requestingFacility != null) {
-      predicate = builder.and(
-          predicate, builder.equal(root.get(REQUESTING_FACILITY_ID), requestingFacility)
-      );
-    }
-
-    if (program != null) {
-      predicate = builder.and(predicate, builder.equal(root.get(PROGRAM_ID), program));
-    }
-
-    if (status != null) {
-      predicate = builder.and(predicate, builder.equal(root.get(STATUS), status));
-    }
+    predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
+    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
+    predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
+    predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
+    predicate = isEqual(STATUS, status, root, predicate, builder);
 
     query.where(predicate);
 
     return entityManager.createQuery(query).getResultList();
+  }
+
+  private Predicate isEqual(String field, Object value, Root root, Predicate predicate,
+                            CriteriaBuilder builder) {
+    return value != null
+        ? builder.and(predicate, builder.equal(root.get(field), value))
+        : predicate;
   }
 
 }

@@ -1,17 +1,14 @@
 package org.openlmis.fulfillment.web;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INCORRECT_STATUS;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -25,6 +22,7 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,32 +199,14 @@ public class OrderController extends BaseController {
   /**
    * Finds Orders matching all of provided parameters.
    *
-   * @param supplyingFacility  supplyingFacility of searched Orders.
-   * @param requestingFacility requestingFacility of searched Orders.
-   * @param program            program of searched Orders.
-   * @param status          order status.
+   * @param params  provided parameters.
    * @return ResponseEntity with list of all Orders matching provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseBody
-  public Iterable<OrderDto> searchOrders(
-      @RequestParam(value = "supplyingFacility", required = false) UUID supplyingFacility,
-      @RequestParam(value = "requestingFacility", required = false) UUID requestingFacility,
-      @RequestParam(value = "program", required = false) UUID program,
-      @RequestParam(value = "status", required = false) String status) {
-
-    OrderStatus orderStatus = null;
-
-    if (isNotBlank(status)) {
-      orderStatus = OrderStatus.fromString(status);
-
-      if (null == orderStatus) {
-        throw new ValidationException(ERROR_ORDER_INVALID_STATUS, status);
-      }
-    }
-
+  public Iterable<OrderDto> searchOrders(OrderSearchParams params) {
     List<Order> orders = orderService
-        .searchOrders(supplyingFacility, requestingFacility, program, orderStatus)
+        .searchOrders(params)
         .stream()
         .filter(permissionService::canViewOrderOrManagePod)
         .collect(Collectors.toList());

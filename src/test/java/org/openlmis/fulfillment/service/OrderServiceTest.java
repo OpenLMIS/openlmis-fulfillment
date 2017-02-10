@@ -215,13 +215,15 @@ public class OrderServiceTest {
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getStatus())
+        order.getProcessingPeriodId(), order.getStatus())
     ).thenReturn(Collections.singletonList(order));
 
     // when
-    List<Order> receivedOrders = orderService.searchOrders(
+    OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getStatus());
+        order.getProcessingPeriodId(), order.getStatus().toString()
+    );
+    List<Order> receivedOrders = orderService.searchOrders(params);
 
     // then
     assertEquals(1, receivedOrders.size());
@@ -230,7 +232,7 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), any(OrderStatus.class));
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), any(OrderStatus.class));
   }
 
   @Test

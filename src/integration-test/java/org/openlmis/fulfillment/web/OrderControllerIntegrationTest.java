@@ -315,7 +315,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldFindBySupplyingFacility() {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
-    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null, null))
+    given(orderRepository.searchOrders(firstOrder.getSupplyingFacilityId(), null, null, null, null))
         .willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -342,7 +342,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null, null
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(), null, null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -375,7 +375,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null
+        firstOrder.getProgramId(), null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -413,7 +413,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), READY_TO_PACK
+        firstOrder.getProgramId(), null, READY_TO_PACK
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -443,6 +443,55 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
       assertEquals(
           order.getStatus(),
           firstOrder.getStatus()
+      );
+    }
+  }
+
+  @Test
+  public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatusAndPeriod() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setProgramId(UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611"));
+    firstOrder.setStatus(READY_TO_PACK);
+    firstOrder.setProcessingPeriodId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
+
+    given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), READY_TO_PACK
+    )).willReturn(Lists.newArrayList(firstOrder));
+
+    OrderDto[] response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam("processingPeriod", firstOrder.getProcessingPeriodId())
+        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto[].class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(1, response.length);
+    for (OrderDto order : response) {
+      assertEquals(
+          order.getSupplyingFacility().getId(),
+          firstOrder.getSupplyingFacilityId());
+      assertEquals(
+          order.getRequestingFacility().getId(),
+          firstOrder.getRequestingFacilityId());
+      assertEquals(
+          order.getProgram().getId(),
+          firstOrder.getProgramId());
+      assertEquals(
+          order.getStatus(),
+          firstOrder.getStatus()
+      );
+      assertEquals(
+          order.getProcessingPeriod().getId(),
+          firstOrder.getProcessingPeriodId()
       );
     }
   }
@@ -844,7 +893,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(eq(null), eq(null), eq(null), eq(null)))
+    given(orderRepository.searchOrders(eq(null), eq(null), eq(null), eq(null), eq(null)))
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     Order[] response = restAssured.given()

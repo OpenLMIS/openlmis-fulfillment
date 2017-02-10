@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface OrderRepositoryCustom {
 
   List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program,
-                           OrderStatus status);
+                           UUID processingPeriod, OrderStatus status);
 
 }

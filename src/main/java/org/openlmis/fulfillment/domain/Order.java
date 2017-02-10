@@ -41,6 +41,7 @@ public class Order extends BaseEntity {
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
   public static final String PROGRAM_ID = "programId";
   public static final String STATUS = "status";
+  public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
 
   @Column(nullable = false)
   @Getter
