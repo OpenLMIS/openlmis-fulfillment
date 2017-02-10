@@ -34,7 +34,6 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "proof_of_deliveries")
 public class ProofOfDelivery extends BaseEntity {
-  public static final String ORDER = "order";
   public static final String DELIVERED_BY = "deliveredBy";
   public static final String RECEIVED_BY = "receivedBy";
   public static final String RECEIVED_DATE = "receivedDate";

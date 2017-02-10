@@ -449,26 +449,6 @@ resourceTypes:
                   body:
                     application/json:
                       schema: localizedMessage
-      /search:
-              get:
-                  is: [ secured ]
-                  description: Finds proof Of Deliveries related with the given external id.
-                  queryParameters:
-                      externalId:
-                          displayName: externalId
-                          description: external ID
-                          type: string
-                          required: false
-                          repeat: false
-                  responses:
-                      200:
-                          body:
-                            application/json:
-                              schema: proofOfDeliveryDtoArray
-                      403:
-                          body:
-                            application/json:
-                              schema: localizedMessage
       /{id}:
           uriParameters:
               id:

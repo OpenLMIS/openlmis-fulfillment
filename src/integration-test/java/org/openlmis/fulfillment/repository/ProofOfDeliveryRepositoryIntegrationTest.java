@@ -123,18 +123,4 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     assertEquals(1, actual.size());
     assertEquals(instance, actual.get(0));
   }
-
-  @Test
-  public void shouldFindProofOfDeliveriesByExternalId() {
-    //given
-    // This generates POD linked to order declared in @Before
-    ProofOfDelivery instance = generateInstance();
-    instance = proofOfDeliveryRepository.save(instance);
-
-    //when
-    ProofOfDelivery actual = proofOfDeliveryRepository.findByExternalId(order.getExternalId());
-
-    //then
-    assertEquals(instance, actual);
-  }
 }

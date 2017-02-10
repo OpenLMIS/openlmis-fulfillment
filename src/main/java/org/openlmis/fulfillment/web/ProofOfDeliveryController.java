@@ -2,8 +2,6 @@ package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 
-import com.google.common.collect.Lists;
-
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -30,13 +28,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -117,26 +113,6 @@ public class ProofOfDeliveryController extends BaseController {
         ProofOfDeliveryDto.newInstance(proofOfDeliveries, exporter),
         HttpStatus.OK
     );
-  }
-
-  /**
-   * Finds proof Of Deliveries related with the given external id. If property is null an empty
-   * list will be returned.
-   */
-  @RequestMapping(value = "/proofOfDeliveries/search", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<Collection<ProofOfDeliveryDto>> search(
-      @RequestParam(value = "externalId", required = false) UUID externalId,
-      OAuth2Authentication authentication) {
-    if (null != externalId) {
-      ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findByExternalId(externalId);
-      canManagePod(authentication, proofOfDelivery.getId());
-
-      ProofOfDeliveryDto dto = ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter);
-      return ResponseEntity.ok(Lists.newArrayList(dto));
-    } else {
-      return ResponseEntity.ok(Collections.emptyList());
-    }
   }
 
   /**
