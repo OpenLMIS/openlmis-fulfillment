@@ -68,7 +68,7 @@ public class PermissionService {
   }
 
   public void canViewOrder(UUID supplyingFacility) {
-    checkPermission(ORDERS_VIEW, supplyingFacility, false);
+    checkPermission(ORDERS_VIEW, supplyingFacility, true);
   }
 
   public void canEditOrder(Order order) {
@@ -76,7 +76,7 @@ public class PermissionService {
   }
 
   public boolean canViewOrderOrManagePod(Order order) {
-    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId(), false)
+    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId(), true)
         || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId(), false);
   }
 
