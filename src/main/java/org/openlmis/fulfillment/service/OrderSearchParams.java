@@ -28,10 +28,17 @@ public class OrderSearchParams {
   UUID processingPeriod;
   String status;
 
+  /**
+   * Tries to convert the string representation of <strong>status</strong> field to an instance of
+   * {@link OrderStatus}.
+   *
+   * @return an instance of {@link OrderStatus} or {@code null} if the field is blank.
+   * @throws ValidationException if the field contains a value that cannot be converted to enum.
+   */
   @JsonIgnore
-  OrderStatus convertStatus() {
+  OrderStatus getStatusAsEnum() {
     OrderStatus orderStatus = null;
-    
+
     if (isNotBlank(status)) {
       orderStatus = OrderStatus.fromString(status);
 

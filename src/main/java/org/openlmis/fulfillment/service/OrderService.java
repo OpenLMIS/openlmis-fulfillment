@@ -104,7 +104,7 @@ public class OrderService {
   public List<Order> searchOrders(OrderSearchParams params) {
     return orderRepository.searchOrders(
         params.getSupplyingFacility(), params.getRequestingFacility(), params.getProgram(),
-        params.getProcessingPeriod(), params.convertStatus()
+        params.getProcessingPeriod(), params.getStatusAsEnum()
     );
   }
 

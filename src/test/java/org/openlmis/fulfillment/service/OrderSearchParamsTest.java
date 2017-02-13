@@ -21,15 +21,15 @@ public class OrderSearchParamsTest {
 
   @Test
   public void shouldConvertStatusToNullIfStatusFieldIsBlank() throws Exception {
-    assertThat(builder().status(null).build().convertStatus(), is(nullValue()));
-    assertThat(builder().status("").build().convertStatus(), is(nullValue()));
-    assertThat(builder().status("    ").build().convertStatus(), is(nullValue()));
+    assertThat(builder().status(null).build().getStatusAsEnum(), is(nullValue()));
+    assertThat(builder().status("").build().getStatusAsEnum(), is(nullValue()));
+    assertThat(builder().status("    ").build().getStatusAsEnum(), is(nullValue()));
   }
 
   @Test
   public void shouldConvertStatusToCorrectEnumValue() throws Exception {
     for (OrderStatus status : OrderStatus.values()) {
-      assertThat(builder().status(status.toString()).build().convertStatus(), is(status));
+      assertThat(builder().status(status.toString()).build().getStatusAsEnum(), is(status));
     }
   }
 
@@ -38,6 +38,6 @@ public class OrderSearchParamsTest {
     exception.expect(ValidationException.class);
     exception.expect(hasProperty("messageKey", equalTo(ERROR_ORDER_INVALID_STATUS)));
 
-    builder().status("ala has a cat").build().convertStatus();
+    builder().status("ala has a cat").build().getStatusAsEnum();
   }
 }
