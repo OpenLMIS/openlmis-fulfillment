@@ -111,6 +111,11 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
     list = orderRepository.searchOrders(null, null, null, null, EnumSet.of(five.getStatus()));
     assertSearchOrders(list, five);
+
+    list = orderRepository.searchOrders(
+        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus())
+    );
+    assertSearchOrders(list, one, four);
   }
 
   private void assertSearchOrders(List<Order> actual, Order... expected) {
