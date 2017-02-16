@@ -8,11 +8,18 @@ import static org.junit.Assert.assertThat;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.service.OrderSearchParams.builder;
 
+import com.google.common.collect.Sets;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.web.ValidationException;
+
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OrderSearchParamsTest {
 
@@ -22,15 +29,19 @@ public class OrderSearchParamsTest {
   @Test
   public void shouldConvertStatusToNullIfStatusFieldIsBlank() throws Exception {
     assertThat(builder().status(null).build().getStatusAsEnum(), is(nullValue()));
-    assertThat(builder().status("").build().getStatusAsEnum(), is(nullValue()));
-    assertThat(builder().status("    ").build().getStatusAsEnum(), is(nullValue()));
+    assertThat(builder().status(Sets.newHashSet()).build().getStatusAsEnum(), is(nullValue()));
   }
 
   @Test
   public void shouldConvertStatusToCorrectEnumValue() throws Exception {
-    for (OrderStatus status : OrderStatus.values()) {
-      assertThat(builder().status(status.toString()).build().getStatusAsEnum(), is(status));
-    }
+    Set<String> status = Stream.of(OrderStatus.values())
+        .map(Enum::toString)
+        .collect(Collectors.toSet());
+
+    assertThat(
+        builder().status(status).build().getStatusAsEnum(),
+        is(equalTo(EnumSet.allOf(OrderStatus.class)))
+    );
   }
 
   @Test
@@ -38,6 +49,6 @@ public class OrderSearchParamsTest {
     exception.expect(ValidationException.class);
     exception.expect(hasProperty("messageKey", equalTo(ERROR_ORDER_INVALID_STATUS)));
 
-    builder().status("ala has a cat").build().getStatusAsEnum();
+    builder().status(Sets.newHashSet("ala has a cat")).build().getStatusAsEnum();
   }
 }

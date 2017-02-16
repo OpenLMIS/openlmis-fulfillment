@@ -17,6 +17,7 @@ import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +61,7 @@ import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -213,13 +215,13 @@ public class OrderServiceTest {
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), order.getStatus())
+        order.getProcessingPeriodId(), EnumSet.of(order.getStatus()))
     ).thenReturn(Collections.singletonList(order));
 
     // when
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), order.getStatus().toString()
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString())
     );
     List<Order> receivedOrders = orderService.searchOrders(params);
 
@@ -230,7 +232,7 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), any(OrderStatus.class));
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
   }
 
   @Test

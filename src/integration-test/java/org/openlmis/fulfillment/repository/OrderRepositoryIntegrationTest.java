@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -108,7 +109,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     list = orderRepository.searchOrders(null, null, null, four.getProcessingPeriodId(), null);
     assertSearchOrders(list, four);
 
-    list = orderRepository.searchOrders(null, null, null, null, five.getStatus());
+    list = orderRepository.searchOrders(null, null, null, null, EnumSet.of(five.getStatus()));
     assertSearchOrders(list, five);
   }
 

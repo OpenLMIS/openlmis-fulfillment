@@ -5,12 +5,15 @@ import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
 import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.Order.SUPPLYING_FACILITY_ID;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -32,12 +35,12 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @param requestingFacility requestingFacility of searched Orders.
    * @param program            program of searched Orders.
    * @param processingPeriod   UUID of processing period
-   * @param status             order status. One of {@link OrderStatus}.
+   * @param statuses           order statuses.
    * @return List of Orders with matched parameters.
    */
   @Override
   public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-                                  UUID program, UUID processingPeriod, OrderStatus status) {
+                                  UUID program, UUID processingPeriod, Set<OrderStatus> statuses) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
     Root<Order> root = query.from(Order.class);
@@ -47,11 +50,26 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
     predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
-    predicate = isEqual(STATUS, status, root, predicate, builder);
+    predicate = isOneOf(STATUS, statuses, root, predicate, builder);
 
     query.where(predicate);
 
     return entityManager.createQuery(query).getResultList();
+  }
+
+  private Predicate isOneOf(String field, Collection collection, Root root, Predicate predicate,
+                            CriteriaBuilder builder) {
+    if (!isEmpty(collection)) {
+      Predicate statusPredicate = builder.disjunction();
+
+      for (Object elem : collection) {
+        statusPredicate = builder.or(statusPredicate, builder.equal(root.get(field), elem));
+      }
+
+      return builder.and(predicate, statusPredicate);
+    }
+
+    return predicate;
   }
 
   private Predicate isEqual(String field, Object value, Root root, Predicate predicate,

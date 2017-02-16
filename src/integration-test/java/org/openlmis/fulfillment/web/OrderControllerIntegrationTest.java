@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -15,6 +16,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
+import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
@@ -54,6 +56,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -413,7 +416,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null, READY_TO_PACK
+        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK)
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()
@@ -448,6 +451,32 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldFindBySeveralStatuses() {
+    firstOrder.setStatus(READY_TO_PACK);
+    secondOrder.setStatus(IN_ROUTE);
+
+    given(orderRepository.searchOrders(null, null, null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE)))
+        .willReturn(Lists.newArrayList(firstOrder, secondOrder));
+
+    OrderDto[] response = restAssured.given()
+        .queryParam(STATUS, firstOrder.getStatus().toString())
+        .queryParam(STATUS, secondOrder.getStatus().toString())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto[].class);
+
+    assertEquals(2, response.length);
+    for (OrderDto order : response) {
+      assertThat(order.getStatus(), isOneOf(READY_TO_PACK, IN_ROUTE));
+    }
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatusAndPeriod() {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
@@ -457,7 +486,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), READY_TO_PACK
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
     )).willReturn(Lists.newArrayList(firstOrder));
 
     OrderDto[] response = restAssured.given()

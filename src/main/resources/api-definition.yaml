@@ -315,7 +315,7 @@ resourceTypes:
                           description: Order status
                           type: string
                           required: false
-                          repeat: false
+                          repeat: true
                           enum:
                               - ORDERED
                               - IN_TRANSIT
