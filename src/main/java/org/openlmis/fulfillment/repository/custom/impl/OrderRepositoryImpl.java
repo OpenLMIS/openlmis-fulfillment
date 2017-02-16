@@ -60,13 +60,13 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   private Predicate isOneOf(String field, Collection collection, Root root, Predicate predicate,
                             CriteriaBuilder builder) {
     if (!isEmpty(collection)) {
-      Predicate statusPredicate = builder.disjunction();
+      Predicate collectionPredicate = builder.disjunction();
 
       for (Object elem : collection) {
-        statusPredicate = builder.or(statusPredicate, builder.equal(root.get(field), elem));
+        collectionPredicate = builder.or(collectionPredicate, builder.equal(root.get(field), elem));
       }
 
-      return builder.and(predicate, statusPredicate);
+      return builder.and(predicate, collectionPredicate);
     }
 
     return predicate;
