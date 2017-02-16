@@ -1,6 +1,7 @@
 package org.openlmis.fulfillment.service.notification;
 
 import org.openlmis.fulfillment.service.BaseCommunicationService;
+import org.openlmis.util.NotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

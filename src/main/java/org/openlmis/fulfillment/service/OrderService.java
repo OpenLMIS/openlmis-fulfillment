@@ -7,7 +7,6 @@ import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_IN_USE;
-import static org.openlmis.fulfillment.service.notification.NotificationRequest.plainTextNotification;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
@@ -23,6 +22,7 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
+import org.openlmis.util.NotificationRequest;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -275,7 +275,7 @@ public class OrderService {
         .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
     String content = createContent(order);
 
-    notificationService.send(plainTextNotification(from, to, subject, content));
+    notificationService.send(new NotificationRequest(from, to, subject, content));
   }
 
   private String createContent(Order order) {

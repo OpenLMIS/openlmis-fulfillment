@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.openlmis.util.NotificationRequest;
 import org.openlmis.fulfillment.service.BaseCommunicationService;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
 import org.springframework.http.HttpEntity;
@@ -28,8 +29,7 @@ public class NotificationServiceTest extends BaseCommunicationServiceTest {
 
   @Test
   public void shouldSendNotification() {
-    NotificationRequest request = NotificationRequest
-        .plainTextNotification("from", "to", "subject", "plainContent");
+    NotificationRequest request = new NotificationRequest("from", "to", "subject", "plainContent");
 
     NotificationService service = prepareService();
     boolean success = service.send(request);
@@ -54,13 +54,11 @@ public class NotificationServiceTest extends BaseCommunicationServiceTest {
     assertThat(sent.getTo(), is(equalTo(request.getTo())));
     assertThat(sent.getSubject(), is(equalTo(request.getSubject())));
     assertThat(sent.getContent(), is(equalTo(request.getContent())));
-    assertThat(sent.getHtmlContent(), is(equalTo(request.getHtmlContent())));
   }
 
   @Test
   public void shouldReturnFalseIfCannotSendNotification() {
-    NotificationRequest request = NotificationRequest
-        .plainTextNotification("from", "to", "subject", "plainContent");
+    NotificationRequest request = new NotificationRequest("from", "to", "subject", "plainContent");
 
     when(restTemplate
         .postForEntity(any(URI.class), any(HttpEntity.class), eq(NotificationRequest.class)))
