@@ -1,9 +1,6 @@
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
-import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INCORRECT_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
 import org.openlmis.fulfillment.domain.Order;
@@ -16,13 +13,13 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
+import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
-import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,35 +159,6 @@ public class OrderController extends BaseController {
         .collect(Collectors.toList());
 
     return OrderDto.newInstance(orders, exporter);
-  }
-
-  /**
-   * Allows finalizing orders.
-   *
-   * @param orderId The UUID of the order to finalize
-   * @return ResponseEntity with the "#200 OK" HTTP response status on success or ResponseEntity
-   *         containing the error description and "#400 Bad Request" status
-   */
-  @RequestMapping(value = "/orders/{id}/finalize", method = RequestMethod.PUT)
-  public ResponseEntity<OrderDto> finalizeOrder(@PathVariable("id") UUID orderId) {
-
-    Order order = orderRepository.findOne(orderId);
-
-    if (order == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    permissionService.canEditOrder(order);
-
-    if (order.getStatus() != ORDERED) {
-      throw new ValidationException(ERROR_ORDER_INCORRECT_STATUS);
-    }
-
-    LOGGER.debug("Finalizing the order with id: {}", order);
-    order.setStatus(SHIPPED);
-    orderRepository.save(order);
-
-    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**

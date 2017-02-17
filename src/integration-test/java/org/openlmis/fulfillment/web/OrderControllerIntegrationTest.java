@@ -67,7 +67,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
-  private static final String FINALIZE_URL = ID_URL + "/finalize";
   private static final String PRINT_URL = ID_URL + "/print";
   private static final String POD_URL = ID_URL + "/proofOfDeliveries";
 
@@ -214,56 +213,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     order.getOrderLineItems().add(orderLineItem);
 
     return orderLineItem;
-  }
-
-  @Test
-  public void shouldFinalizeOrder() {
-    firstOrder.setStatus(OrderStatus.ORDERED);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .put(FINALIZE_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
-  }
-
-  @Test
-  public void shouldNotFinalizeIfWrongOrderStatus() {
-    firstOrder.setStatus(OrderStatus.SHIPPED);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .put(FINALIZE_URL)
-        .then()
-        .statusCode(400);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
-  }
-
-  @Test
-  public void shouldNotFinalizeIfOrderDoesNotExist() {
-    UUID id = UUID.randomUUID();
-
-    given(orderRepository.findOne(id)).willReturn(null);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", id.toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .put(FINALIZE_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
   @Test
@@ -868,24 +817,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldRejectFinalizeRequestWhenUserHasNoRights() {
-    denyUserAllRights();
-
-    String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .put(FINALIZE_URL)
         .then()
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
