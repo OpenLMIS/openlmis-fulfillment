@@ -68,33 +68,6 @@ public class ProofOfDeliveryController extends BaseController {
   private PermissionService permissionService;
 
   /**
-   * Allows creating new proofOfDeliveries.
-   * If the id is specified, it will be ignored.
-   *
-   * @param pod A proofOfDelivery bound to the request body
-   * @return ResponseEntity containing the created proofOfDelivery
-   */
-  @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.POST)
-  public ResponseEntity createProofOfDelivery(@RequestBody ProofOfDeliveryDto pod,
-                                              OAuth2Authentication authentication) {
-    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(pod);
-
-    if (!authentication.isClientOnly()) {
-      permissionService.canManagePod(proofOfDelivery);
-    }
-
-    LOGGER.debug("Creating new proofOfDelivery");
-    proofOfDelivery.setId(null);
-    ProofOfDelivery newProofOfDelivery = proofOfDeliveryRepository.save(proofOfDelivery);
-
-    LOGGER.debug("Created new proofOfDelivery with id: " + pod.getId());
-    return new ResponseEntity<>(
-        ProofOfDeliveryDto.newInstance(newProofOfDelivery, exporter),
-        HttpStatus.CREATED
-    );
-  }
-
-  /**
    * Get all proofOfDeliveries.
    *
    * @return ProofOfDeliveries.

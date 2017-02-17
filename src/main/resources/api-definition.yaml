@@ -377,21 +377,6 @@ resourceTypes:
                   body:
                     application/json:
                       schema: localizedMessage
-      post:
-          is: [ secured ]
-          description: Creates new proofOfDelivery.
-          body:
-              application/json:
-                schema: proofOfDeliveryDto
-          responses:
-              201:
-                  body:
-                    application/json:
-                      schema: proofOfDeliveryDto
-              403:
-                  body:
-                    application/json:
-                      schema: localizedMessage
       /{id}:
           uriParameters:
               id:

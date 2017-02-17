@@ -328,25 +328,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldCreateProofOfDelivery() {
-    proofOfDeliveryDto.getProofOfDeliveryLineItems().clear();
-
-    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
-    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(proofOfDeliveryDto)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(201);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldSubmitValidObject() {
     ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -430,25 +411,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldRejectCreateRequestIfUserHasNoRight() {
-    denyUserAllRights();
-
-    String response = restAssured
-        .given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(proofOfDeliveryDto)
-        .when()
-        .post(RESOURCE_URL)
         .then()
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
