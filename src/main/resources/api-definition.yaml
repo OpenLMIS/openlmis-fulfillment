@@ -201,25 +201,6 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
-          put:
-              is: [ secured ]
-              description: Update existing order.
-              body:
-                  application/json:
-                    schema: orderDto
-              responses:
-                  200:
-                      body:
-                        application/json:
-                          schema: orderDto
-                  403:
-                      body:
-                        application/json:
-                          schema: localizedMessage
-                  409:
-                      body:
-                        application/json:
-                          schema: localizedMessage
           /export:
               get:
                   is: [ secured ]

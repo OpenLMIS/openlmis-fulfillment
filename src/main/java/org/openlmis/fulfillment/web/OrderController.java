@@ -130,38 +130,6 @@ public class OrderController extends BaseController {
   }
 
   /**
-   * Allows updating orders.
-   *
-   * @param orderDto A order bound to the request body
-   * @param orderId  UUID of order which we want to update
-   * @return ResponseEntity containing the updated order
-   */
-  @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
-  @ResponseBody
-  public OrderDto updateOrder(@RequestBody OrderDto orderDto,
-                              @PathVariable("id") UUID orderId) {
-
-    Order order = Order.newInstance(orderDto);
-    Order orderToUpdate = orderRepository.findOne(orderId);
-
-    if (null == orderToUpdate) {
-      LOGGER.info("Creating new order");
-      orderToUpdate = new Order();
-      permissionService.canEditOrder(order);
-    } else {
-      LOGGER.debug("Updating order with id: {}", orderId);
-      permissionService.canEditOrder(orderToUpdate);
-    }
-
-    orderToUpdate.updateFrom(order);
-    orderToUpdate = orderRepository.save(orderToUpdate);
-
-    LOGGER.debug("Saved order with id: {}", orderToUpdate.getId());
-
-    return OrderDto.newInstance(orderToUpdate, exporter);
-  }
-
-  /**
    * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get

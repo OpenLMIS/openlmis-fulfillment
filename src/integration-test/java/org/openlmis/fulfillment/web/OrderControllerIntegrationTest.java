@@ -627,71 +627,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldUpdateOrder() {
-    firstOrderDto.setQuotedCost(new BigDecimal(NUMBER));
-
-    OrderDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .body(firstOrderDto)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(OrderDto.class);
-
-    assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldCreateNewOrderIfDoesNotExist() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
-
-    firstOrderDto.setQuotedCost(new BigDecimal(NUMBER));
-
-    OrderDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", ID)
-        .body(firstOrderDto)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(OrderDto.class);
-
-    assertEquals(response.getQuotedCost(), new BigDecimal(NUMBER));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnConflictWhenUpdatingOrderCode() {
-    firstOrder.setId(ID);
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setOrderLineItems(null);
-
-    firstOrderDto = OrderDto.newInstance(firstOrder, exporter);
-
-    given(orderRepository.findOne(ID)).willReturn(firstOrder);
-    given(orderRepository.save(any(Order.class)))
-        .willThrow(new DataIntegrityViolationException("This exception is required by IT"));
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", ID)
-        .body(firstOrderDto)
-        .when()
-        .put(ID_URL)
-        .then()
-        .statusCode(409);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldGetAllOrders() {
 
     OrderDto[] response = restAssured.given()
@@ -1001,25 +936,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldRejectUpdateRequestWhenUserHasNoRights() {
-    denyUserAllRights();
-
-    String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .body(firstOrderDto)
-        .when()
-        .put(ID_URL)
         .then()
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
