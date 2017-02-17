@@ -170,24 +170,6 @@ resourceTypes:
                   type: string
                   required: true
                   repeat: false
-          delete:
-              is: [ secured ]
-              description: Delete chosen order.
-              responses:
-                  204:
-                  400:
-                      body:
-                        application/json:
-                          schema: localizedMessage
-                  403:
-                      body:
-                        application/json:
-                          schema: localizedMessage
-                  404:
-                  409:
-                      body:
-                        application/json:
-                          schema: localizedMessage
           get:
               is: [ secured ]
               description: Get chosen order.

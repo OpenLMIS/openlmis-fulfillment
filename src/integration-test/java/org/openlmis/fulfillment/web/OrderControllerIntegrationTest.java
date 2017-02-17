@@ -13,8 +13,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
@@ -543,72 +541,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldDeleteOrder() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(204);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteNonexistentOrder() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldNotDeleteOrderInUse() {
-    List<ProofOfDelivery> pods = new ArrayList<>();
-    pods.add(proofOfDelivery);
-    when(proofOfDeliveryRepository.findByOrderId(firstOrder.getId())).thenReturn(pods);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(400);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnConflictCodeForExistingOrder() {
-    doThrow(new DataIntegrityViolationException("This exception is required by IT"))
-        .when(orderRepository)
-        .delete(any(Order.class));
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(409);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
@@ -936,24 +868,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldRejectDeleteRequestWhenUserHasNoRights() {
-    denyUserAllRights();
-
-    String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrder.getId())
-        .when()
-        .delete(ID_URL)
         .then()
         .statusCode(403)
         .extract().path(MESSAGE_KEY);

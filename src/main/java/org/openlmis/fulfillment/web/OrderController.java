@@ -147,24 +147,6 @@ public class OrderController extends BaseController {
   }
 
   /**
-   * Allows deleting order.
-   *
-   * @param orderId UUID of order which we want to delete
-   * @return ResponseEntity containing the HTTP Status
-   */
-  @RequestMapping(value = "/orders/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity<OrderDto> deleteOrder(@PathVariable("id") UUID orderId) {
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      permissionService.canEditOrder(order);
-      orderService.delete(order);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-  }
-
-  /**
    * Finds Orders matching all of provided parameters.
    *
    * @param params  provided parameters.
