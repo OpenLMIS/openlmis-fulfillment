@@ -148,25 +148,6 @@ public class ProofOfDeliveryController extends BaseController {
   }
 
   /**
-   * Allows deleting proofOfDelivery.
-   *
-   * @param id UUID of proofOfDelivery whose we want to delete
-   * @return ResponseEntity containing the HTTP Status
-   */
-  @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.DELETE)
-  public ResponseEntity deleteProofOfDelivery(@PathVariable("id") UUID id,
-                                              OAuth2Authentication authentication) {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
-    if (proofOfDelivery == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      canManagePod(authentication, id);
-      proofOfDeliveryRepository.delete(proofOfDelivery);
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-  }
-
-  /**
    * Print to PDF Proof of Delivery.
    *
    * @param id The UUID of the ProofOfDelivery to print

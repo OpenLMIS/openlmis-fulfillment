@@ -205,34 +205,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldDeleteProofOfDelivery() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", proofOfDelivery.getId())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(204);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnNotFoundWhenThereIsNoProofOfDelivery() {
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", proofOfDeliveryId.toString())
-        .when()
-        .delete(ID_URL)
-        .then()
-        .statusCode(404);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldUpdateProofOfDelivery() {
     String somebody = "Somebody";
     proofOfDeliveryDto.setDeliveredBy(somebody);
@@ -411,25 +383,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldRejectDeleteRequestIfUserHasNoRight() {
-    denyUserAllRights();
-
-    String response = restAssured
-        .given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", proofOfDelivery.getId())
-        .when()
-        .delete(ID_URL)
         .then()
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
