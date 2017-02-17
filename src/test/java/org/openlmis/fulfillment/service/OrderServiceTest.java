@@ -274,7 +274,7 @@ public class OrderServiceTest {
   public void shouldDeleteOrderIfNotUsed() {
     //given
     Order order = generateOrder();
-    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(new ArrayList<>());
+    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(null);
 
     //when
     orderService.delete(order);
@@ -288,8 +288,7 @@ public class OrderServiceTest {
     //given
     Order order = generateOrder();
     ProofOfDelivery pod = new ProofOfDelivery();
-    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(
-        Collections.singletonList(pod));
+    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(pod);
 
     //when
     orderService.delete(order);

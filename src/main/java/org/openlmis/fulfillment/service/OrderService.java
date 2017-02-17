@@ -164,7 +164,7 @@ public class OrderService {
    * @param order the order to remove
    */
   public void delete(Order order) {
-    if (!proofOfDeliveryRepository.findByOrderId(order.getId()).isEmpty()) {
+    if (null != proofOfDeliveryRepository.findByOrderId(order.getId())) {
       throw new ValidationException(ERROR_ORDER_IN_USE, order.getId().toString());
     } else {
       orderRepository.delete(order);

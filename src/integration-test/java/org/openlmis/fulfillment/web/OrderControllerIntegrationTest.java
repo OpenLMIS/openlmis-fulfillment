@@ -53,7 +53,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -826,13 +825,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldGetPodsForTheGivenOrder() {
+  public void shouldGetPodForTheGivenOrder() {
     given(proofOfDelivery.getOrder()).willReturn(firstOrder);
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
     given(proofOfDeliveryRepository.findByOrderId(firstOrder.getId()))
-        .willReturn(Collections.singletonList(proofOfDelivery));
+        .willReturn(proofOfDelivery);
 
-    ProofOfDeliveryDto[] response = restAssured.given()
+    ProofOfDeliveryDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
@@ -840,9 +839,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(POD_URL)
         .then()
         .statusCode(200)
-        .extract().as(ProofOfDeliveryDto[].class);
+        .extract().as(ProofOfDeliveryDto.class);
 
-    assertThat(response, arrayWithSize(1));
+    assertThat(response.getId(), is(equalTo(proofOfDelivery.getId())));
   }
 
   @Test

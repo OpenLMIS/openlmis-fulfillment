@@ -16,7 +16,6 @@ import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 public class ProofOfDeliveryRepositoryIntegrationTest extends
@@ -117,10 +116,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     instance = proofOfDeliveryRepository.save(instance);
 
     //when
-    List<ProofOfDelivery> actual = proofOfDeliveryRepository.findByOrderId(order.getId());
+    ProofOfDelivery actual = proofOfDeliveryRepository.findByOrderId(order.getId());
 
     //then
-    assertEquals(1, actual.size());
-    assertEquals(instance, actual.get(0));
+    assertEquals(instance, actual);
   }
 }

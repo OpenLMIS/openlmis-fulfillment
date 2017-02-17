@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -279,7 +278,7 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/proofOfDeliveries", method = RequestMethod.GET)
   @ResponseBody
-  public Collection<ProofOfDeliveryDto> getProofOfDeliveries(@PathVariable("id") UUID id) {
+  public ProofOfDeliveryDto getProofOfDeliveries(@PathVariable("id") UUID id) {
     Order order = orderRepository.findOne(id);
 
     if (null == order) {
@@ -288,8 +287,10 @@ public class OrderController extends BaseController {
 
     permissionService.canViewOrder(order);
 
-    List<ProofOfDelivery> deliveries = proofOfDeliveryRepository.findByOrderId(id);
-    return ProofOfDeliveryDto.newInstance(deliveries, exporter);
+    return ProofOfDeliveryDto.newInstance(
+        proofOfDeliveryRepository.findByOrderId(id),
+        exporter
+    );
   }
 
 }
