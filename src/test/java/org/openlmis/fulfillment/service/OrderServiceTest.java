@@ -43,7 +43,6 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.util.NotificationRequest;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -64,6 +63,8 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.util.NotificationRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -227,6 +228,7 @@ public class OrderServiceTest {
   public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
     // given
     Order order = generateOrder();
+    Pageable pageable = mock(Pageable.class);
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -236,7 +238,8 @@ public class OrderServiceTest {
     // when
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString())
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()),
+        pageable
     );
     List<Order> receivedOrders = orderService.searchOrders(params);
 

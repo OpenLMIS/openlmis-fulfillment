@@ -22,10 +22,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.google.common.collect.Lists;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionLikeType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.ObjectMapperConfig;
@@ -48,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -55,6 +59,9 @@ import guru.nidi.ramltester.RamlDefinition;
 import guru.nidi.ramltester.RamlLoaders;
 import guru.nidi.ramltester.restassured.RestAssuredClient;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -560,6 +567,37 @@ public abstract class BaseWebIntegrationTest {
         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
         .withBody("{ \"result\":\"false\" }"))
     );
+  }
+
+  <T> List<T> getPageContent(Page page, Class<T> type) {
+    List content = page.getContent();
+
+    if (isEmpty(content)) {
+      // nothing to do
+      return Collections.emptyList();
+    }
+
+    if (type.isInstance(content.get(0))) {
+      // content contains instances of the given type
+      return Collections.checkedList(content, type);
+    }
+
+    if (content.get(0) instanceof Map) {
+      // jackson does not convert json to correct type
+      // instead it use default operation and objects are
+      // represented by Map
+      
+      // We have to do manually convert map to the given type =(
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.findAndRegisterModules();
+
+      TypeFactory factory = mapper.getTypeFactory();
+      CollectionLikeType collectionType = factory.constructCollectionLikeType(List.class, type);
+
+      return mapper.convertValue(content, collectionType);
+    }
+
+    throw new IllegalStateException("the page content contains unsupported type");
   }
 
   static class SaveAnswer<T extends BaseEntity> implements Answer<T> {

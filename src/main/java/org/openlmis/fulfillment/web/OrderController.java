@@ -36,9 +36,11 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.util.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -164,15 +166,16 @@ public class OrderController extends BaseController {
    * @return ResponseEntity with list of all Orders matching provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Iterable<OrderDto> searchOrders(OrderSearchParams params) {
+  public Page<OrderDto> searchOrders(OrderSearchParams params) {
     List<Order> orders = orderService
         .searchOrders(params)
         .stream()
         .filter(permissionService::canViewOrderOrManagePod)
         .collect(Collectors.toList());
 
-    return OrderDto.newInstance(orders, exporter);
+    return Pagination.getPage(OrderDto.newInstance(orders, exporter), params.getPageable());
   }
 
   /**
