@@ -58,7 +58,7 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
-import org.openlmis.util.PageImplRepresentation;
+import org.openlmis.fulfillment.PageImplRepresentation;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
