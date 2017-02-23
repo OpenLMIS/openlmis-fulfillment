@@ -123,3 +123,10 @@ expected use-case for this is when this service is deployed through the
 ## Environment variables
 
 Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
+
+If you are using the [hauptmedia/proftpd](https://hub.docker.com/r/hauptmedia/proftpd/) Docker image for testing fulfillment (like we do in our reference distribution), you can use the following variables to set the username and password for that server:
+
+* **FTP_USERNAME** - the username of the FTP user. 
+* **FTP_PASSWORD** - the password of the FTP user.
+
+Note: the fullfillment service does not use the variables above for setting up any connections - the configuration is kept in the database and managed through the appropriate endpoints.
