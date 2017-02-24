@@ -129,4 +129,4 @@ If you are using the [hauptmedia/proftpd](https://hub.docker.com/r/hauptmedia/pr
 * **FTP_USERNAME** - the username of the FTP user. 
 * **FTP_PASSWORD** - the password of the FTP user.
 
-Note: the fullfillment service does not use the variables above for setting up any connections - the configuration is kept in the database and managed through the appropriate endpoints.
+Note: the fulfillment service does not use the variables above for setting up any connections - the configuration is kept in the database and managed through the appropriate endpoints.
