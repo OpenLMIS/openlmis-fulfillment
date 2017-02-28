@@ -28,7 +28,7 @@
     "receivingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "supplyingFacilityId": "9318b2ea-9ae0-42b2-a7e1-353683f54000",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000007R",
-    "status": "SHIPPED",
+    "status": "IN_ROUTE",
     "quotedCost": 30000
   },
   {
@@ -44,7 +44,7 @@
     "receivingFacilityId": "7938919f-6f61-4d1a-a4dc-923c31e9cd45",
     "supplyingFacilityId": "19121381-9f3d-4e77-b9e5-d3f59fc1639e",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000008R",
-    "status": "PICKING",
+    "status": "READY_TO_PACK",
     "quotedCost": 5000
   },
   {
@@ -60,7 +60,7 @@
     "receivingFacilityId": "13037147-1769-4735-90a7-b9b310d128b8",
     "supplyingFacilityId": "9318b2ea-9ae0-42b2-a7e1-353683f54000",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000009R",
-    "status": "ORDERED",
+    "status": "IN_ROUTE",
     "quotedCost": 100000
   }
 ]
