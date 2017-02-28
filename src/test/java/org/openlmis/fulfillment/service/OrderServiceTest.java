@@ -64,7 +64,6 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.util.NotificationRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -228,7 +227,6 @@ public class OrderServiceTest {
   public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
     // given
     Order order = generateOrder();
-    Pageable pageable = mock(Pageable.class);
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -238,8 +236,7 @@ public class OrderServiceTest {
     // when
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()),
-        pageable
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString())
     );
     List<Order> receivedOrders = orderService.searchOrders(params);
 

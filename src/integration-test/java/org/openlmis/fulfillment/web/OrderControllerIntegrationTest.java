@@ -454,6 +454,27 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnSearchPage() throws Exception {
+    given(orderRepository.searchOrders(null, null, null, null, null))
+        .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
+
+    PageImplRepresentation response = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .queryParam("page", 0)
+        .queryParam("size", 1)
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<OrderDto> content = getPageContent(response, OrderDto.class);
+
+    assertThat(content, hasSize(1));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatusAndPeriod() {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));

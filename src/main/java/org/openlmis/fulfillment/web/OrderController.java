@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +59,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -168,14 +171,16 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Page<OrderDto> searchOrders(OrderSearchParams params) {
+  public Page<OrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
     List<Order> orders = orderService
         .searchOrders(params)
         .stream()
+        .filter(Objects::nonNull)
         .filter(permissionService::canViewOrderOrManagePod)
+        .sorted((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()))
         .collect(Collectors.toList());
 
-    return Pagination.getPage(OrderDto.newInstance(orders, exporter), params.getPageable());
+    return Pagination.getPage(OrderDto.newInstance(orders, exporter), pageable);
   }
 
   /**

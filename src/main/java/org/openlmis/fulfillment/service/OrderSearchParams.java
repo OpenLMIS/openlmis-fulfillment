@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.web.ValidationException;
-import org.springframework.data.domain.Pageable;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,7 +48,6 @@ public class OrderSearchParams {
   UUID program;
   UUID processingPeriod;
   Set<String> status;
-  Pageable pageable;
 
   /**
    * Tries to convert the string representation of each status in the <strong>status</strong> field
