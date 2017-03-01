@@ -58,7 +58,7 @@ dependencies {
     compile 'org.apache.camel:camel-core:2.18.0'
     compile 'org.apache.camel:camel-spring:2.18.0'
     compile 'org.apache.camel:camel-ftp:2.18.0'
-    compile 'org.openlmis:openlmis-service-util:3.0.0-SNAPSHOT'
+    compile 'org.openlmis:openlmis-service-util:3.0.0'
     compile 'org.flywaydb:flyway-core:4.0.3'
 
     testCompile 'io.rest-assured:rest-assured:3.0.0'
