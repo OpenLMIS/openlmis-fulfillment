@@ -41,9 +41,9 @@ import java.util.UUID;
 @RequestMapping("/api/reports/templates/fulfillment")
 public class TemplateController extends BaseController {
 
-  private static final String CONSISTENCY_REPORT = "Consistency Report";
-
   private static final Logger LOGGER = Logger.getLogger(TemplateController.class);
+
+  private static final String CONSISTENCY_REPORT = "Consistency Report";
 
   @Autowired
   private TemplateService templateService;
@@ -112,8 +112,7 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   public ResponseEntity<TemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
-    Template template =
-        templateRepository.findOne(templateId);
+    Template template = templateRepository.findOne(templateId);
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -130,8 +129,7 @@ public class TemplateController extends BaseController {
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id")
                                               UUID templateId) {
-    Template template =
-        templateRepository.findOne(templateId);
+    Template template = templateRepository.findOne(templateId);
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

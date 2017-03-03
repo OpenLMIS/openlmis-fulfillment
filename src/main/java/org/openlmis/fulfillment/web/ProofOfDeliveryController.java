@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -176,6 +177,9 @@ public class ProofOfDeliveryController extends BaseController {
     canManagePod(authentication, id);
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
+    if (podPrintTemplate == null) {
+      throw new ValidationException(ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME, PRINT_POD);
+    }
 
     Map<String, Object> params = ReportUtils.createParametersMap();
     String formatId = "'" + id + "'";

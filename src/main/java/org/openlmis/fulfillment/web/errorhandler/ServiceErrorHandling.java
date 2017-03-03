@@ -16,7 +16,10 @@
 package org.openlmis.fulfillment.web.errorhandler;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIOLATION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
+
+import net.sf.jasperreports.engine.JRRuntimeException;
 
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
@@ -113,6 +116,23 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   public Message.LocalizedMessage handleConfigurationSettingNotFoundException(
       ConfigurationSettingNotFoundException ex) {
     return logErrorAndRespond("Cannot find configuration setting", ex);
+  }
+
+  /**
+   * Handles the {@link JRRuntimeException} which may be thrown during Jasper report generation.
+   *
+   * @param err exception that caused the issue
+   * @return error response
+   */
+  @ExceptionHandler(JRRuntimeException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleJrRuntimeException(JRRuntimeException err) {
+    return logErrorAndRespond(
+        "Error during Jasper Report generation",
+        ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE,
+        err.getMessage()
+    );
   }
 
 }

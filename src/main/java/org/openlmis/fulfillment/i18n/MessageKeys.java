@@ -30,6 +30,8 @@ public abstract class MessageKeys {
 
   public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
+  public static final String ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE = ERROR_JASPER
+      + ".reportCreation.with.message";
 
   public static final String ERROR_PERMISSION_MISSING = ERROR_PREFIX + ".permission.missing";
 
@@ -61,6 +63,8 @@ public abstract class MessageKeys {
       + ".reporting.parameter.missing";
   public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX
       + ".reporting.template.exist";
+  public static final String ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME = ERROR_PREFIX
+      + ".reporting.template.notFound.with.name";
 
   public static final String ERROR_TRANSFER_PROPERTIES_DUPLICATE = ERROR_PREFIX
       + ".transfer-properties.duplicate";

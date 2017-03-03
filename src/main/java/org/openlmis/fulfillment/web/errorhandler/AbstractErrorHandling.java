@@ -46,17 +46,17 @@ abstract class AbstractErrorHandling {
    */
   Message.LocalizedMessage logErrorAndRespond(String message, FulfillmentException ex) {
     logger.info(message, ex);
-    return getLocalizedMessage(ex);
+    return getLocalizedMessage(ex.asMessage());
   }
 
   /**
-   * Translate the Message in a FulfillmentException into a LocalizedMessage.
+   * Translates a Message into a LocalizedMessage.
    *
-   * @param exception is any FulfillmentException containing a Message
+   * @param message message to translate
    * @return a LocalizedMessage translated by the MessageService bean
    */
-  protected final Message.LocalizedMessage getLocalizedMessage(FulfillmentException exception) {
-    return messageService.localize(exception.asMessage());
+  protected final Message.LocalizedMessage getLocalizedMessage(Message message) {
+    return messageService.localize(message);
   }
 
 }
