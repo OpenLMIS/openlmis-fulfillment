@@ -485,14 +485,14 @@ resourceTypes:
                   body:
                     application/json:
                       schema: localizedMessage
-      post:
+      put:
           is: [ secured ]
-          description: Create or update orderFileTemplate.
+          description: Update orderFileTemplate.
           body:
               application/json:
                 schema: orderFileTemplateDto
           responses:
-              201:
+              200:
                   body:
                     application/json:
                       schema: orderFileTemplateDto

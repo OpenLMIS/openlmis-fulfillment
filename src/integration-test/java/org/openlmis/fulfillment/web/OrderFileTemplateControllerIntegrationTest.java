@@ -20,6 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,14 +32,13 @@ import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
-import org.springframework.http.MediaType;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
-
-import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.UUID;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -53,7 +56,6 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
   @Before
   public void setUp() {
-
     orderFileTemplate.setId(UUID.randomUUID());
     orderFileTemplate.setFilePrefix("prefix");
     orderFileTemplate.setHeaderInFile(false);
@@ -64,9 +66,10 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
         .willAnswer(new SaveAnswer<OrderFileTemplate>());
   }
 
-  @Test
-  public void shouldCreateNewOrderFileTemplate() {
+  // POST /api/orderFileTemplates
 
+  @Test
+  public void shouldNotCreateNewOrderFileTemplate() {
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     restAssured.given()
@@ -76,14 +79,41 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
         .when()
         .post(RESOURCE_URL)
         .then()
-        .statusCode(201);
+        .statusCode(405);
+  }
+
+  // PUT /api/orderFileTemplates
+
+  @Test
+  public void shouldUpdateOrderFileTemplate() {
+    // given
+    OrderFileTemplate originalTemplate = new OrderFileTemplate();
+    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+
+    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+
+    // when
+    OrderFileTemplateDto result = restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(orderFileTemplateDto)
+        .when()
+        .put(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(OrderFileTemplateDto.class);
+
+    // then
+    verify(orderFileTemplateRepository, atLeastOnce()).save(eq(originalTemplate));
+    assertEquals(orderFileTemplateDto.getFilePrefix(), result.getFilePrefix());
+    assertEquals(orderFileTemplateDto.getHeaderInFile(), result.getHeaderInFile());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
-  public void shouldNotCreateNewOrderFileTemplateWhenOrderFileColumnContainsWrongFormat() {
-
+  public void shouldNotUpdateOrderFileTemplateWhenOrderFileColumnContainsWrongFormat() {
     OrderFileColumn orderFileColumn = new OrderFileColumn();
     orderFileColumn.setDataFieldLabel("label");
     orderFileColumn.setColumnLabel("label");
@@ -105,12 +135,32 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
-        .post(RESOURCE_URL)
+        .put(RESOURCE_URL)
         .then()
         .statusCode(400);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
+
+  @Test
+  public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
+    denyUserAllRights();
+    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(orderFileTemplateDto)
+        .when()
+        .put(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+  }
+
+  // GET /api/orderFileTemplates
 
   @Test
   public void shouldReturnOrderFileTemplate() {
@@ -158,24 +208,5 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
         .statusCode(403);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-  }
-
-  @Test
-  public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
-    denyUserAllRights();
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
-
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(403);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
   }
 }

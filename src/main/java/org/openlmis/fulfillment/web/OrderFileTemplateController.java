@@ -16,10 +16,10 @@
 package org.openlmis.fulfillment.web;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.service.PermissionService;
-import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
+import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.openlmis.fulfillment.web.validator.OrderFileTemplateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 
@@ -58,31 +59,30 @@ public class OrderFileTemplateController extends BaseController {
   }
 
   /**
-   * Allows creating or updating orderFileTemplate.
+   * Allows updating order file templates.
    *
-   * @param orderFileTemplateDto A orderFileTemplate bound to the request body
+   * @param orderFileTemplateDto An order file template bound to the request body
    * @return ResponseEntity containing saved orderFileTemplate
    */
-  @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.POST)
-  public ResponseEntity<Object> savedOrderFileTemplate(
+  @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.PUT)
+  @ResponseBody
+  public OrderFileTemplateDto savedOrderFileTemplate(
       @RequestBody @Valid OrderFileTemplateDto orderFileTemplateDto, BindingResult bindingResult) {
-
     LOGGER.debug("Checking right to update order file template");
     permissionService.canManageSystemSettings();
 
     if (bindingResult.hasErrors()) {
-      return new ResponseEntity<>(getErrors(bindingResult), HttpStatus.BAD_REQUEST);
+      throw new ValidationException(bindingResult.getAllErrors().get(0).getDefaultMessage());
     }
 
     LOGGER.debug("Saving Order File Template");
-    OrderFileTemplate orderFileTemplate = OrderFileTemplate.newInstance(
-        orderFileTemplateDto);
+    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
 
-    OrderFileTemplate savedTemplate = orderFileTemplateRepository.save(orderFileTemplate);
+    template.importDto(orderFileTemplateDto);
+    template = orderFileTemplateRepository.save(template);
 
-    LOGGER.debug("Saved Order File Template with id: " + orderFileTemplate.getId());
-    return new ResponseEntity<>( OrderFileTemplateDto.newInstance(savedTemplate),
-        HttpStatus.CREATED);
+    LOGGER.debug("Saved Order File Template with id: " + template.getId());
+    return OrderFileTemplateDto.newInstance(template);
   }
 
   /**

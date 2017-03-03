@@ -16,11 +16,6 @@
 package org.openlmis.fulfillment.domain;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +27,11 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "order_file_templates")
@@ -60,23 +60,20 @@ public class OrderFileTemplate extends BaseEntity {
   private List<OrderFileColumn> orderFileColumns;
 
   /**
-   * Creates new instance od OrderFileTemplate based on given{@link OrderFileTemplate.Importer}
+   * Updates itself using data from {@link OrderFileTemplate.Importer}.
+   *
    * @param importer instance of {@link OrderFileTemplate.Importer}
-   * @return new instance of OrderFileTemplate.
    */
-  public static OrderFileTemplate newInstance(Importer importer) {
-    OrderFileTemplate orderFileTemplate =  new OrderFileTemplate();
-    orderFileTemplate.setId(importer.getId());
-    orderFileTemplate.setFilePrefix(importer.getFilePrefix());
-    orderFileTemplate.setHeaderInFile(importer.getHeaderInFile());
-    orderFileTemplate.setOrderFileColumns(new ArrayList<>());
+  public void importDto(Importer importer) {
+    id = importer.getId();
+    filePrefix = importer.getFilePrefix();
+    headerInFile = importer.getHeaderInFile();
+    orderFileColumns = new ArrayList<>();
+
     if (importer.getOrderFileColumns() != null) {
       importer.getOrderFileColumns().forEach(
-          ofc -> orderFileTemplate.getOrderFileColumns().add(
-              OrderFileColumn.newInstance(ofc)));
+          column -> orderFileColumns.add(OrderFileColumn.newInstance(column)));
     }
-
-    return orderFileTemplate;
   }
 
   /**
