@@ -27,11 +27,10 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -64,8 +63,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -254,6 +251,23 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract().as(ProofOfDeliveryDto.class);
 
     assertThat(response.getDeliveredBy(), is(equalTo(somebody)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateProofOfDeliveryWhenIsSubmitted() {
+    proofOfDelivery.getOrder().setStatus(OrderStatus.RECEIVED);
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .body(proofOfDeliveryDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

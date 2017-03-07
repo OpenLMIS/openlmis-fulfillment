@@ -421,6 +421,10 @@ resourceTypes:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
+                  400:
+                      body:
+                        application/json:
+                          schema: localizedMessage
                   403:
                       body:
                         application/json:

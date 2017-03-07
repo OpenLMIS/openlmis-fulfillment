@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
 
@@ -129,6 +130,11 @@ public class ProofOfDeliveryController extends BaseController {
     } else {
       canManagePod(authentication, proofOfDeliveryId);
       LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
+    }
+
+    OrderStatus status = proofOfDeliveryToUpdate.getOrder().getStatus();
+    if (status.equals(OrderStatus.RECEIVED)) {
+      throw new ValidationException(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED);
     }
 
     proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
