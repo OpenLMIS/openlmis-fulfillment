@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.domain;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,8 +67,8 @@ public class OrderFileTemplate extends BaseEntity {
     id = importer.getId();
     filePrefix = importer.getFilePrefix();
     headerInFile = importer.getHeaderInFile();
-    orderFileColumns = new ArrayList<>();
 
+    orderFileColumns.clear();
     if (importer.getOrderFileColumns() != null) {
       importer.getOrderFileColumns().forEach(
           column -> orderFileColumns.add(OrderFileColumn.newInstance(column)));

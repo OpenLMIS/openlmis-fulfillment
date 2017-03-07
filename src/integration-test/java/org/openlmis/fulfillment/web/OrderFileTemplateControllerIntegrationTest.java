@@ -88,6 +88,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
   public void shouldUpdateOrderFileTemplate() {
     // given
     OrderFileTemplate originalTemplate = new OrderFileTemplate();
+    originalTemplate.setOrderFileColumns(new ArrayList<>());
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
