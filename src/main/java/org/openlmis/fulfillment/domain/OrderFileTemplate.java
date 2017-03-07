@@ -70,8 +70,12 @@ public class OrderFileTemplate extends BaseEntity {
 
     orderFileColumns.clear();
     if (importer.getOrderFileColumns() != null) {
-      importer.getOrderFileColumns().forEach(
-          column -> orderFileColumns.add(OrderFileColumn.newInstance(column)));
+      for (OrderFileColumn.Importer columnImporter : importer.getOrderFileColumns()) {
+        OrderFileColumn column = OrderFileColumn.newInstance(columnImporter);
+        column.setOrderFileTemplate(this);
+
+        orderFileColumns.add(column);
+      }
     }
   }
 
