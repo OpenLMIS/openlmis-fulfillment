@@ -56,8 +56,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
@@ -66,6 +64,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -216,6 +216,24 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotPrintProofOfDeliveryIfTemplateNonExistent() throws Exception {
+    // given
+    given(templateRepository.findByName(any(String.class))).willReturn(null);
+
+    // when
+    restAssured.given()
+        .pathParam("id", proofOfDelivery.getId())
+        .queryParam(ACCESS_TOKEN, getToken())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(400);
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
