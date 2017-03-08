@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
@@ -258,7 +259,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   public void shouldNotUpdateProofOfDeliveryWhenIsSubmitted() {
     proofOfDelivery.getOrder().setStatus(OrderStatus.RECEIVED);
 
-    restAssured.given()
+    String response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
@@ -266,8 +267,10 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .when()
         .put(ID_URL)
         .then()
-        .statusCode(400);
+        .statusCode(400)
+        .extract().path("messageKey");
 
+    assertThat(response, is(equalTo(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

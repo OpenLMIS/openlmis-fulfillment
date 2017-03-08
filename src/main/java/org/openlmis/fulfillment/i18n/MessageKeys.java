@@ -78,7 +78,7 @@ public abstract class MessageKeys {
   public static final String ERROR_PROOF_OD_DELIVERY_VALIDATION =
       ERROR_PREFIX + ".proofOdDelivery.validation";
   public static final String ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED = ERROR_PREFIX
-      + ".proofOfDelivery.canNotUpdateBecauseItWasSubmitted";
+      + ".proofOfDelivery.cannotUpdateSubmitted";
 
   public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
       VALIDATION_ERROR + ".mustContainValue";
