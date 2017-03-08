@@ -24,38 +24,45 @@ import static org.mockito.Matchers.any;
 import static org.openlmis.fulfillment.domain.FtpProtocol.FTP;
 import static org.openlmis.fulfillment.web.util.TransferPropertiesFactory.newInstance;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.util.UUID;
 
 public class FtpTransferPropertiesControllerIntegrationTest
     extends BaseTransferPropertiesControllerIntegrationTest<FtpTransferProperties> {
 
+  private FtpTransferProperties ftpTransferProperties;
+
+  @Before
+  public void setUp() {
+    ftpTransferProperties = generateProperties();
+    given(transferPropertiesRepository.findOne(ftpTransferProperties.getId()))
+        .willReturn(ftpTransferProperties);
+    given(transferPropertiesRepository.save(any(TransferProperties.class)))
+        .willAnswer(new SaveAnswer<TransferProperties>());
+  }
+
+
   @Test
   public void shouldUpdateWithDifferentType() {
     // given
-    FtpTransferProperties oldProperties = generateProperties();
     LocalTransferProperties newProperties = new LocalTransferProperties();
-    newProperties.setId(oldProperties.getId());
-    newProperties.setFacilityId(oldProperties.getFacilityId());
-    newProperties.setPath("local/paty");
-
-    given(transferPropertiesRepository.findOne(oldProperties.getId())).willReturn(oldProperties);
-    given(transferPropertiesRepository.save(any(TransferProperties.class)))
-        .willAnswer(new SaveAnswer<TransferProperties>());
+    newProperties.setId(ftpTransferProperties.getId());
+    newProperties.setFacilityId(ftpTransferProperties.getFacilityId());
+    newProperties.setPath("local/path");
 
     // when
     TransferPropertiesDto response = restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .pathParam("id", oldProperties.getId())
+        .pathParam("id", ftpTransferProperties.getId())
         .body(newInstance(newProperties, exporter))
         .when()
         .put(ID_URL)
@@ -65,6 +72,45 @@ public class FtpTransferPropertiesControllerIntegrationTest
 
     // then
     assertThat(newInstance(response), instanceOf(LocalTransferProperties.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenUpdateWithNegativePort() {
+    // given
+    ftpTransferProperties.setServerPort(-1);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", ftpTransferProperties.getId())
+        .body(toDto(ftpTransferProperties))
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenCreateWithNegativePort() {
+    // given
+    ftpTransferProperties.setServerPort(-1);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(toDto(ftpTransferProperties))
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400);
+
+    // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -96,6 +142,14 @@ public class FtpTransferPropertiesControllerIntegrationTest
     assertThat(actual.getLocalDirectory(), is("local/dir"));
     assertThat(actual.getUsername(), is("username"));
     assertThat(actual.getPassiveMode(), is(true));
+  }
+
+  @Override
+  TransferPropertiesDto toDto(FtpTransferProperties properties) {
+    FtpTransferPropertiesDto propertiesDto =
+        (FtpTransferPropertiesDto) newInstance(properties, exporter);
+    propertiesDto.setPassword(properties.getPassword());
+    return propertiesDto;
   }
 
 }

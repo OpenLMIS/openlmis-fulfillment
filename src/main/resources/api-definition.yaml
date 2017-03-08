@@ -624,6 +624,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: transferProperties
+              400:
+                  body:
+                      application/json:
+                          schema: badRequestResponse
               403:
                   body:
                     application/json:
@@ -674,12 +678,12 @@ resourceTypes:
                       body:
                         application/json:
                           schema: transferProperties
+                  400:
+                      body:
+                          application/json:
+                            schema: badRequestResponse
                   404:
                   403:
-                      body:
-                        application/json:
-                          schema: localizedMessage
-                  400:
                       body:
                         application/json:
                           schema: localizedMessage

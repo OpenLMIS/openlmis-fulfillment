@@ -19,6 +19,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -27,16 +28,13 @@ import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends TransferProperties>
     extends BaseWebIntegrationTest {
   static final String ACCESS_TOKEN = "access_token";
-  private static final String RESOURCE_URL = "/api/transferProperties";
+  static final String RESOURCE_URL = "/api/transferProperties";
   static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH = RESOURCE_URL + "/search";
   private static final String FACILITY = "facility";
@@ -55,7 +53,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(TransferPropertiesFactory.newInstance(properties, exporter))
+        .body(toDto(properties))
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -82,7 +80,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
+        .body(toDto(newProperties))
         .when()
         .put(ID_URL)
         .then()
@@ -109,7 +107,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
+        .body(toDto(newProperties))
         .when()
         .put(ID_URL)
         .then()
@@ -133,7 +131,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .willAnswer(new SaveAnswer<TransferProperties>());
 
     // when
-    TransferPropertiesDto object = TransferPropertiesFactory.newInstance(newProperties, exporter);
+    TransferPropertiesDto object = toDto(newProperties);
     object.getFacility().setId(UUID.randomUUID());
 
     restAssured.given()
@@ -312,7 +310,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(TransferPropertiesFactory.newInstance(properties, exporter))
+        .body(toDto(properties))
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -332,7 +330,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .queryParam(ACCESS_TOKEN, getToken())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
-        .body(TransferPropertiesFactory.newInstance(newProperties, exporter))
+        .body(toDto(newProperties))
         .when()
         .put(ID_URL)
         .then()
@@ -378,5 +376,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   abstract T generateProperties();
 
   abstract void assertTransferProperties(T actual);
+
+  abstract TransferPropertiesDto toDto(T properties);
 
 }

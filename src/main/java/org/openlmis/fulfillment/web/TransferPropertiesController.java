@@ -15,14 +15,21 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
+import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TransferPropertiesService;
+import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
+import org.openlmis.fulfillment.web.validator.FtpTransferPropertiesValidator;
+import org.openlmis.fulfillment.web.validator.LocalTransferPropertiesValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -58,6 +66,12 @@ public class TransferPropertiesController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
+  @Autowired
+  private FtpTransferPropertiesValidator ftpTransferPropertiesValidator;
+
+  @Autowired
+  private LocalTransferPropertiesValidator localTransferPropertiesValidator;
+
   /**
    * Allows creating new transfer properties.
    * If the id is specified, it will be ignored.
@@ -66,23 +80,29 @@ public class TransferPropertiesController extends BaseController {
    * @return ResponseEntity containing the created transfer properties
    */
   @RequestMapping(value = "/transferProperties", method = RequestMethod.POST)
-  @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public TransferPropertiesDto create(@RequestBody TransferPropertiesDto properties) {
+  public ResponseEntity create(@RequestBody TransferPropertiesDto properties) {
 
     LOGGER.debug("Checking right to create transfer properties");
     permissionService.canManageSystemSettings();
 
     LOGGER.debug("Creating new Transfer Properties");
 
+    TransferProperties entity = TransferPropertiesFactory.newInstance(properties);
+
+    List<Message.LocalizedMessage> errors = validate(entity);
+    if (isNotTrue(errors.isEmpty())) {
+      return ResponseEntity.badRequest().body(errors);
+    }
+
     properties.setId(null);
-    TransferProperties saved = transferPropertiesService.save(
-        TransferPropertiesFactory.newInstance(properties)
-    );
+    TransferProperties saved = transferPropertiesService.save(entity);
 
     LOGGER.debug("Created new Transfer Properties with id: {}", saved.getId());
 
-    return TransferPropertiesFactory.newInstance(saved, exporter);
+    return ResponseEntity
+        .status(201)
+        .body(TransferPropertiesFactory.newInstance(saved, exporter));
   }
 
   /**
@@ -96,7 +116,7 @@ public class TransferPropertiesController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public ResponseEntity update(@RequestBody TransferPropertiesDto properties,
-                                      @PathVariable("id") UUID id) {
+                               @PathVariable("id") UUID id) {
     LOGGER.debug("Checking right to update transfer properties ");
     permissionService.canManageSystemSettings();
     TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
@@ -114,6 +134,11 @@ public class TransferPropertiesController extends BaseController {
 
     if (!Objects.equals(entity.getClass(), toUpdate.getClass())) {
       transferPropertiesRepository.delete(toUpdate);
+    }
+
+    List<Message.LocalizedMessage> errors = validate(entity);
+    if (isNotTrue(errors.isEmpty())) {
+      return ResponseEntity.badRequest().body(errors);
     }
 
     toUpdate = transferPropertiesRepository.save(entity);
@@ -182,5 +207,15 @@ public class TransferPropertiesController extends BaseController {
     } else {
       return ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties, exporter));
     }
+  }
+
+  private List<Message.LocalizedMessage> validate(TransferProperties entity) {
+    List<Message.LocalizedMessage> errors;
+    if (FtpTransferProperties.class.equals(entity.getClass())) {
+      errors = ftpTransferPropertiesValidator.validate((FtpTransferProperties) entity);
+    } else {
+      errors = localTransferPropertiesValidator.validate((LocalTransferProperties) entity);
+    }
+    return errors;
   }
 }

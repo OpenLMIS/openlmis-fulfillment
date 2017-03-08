@@ -13,46 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web.util;
+package org.openlmis.fulfillment.web.validator;
 
-import org.openlmis.fulfillment.domain.FtpTransferProperties;
+import com.google.common.collect.Lists;
+import org.openlmis.fulfillment.domain.LocalTransferProperties;
+import org.openlmis.fulfillment.util.Message;
+import org.springframework.stereotype.Component;
+import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+@Component
+public class LocalTransferPropertiesValidator extends BaseValidator {
 
-public class FtpTransferPropertiesDto extends TransferPropertiesDto
-    implements FtpTransferProperties.Importer, FtpTransferProperties.Exporter {
+  private static final String PATH = "path";
 
-  @Getter
-  @Setter
-  private String protocol;
+  /**
+   * Valides the given local transfer properties.
+   *
+   * @param target instance of {@link LocalTransferProperties} that should be validated.
+   */
+  public List<Message.LocalizedMessage> validate(LocalTransferProperties target) {
+    List<Message.LocalizedMessage> errors = Lists.newArrayList();
 
-  @Getter
-  @Setter
-  private String username;
+    rejectIfBlank(errors, target.getPath(), PATH);
 
-  @Getter
-  @Setter
-  private String password;
-
-  @Getter
-  @Setter
-  private String serverHost;
-
-  @Getter
-  @Setter
-  private Integer serverPort;
-
-  @Getter
-  @Setter
-  private String remoteDirectory;
-
-  @Getter
-  @Setter
-  private String localDirectory;
-
-  @Getter
-  @Setter
-  private Boolean passiveMode;
+    return errors;
+  }
 
 }
