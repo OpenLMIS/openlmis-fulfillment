@@ -54,7 +54,7 @@ public class ProofOfDeliveryValidator extends BaseValidator {
     rejectIfLessThanZero(errors, line.getQuantityReceived(), getLineField(QUANTITY_RECEIVED));
   }
 
-  String getLineField(String field) {
+  private String getLineField(String field) {
     return PROOF_OF_DELIVERY_LINE_ITEMS + '.' + field;
   }
 
