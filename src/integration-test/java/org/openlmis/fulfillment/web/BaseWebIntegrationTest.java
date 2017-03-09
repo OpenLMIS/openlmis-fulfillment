@@ -545,6 +545,17 @@ public abstract class BaseWebIntegrationTest {
     return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   }
 
+  protected UUID getNonMatchingUuid(UUID match) {
+    UUID uuid;
+
+    do {
+      uuid = UUID.randomUUID();
+    }
+    while (uuid.equals(match));
+
+    return uuid;
+  }
+
   public UUID getSharedFacilityId() {
     return UUID.fromString("aaf12a5a-8b16-11e6-ae22-56b6b6499611");
   }

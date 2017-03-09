@@ -4,7 +4,7 @@
   "description": "A single orderFileTemplate",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "id"
     },
     "filePrefix": {

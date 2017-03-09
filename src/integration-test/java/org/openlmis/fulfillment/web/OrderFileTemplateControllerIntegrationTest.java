@@ -61,7 +61,6 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     orderFileTemplate.setHeaderInFile(false);
     orderFileTemplate.setOrderFileColumns(new ArrayList<>());
 
-
     given(orderFileTemplateRepository.save(any(OrderFileTemplate.class)))
         .willAnswer(new SaveAnswer<OrderFileTemplate>());
   }
@@ -89,6 +88,8 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     // given
     OrderFileTemplate originalTemplate = new OrderFileTemplate();
     originalTemplate.setOrderFileColumns(new ArrayList<>());
+    originalTemplate.setId(orderFileTemplate.getId());
+
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
@@ -159,6 +160,61 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
+  }
+
+  @Test
+  public void shouldNotUpdateOrderFileTemplateWhenIdNotMatching() {
+    // given
+    OrderFileTemplate originalTemplate = new OrderFileTemplate();
+    originalTemplate.setOrderFileColumns(new ArrayList<>());
+    originalTemplate.setId(getNonMatchingUuid(orderFileTemplate.getId()));
+
+    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+
+    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(orderFileTemplateDto)
+        .when()
+        .put(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .extract()
+        .as(OrderFileTemplateDto.class);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotUpdateOrderFileTemplateWhenIdNull() {
+    // given
+    OrderFileTemplate originalTemplate = new OrderFileTemplate();
+    originalTemplate.setOrderFileColumns(new ArrayList<>());
+    originalTemplate.setId(orderFileTemplate.getId());
+
+    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    orderFileTemplateDto.setId(null);
+
+    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+
+    // when
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .body(orderFileTemplateDto)
+        .when()
+        .put(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .extract()
+        .as(OrderFileTemplateDto.class);
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   // GET /api/orderFileTemplates
