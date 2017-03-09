@@ -101,7 +101,7 @@ public class TransferPropertiesController extends BaseController {
     LOGGER.debug("Created new Transfer Properties with id: {}", saved.getId());
 
     return ResponseEntity
-        .status(201)
+        .status(HttpStatus.CREATED)
         .body(TransferPropertiesFactory.newInstance(saved, exporter));
   }
 
