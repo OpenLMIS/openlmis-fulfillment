@@ -67,6 +67,13 @@ public class FtpTransferPropertiesValidatorTest {
   }
 
   @Test
+  public void shouldPassWhenPropertiesAreValid() {
+    List<Message.LocalizedMessage> validate = validator.validate(properties);
+
+    assertThat(validate.size(), is(0));
+  }
+
+  @Test
   public void shouldRejectWhenProtocolIsNull() {
     properties.setProtocol(null);
     List<Message.LocalizedMessage> validate = validator.validate(properties);
