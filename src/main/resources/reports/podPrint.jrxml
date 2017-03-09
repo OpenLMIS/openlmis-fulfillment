@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-05T14:40:00 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-03-09T10:39:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -145,14 +145,14 @@
 					<textFieldExpression><![CDATA[$R{fulfillment.print.proofOfDelivery.header.facility.reporting.period}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="308" y="11" width="82" height="10" uuid="7c75268c-c1bf-4645-ad2d-6244c73ce77b"/>
+					<reportElement x="330" y="11" width="82" height="10" uuid="7c75268c-c1bf-4645-ad2d-6244c73ce77b"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{fulfillment.print.proofOfDelivery.header.facility}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="308" y="30" width="82" height="10" uuid="2b080c4f-486c-46c4-ae16-8411f352b0ea"/>
+					<reportElement x="330" y="30" width="82" height="10" uuid="2b080c4f-486c-46c4-ae16-8411f352b0ea"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
@@ -166,7 +166,7 @@
 					<textFieldExpression><![CDATA[$R{fulfillment.print.proofOfDelivery.header.order.date}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="115" y="11" width="115" height="10" uuid="219fe371-17e1-4ab4-acfb-8e262215827d"/>
+					<reportElement x="115" y="11" width="205" height="10" uuid="219fe371-17e1-4ab4-acfb-8e262215827d"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
@@ -183,14 +183,14 @@
 					<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="400" y="11" width="190" height="10" uuid="a24da1db-27e0-4a37-a357-7ac00bbc91ae"/>
+					<reportElement x="422" y="11" width="170" height="10" uuid="a24da1db-27e0-4a37-a357-7ac00bbc91ae"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{facility}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="400" y="30" width="190" height="10" uuid="52daec0b-f903-438c-a751-8bc5e1bf1445"/>
+					<reportElement x="422" y="30" width="170" height="10" uuid="52daec0b-f903-438c-a751-8bc5e1bf1445"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
@@ -246,14 +246,14 @@
 					<text><![CDATA[  :  ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="390" y="11" width="10" height="10" uuid="0e120727-7fe6-4fb8-a0f0-f90fa79d63f1"/>
+					<reportElement x="412" y="11" width="10" height="10" uuid="0e120727-7fe6-4fb8-a0f0-f90fa79d63f1"/>
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
 					<text><![CDATA[  :  ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="390" y="30" width="10" height="10" uuid="0ddeb019-12d8-4bb9-b104-18c61404d546"/>
+					<reportElement x="412" y="30" width="10" height="10" uuid="0ddeb019-12d8-4bb9-b104-18c61404d546"/>
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
@@ -326,9 +326,7 @@
 					<subreportParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression>
-					<![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "podLineItemPrint.jrxml"))]]>
-				</subreportExpression>
+				<subreportExpression><![CDATA[JasperCompileManager.compileReport(getClass().getResourceAsStream($P{subreport_dir} + "podLineItemPrint.jrxml"))]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
