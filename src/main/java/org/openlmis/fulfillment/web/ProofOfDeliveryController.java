@@ -46,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.util.Collection;
@@ -55,6 +54,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @Transactional
@@ -173,13 +173,12 @@ public class ProofOfDeliveryController extends BaseController {
    * Print to PDF Proof of Delivery.
    *
    * @param id The UUID of the ProofOfDelivery to print
-   * @return ResponseEntity with the "#200 OK" HTTP response status and Pdf file on success, or
-   *         ResponseEntity containing the error description status.
+   *
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
-  @ResponseBody
-  public ModelAndView print(HttpServletRequest request, @PathVariable("id") UUID id,
-                            OAuth2Authentication authentication) {
+  public void print(
+      @PathVariable("id") UUID id, HttpServletRequest request, HttpServletResponse response,
+      OAuth2Authentication authentication) throws Exception {
     canManagePod(authentication, id);
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
@@ -194,7 +193,7 @@ public class ProofOfDeliveryController extends BaseController {
     JasperReportsMultiFormatView jasperView =
         jasperReportsViewService.getJasperReportsView(podPrintTemplate, request);
 
-    return new ModelAndView(jasperView, params);
+    jasperView.render(params, request, response);
   }
 
   /**

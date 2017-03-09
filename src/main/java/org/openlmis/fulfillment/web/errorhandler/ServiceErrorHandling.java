@@ -19,7 +19,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIO
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
 
-import net.sf.jasperreports.engine.JRRuntimeException;
+import net.sf.jasperreports.engine.JRException;
 
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
@@ -119,15 +119,15 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   }
 
   /**
-   * Handles the {@link JRRuntimeException} which may be thrown during Jasper report generation.
+   * Handles the {@link JRException} which may be thrown during Jasper report generation.
    *
    * @param err exception that caused the issue
    * @return error response
    */
-  @ExceptionHandler(JRRuntimeException.class)
+  @ExceptionHandler(JRException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public Message.LocalizedMessage handleJrRuntimeException(JRRuntimeException err) {
+  public Message.LocalizedMessage handleJrRuntimeException(JRException err) {
     return logErrorAndRespond(
         "Error during Jasper Report generation",
         ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE,
