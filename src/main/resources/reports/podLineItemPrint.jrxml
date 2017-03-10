@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-03-10T11:17:51 -->
+<!-- 2017-03-10T13:02:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="845" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -63,10 +63,10 @@
                     podl.replacedproductcode,
                     podl.notes,
                     progp.fullsupply,
-                    prod.code,
-                    prod.name,
+                    prod.code AS productcode,
+                    prod.name AS productname,
                     prod.dispensingunit,
-                    categ.code
+                    categ.code AS categorycode
              FROM fulfillment.proof_of_delivery_line_items podl
              INNER JOIN  fulfillment.order_line_items ol on podl.orderlineitemid = ol.id
              INNER JOIN  referencedata.orderables prod on prod.id = ol.orderableid
@@ -82,12 +82,12 @@
 	<field name="replacedproductcode" class="java.lang.String"/>
 	<field name="notes" class="java.lang.String"/>
 	<field name="fullsupply" class="java.lang.Boolean"/>
-	<field name="code" class="java.lang.String"/>
-	<field name="primaryname" class="java.lang.String"/>
+	<field name="productcode" class="java.lang.String"/>
+	<field name="productname" class="java.lang.String"/>
 	<field name="dispensingUnit" class="java.lang.String"/>
-	<field name="name" class="java.lang.String"/>
+	<field name="categorycode" class="java.lang.String"/>
 	<group name="orderableDisplayCategory">
-		<groupExpression><![CDATA[$F{name}]]></groupExpression>
+		<groupExpression><![CDATA[$F{categorycode}]]></groupExpression>
 		<groupHeader>
 			<band height="20">
 				<textField isBlankWhenNull="true">
@@ -102,11 +102,11 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{categorycode}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="13" y="0" width="815" height="20" backcolor="#CCCCCC" uuid="b0d3e369-aafe-4f2a-bd0c-4b8a96157753">
-						<printWhenExpression><![CDATA[$F{primaryname} == null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{productname} == null]]></printWhenExpression>
 					</reportElement>
 					<box topPadding="5" leftPadding="5" bottomPadding="5" rightPadding="5">
 						<pen lineWidth="0.5"/>
@@ -317,7 +317,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{productcode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="113" y="0" width="168" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="a2f59c46-025d-4328-8b47-c18385282767"/>
@@ -332,7 +332,7 @@
 					<font fontName="SansSerif" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single" leftIndent="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{primaryname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="387" y="0" width="50" height="30" uuid="dc1c17ae-7dcc-427f-ad15-db8d78a464ac"/>
