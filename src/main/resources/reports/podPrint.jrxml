@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-03-09T10:39:36 -->
+<!-- 2017-03-10T09:47:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Empty" uuid="a0a4e861-0726-422f-b3d5-54b1aefe96ce">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="9"/>
@@ -312,7 +312,7 @@
 	<detail>
 		<band height="52">
 			<subreport>
-				<reportElement x="-1" y="1" width="843" height="50" uuid="291551bd-0aed-4b26-bf6e-111bd985e386"/>
+				<reportElement x="0" y="1" width="841" height="50" uuid="291551bd-0aed-4b26-bf6e-111bd985e386"/>
 				<subreportParameter name="pod_id">
 					<subreportParameterExpression><![CDATA[$P{pod_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -470,6 +470,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
+				<textFieldExpression><![CDATA[$R{fulfillment.print.proofOfDelivery.label.received.date}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="460" y="153" width="15" height="10" uuid="2794c49c-5172-4d3c-8acd-ec1e3b1410f5"/>
@@ -492,30 +493,27 @@
 				</textElement>
 				<text><![CDATA[  :  ]]></text>
 			</staticText>
-			<line>
-				<reportElement x="94" y="153" width="170" height="1" uuid="f4c9f8f8-b375-40fd-81e7-f4b8fc8f102a"/>
-				<graphicElement>
-					<pen lineStyle="Dotted"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="94" y="173" width="170" height="1" uuid="d0552f14-e7be-4207-8a0b-0b19eabf8e22">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-				</reportElement>
-				<graphicElement>
-					<pen lineStyle="Dotted"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="475" y="166" width="170" height="1" uuid="815d5777-610d-4ba9-a91e-0f64800f8a6a">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-				</reportElement>
-				<graphicElement>
-					<pen lineStyle="Dotted"/>
-				</graphicElement>
-			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="95" y="140" width="205" height="10" uuid="22abaaff-638e-475d-a56a-b5de7053d850"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliveredby}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="95" y="161" width="205" height="10" uuid="5d2a0e8d-1140-4012-8ac2-4a9e2ea7a24c"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{receivedby}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="475" y="153" width="205" height="10" uuid="13215f9a-d6e1-40ff-8d85-25076f02389f"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{receiveddate}]]></textFieldExpression>
+			</textField>
 		</band>
 	</summary>
 	<noData>
