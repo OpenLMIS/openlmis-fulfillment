@@ -45,7 +45,7 @@ public abstract class MessageKeys {
       + ".order-retry.invalid-status";
 
   public static final String ERROR_ORDER_FILE_TEMPLATE_CREATE = ERROR_PREFIX
-      + "orderFileTemplate.create";
+      + ".orderFileTemplate.create";
 
   public static final String ERROR_REFERENCE_DATA_RETRIEVE = ERROR_PREFIX
       + ".reference-data.retrieve";
