@@ -20,13 +20,13 @@ import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_EMPTY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_CREATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_EMPTY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INCORRECT_TYPE;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_INCORRECT_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INVALID;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_INCORRECT_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
 
@@ -34,7 +34,6 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-
 import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
@@ -42,7 +41,6 @@ import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -79,8 +77,9 @@ public class TemplateService {
   public void validateFileAndSaveTemplate(Template template, MultipartFile file) {
     Template templateTmp = templateRepository.findByName(template.getName());
     if (templateTmp != null) {
-      templateRepository.delete(templateTmp.getId());
+      templateRepository.removeAndFlush(templateTmp);
     }
+
     validateFile(template, file);
     saveWithParameters(template);
   }

@@ -13,18 +13,12 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.repository.custom;
 
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.repository.custom.TemplateRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
 
-import java.util.UUID;
+public interface TemplateRepositoryCustom {
 
-public interface TemplateRepository extends PagingAndSortingRepository<Template, UUID>,
-    TemplateRepositoryCustom {
-
-  Template findByName(@Param("name") String name);
+  void removeAndFlush(Template template);
 
 }

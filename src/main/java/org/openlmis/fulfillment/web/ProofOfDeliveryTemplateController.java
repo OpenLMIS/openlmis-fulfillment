@@ -61,7 +61,8 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   private PermissionService permissionService;
 
   /**
-   * Add Proof Of Delivery report templates with ".jrxml" format(extension) to database.
+   * Add Proof Of Delivery report templates with ".jrxml" format(extension) to database, update
+   * if already exists.
    *
    * @param file File in ".jrxml" format to add or upload.
    */
@@ -72,7 +73,8 @@ public class ProofOfDeliveryTemplateController extends BaseController {
     LOGGER.debug("Checking right to create proof of delivery template");
     permissionService.canManageSystemSettings();
 
-    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
+    Template template = new Template(
+        PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
     templateService.validateFileAndSaveTemplate(template, file);
   }
 
@@ -93,7 +95,8 @@ public class ProofOfDeliveryTemplateController extends BaseController {
           "Proof Of Delivery template does not exist.");
     } else {
       response.setContentType("application/xml");
-      response.addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
+      response
+          .addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
 
       File file = templateService.convertJasperToXml(podPrintTemplate);
 
