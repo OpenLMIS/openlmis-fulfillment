@@ -64,8 +64,8 @@ public abstract class MessageKeys {
       + ".reporting.parameter.incorrect-type";
   public static final String ERROR_REPORTING_PARAMETER_MISSING = ERROR_PREFIX
       + ".reporting.parameter.missing";
-  public static final String ERROR_REPORTING_TEMPLATE_EXIST = ERROR_PREFIX
-      + ".reporting.template.exist";
+  public static final String ERROR_REPORTING_TEMPLATE_EXISTS = ERROR_PREFIX
+      + ".reporting.template.exists";
   public static final String ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME = ERROR_PREFIX
       + ".reporting.template.notFound.with.name";
 

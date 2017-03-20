@@ -23,7 +23,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,8 +55,6 @@ import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -65,14 +62,7 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.util.NotificationRequest;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,9 +86,6 @@ public class OrderServiceTest {
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Mock
-  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -251,41 +238,6 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldConvertOrderToCsvIfItExists()
-      throws IOException, URISyntaxException, OrderCsvWriteException {
-    // given
-    Order order = generateOrder();
-    when(order.getRequestingFacilityId()).thenReturn(UUID.randomUUID());
-
-    //Creation date has to be static because we need to read expected csv from file
-    order.setCreatedDate(ZonedDateTime.parse("2016-08-27T11:30Z"));
-
-    List<String> header = new ArrayList<>();
-    header.add(OrderService.DEFAULT_COLUMNS[0]);
-    header.add(OrderService.DEFAULT_COLUMNS[1]);
-    header.add(OrderService.DEFAULT_COLUMNS[3]);
-    header.add(OrderService.DEFAULT_COLUMNS[4]);
-    header.add(OrderService.DEFAULT_COLUMNS[5]);
-
-    OrderableDto orderableDto = mock(OrderableDto.class);
-    when(orderableReferenceDataService.findOne(any())).thenReturn(orderableDto);
-    when(orderableDto.getProductCode()).thenReturn("productCode");
-    when(orderableDto.getName()).thenReturn("product");
-
-    String expectedOutput = prepareExpectedCsvOutput(order, header);
-
-    // when
-    String receivedOutput;
-    try (StringWriter writer = new StringWriter()) {
-      orderService.orderToCsv(order, header.toArray(new String[header.size()]), writer);
-      receivedOutput = writer.toString().replace("\r\n", "\n");
-    }
-
-    // then
-    assertEquals(expectedOutput, receivedOutput);
-  }
-
-  @Test
   public void shouldDeleteOrderIfNotUsed() {
     //given
     Order order = generateOrder();
@@ -331,14 +283,6 @@ public class OrderServiceTest {
     orderLineItem.setOrder(order);
     orderLineItem.setOrderedQuantity(1000L);
     return orderLineItem;
-  }
-
-  private String prepareExpectedCsvOutput(Order order, List<String> header)
-      throws IOException, URISyntaxException {
-    URL url =
-        Thread.currentThread().getContextClassLoader().getResource("OrderServiceTest_expected.csv");
-    byte[] encoded = Files.readAllBytes(Paths.get(url.getPath()));
-    return new String(encoded, Charset.defaultCharset());
   }
 
   private void validateCreatedOrder(Order actual, Order expected) {

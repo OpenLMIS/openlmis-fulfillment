@@ -28,7 +28,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INC
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INVALID;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXISTS;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -120,7 +120,7 @@ public class TemplateServiceTest {
     Template template = new Template();
     template.setName("Name");
     expectedException.expect(ReportingException.class);
-    expectedException.expectMessage(ERROR_REPORTING_TEMPLATE_EXIST);
+    expectedException.expectMessage(ERROR_REPORTING_TEMPLATE_EXISTS);
     when(templateRepository.findByName(Matchers.anyObject())).thenReturn(template);
 
     templateService.validateFileAndInsertTemplate(template, null);

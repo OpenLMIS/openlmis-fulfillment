@@ -23,16 +23,19 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.util.Pagination;
@@ -56,13 +59,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
@@ -98,6 +107,12 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Autowired
+  private JasperReportsViewService jasperReportsViewService;
+
+  @Autowired
+  private TemplateService templateService;
 
   /**
    * Allows creating new orders.
@@ -188,34 +203,37 @@ public class OrderController extends BaseController {
    *
    * @param orderId  UUID of order to print
    * @param format   String describing return format (pdf or csv)
-   * @param response HttpServletResponse object
    */
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public void printOrder(@PathVariable("id") UUID orderId,
-                         @RequestParam("format") String format,
-                         HttpServletResponse response) throws IOException {
+  public ModelAndView printOrder(HttpServletRequest request,
+                                 @PathVariable("id") UUID orderId,
+                                 @RequestParam("format") String format) throws IOException {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       throw new OrderNotFoundException(orderId);
     }
-
     permissionService.canViewOrder(order);
 
-    String[] columns = {"productName", "filledQuantity", "orderedQuantity"};
-    if ("pdf".equals(format)) {
-      response.setContentType("application/pdf");
-      response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-          DISPOSITION_BASE + "order-" + order.getOrderCode() + ".pdf");
-      orderService.orderToPdf(order, columns, response.getOutputStream());
-    } else {
-      response.setContentType("text/csv");
-      response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-          DISPOSITION_BASE + "order" + order.getOrderCode() + ".csv");
-      orderService.orderToCsv(order, columns, response.getWriter());
+    String filePath = "jasperTemplates/ordersJasperTemplate.jrxml";
+    ClassLoader classLoader = getClass().getClassLoader();
+
+    Template template = new Template();
+    template.setName("ordersJasperTemplate");
+
+    try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
+      templateService.createTemplateParameters(template, fis);
     }
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService
+        .getJasperReportsView(template, request);
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("format", format);
+
+    return jasperReportsViewService.getOrderJasperReportView(jasperView, params, order);
   }
+
 
   /**
    * Exporting order to csv.

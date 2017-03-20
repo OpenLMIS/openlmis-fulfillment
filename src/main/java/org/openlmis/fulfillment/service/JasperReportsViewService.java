@@ -25,11 +25,15 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_CREATI
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
 
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.io.ByteArrayInputStream;
@@ -51,6 +55,9 @@ public class JasperReportsViewService {
   @Autowired
   private DataSource replicationDataSource;
 
+  @Autowired
+  private ExporterBuilder exporter;
+
   /**
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
@@ -69,6 +76,23 @@ public class JasperReportsViewService {
       jasperView.setApplicationContext(getApplicationContext(request));
     }
     return jasperView;
+  }
+
+  /**
+   * Get customized Jasper Report View for Order Report.
+   *
+   * @param jasperView generic jasper report view
+   * @param parameters template parameters populated with values from the request
+   * @param order the reporting order
+   * @return customized jasper view.
+   */
+  public ModelAndView getOrderJasperReportView(JasperReportsMultiFormatView jasperView,
+                                               Map<String, Object> parameters, Order order) {
+    OrderDto orderDto = OrderDto.newInstance(order, exporter);
+    parameters.put("datasource", new JRBeanCollectionDataSource(orderDto.getOrderLineItems()));
+    parameters.put("order", orderDto);
+
+    return new ModelAndView(jasperView, parameters);
   }
 
   /**

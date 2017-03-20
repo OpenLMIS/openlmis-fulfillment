@@ -19,59 +19,30 @@ import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_IN_USE;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
-import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
 import org.openlmis.util.NotificationRequest;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
-import org.openlmis.fulfillment.service.referencedata.FacilityDto;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.supercsv.io.CsvMapWriter;
-import org.supercsv.io.ICsvMapWriter;
 
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Service
@@ -82,12 +53,6 @@ public class OrderService {
 
   @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -124,55 +89,6 @@ public class OrderService {
   }
 
   /**
-   * Changes order to CSV formatted file.
-   *
-   * @param order         Order type object to be transformed into CSV
-   * @param chosenColumns String array containing names of columns to be taken from order
-   */
-  public void orderToCsv(Order order, String[] chosenColumns,
-                         Writer writer) {
-    if (null == order) {
-      return;
-    }
-
-    List<Map<String, Object>> rows = orderToRows(order);
-
-    if (rows.isEmpty()) {
-      return;
-    }
-
-    try (ICsvMapWriter mapWriter = new CsvMapWriter(writer, STANDARD_PREFERENCE)) {
-      mapWriter.writeHeader(chosenColumns);
-
-      for (Map<String, Object> row : rows) {
-        mapWriter.write(row, chosenColumns);
-      }
-    } catch (IOException ex) {
-      throw new OrderCsvWriteException(ex, ERROR_IO, ex.getMessage());
-    }
-  }
-
-  /**
-   * Changes order to PDF formatted file given at OutputStream.
-   *
-   * @param order         Order type object to be transformed into CSV
-   * @param chosenColumns String array containing names of columns to be taken from order
-   * @param out           OutputStream to which the pdf file content will be written
-   */
-  public void orderToPdf(Order order, String[] chosenColumns, OutputStream out) {
-    if (order != null) {
-      List<Map<String, Object>> rows = orderToRows(order);
-      try {
-        writePdf(rows, chosenColumns, out);
-      } catch (JRException ex) {
-        throw new OrderPdfWriteException(ex, ERROR_JASPER);
-      } catch (IOException ex) {
-        throw new OrderPdfWriteException(ex, ERROR_IO, ex.getMessage());
-      }
-    }
-  }
-
-  /**
    * Safe delete of an order. If the order is linked to an existing proof of delivery, a
    * {@link ValidationException} signals that it cannot be removed.
    *
@@ -184,67 +100,6 @@ public class OrderService {
     } else {
       orderRepository.delete(order);
     }
-  }
-
-  private void writePdf(List<Map<String, Object>> data, String[] chosenColumns,
-                        OutputStream out) throws JRException, IOException {
-    String filePath = "jasperTemplates/ordersJasperTemplate.jrxml";
-    ClassLoader classLoader = getClass().getClassLoader();
-
-    try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
-      JasperReport pdfTemplate = JasperCompileManager.compileReport(fis);
-      Object[] params = new Object[data.size()];
-
-      for (int index = 0; index < data.size(); ++index) {
-        Map<String, Object> dataRow = data.get(index);
-
-        params[index] = Stream.of(chosenColumns)
-            .collect(Collectors.toMap(column -> column, dataRow::get));
-      }
-
-      JRMapArrayDataSource dataSource = new JRMapArrayDataSource(params);
-      JasperPrint jasperPrint = JasperFillManager.fillReport(
-          pdfTemplate, new HashMap<>(), dataSource
-      );
-
-      JRPdfExporter exporter = new JRPdfExporter();
-      exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-      exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-      exporter.exportReport();
-    }
-  }
-
-  private List<Map<String, Object>> orderToRows(Order order) {
-    List<Map<String, Object>> rows = new ArrayList<>();
-
-    List<OrderLineItem> orderLineItems = order.getOrderLineItems();
-    String orderNum = order.getOrderCode();
-
-    FacilityDto requestingFacility = facilityReferenceDataService.findOne(
-        order.getRequestingFacilityId());
-    String facilityCode = requestingFacility.getCode();
-    ZonedDateTime createdDate = order.getCreatedDate();
-
-    for (OrderLineItem orderLineItem : orderLineItems) {
-      Map<String, Object> row = new HashMap<>();
-
-      OrderableDto product = orderableReferenceDataService
-          .findOne(orderLineItem.getOrderableId());
-
-      row.put(DEFAULT_COLUMNS[0], facilityCode);
-      row.put(DEFAULT_COLUMNS[1], createdDate);
-      row.put(DEFAULT_COLUMNS[2], orderNum);
-      row.put(DEFAULT_COLUMNS[3], product.getName());
-      row.put(DEFAULT_COLUMNS[4], product.getProductCode());
-      row.put(DEFAULT_COLUMNS[5], orderLineItem.getOrderedQuantity());
-      row.put(DEFAULT_COLUMNS[6], orderLineItem.getFilledQuantity());
-
-      //products which have a final approved quantity of zero are omitted
-      if (orderLineItem.getOrderedQuantity() > 0) {
-        rows.add(row);
-      }
-    }
-    return rows;
   }
 
   /**
@@ -336,5 +191,4 @@ public class OrderService {
       order.setStatus(TRANSFER_FAILED);
     }
   }
-
 }

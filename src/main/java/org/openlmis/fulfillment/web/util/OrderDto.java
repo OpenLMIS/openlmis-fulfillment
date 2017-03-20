@@ -120,7 +120,7 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   }
 
   /**
-   * Crete new list of OrderDto based on list of {@link Order}
+   * Create new list of OrderDto based on list of {@link Order}
    * @param orders list on orders
    * @return list of OrderDto.
    */
@@ -132,7 +132,7 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   }
 
   /**
-   * Create new instance of Order based on given {@link Order}
+   * Create new instance of OrderDto based on given {@link Order}
    * @param order instance of Order
    * @return new instance od OrderDto.
    */

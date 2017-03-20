@@ -28,7 +28,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INV
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_INCORRECT_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXIST;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXISTS;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -65,8 +65,10 @@ public class TemplateService {
    * Validate ".jrmxl" file and insert this template to database.
    */
   public void validateFileAndInsertTemplate(Template template, MultipartFile file) {
-    throwIfTemplateWithSameNameAlreadyExists(template.getName());
-    validateFile(template, file);
+    if (templateRepository.findByName(template.getName()) != null) {
+      throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXISTS);
+    }
+    validateFileAndCreateParameters(template, file);
     saveWithParameters(template);
   }
 
@@ -80,7 +82,7 @@ public class TemplateService {
       templateRepository.removeAndFlush(templateTmp);
     }
 
-    validateFile(template, file);
+    validateFileAndCreateParameters(template, file);
     saveWithParameters(template);
   }
 
@@ -106,20 +108,30 @@ public class TemplateService {
     }
   }
 
+  private void setTemplateParameters(Template template, JRParameter[] jrParameters) {
+    ArrayList<TemplateParameter> parameters = new ArrayList<>();
+
+    for (JRParameter jrParameter : jrParameters) {
+      if (!jrParameter.isSystemDefined()) {
+        parameters.add(createParameter(jrParameter));
+      }
+    }
+
+    template.setTemplateParameters(parameters);
+  }
+
   /**
-   * Validate ".jrxml" report file with JasperCompileManager.
-   * If report is valid create additional report parameters.
+   * Create additional report parameters.
    * Save additional report parameters as TemplateParameter list.
    * Save report file as ".jasper" in byte array in Template class.
    * If report is not valid throw exception.
+   *
+   * @param template The template to insert parameters to
+   * @param inputStream input stream of the file
    */
-  private void validateFile(Template template, MultipartFile file) {
-    throwIfFileIsNull(file);
-    throwIfIncorrectFileType(file);
-    throwIfFileIsEmpty(file);
-
+  public void createTemplateParameters(Template template, InputStream inputStream) {
     try {
-      JasperReport report = JasperCompileManager.compileReport(file.getInputStream());
+      JasperReport report = JasperCompileManager.compileReport(inputStream);
       JRParameter[] jrParameters = report.getParameters();
 
       if (jrParameters != null && jrParameters.length > 0) {
@@ -137,16 +149,26 @@ public class TemplateService {
     }
   }
 
-  private void setTemplateParameters(Template template, JRParameter[] jrParameters) {
-    ArrayList<TemplateParameter> parameters = new ArrayList<>();
+  /**
+   * Validate ".jrxml" report file. If it is valid, create template parameters.
+   */
+  private void validateFileAndCreateParameters(Template template, MultipartFile file) {
 
-    for (JRParameter jrParameter : jrParameters) {
-      if (!jrParameter.isSystemDefined()) {
-        parameters.add(createParameter(jrParameter));
-      }
+    if (file == null) {
+      throw new ReportingException(ERROR_REPORTING_FILE_MISSING);
+    }
+    if (!file.getOriginalFilename().endsWith(".jrxml")) {
+      throw new ReportingException(ERROR_REPORTING_FILE_INCORRECT_TYPE);
+    }
+    if (file.isEmpty()) {
+      throw new ReportingException(ERROR_REPORTING_FILE_EMPTY);
     }
 
-    template.setTemplateParameters(parameters);
+    try {
+      createTemplateParameters(template, file.getInputStream());
+    } catch (IOException ex) {
+      throw new ReportingException(ex, ERROR_IO, ex.getMessage());
+    }
   }
 
   /**
@@ -186,29 +208,5 @@ public class TemplateService {
           .getText().replace("\"", "").replace("\'", ""));
     }
     return templateParameter;
-  }
-
-  private void throwIfTemplateWithSameNameAlreadyExists(String name) {
-    if (templateRepository.findByName(name) != null) {
-      throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXIST);
-    }
-  }
-
-  private void throwIfFileIsEmpty(MultipartFile file) {
-    if (file.isEmpty()) {
-      throw new ReportingException(ERROR_REPORTING_FILE_EMPTY);
-    }
-  }
-
-  private void throwIfIncorrectFileType(MultipartFile file) {
-    if (!file.getOriginalFilename().endsWith(".jrxml")) {
-      throw new ReportingException(ERROR_REPORTING_FILE_INCORRECT_TYPE);
-    }
-  }
-
-  private void throwIfFileIsNull(MultipartFile file) {
-    if (file == null) {
-      throw new ReportingException(ERROR_REPORTING_FILE_MISSING);
-    }
   }
 }

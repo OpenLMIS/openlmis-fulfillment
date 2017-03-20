@@ -243,7 +243,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().body().asString();
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertTrue(csvContent.startsWith("productName,filledQuantity,orderedQuantity"));
+    assertTrue(csvContent.contains("ProductName"));
   }
 
   @Test
