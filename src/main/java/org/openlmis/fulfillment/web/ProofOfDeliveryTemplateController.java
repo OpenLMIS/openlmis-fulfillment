@@ -28,19 +28,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
@@ -61,20 +59,19 @@ public class ProofOfDeliveryTemplateController extends BaseController {
   private PermissionService permissionService;
 
   /**
-   * Add Proof Of Delivery report templates with ".jrxml" format(extension) to database, update
-   * if already exists.
+   * Add Proof Of Delivery report templates with ".jrxml" format(extension) to database, remove
+   * older one if already exists.
    *
    * @param file File in ".jrxml" format to add or upload.
    */
-  @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.POST)
+  @PostMapping("/proofOfDeliveryTemplates")
   @ResponseStatus(HttpStatus.OK)
   public void saveTemplateOfPod(@RequestPart("file") MultipartFile file) {
 
     LOGGER.debug("Checking right to create proof of delivery template");
     permissionService.canManageSystemSettings();
 
-    Template template = new Template(
-        PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
+    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, DESCRIPTION_POD);
     templateService.validateFileAndSaveTemplate(template, file);
   }
 
@@ -83,7 +80,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
    *
    * @param response HttpServletResponse object.
    */
-  @RequestMapping(value = "/proofOfDeliveryTemplates", method = RequestMethod.GET)
+  @GetMapping("/proofOfDeliveryTemplates")
   @ResponseBody
   public void downloadPodXmlTemlate(HttpServletResponse response)
       throws IOException {
@@ -95,8 +92,7 @@ public class ProofOfDeliveryTemplateController extends BaseController {
           "Proof Of Delivery template does not exist.");
     } else {
       response.setContentType("application/xml");
-      response
-          .addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
+      response.addHeader("Content-Disposition", "attachment; filename=podPrint" + ".jrxml");
 
       File file = templateService.convertJasperToXml(podPrintTemplate);
 

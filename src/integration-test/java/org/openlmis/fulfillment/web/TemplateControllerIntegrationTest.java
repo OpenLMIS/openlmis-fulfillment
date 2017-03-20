@@ -95,6 +95,25 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnBadRequestWhenTemplateExist() throws IOException {
+    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+
+    given(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST)).willReturn(new Template());
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+        .multiPart("file", podReport.getFilename(), podReport.getInputStream())
+        .formParam("name", TEMPLATE_CONTROLLER_TEST)
+        .formParam("description", TEMPLATE_CONTROLLER_TEST)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldDeleteTemplate() {
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())

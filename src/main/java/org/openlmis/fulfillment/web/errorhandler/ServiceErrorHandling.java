@@ -20,7 +20,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREA
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
 
 import net.sf.jasperreports.engine.JRException;
-
 import org.openlmis.fulfillment.service.ConfigurationSettingNotFoundException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
@@ -48,7 +47,8 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   }
 
   @ExceptionHandler(ReportingException.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
   public Message.LocalizedMessage handlerReportingException(ReportingException ex) {
     return logErrorAndRespond("Reporting error", ex);
   }
