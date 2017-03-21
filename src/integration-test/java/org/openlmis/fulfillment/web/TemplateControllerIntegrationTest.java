@@ -35,6 +35,7 @@ import org.springframework.http.MediaType;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -80,16 +81,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldAddReportTemplate() throws IOException {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-        .multiPart("file", podReport.getFilename(), podReport.getInputStream())
-        .formParam("name", TEMPLATE_CONTROLLER_TEST)
-        .formParam("description", TEMPLATE_CONTROLLER_TEST)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(200);
+    try (InputStream podStream = podReport.getInputStream()) {
+      restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+          .multiPart("file", podReport.getFilename(), podStream)
+          .formParam("name", TEMPLATE_CONTROLLER_TEST)
+          .formParam("description", TEMPLATE_CONTROLLER_TEST)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(200);
+    }
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -99,16 +102,18 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
 
     given(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST)).willReturn(new Template());
-    restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
-        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-        .multiPart("file", podReport.getFilename(), podReport.getInputStream())
-        .formParam("name", TEMPLATE_CONTROLLER_TEST)
-        .formParam("description", TEMPLATE_CONTROLLER_TEST)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(400);
+    try (InputStream podStream = podReport.getInputStream()) {
+      restAssured.given()
+          .queryParam(ACCESS_TOKEN, getToken())
+          .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+          .multiPart("file", podReport.getFilename(), podStream)
+          .formParam("name", TEMPLATE_CONTROLLER_TEST)
+          .formParam("description", TEMPLATE_CONTROLLER_TEST)
+          .when()
+          .post(RESOURCE_URL)
+          .then()
+          .statusCode(400);
+    }
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
