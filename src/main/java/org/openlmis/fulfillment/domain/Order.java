@@ -196,7 +196,7 @@ public class Order extends BaseEntity {
    * Create a new instance of Order based on data from {@link Order.Importer}
    *
    * @param importer instance of {@link Order.Importer}
-   * @return new instance of requisition.
+   * @return new instance of order.
    */
   public static Order newInstance(Importer importer) {
     Order order = new Order();

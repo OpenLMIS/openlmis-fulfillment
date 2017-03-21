@@ -92,6 +92,10 @@ public class JasperReportsViewService {
     parameters.put("datasource", new JRBeanCollectionDataSource(orderDto.getOrderLineItems()));
     parameters.put("order", orderDto);
 
+    OrderReportFacilityDto facilityDto = new OrderReportFacilityDto();
+    orderDto.getFacility().export(facilityDto);
+    parameters.put("facility", facilityDto);
+
     return new ModelAndView(jasperView, parameters);
   }
 
