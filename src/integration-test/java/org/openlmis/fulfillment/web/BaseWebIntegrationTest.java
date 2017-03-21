@@ -183,8 +183,8 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_FIND_PRODUCT_RESULT = "{"
       + " \"id\":\"cd9e1412-8703-11e6-ae22-56b6b6499611\",\n"
       + " \"productCode\":\"Product Code\",\n"
-      + " \"name\":\"Product Name\",\n"
-      + " \"packSize\":10,\n"
+      + " \"fullProductName\":\"Product Name\",\n"
+      + " \"netContent\":10,\n"
       + " \"packRoundingThreshold\":5,\n"
       + " \"roundToZero\":false\n"
       + "}";
@@ -466,7 +466,7 @@ public abstract class BaseWebIntegrationTest {
     OrderFileColumn column4 = addOrderFileColumn(
         "9e825396-269d-4873-baa4-89054e2722f5", true, "fulfillment.header.product.name",
         "Product name", true, 4, null, "lineItem", "orderableId", "Orderable",
-        "name", template
+        "fullProductName", template
     );
     OrderFileColumn column5 = addOrderFileColumn(
         "cd57f329-f549-4717-882e-ecbf98122c39", true, "fulfillment.header.approved.quantity",

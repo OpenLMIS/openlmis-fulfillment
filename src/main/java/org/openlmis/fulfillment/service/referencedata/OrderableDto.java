@@ -26,8 +26,8 @@ import java.util.UUID;
 public class OrderableDto {
   private UUID id;
   private String productCode;
-  private String name;
-  private long packSize;
+  private String fullProductName;
+  private long netContent;
   private long packRoundingThreshold;
   private boolean roundToZero;
   private Set<ProgramOrderableDto> programs;

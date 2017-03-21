@@ -63,7 +63,7 @@
 			<textField>
 				<reportElement x="0" y="0" width="185" height="24" uuid="d844cada-1aa4-4208-9fc1-dcdf62a72235"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{orderable}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orderable}.getFullProductName()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="205" y="0" width="185" height="24" uuid="14399970-e399-41e0-b6f9-1218079fd56c"/>

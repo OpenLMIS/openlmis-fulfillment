@@ -161,7 +161,7 @@ public class OrderCsvHelperTest {
     orderFileColumns.add(new OrderFileColumn(true, "header.product.code", PRODUCT_CODE,
         true, 2, null, LINE_ITEM, ORDERABLE, "Orderable", "productCode", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.product.name", "Product name",
-        true, 3, null, LINE_ITEM, ORDERABLE, "Orderable", "name", null));
+        true, 3, null, LINE_ITEM, ORDERABLE, "Orderable", "fullProductName", null));
     orderFileColumns.add(new OrderFileColumn(true, "header.period", PERIOD, true, 4,
         "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null));
 
@@ -228,7 +228,7 @@ public class OrderCsvHelperTest {
   private OrderableDto createProduct() {
     OrderableDto product = new OrderableDto();
     product.setProductCode("productCode");
-    product.setName("productName");
+    product.setFullProductName("productName");
     product.setDispensable(new DispensableDto("each"));
 
     return product;
