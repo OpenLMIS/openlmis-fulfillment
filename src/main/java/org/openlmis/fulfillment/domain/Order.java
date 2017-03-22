@@ -22,6 +22,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.openlmis.fulfillment.web.util.StatusMessageDto;
 
 import lombok.Getter;
@@ -149,17 +150,29 @@ public class Order extends BaseEntity {
   @Setter
   private List<StatusMessage> statusMessages;
 
+  @OneToMany(
+      mappedBy = "order",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.EAGER,
+      orphanRemoval = true)
+  @Getter
+  @Setter
+  private List<StatusChange> statusChanges;
+
+
   @PrePersist
   private void prePersist() {
     this.createdDate = ZonedDateTime.now();
     forEachLine(line -> line.setOrder(this));
     forEachStatus(status -> status.setOrder(this));
+    forEachStatusChange(change -> change.setOrder(this));
   }
 
   @PreUpdate
   private void preUpdate() {
     forEachLine(line -> line.setOrder(this));
     forEachStatus(status -> status.setOrder(this));
+    forEachStatusChange(change -> change.setOrder(this));
   }
 
   /**
@@ -180,6 +193,7 @@ public class Order extends BaseEntity {
     this.orderCode = order.orderCode;
     this.status = order.status;
     this.quotedCost = order.quotedCost;
+    this.statusChanges = order.statusChanges;
   }
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {
@@ -190,6 +204,11 @@ public class Order extends BaseEntity {
   public void forEachStatus(Consumer<StatusMessage> consumer) {
     Optional.ofNullable(statusMessages)
         .ifPresent(list -> list.forEach(consumer));
+  }
+
+  public void forEachStatusChange(Consumer<StatusChange> consumer) {
+    Optional.ofNullable(statusChanges)
+            .ifPresent(list -> list.forEach(consumer));
   }
 
   /**
@@ -233,6 +252,7 @@ public class Order extends BaseEntity {
 
     order.setOrderLineItems(new ArrayList<>());
     order.setStatusMessages(new ArrayList<>());
+    order.setStatusChanges(new ArrayList<>());
 
     if (importer.getOrderLineItems() != null) {
       importer.getOrderLineItems().forEach(
@@ -242,6 +262,11 @@ public class Order extends BaseEntity {
     if (importer.getStatusMessages() != null) {
       importer.getStatusMessages().forEach(
           sm -> order.getStatusMessages().add(StatusMessage.newInstance(sm)));
+    }
+
+    if (importer.getStatusChanges() != null) {
+      importer.getStatusChanges().forEach(
+          sch -> order.getStatusChanges().add(StatusChange.newStatusChange(sch)));
     }
 
     return order;
@@ -278,6 +303,7 @@ public class Order extends BaseEntity {
 
     void setStatusMessages(List<StatusMessageDto> statusMessages);
 
+    void setStatusChanges(List<StatusChangeDto> statusChanges);
   }
 
   public interface Importer {
@@ -313,5 +339,6 @@ public class Order extends BaseEntity {
 
     UserDto getCreatedBy();
 
+    List<StatusChange.Importer> getStatusChanges();
   }
 }

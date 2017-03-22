@@ -19,6 +19,7 @@ package org.openlmis.fulfillment.web.util;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.StatusMessage;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -107,6 +108,9 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   @Setter
   private List<StatusMessageDto> statusMessages;
 
+  @Setter
+  private List<StatusChangeDto> statusChanges;
+
   @Override
   public List<OrderLineItem.Importer> getOrderLineItems() {
     return new ArrayList<>(
@@ -117,6 +121,11 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   @Override
   public List<StatusMessage.Importer> getStatusMessages() {
     return new ArrayList<>(Optional.ofNullable(statusMessages).orElse(Collections.emptyList()));
+  }
+
+  @Override
+  public List<StatusChange.Importer> getStatusChanges() {
+    return new ArrayList<>(Optional.ofNullable(statusChanges).orElse(Collections.emptyList()));
   }
 
   /**
@@ -148,6 +157,11 @@ public class OrderDto implements Order.Importer, Order.Exporter {
     if (order.getStatusMessages() != null) {
       orderDto.setStatusMessages(order.getStatusMessages().stream()
           .map(StatusMessageDto::newInstance).collect(Collectors.toList()));
+    }
+
+    if (order.getStatusChanges() != null) {
+      orderDto.setStatusChanges(order.getStatusChanges().stream()
+              .map(StatusChangeDto::newInstance).collect(Collectors.toList()));
     }
 
     return orderDto;
