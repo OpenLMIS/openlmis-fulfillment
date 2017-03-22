@@ -28,7 +28,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderReportDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
@@ -88,13 +88,9 @@ public class JasperReportsViewService {
    */
   public ModelAndView getOrderJasperReportView(JasperReportsMultiFormatView jasperView,
                                                Map<String, Object> parameters, Order order) {
-    OrderDto orderDto = OrderDto.newInstance(order, exporter);
+    OrderReportDto orderDto = OrderReportDto.newInstance(order, exporter);
     parameters.put("datasource", new JRBeanCollectionDataSource(orderDto.getOrderLineItems()));
     parameters.put("order", orderDto);
-
-    OrderReportFacilityDto facilityDto = new OrderReportFacilityDto();
-    orderDto.getFacility().export(facilityDto);
-    parameters.put("facility", facilityDto);
 
     return new ModelAndView(jasperView, parameters);
   }

@@ -19,15 +19,19 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,7 +75,7 @@ public class ExporterBuilder {
   }
 
   /**
-   * Copy data from the given order line item to the instance that implemenet
+   * Copy data from the given order line item to the instance that implement
    * {@link OrderLineItem.Exporter} interface.
    */
   public void export(OrderLineItem item, OrderLineItem.Exporter exporter) {
@@ -84,7 +88,7 @@ public class ExporterBuilder {
   }
 
   /**
-   * Copy data from the given local transfer properties to the instance that implemenet
+   * Copy data from the given local transfer properties to the instance that implement
    * {@link LocalTransferProperties.Exporter} interface.
    */
   public void export(LocalTransferProperties properties,
@@ -95,7 +99,7 @@ public class ExporterBuilder {
   }
 
   /**
-   * Copy data from the given ftp transfer properties to the instance that implemenet
+   * Copy data from the given ftp transfer properties to the instance that implement
    * {@link FtpTransferProperties.Exporter} interface.
    */
   public void export(FtpTransferProperties properties,
@@ -109,6 +113,21 @@ public class ExporterBuilder {
     exporter.setRemoteDirectory(properties.getRemoteDirectory());
     exporter.setLocalDirectory(properties.getLocalDirectory());
     exporter.setPassiveMode(properties.getPassiveMode());
+  }
+
+  /**
+   * Copy data from given statusChanges to newly initialized StatusChangeDto list.
+   * @param statusChanges the status changes to convert
+   * @return list of StatusChangeDto
+   */
+  public List<StatusChangeDto> convertToDtos(List<StatusChange> statusChanges) {
+    List<StatusChangeDto> dtos = new ArrayList<>();
+    for (StatusChange statusChange : statusChanges) {
+      StatusChangeDto dto = StatusChangeDto.newInstance(statusChange);
+      dto.setAuthor(getIfPresent(users, dto.getAuthorId()));
+      dtos.add(dto);
+    }
+    return dtos;
   }
 
   private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {

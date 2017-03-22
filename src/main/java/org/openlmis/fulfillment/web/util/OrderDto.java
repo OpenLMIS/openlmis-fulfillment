@@ -16,6 +16,8 @@
 package org.openlmis.fulfillment.web.util;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -165,5 +167,16 @@ public class OrderDto implements Order.Importer, Order.Exporter {
     }
 
     return orderDto;
+  }
+
+  /**
+   * Get status change with given status.
+   * @return status change
+   */
+  @JsonIgnore
+  public StatusChangeDto getStatusChangeByStatus(ExternalStatus status) {
+    return Optional.ofNullable(statusChanges).orElse(new ArrayList<>()).stream()
+            .filter(statusChange -> status.equals(statusChange.getStatus())
+    ).findFirst().orElse(null);
   }
 }
