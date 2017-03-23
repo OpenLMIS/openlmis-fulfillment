@@ -42,12 +42,14 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -145,6 +147,12 @@ public class OrderServiceTest {
     order.setOrderLineItems(Lists.newArrayList(orderLineItem));
     order.setCreatedById(UUID.randomUUID());
 
+    StatusChange statusChange = new StatusChange();
+    statusChange.setStatus(ExternalStatus.APPROVED);
+    statusChange.setCreatedDate(ZonedDateTime.now());
+    statusChange.setAuthorId(UUID.randomUUID());
+    order.setStatusChanges(Lists.newArrayList(statusChange));
+
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);
     when(orderSender.send(order)).thenReturn(true);
@@ -193,6 +201,12 @@ public class OrderServiceTest {
 
     order.setOrderLineItems(Lists.newArrayList(orderLineItem));
     order.setCreatedById(UUID.randomUUID());
+
+    StatusChange statusChange = new StatusChange();
+    statusChange.setStatus(ExternalStatus.APPROVED);
+    statusChange.setCreatedDate(ZonedDateTime.now());
+    statusChange.setAuthorId(UUID.randomUUID());
+    order.setStatusChanges(Lists.newArrayList(statusChange));
 
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);
@@ -299,6 +313,13 @@ public class OrderServiceTest {
 
     assertEquals(expectedLineItem.getOrderedQuantity(), actualLineItem.getOrderedQuantity());
     assertEquals(expectedLineItem.getOrderableId(), actualLineItem.getOrderableId());
+
+    StatusChange actualStatusChange = actual.getStatusChanges().iterator().next();
+    StatusChange expectedStatusChange = expected.getStatusChanges().iterator().next();
+
+    assertEquals(expectedStatusChange.getStatus(), actualStatusChange.getStatus());
+    assertEquals(expectedStatusChange.getCreatedDate(), actualStatusChange.getCreatedDate());
+    assertEquals(expectedStatusChange.getAuthorId(), actualStatusChange.getAuthorId());
   }
 
   private void generateMocks() {

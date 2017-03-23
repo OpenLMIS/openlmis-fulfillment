@@ -17,6 +17,8 @@ package org.openlmis.fulfillment.service;
 
 import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,12 +35,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.web.util.OrderReportDto;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.io.ByteArrayInputStream;
@@ -52,6 +57,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
+@SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
 @PrepareForTest({JasperReportsViewService.class})
@@ -59,6 +65,9 @@ public class JasperReportsViewServiceTest {
 
   @Mock
   private DataSource dataSource;
+
+  @Mock
+  private ExporterBuilder exporterBuilder;
 
   @InjectMocks
   private JasperReportsViewService viewFactory;
@@ -124,5 +133,21 @@ public class JasperReportsViewServiceTest {
     viewFactory.getJasperReportsView(template, httpServletRequest);
 
     verify(jasperReportsView).setExporterParameters(exportParams);
+  }
+
+  @Test
+  public void shouldGetOrderJasperReportView() {
+    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
+    Order order = mock(Order.class);
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("format", "pdf");
+
+    ModelAndView modelAndView = viewFactory.getOrderJasperReportView(view, params, order);
+    Map<String, Object> paramsReturned = modelAndView.getModel();
+
+    assertEquals("pdf", paramsReturned.get("format"));
+    assertNotNull(paramsReturned.get("datasource"));
+    assertEquals(OrderReportDto.class, paramsReturned.get("order").getClass());
   }
 }
