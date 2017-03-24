@@ -30,7 +30,7 @@ public class UserDtoTest {
   }
 
   @Test
-  public void shouldPrintNameAsFirstLastName() {
+  public void shouldPrintNameAsFirstAndLastName() {
     userDto.setFirstName("John");
     userDto.setLastName("Doe");
 

@@ -63,6 +63,9 @@ import javax.sql.DataSource;
 @PrepareForTest({JasperReportsViewService.class})
 public class JasperReportsViewServiceTest {
 
+  private static final String FORMAT = "format";
+  private static final String PDF = "pdf";
+
   @Mock
   private DataSource dataSource;
 
@@ -141,12 +144,12 @@ public class JasperReportsViewServiceTest {
     Order order = mock(Order.class);
 
     Map<String, Object> params = new HashMap<>();
-    params.put("format", "pdf");
+    params.put(FORMAT, PDF);
 
     ModelAndView modelAndView = viewFactory.getOrderJasperReportView(view, params, order);
     Map<String, Object> paramsReturned = modelAndView.getModel();
 
-    assertEquals("pdf", paramsReturned.get("format"));
+    assertEquals(PDF, paramsReturned.get(FORMAT));
     assertNotNull(paramsReturned.get("datasource"));
     assertEquals(OrderReportDto.class, paramsReturned.get("order").getClass());
   }
