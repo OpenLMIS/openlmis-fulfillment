@@ -61,7 +61,7 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(instance));
@@ -86,7 +86,7 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(nullValue()));

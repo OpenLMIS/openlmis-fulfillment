@@ -26,9 +26,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.openlmis.fulfillment.util.PageImplRepresentation;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,27 +57,30 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     UserDto userDto = generateInstance();
     userDto.setUsername(name);
 
-    UserDto[] users = new UserDto[]{userDto};
-    UserReferenceDataService service = (UserReferenceDataService) prepareService();
-    ResponseEntity<UserDto[]> response = mock(ResponseEntity.class);
-
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", name);
 
+    UserReferenceDataService service = (UserReferenceDataService) prepareService();
+    ResponseEntity response = mock(ResponseEntity.class);
+
     // when
-    when(restTemplate.postForEntity(any(URI.class), eq(payload), eq(service.getArrayResultClass())))
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), eq(new HttpEntity<>(payload)),
+            any(ParameterizedTypeReference.class)))
         .thenReturn(response);
-    when(response.getBody()).thenReturn(users);
+
+    PageImplRepresentation<UserDto> page = mock(PageImplRepresentation.class);
+    when(page.getContent()).thenReturn(Collections.singletonList(userDto));
+
+    when(response.getBody()).thenReturn(page);
 
     UserDto user = service.findUser(name);
 
     // then
-    verify(restTemplate).postForEntity(
-        uriCaptor.capture(), eq(payload), eq(service.getArrayResultClass())
-    );
+    verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.POST),
+            eq(new HttpEntity<>(payload)), any(ParameterizedTypeReference.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(user.getUsername(), is(equalTo(name)));
@@ -84,26 +92,32 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     String name = "userName";
 
     UserDto[] users = new UserDto[0];
-    UserReferenceDataService service = (UserReferenceDataService) prepareService();
-    ResponseEntity<UserDto[]> response = mock(ResponseEntity.class);
+    ResponseEntity response = mock(ResponseEntity.class);
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", name);
 
+    UserReferenceDataService service = (UserReferenceDataService) prepareService();
+
     // when
-    when(restTemplate.postForEntity(any(URI.class), eq(payload), eq(service.getArrayResultClass())))
-        .thenReturn(response);
-    when(response.getBody()).thenReturn(users);
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), eq(new HttpEntity<>(payload)),
+            any(ParameterizedTypeReference.class)))
+            .thenReturn(response);
+
+    PageImplRepresentation<UserDto> page = mock(PageImplRepresentation.class);
+    when(page.getContent()).thenReturn(Collections.emptyList());
+
+    when(response.getBody()).thenReturn(page);
+
 
     UserDto user = service.findUser(name);
 
     // then
-    verify(restTemplate).postForEntity(
-        uriCaptor.capture(), eq(payload), eq(service.getArrayResultClass())
-    );
+    verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.POST),
+            eq(new HttpEntity<>(payload)), any(ParameterizedTypeReference.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(user, is(nullValue()));

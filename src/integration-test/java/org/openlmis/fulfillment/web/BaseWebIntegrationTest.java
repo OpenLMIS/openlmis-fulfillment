@@ -174,7 +174,17 @@ public abstract class BaseWebIntegrationTest {
       + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
       + "}";
 
-  private static final String MOCK_USER_SEARCH_RESULT = "[" + MOCK_FIND_USER_RESULT + "]";
+  private static final String MOCK_USER_SEARCH_RESULT = "{"
+      + "\"content\": [" + MOCK_FIND_USER_RESULT + "],"
+      + "\"last\": true,"
+      + "\"totalPages\": 1,"
+      + "\"totalElements\": 1,"
+      + "\"sort\": null,"
+      + "\"first\": true,"
+      + "\"numberOfElements\": 1,"
+      + "\"size\": 1,"
+      + "\"number\": 1"
+      + "}";
 
   private static final String MOCK_FIND_USER_SUPERVISED_PROGRAMS = "[{"
       + " \"id\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\""

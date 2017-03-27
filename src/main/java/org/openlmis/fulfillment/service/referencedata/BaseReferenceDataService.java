@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class BaseReferenceDataService<T> extends BaseCommunicationService {
+public abstract class BaseReferenceDataService<T> extends BaseCommunicationService<T> {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Value("${referencedata.url}")
@@ -44,7 +44,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
    * @return Requesting reference data object.
    */
   public T findOne(UUID id) {
-    String url = getReferenceDataUrl() + getUrl() + id;
+    String url = getServiceUrl() + getUrl() + id;
 
     Map<String, String> params = new HashMap<>();
     params.put(ACCESS_TOKEN, obtainAccessToken());
@@ -90,7 +90,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
 
   private Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
                                           Map<String, Object> payload, HttpMethod method) {
-    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
+    String url = getServiceUrl() + getUrl() + resourceUrl;
 
     Map<String, Object> params = new HashMap<>();
     params.put(ACCESS_TOKEN, obtainAccessToken());
@@ -112,7 +112,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   }
 
   <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
-    String url = getReferenceDataUrl() + getUrl() + resourceUrl;
+    String url = getServiceUrl() + getUrl() + resourceUrl;
     Map<String, Object> params = new HashMap<>();
     params.put(ACCESS_TOKEN, obtainAccessToken());
     params.putAll(parameters);
@@ -122,15 +122,15 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
     return response.getBody();
   }
 
+  protected String getServiceUrl() {
+    return referenceDataUrl;
+  }
+
   protected abstract String getUrl();
 
   protected abstract Class<T> getResultClass();
 
   protected abstract Class<T[]> getArrayResultClass();
-
-  String getReferenceDataUrl() {
-    return referenceDataUrl;
-  }
 
   private ReferenceDataRetrievalException buildRefDataException(HttpStatusCodeException ex) {
     return new ReferenceDataRetrievalException(

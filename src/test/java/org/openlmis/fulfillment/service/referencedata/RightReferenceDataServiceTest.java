@@ -67,7 +67,7 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl()
+    String url = service.getServiceUrl() + service.getUrl()
         + "search?" + ACCESS_TOKEN + "&name=" + name;
 
     assertThat(uri.toString(), is(equalTo(url)));
@@ -96,7 +96,7 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getReferenceDataUrl() + service.getUrl()
+    String url = service.getServiceUrl() + service.getUrl()
         + "search?" + ACCESS_TOKEN + "&name=" + name;
 
     assertThat(uri.toString(), is(equalTo(url)));

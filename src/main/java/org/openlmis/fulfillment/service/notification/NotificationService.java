@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class NotificationService extends BaseCommunicationService {
+public class NotificationService extends BaseCommunicationService<NotificationRequest> {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Value("${notification.url}")
@@ -41,7 +41,7 @@ public class NotificationService extends BaseCommunicationService {
    * @return true if success, false if failed.
    */
   public boolean send(NotificationRequest request) {
-    String url = getNotificationUrl() + "/api/notification";
+    String url = getServiceUrl() + getUrl();
 
     Map<String, String> params = new HashMap<>();
     params.put(ACCESS_TOKEN, obtainAccessToken());
@@ -49,7 +49,7 @@ public class NotificationService extends BaseCommunicationService {
     HttpEntity<NotificationRequest> body = new HttpEntity<>(request);
 
     try {
-      restTemplate.postForEntity(buildUri(url, params), body, NotificationRequest.class);
+      restTemplate.postForEntity(buildUri(url, params), body, getResultClass());
     } catch (RestClientException ex) {
       logger.error("Can not send a notification request", ex);
       return false;
@@ -58,8 +58,19 @@ public class NotificationService extends BaseCommunicationService {
     return true;
   }
 
-  String getNotificationUrl() {
+  protected String getServiceUrl() {
     return notificationUrl;
   }
 
+  protected String getUrl() {
+    return "/api/notification";
+  }
+
+  protected Class<NotificationRequest> getResultClass() {
+    return NotificationRequest.class;
+  }
+
+  protected Class<NotificationRequest[]> getArrayResultClass() {
+    return NotificationRequest[].class;
+  }
 }

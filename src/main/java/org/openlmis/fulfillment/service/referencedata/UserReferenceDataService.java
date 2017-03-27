@@ -17,12 +17,11 @@ package org.openlmis.fulfillment.service.referencedata;
 
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.util.BooleanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,12 +50,11 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    * @return UserDto containing user's data, or null if such user was not found.
    */
   public UserDto findUser(String name) {
-    Map<String, Object> requestParameters = new HashMap<>();
-    requestParameters.put("username", name);
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("username", name);
 
-    List<UserDto> users = new ArrayList<>(postFindAll("search", Collections.emptyMap(),
-        requestParameters));
-    return users.isEmpty() ? null : users.get(0);
+    Page<UserDto> users = getPage("search", Collections.emptyMap(), payload);
+    return users.getContent().isEmpty() ? null : users.getContent().get(0);
   }
 
   /**

@@ -55,7 +55,7 @@ public class NotificationServiceTest extends BaseCommunicationServiceTest {
         .postForEntity(uriCaptor.capture(), captor.capture(), eq(NotificationRequest.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getNotificationUrl() + "/api/notification?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + "/api/notification?" + ACCESS_TOKEN;
     assertThat(uri.toString(), is(equalTo(url)));
 
     HttpEntity entity = captor.getValue();
