@@ -109,7 +109,6 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
     when(response.getBody()).thenReturn(page);
 
-
     UserDto user = service.findUser(name);
 
     // then
