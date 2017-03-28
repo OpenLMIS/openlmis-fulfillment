@@ -26,7 +26,7 @@ import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
-import org.openlmis.fulfillment.service.referencedata.ReferenceDataRetrievalException;
+import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -71,16 +71,16 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   }
 
   /**
-   * Handles the {@link ReferenceDataRetrievalException} which we were unable to retrieve
+   * Handles the {@link DataRetrievalException} which we were unable to retrieve
    * reference data due to a communication error.
    *
    * @param ex the exception that caused the issue
    * @return the error response
    */
-  @ExceptionHandler(ReferenceDataRetrievalException.class)
+  @ExceptionHandler(DataRetrievalException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
-  public Message.LocalizedMessage handleRefDataException(ReferenceDataRetrievalException ex) {
+  public Message.LocalizedMessage handleRefDataException(DataRetrievalException ex) {
     return logErrorAndRespond(
         "Error fetching from reference data",
         ERROR_REFERENCE_DATA_RETRIEVE, ex.getResource(), ex.getStatus().toString(), ex.getResponse()

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.BaseCommunicationService;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
+import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +93,7 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
     assertThat(found, is(nullValue()));
   }
 
-  @Test(expected = ReferenceDataRetrievalException.class)
+  @Test(expected = DataRetrievalException.class)
   public void shouldThrowExceptionIfThereIsOtherProblemWithFindingById() throws Exception {
     // given
     BaseReferenceDataService<T> service = prepareService();

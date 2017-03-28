@@ -59,7 +59,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
         logger.warn("{} with id {} does not exist. ", getResultClass().getSimpleName(), id);
         return null;
       } else {
-        throw buildRefDataException(ex);
+        throw buildDataRetrievalException(ex);
       }
     }
   }
@@ -107,7 +107,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
     } catch (HttpStatusCodeException ex) {
-      throw buildRefDataException(ex);
+      throw buildDataRetrievalException(ex);
     }
   }
 
@@ -131,10 +131,4 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   protected abstract Class<T> getResultClass();
 
   protected abstract Class<T[]> getArrayResultClass();
-
-  private ReferenceDataRetrievalException buildRefDataException(HttpStatusCodeException ex) {
-    return new ReferenceDataRetrievalException(
-        getResultClass().getSimpleName(), ex.getStatusCode(), ex.getResponseBodyAsString()
-    );
-  }
 }
