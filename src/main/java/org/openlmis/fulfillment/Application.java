@@ -38,7 +38,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import java.util.Locale;
 
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
-@EntityScan(basePackageClasses = BaseEntity.class, basePackages = "org.openlmis.util.converter")
+@EntityScan(basePackageClasses = BaseEntity.class)
 public class Application {
 
   private Logger logger = LoggerFactory.getLogger(Application.class);
