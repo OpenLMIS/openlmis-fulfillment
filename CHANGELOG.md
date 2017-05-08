@@ -1,3 +1,13 @@
+3.0.2 / 2017-05-08
+==================
+Dev and tooling updates made in a backwards-compatible manner:
+
+* [OLMIS-1972](https://openlmis.atlassian.net/browse/OLMIS-1972): Update Postgres from 9.4 to 9.6
+  * This upgrade will apply automatically and all data will migrate.
+* Update [Docker Dev Image](https://github.com/OpenLMIS/docker-dev) for builds from v1 to v2
+  * Moves the sync_transifex.sh script out of each service and into the Docker Dev Image.
+* [OLMIS-2155](https://openlmis.atlassian.net/browse/OLMIS-2155): Use the date conver from Hibernate for Java 8 in order to improve persistence perfromance
+
 3.0.1 / 2017-03-29
 ==================
 
