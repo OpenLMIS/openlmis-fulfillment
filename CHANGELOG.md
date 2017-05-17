@@ -1,3 +1,9 @@
+3.0.3 / coming soon
+==================
+
+* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): remove redundant fields from ProgramOrderableDto
+  * adjust report to changes in referencedata database.
+
 3.0.2 / 2017-05-08
 ==================
 Dev and tooling updates made in a backwards-compatible manner:
