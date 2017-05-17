@@ -24,7 +24,6 @@ import java.util.UUID;
 @Setter
 public class ProgramOrderableDto {
   private UUID programId;
-  private UUID productId;
   private UUID orderableDisplayCategoryId;
   private String orderableCategoryDisplayName;
   private Integer orderableCategoryDisplayOrder;
@@ -32,5 +31,4 @@ public class ProgramOrderableDto {
   private Boolean fullSupply;
   private Integer displayOrder;
   private Integer dosesPerPatient;
-  private MoneyDto value;
 }
