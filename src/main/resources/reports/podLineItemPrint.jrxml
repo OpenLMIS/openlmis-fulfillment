@@ -64,7 +64,7 @@
                     podl.notes,
                     progp.fullsupply,
                     prod.code AS productcode,
-                    prod.name AS productname,
+                    prod.fullproductname AS productname,
                     prod.dispensingunit,
                     categ.code AS categorycode
              FROM fulfillment.proof_of_delivery_line_items podl
@@ -73,7 +73,7 @@
              INNER JOIN  referencedata.program_orderables progp on progp.orderableid = ol.orderableid
              INNER JOIN  referencedata.orderable_display_categories categ on categ.id = progp.orderabledisplaycategoryid
              WHERE  podl.proofofdeliveryid  = $P!{pod_id}
-             ORDER BY prod.name, LOWER(prod.name), prod.name NULLS LAST, LOWER(prod.name)]]>
+             ORDER BY prod.fullproductname, LOWER(prod.fullproductname), prod.fullproductname NULLS LAST, LOWER(prod.fullproductname)]]>
 	</queryString>
 	<field name="packstoship" class="java.lang.Long"/>
 	<field name="quantityshipped" class="java.lang.Long"/>
