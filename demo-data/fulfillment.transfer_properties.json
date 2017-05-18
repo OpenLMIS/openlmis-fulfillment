@@ -63,5 +63,18 @@
     "remoteDirectory": "/orders/files/csv/FAC004",
     "localDirectory": "/var/lib/openlmis/fulfillment/orders/FAC004",
     "passiveMode": true
+  },
+  {
+    "id": "30a4f6e9-a169-44fa-821d-0e430b9f13c6",
+    "facilityId": "9318b2ea-9ae0-42b2-a7e1-353683f54000",
+    "type": "ftp",
+    "protocol": "FTP",
+    "username": "admin",
+    "password": "p@ssw0rd",
+    "serverHost": "ftp",
+    "serverPort": 21,
+    "remoteDirectory": "/orders/files/csv/WH02",
+    "localDirectory": "/var/lib/openlmis/fulfillment/orders/WH02",
+    "passiveMode": true
   }
 ]
