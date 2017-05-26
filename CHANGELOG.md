@@ -1,8 +1,13 @@
-3.0.3 / coming soon
+3.0.3 / 2017-05-26
 ==================
 
-* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): remove redundant fields from ProgramOrderableDto
-  * adjust report to changes in referencedata database.
+Bug fixes and improvements (backwards-compatible):
+
+* [OLMIS-1696](https://openlmis.atlassian.net/browse/OLMIS-1696): removed redundant fields
+from ProgramOrderableDto
+  * Adjusted report to changes in referencedata database.
+* [OLMIS-2484](https://openlmis.atlassian.net/browse/OLMIS-2484): added FTP properties demo-data
+for Balaka District Warehouse
 
 3.0.2 / 2017-05-08
 ==================
@@ -12,7 +17,8 @@ Dev and tooling updates made in a backwards-compatible manner:
   * This upgrade will apply automatically and all data will migrate.
 * Update [Docker Dev Image](https://github.com/OpenLMIS/docker-dev) for builds from v1 to v2
   * Moves the sync_transifex.sh script out of each service and into the Docker Dev Image.
-* [OLMIS-2155](https://openlmis.atlassian.net/browse/OLMIS-2155): Use the date converter from Hibernate for Java 8 in order to improve persistence performance
+* [OLMIS-2155](https://openlmis.atlassian.net/browse/OLMIS-2155): Use the date converter from
+Hibernate for Java 8 in order to improve persistence performance
 
 3.0.1 / 2017-03-29
 ==================
