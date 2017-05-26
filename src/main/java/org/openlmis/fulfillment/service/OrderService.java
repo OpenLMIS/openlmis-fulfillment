@@ -20,23 +20,24 @@ import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_IN_USE;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
+import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
+import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
-import org.openlmis.util.NotificationRequest;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.util.NotificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -64,9 +65,6 @@ public class OrderService {
   private NotificationService notificationService;
 
   @Autowired
-  private ConfigurationSettingService configurationSettingService;
-
-  @Autowired
   private OrderStorage orderStorage;
 
   @Autowired
@@ -74,6 +72,12 @@ public class OrderService {
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Autowired
+  protected MessageService messageService;
+
+  @Value("${email.noreply}")
+  private String from;
 
   /**
    * Finds orders matching all of provided parameters.
@@ -139,18 +143,20 @@ public class OrderService {
   }
 
   private void sendNotification(Order order, UUID userId) {
-    String from = configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY);
     String to = userReferenceDataService.findOne(userId).getEmail();
-    String subject = configurationSettingService
-        .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
+    String subject = messageService
+        .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
+        .getMessage();
+
     String content = createContent(order);
 
     notificationService.send(new NotificationRequest(from, to, subject, content));
   }
 
   private String createContent(Order order) {
-    String content = configurationSettingService
-        .getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
+    String content = messageService
+        .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
+        .getMessage();
 
     try {
       List<PropertyDescriptor> descriptors = Arrays

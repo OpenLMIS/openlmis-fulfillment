@@ -35,35 +35,28 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STAT
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.openlmis.fulfillment.PageImplRepresentation;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
-import org.openlmis.fulfillment.PageImplRepresentation;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -118,9 +111,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private NotificationService notificationService;
-
-  @MockBean
-  private ConfigurationSettingService configurationSettingService;
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
@@ -178,13 +168,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           }
 
         });
-
-    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY))
-        .willReturn("noreply@openlmis.org");
-    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
-        .willReturn("New order");
-    given(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
-        .willReturn("Create an order: {id} with status: {status}");
   }
 
   private Order addOrder(UUID requisition, UUID facility, UUID processingPeriod,

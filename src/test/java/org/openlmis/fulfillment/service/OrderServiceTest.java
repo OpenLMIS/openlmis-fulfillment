@@ -26,13 +26,11 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_NOREPLY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
+import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
+import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +48,7 @@ import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.StatusChange;
+import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -61,9 +60,10 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.util.NotificationRequest;
-
+import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -99,9 +99,6 @@ public class OrderServiceTest {
   private NotificationService notificationService;
 
   @Mock
-  private ConfigurationSettingService configurationSettingService;
-
-  @Mock
   private OrderStorage orderStorage;
 
   @Mock
@@ -110,17 +107,21 @@ public class OrderServiceTest {
   @Mock
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-  @InjectMocks
-  private OrderService orderService;
-
   @Mock
   private ProgramDto program;
+
+  @Mock
+  private MessageService messageService;
+
+  @InjectMocks
+  private OrderService orderService;
 
   @Captor
   private ArgumentCaptor<NotificationRequest> notificationCaptor;
 
   @Before
   public void setUp() {
+    ReflectionTestUtils.setField(orderService, "from", "noreply@openlmis.org");
     generateMocks();
   }
 
@@ -338,11 +339,19 @@ public class OrderServiceTest {
     FtpTransferProperties properties = new FtpTransferProperties();
     when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
 
-    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_NOREPLY))
-        .thenReturn("noreply@openlmis.org");
-    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
-        .thenReturn("New order");
-    when(configurationSettingService.getStringValue(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
-        .thenReturn("Create an order: {id} with status: {status}");
+    mockMessages();
+  }
+
+  private void mockMessages() {
+    Message orderCreationSubject = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
+    Message.LocalizedMessage localizedMessage =
+        orderCreationSubject.new LocalizedMessage("New order");
+    when(messageService.localize(orderCreationSubject))
+        .thenReturn(localizedMessage);
+    Message orderCreationBody = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
+    localizedMessage = orderCreationBody
+        .new LocalizedMessage("Create an order: {id} with status: {status}");
+    when(messageService.localize(orderCreationBody))
+        .thenReturn(localizedMessage);
   }
 }

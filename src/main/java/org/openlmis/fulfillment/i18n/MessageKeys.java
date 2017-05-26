@@ -88,6 +88,11 @@ public abstract class MessageKeys {
   public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO =
       VALIDATION_ERROR + ".mustBeGreaterThanOrEqualToZero";
 
+  public static final String FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT
+      = "fulfillment.email.orderCreation.subject";
+  public static final String FULFILLMENT_EMAIL_ORDER_CREATION_BODY
+      = "fulfillment.email.orderCreation.body";
+
   private MessageKeys() {
     throw new UnsupportedOperationException();
   }
