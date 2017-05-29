@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service.referencedata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -31,4 +32,5 @@ public class ProgramOrderableDto {
   private Boolean fullSupply;
   private Integer displayOrder;
   private Integer dosesPerPatient;
+  private BigDecimal pricePerPack;
 }
