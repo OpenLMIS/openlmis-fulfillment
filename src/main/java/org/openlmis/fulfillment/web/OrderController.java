@@ -64,6 +64,7 @@ import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiForm
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,34 +120,35 @@ public class OrderController extends BaseController {
    * If the id is specified, it will be ignored.
    *
    * @param orderDto A order bound to the request body
-   * @return ResponseEntity containing the created order
+   * @return the newly created order
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
-    Order order = Order.newInstance(orderDto);
+    return createSingleOrder(orderDto, authentication);
+  }
 
-    if (!authentication.isClientOnly()) {
-      LOGGER.debug("Checking rights to create order");
-      permissionService.canEditOrder(order);
+  /**
+   * Allows creating multiple new orders at once in a single transaction.
+   * If the id is specified for any of the orders, it will be ignored.
+   *
+   * @param orders A list of orders to be created
+   * @return a list of newly created orders
+   */
+  @RequestMapping(value = "/orders/batch", method = RequestMethod.POST)
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public List<OrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
+                              OAuth2Authentication authentication) {
+    List<OrderDto> newOrders = new ArrayList<>();
+
+    for (OrderDto order : orders) {
+      OrderDto newOrder = createSingleOrder(order, authentication);
+      newOrders.add(newOrder);
     }
 
-    LOGGER.debug("Creating new order");
-
-    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.findAll().iterator().next();
-
-    order.setId(null);
-    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
-    Order newOrder = orderService.save(order);
-
-    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
-    proofOfDeliveryRepository.save(proofOfDelivery);
-
-    LOGGER.debug("Created new order with id: {}", order.getId());
-    return OrderDto.newInstance(newOrder, exporter);
+    return newOrders;
   }
 
   /**
@@ -334,4 +336,29 @@ public class OrderController extends BaseController {
     );
   }
 
+  private OrderDto createSingleOrder(OrderDto orderDto,
+                                     OAuth2Authentication authentication) {
+    Order order = Order.newInstance(orderDto);
+
+    if (!authentication.isClientOnly()) {
+      LOGGER.debug("Checking rights to create order");
+      permissionService.canEditOrder(order);
+    }
+
+    LOGGER.debug("Creating new order");
+
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
+
+    order.setId(null);
+    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
+    Order newOrder = orderService.save(order);
+
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
+    proofOfDeliveryRepository.save(proofOfDelivery);
+
+    LOGGER.debug("Created new order with id: {}", order.getId());
+    return OrderDto.newInstance(newOrder, exporter);
+  }
 }

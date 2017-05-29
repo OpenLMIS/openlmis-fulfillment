@@ -342,6 +342,27 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+      /batch:
+          post:
+              is: [ secured ]
+              description: Creates multiple new orders in one transaction.
+              body:
+                  application/json:
+                    schema: orderDtoArray
+              responses:
+                  201:
+                      body:
+                        application/json:
+                          schema: orderDtoArray
+                  409:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+
   /orderNumberConfigurations:
       displayName: OrderNumberConfiguration
       get:

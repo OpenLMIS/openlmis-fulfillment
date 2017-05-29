@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -28,6 +29,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
@@ -38,9 +41,10 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.PageImplRepresentation;
 import org.openlmis.fulfillment.domain.Order;
@@ -57,11 +61,13 @@ import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +77,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
+  private static final String BATCH_URL = RESOURCE_URL + "/batch";
 
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String EXPORT_URL = ID_URL + "/export";
@@ -84,9 +91,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String PROGRAM = "program";
   private static final String FORMAT = "format";
   private static final String MESSAGE_KEY = "messageKey";
-
-  private static final String NUMBER = "10.90";
-  private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
 
   private static final String CSV = "csv";
 
@@ -123,6 +127,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order thirdOrder = new Order();
 
   private OrderDto firstOrderDto;
+  private OrderDto secondOrderDto;
 
   @Before
   public void setUp() {
@@ -154,6 +159,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setExternalId(secondOrder.getExternalId());
 
     firstOrderDto = OrderDto.newInstance(firstOrder, exporter);
+    secondOrderDto = OrderDto.newInstance(secondOrder, exporter);
 
     given(orderRepository.findAll()).willReturn(
         Lists.newArrayList(firstOrder, secondOrder, thirdOrder)
@@ -542,6 +548,32 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+    verify(orderRepository).save(orderCaptor.capture());
+    assertThat(orderCaptor.getValue().getExternalId(), is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
+  public void shouldCreateMultipleOrders() {
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(asList(firstOrderDto, secondOrderDto))
+        .when()
+        .post(BATCH_URL)
+        .then()
+        .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+    verify(orderRepository, times(2)).save(orderCaptor.capture());
+
+    assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
+        is(firstOrderDto.getExternalId()));
+    assertThat(orderCaptor.getAllValues().get(1).getExternalId(),
+        is(secondOrderDto.getExternalId()));
   }
 
   @Test
@@ -556,7 +588,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(200)
         .extract().as(OrderDto[].class);
 
-    Iterable<OrderDto> orders = Arrays.asList(response);
+    Iterable<OrderDto> orders = asList(response);
     assertTrue(orders.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -628,6 +660,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnForbiddenWhenUserHasNoRightsToCreateMultipleOrders() {
+    denyUserAllRights();
+
+    restAssured.given()
+        .queryParam(ACCESS_TOKEN, getToken())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(asList(firstOrderDto, secondOrderDto))
+        .when()
+        .post(BATCH_URL)
         .then()
         .statusCode(403);
 
