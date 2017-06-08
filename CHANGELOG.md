@@ -1,9 +1,10 @@
-3.1.0 /
-=======
+3.1.0 / WIP
+==================
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Added an endpoint for batch
 order creation, which allows creating multiple orders in one transaction.
+* [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file.
 
 3.0.3 / 2017-05-26
 ==================
