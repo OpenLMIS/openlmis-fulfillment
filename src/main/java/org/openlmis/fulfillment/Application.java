@@ -24,6 +24,7 @@ import org.openlmis.fulfillment.i18n.ExposedMessageSource;
 import org.openlmis.fulfillment.i18n.ExposedMessageSourceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -36,6 +37,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang3.LocaleUtils.toLocale;
 
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
@@ -43,6 +45,9 @@ import static org.apache.commons.lang3.LocaleUtils.toLocale;
 public class Application {
 
   private Logger logger = LoggerFactory.getLogger(Application.class);
+
+  @Value("${defaultLocale}")
+  private Locale defaultLocale;
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -58,12 +63,9 @@ public class Application {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
 
-    Locale systemLocale;
-    try {
-      systemLocale = toLocale(System.getenv("LOCALE"));
-    } catch (IllegalArgumentException ex) {
-      systemLocale = Locale.ENGLISH;
-    }
+    String envLocale = System.getenv("LOCALE");
+    Locale systemLocale = isBlank(envLocale)
+        ? defaultLocale : toLocale(envLocale);
     lr.setDefaultLocale(systemLocale);
 
     return lr;
