@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.ORDER_EXPORT_INCLUDE_ZERO_QUANTITY;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +37,7 @@ import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -74,9 +74,6 @@ public class OrderCsvHelperTest {
 
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   @InjectMocks
   private OrderCsvHelper orderCsvHelper;
@@ -144,8 +141,8 @@ public class OrderCsvHelperTest {
 
   @Test
   public void shouldExcludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
-    when(configurationSettingService.getBoolValue(
-            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY)).thenReturn(false);
+    ReflectionTestUtils.setField(orderCsvHelper, "includeZeroQuantity", false);
+
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
             true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
@@ -160,8 +157,8 @@ public class OrderCsvHelperTest {
 
   @Test
   public void shouldIncludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
-    when(configurationSettingService.getBoolValue(
-            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY)).thenReturn(true);
+    ReflectionTestUtils.setField(orderCsvHelper, "includeZeroQuantity", true);
+
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
             true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));

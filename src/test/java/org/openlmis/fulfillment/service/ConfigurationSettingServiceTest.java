@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.service;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
@@ -71,33 +70,5 @@ public class ConfigurationSettingServiceTest {
     verify(this.setting).setValue(VALUE + "2");
     verify(repository).save(this.setting);
 
-  }
-
-  @Test
-  public void shouldCatchExceptionAndReturnFalseIfKeyDoesNotExists()
-          throws ConfigurationSettingException {
-    assertEquals(service.getBoolValue("testEmpty"), Boolean.FALSE);
-  }
-
-  @Test
-  public void shouldGetBoolTrueValueIfKeyExists() {
-    setting = new ConfigurationSetting();
-    setting.setKey("testTrue");
-    setting.setValue(Boolean.TRUE.toString());
-    when(repository
-            .findOne(setting.getKey()))
-            .thenReturn(setting);
-    assertEquals(service.getBoolValue("testTrue"), Boolean.TRUE);
-  }
-
-  @Test
-  public void shouldGetBoolFalseValueIfKeyExists() {
-    ConfigurationSetting setting = new ConfigurationSetting();
-    setting.setKey("testFalse");
-    setting.setValue(Boolean.FALSE.toString());
-    when(repository
-            .findOne(setting.getKey()))
-            .thenReturn(setting);
-    assertEquals(service.getBoolValue("testFalse"), Boolean.FALSE);
   }
 }

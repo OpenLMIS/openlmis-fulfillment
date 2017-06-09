@@ -60,20 +60,4 @@ public class ConfigurationSettingService {
 
     return setting;
   }
-
-  /**
-   * Return boolean value for given key.
-   * If it doesn't exist, return false.
-   *
-   * @param key String value indicates key.
-   * @return Boolean value of given key.
-   */
-  public Boolean getBoolValue(String key) {
-    try {
-      String value = getStringValue(key);
-      return Boolean.parseBoolean(value);
-    } catch (ConfigurationSettingNotFoundException exception) {
-      return false;
-    }
-  }
 }

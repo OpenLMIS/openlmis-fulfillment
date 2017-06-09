@@ -17,7 +17,6 @@ package org.openlmis.fulfillment.service;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.apache.commons.collections.CollectionUtils.filter;
-import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.ORDER_EXPORT_INCLUDE_ZERO_QUANTITY;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
@@ -31,6 +30,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -62,8 +62,8 @@ public class OrderCsvHelper {
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
+  @Value("${order.export.includeZeroQuantity}")
+  private boolean includeZeroQuantity;
 
   /**
    * Exporting order to csv.
@@ -102,8 +102,6 @@ public class OrderCsvHelper {
   private void writeLineItems(Order order, List<OrderLineItem> orderLineItems,
                               List<OrderFileColumn> orderFileColumns, Writer writer)
       throws IOException {
-    Boolean includeZeroQuantity = configurationSettingService.getBoolValue(
-            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY);
     int counter = 1;
     for (OrderLineItem orderLineItem : orderLineItems) {
       if (includeZeroQuantity || orderLineItem.getOrderedQuantity() > 0) {
