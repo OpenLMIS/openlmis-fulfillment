@@ -1,0 +1,6 @@
+[
+  {
+    "key": "fulfillment.order.export.includeZeroQuantity",
+    "value": "false"
+  }
+]

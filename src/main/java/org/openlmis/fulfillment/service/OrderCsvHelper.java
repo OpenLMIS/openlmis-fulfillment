@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.apache.commons.collections.CollectionUtils.filter;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.ORDER_EXPORT_INCLUDE_ZERO_QUANTITY;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.Order;
@@ -61,6 +62,9 @@ public class OrderCsvHelper {
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
+
   /**
    * Exporting order to csv.
    */
@@ -98,10 +102,14 @@ public class OrderCsvHelper {
   private void writeLineItems(Order order, List<OrderLineItem> orderLineItems,
                               List<OrderFileColumn> orderFileColumns, Writer writer)
       throws IOException {
+    Boolean includeZeroQuantity = configurationSettingService.getBoolValue(
+            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY);
     int counter = 1;
     for (OrderLineItem orderLineItem : orderLineItems) {
-      writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
-      writer.write(LINE_SEPARATOR);
+      if (includeZeroQuantity || orderLineItem.getOrderedQuantity() > 0) {
+        writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
+        writer.write(LINE_SEPARATOR);
+      }
     }
   }
 

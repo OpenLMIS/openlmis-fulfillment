@@ -15,9 +15,11 @@
 
 package org.openlmis.fulfillment.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.util.ConfigurationSettingKeys.ORDER_EXPORT_INCLUDE_ZERO_QUANTITY;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +46,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,6 +63,8 @@ public class OrderCsvHelperTest {
   private static final String APPROVED_QUANTITY = "Approved quantity";
   private static final String PERIOD = "Period";
   private static final String ORDER_DATE = "Order date";
+  private static final String HEADER_ORDERABLE = "header.orderable";
+  private static final String PRODUCT = "Product";
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -70,6 +74,9 @@ public class OrderCsvHelperTest {
 
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
+
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
 
   @InjectMocks
   private OrderCsvHelper orderCsvHelper;
@@ -122,7 +129,7 @@ public class OrderCsvHelperTest {
   @Test
   public void shouldExportOrderLineItemFields() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
-    orderFileColumns.add(new OrderFileColumn(true, "header.orderable", "Product",
+    orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
         true, 2, null, LINE_ITEM, "approvedQuantity", null, null, null));
@@ -136,11 +143,43 @@ public class OrderCsvHelperTest {
   }
 
   @Test
+  public void shouldExcludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
+    when(configurationSettingService.getBoolValue(
+            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY)).thenReturn(false);
+    List<OrderFileColumn> orderFileColumns = new ArrayList<>();
+    orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+            true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
+
+    OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
+
+    String csv = writeCsvFile(order, orderFileTemplate);
+    int numberOfLines = csv.split(System.lineSeparator()).length;
+
+    assertEquals(1, numberOfLines);
+  }
+
+  @Test
+  public void shouldIncludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
+    when(configurationSettingService.getBoolValue(
+            ORDER_EXPORT_INCLUDE_ZERO_QUANTITY)).thenReturn(true);
+    List<OrderFileColumn> orderFileColumns = new ArrayList<>();
+    orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+            true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
+
+    OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
+
+    String csv = writeCsvFile(order, orderFileTemplate);
+    int numberOfLines = csv.split(System.lineSeparator()).length;
+
+    assertEquals(2, numberOfLines);
+  }
+
+  @Test
   public void shouldExportOnlyIncludedColumns() throws IOException {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null, null, null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.orderable", "Product",
+    orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 2, null, LINE_ITEM, ORDERABLE, null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
         false, 3, null, LINE_ITEM, "approvedQuantity", null, null, null));
@@ -197,7 +236,12 @@ public class OrderCsvHelperTest {
   private Order createOrder() {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrderableId(UUID.randomUUID());
+    orderLineItem.setOrderedQuantity(1L);
     orderLineItem.setApprovedQuantity(1L);
+
+    OrderLineItem zeroQuantityItem = new OrderLineItem();
+    zeroQuantityItem.setOrderableId(UUID.randomUUID());
+    zeroQuantityItem.setOrderedQuantity(0L);
 
     Order order = new Order();
     order.setOrderCode("code");
@@ -205,7 +249,7 @@ public class OrderCsvHelperTest {
     order.setExternalId(UUID.randomUUID());
     order.setProcessingPeriodId(UUID.randomUUID());
     order.setFacilityId(UUID.randomUUID());
-    order.setOrderLineItems(Collections.singletonList(orderLineItem));
+    order.setOrderLineItems(Arrays.asList(orderLineItem, zeroQuantityItem));
 
     return order;
   }
