@@ -30,6 +30,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -60,6 +61,9 @@ public class OrderCsvHelper {
 
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
+
+  @Value("${order.export.includeZeroQuantity}")
+  private boolean includeZeroQuantity;
 
   /**
    * Exporting order to csv.
@@ -100,8 +104,10 @@ public class OrderCsvHelper {
       throws IOException {
     int counter = 1;
     for (OrderLineItem orderLineItem : orderLineItems) {
-      writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
-      writer.write(LINE_SEPARATOR);
+      if (includeZeroQuantity || orderLineItem.getOrderedQuantity() > 0) {
+        writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
+        writer.write(LINE_SEPARATOR);
+      }
     }
   }
 

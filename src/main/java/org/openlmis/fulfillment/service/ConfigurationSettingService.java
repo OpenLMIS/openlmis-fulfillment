@@ -60,5 +60,4 @@ public class ConfigurationSettingService {
 
     return setting;
   }
-
 }
