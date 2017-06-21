@@ -10,6 +10,13 @@ documentation:
       content: Welcome to the OpenLMIS fulfillment-service documentation.
 
 schemas:
+  - basicOrderDto: !include schemas/basicOrderDto.json
+  - basicOrderDtoPage: !include schemas/orderDtoPage.json
+  - basicOrderDtoArray: |
+      {
+          "type": "array",
+          "items": {"type": "object", "$ref": "schemas/basicOrderDto.json" }
+      }
   - orderDto: !include schemas/orderDto.json
   - orderDtoPage: !include schemas/orderDtoPage.json
   - orderDtoArray: |
@@ -152,7 +159,7 @@ resourceTypes:
               200:
                   body:
                     application/json:
-                      schema: orderDtoArray
+                      schema: basicOrderDtoArray
               403:
                   body:
                     application/json:
@@ -167,7 +174,7 @@ resourceTypes:
               201:
                   body:
                     application/json:
-                      schema: orderDto
+                      schema: basicOrderDto
               409:
                   body:
                     application/json:
@@ -306,7 +313,7 @@ resourceTypes:
                       200:
                           body:
                             application/json:
-                              schema: orderDtoPage
+                              schema: basicOrderDtoPage
                       400:
                           body:
                             application/json:
@@ -353,7 +360,7 @@ resourceTypes:
                   201:
                       body:
                         application/json:
-                          schema: orderDtoArray
+                          schema: basicOrderDtoArray
                   409:
                       body:
                         application/json:

@@ -39,6 +39,7 @@ import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.util.Pagination;
+import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
@@ -125,7 +126,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
+  public BasicOrderDto createOrder(@RequestBody OrderDto orderDto,
+                                   OAuth2Authentication authentication) {
     return createSingleOrder(orderDto, authentication);
   }
 
@@ -139,12 +141,12 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/batch", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public List<OrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
-                              OAuth2Authentication authentication) {
-    List<OrderDto> newOrders = new ArrayList<>();
+  public List<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
+                                               OAuth2Authentication authentication) {
+    List<BasicOrderDto> newOrders = new ArrayList<>();
 
     for (OrderDto order : orders) {
-      OrderDto newOrder = createSingleOrder(order, authentication);
+      BasicOrderDto newOrder = createSingleOrder(order, authentication);
       newOrders.add(newOrder);
     }
 
@@ -158,8 +160,8 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders", method = RequestMethod.GET)
   @ResponseBody
-  public Iterable<OrderDto> getAllOrders() {
-    return OrderDto.newInstance(orderRepository.findAll(), exporter);
+  public Iterable<BasicOrderDto> getAllOrders() {
+    return BasicOrderDto.newInstance(orderRepository.findAll(), exporter);
   }
 
   /**
@@ -182,13 +184,13 @@ public class OrderController extends BaseController {
   /**
    * Finds Orders matching all of provided parameters.
    *
-   * @param params  provided parameters.
+   * @param params provided parameters.
    * @return ResponseEntity with list of all Orders matching provided parameters and OK httpStatus.
    */
   @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public Page<OrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
+  public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
     List<Order> orders = orderService
         .searchOrders(params)
         .stream()
@@ -197,14 +199,14 @@ public class OrderController extends BaseController {
         .sorted((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()))
         .collect(Collectors.toList());
 
-    return Pagination.getPage(OrderDto.newInstance(orders, exporter), pageable);
+    return Pagination.getPage(BasicOrderDto.newInstance(orders, exporter), pageable);
   }
 
   /**
    * Returns csv or pdf of defined object in response.
    *
-   * @param orderId  UUID of order to print
-   * @param format   String describing return format (pdf or csv)
+   * @param orderId UUID of order to print
+   * @param format  String describing return format (pdf or csv)
    */
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
@@ -336,8 +338,8 @@ public class OrderController extends BaseController {
     );
   }
 
-  private OrderDto createSingleOrder(OrderDto orderDto,
-                                     OAuth2Authentication authentication) {
+  private BasicOrderDto createSingleOrder(OrderDto orderDto,
+                                          OAuth2Authentication authentication) {
     Order order = Order.newInstance(orderDto);
 
     if (!authentication.isClientOnly()) {
@@ -359,6 +361,6 @@ public class OrderController extends BaseController {
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return OrderDto.newInstance(newOrder, exporter);
+    return BasicOrderDto.newInstance(newOrder, exporter);
   }
 }
