@@ -5,11 +5,13 @@ New functionality added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Added an endpoint for batch
 order creation, which allows creating multiple orders in one transaction.
 * [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file.
-* Order endpoints (except for */orders/{id}*) will now return new, smaller Dto object, which only
-contains basic information about the order.
 * A single request with orderable IDs will be sent to reference-data service when Order Dto object
 is created.
 * Set *LAZY* flag for all collections inside Order and Proof of Delivery classes.
+
+Contract breaking changes:
+* Order endpoints (except for */orders/{id}*) will now return new, smaller Dto object, which only
+contains basic information about the order.
 
 3.0.3 / 2017-05-26
 ==================
