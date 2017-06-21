@@ -199,6 +199,18 @@ public abstract class BaseWebIntegrationTest {
       + " \"roundToZero\":false\n"
       + "}";
 
+  private static final String MOCK_SEARCH_PRODUCTS = "{"
+          + "\"content\": [" + MOCK_FIND_PRODUCT_RESULT + "],"
+          + "\"last\": true,"
+          + "\"totalPages\": 1,"
+          + "\"totalElements\": 1,"
+          + "\"sort\": null,"
+          + "\"first\": true,"
+          + "\"numberOfElements\": 1,"
+          + "\"size\": 1,"
+          + "\"number\": 1"
+          + "}";
+
   private static final String MOCK_FIND_PROCESSING_SCHEDULE = "{"
       + " \"id\":\"c73ad6a4-895c-11e6-ae22-56b6b6499611\","
       + " \"code\":\"Schedule Code\","
@@ -371,6 +383,12 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
+
+    // This mocks searching for orderables
+    wireMockRule.stubFor(post(urlMatching("/api/orderables/search.*"))
+            .willReturn(aResponse()
+                    .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                    .withBody(MOCK_SEARCH_PRODUCTS)));
 
     // This mocks searching for supplying facilities
     wireMockRule.stubFor(get(urlMatching("/api/facilities/supplying.*"))

@@ -21,7 +21,9 @@ import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.GeographicZoneDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,8 +43,10 @@ public class OrderReportDto extends OrderDto implements Order.Exporter {
     exporter.export(order, orderDto);
 
     if (order.getOrderLineItems() != null) {
+      List<OrderableDto> orderables = exporter.getLineItemOrderables(order);
+
       orderDto.setOrderLineItems(order.getOrderLineItems().stream()
-              .map(item -> OrderLineItemDto.newInstance(item, exporter))
+              .map(item -> OrderLineItemDto.newInstance(item, exporter, orderables))
               .collect(Collectors.toList()));
     }
 
