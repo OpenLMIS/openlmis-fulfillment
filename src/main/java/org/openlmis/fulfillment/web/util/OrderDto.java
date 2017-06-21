@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.StatusMessage;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -152,8 +153,11 @@ public class OrderDto implements Order.Importer, Order.Exporter {
     exporter.export(order, orderDto);
 
     if (order.getOrderLineItems() != null) {
+      List<OrderableDto> orderables = exporter.getLineItemOrderables(order);
+
       orderDto.setOrderLineItems(order.getOrderLineItems().stream()
-          .map(item -> OrderLineItemDto.newInstance(item, exporter)).collect(Collectors.toList()));
+          .map(item -> OrderLineItemDto.newInstance(item, exporter, orderables))
+              .collect(Collectors.toList()));
     }
 
     if (order.getStatusMessages() != null) {

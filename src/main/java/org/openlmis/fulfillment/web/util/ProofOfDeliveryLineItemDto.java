@@ -22,7 +22,9 @@ import lombok.NoArgsConstructor;
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -47,10 +49,11 @@ public class ProofOfDeliveryLineItemDto implements ProofOfDeliveryLineItem.Impor
    * @return new instance of ProofOfDeliveryLineItemDto.
    */
   public static ProofOfDeliveryLineItemDto newInstance(
-      ProofOfDeliveryLineItem proofOfDeliveryLineItem, ExporterBuilder exporter) {
+          ProofOfDeliveryLineItem proofOfDeliveryLineItem, ExporterBuilder exporter,
+          List<OrderableDto> orderables) {
 
     OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
-    exporter.export(proofOfDeliveryLineItem.getOrderLineItem(), orderLineItemDto);
+    exporter.export(proofOfDeliveryLineItem.getOrderLineItem(), orderLineItemDto, orderables);
 
     ProofOfDeliveryLineItemDto proofOfDeliveryLineItemDto = new ProofOfDeliveryLineItemDto();
     proofOfDeliveryLineItem.export(proofOfDeliveryLineItemDto);

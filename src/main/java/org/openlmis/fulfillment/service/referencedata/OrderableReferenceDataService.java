@@ -16,6 +16,14 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class OrderableReferenceDataService
@@ -34,5 +42,21 @@ public class OrderableReferenceDataService
   @Override
   protected Class<OrderableDto[]> getArrayResultClass() {
     return OrderableDto[].class;
+  }
+
+  /**
+   * Finds orderables by their ids.
+   *
+   * @param ids ids to look for.
+   * @return a page of orderables
+   */
+  public List<OrderableDto> findByIds(Set<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Collections.emptyList();
+    }
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("ids", ids);
+
+    return getPage("search", Collections.emptyMap(), requestBody).getContent();
   }
 }

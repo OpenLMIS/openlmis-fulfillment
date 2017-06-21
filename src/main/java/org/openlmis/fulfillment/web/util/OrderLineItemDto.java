@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -42,9 +43,10 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
    * @param line instance of Template
    * @return new instance of TemplateDto.
    */
-  public static OrderLineItemDto newInstance(OrderLineItem line, ExporterBuilder exporter) {
+  public static OrderLineItemDto newInstance(OrderLineItem line, ExporterBuilder exporter,
+                                             List<OrderableDto> orderables) {
     OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
-    exporter.export(line, orderLineItemDto);
+    exporter.export(line, orderLineItemDto, orderables);
 
     return orderLineItemDto;
   }
