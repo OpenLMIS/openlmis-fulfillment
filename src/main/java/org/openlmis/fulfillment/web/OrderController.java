@@ -32,6 +32,7 @@ import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSearchParams;
+import org.openlmis.fulfillment.service.OrderSecurityService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
@@ -115,6 +116,9 @@ public class OrderController extends BaseController {
   @Autowired
   private TemplateService templateService;
 
+  @Autowired
+  private OrderSecurityService orderSecurityService;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -193,11 +197,13 @@ public class OrderController extends BaseController {
         .searchOrders(params)
         .stream()
         .filter(Objects::nonNull)
-        .filter(permissionService::canViewOrderOrManagePod)
         .sorted((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()))
         .collect(Collectors.toList());
 
-    return Pagination.getPage(OrderDto.newInstance(orders, exporter), pageable);
+    List<Order> filteredList = orderSecurityService.filterInaccessibleOrders(orders);
+    Iterable<OrderDto> data = OrderDto.newInstance(filteredList, exporter);
+    
+    return Pagination.getPage(data, pageable);
   }
 
   /**
