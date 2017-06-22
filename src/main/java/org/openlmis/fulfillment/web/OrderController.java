@@ -66,7 +66,6 @@ import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiForm
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,9 +129,10 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public BasicOrderDto createOrder(@RequestBody OrderDto orderDto,
-                                   OAuth2Authentication authentication) {
-    return createSingleOrder(orderDto, authentication);
+  public OrderDto createOrder(@RequestBody OrderDto orderDto,
+                              OAuth2Authentication authentication) {
+    Order order = createSingleOrder(orderDto, authentication);
+    return OrderDto.newInstance(order, exporter);
   }
 
   /**
@@ -145,16 +145,13 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/batch", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public List<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
-                                               OAuth2Authentication authentication) {
-    List<BasicOrderDto> newOrders = new ArrayList<>();
-
-    for (OrderDto order : orders) {
-      BasicOrderDto newOrder = createSingleOrder(order, authentication);
-      newOrders.add(newOrder);
-    }
-
-    return newOrders;
+  public Iterable<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
+                                                   OAuth2Authentication authentication) {
+    List<Order> newOrders = orders
+        .stream()
+        .map(order -> createSingleOrder(order, authentication))
+        .collect(Collectors.toList());
+    return BasicOrderDto.newInstance(newOrders, exporter);
   }
 
   /**
@@ -344,8 +341,8 @@ public class OrderController extends BaseController {
     );
   }
 
-  private BasicOrderDto createSingleOrder(OrderDto orderDto,
-                                          OAuth2Authentication authentication) {
+  private Order createSingleOrder(OrderDto orderDto,
+                                  OAuth2Authentication authentication) {
     Order order = Order.newInstance(orderDto);
 
     if (!authentication.isClientOnly()) {
@@ -367,6 +364,6 @@ public class OrderController extends BaseController {
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     LOGGER.debug("Created new order with id: {}", order.getId());
-    return BasicOrderDto.newInstance(newOrder, exporter);
+    return newOrder;
   }
 }
