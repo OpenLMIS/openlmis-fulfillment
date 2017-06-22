@@ -33,6 +33,8 @@ import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class BaseEntity {
+  public static final String ID = "id";
+  
   static final String TEXT_COLUMN_DEFINITION = "text";
   static final String UUID_TYPE = "pg-uuid";
 
