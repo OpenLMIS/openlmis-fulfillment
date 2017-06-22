@@ -18,7 +18,6 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -69,7 +68,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -192,12 +190,7 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
-    List<Order> orders = orderService
-        .searchOrders(params)
-        .stream()
-        .filter(Objects::nonNull)
-        .sorted((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()))
-        .collect(Collectors.toList());
+    List<Order> orders = orderService.searchOrders(params);
 
     List<Order> filteredList = orderSecurityService.filterInaccessibleOrders(orders);
     Iterable<BasicOrderDto> data = BasicOrderDto.newInstance(filteredList, exporter);

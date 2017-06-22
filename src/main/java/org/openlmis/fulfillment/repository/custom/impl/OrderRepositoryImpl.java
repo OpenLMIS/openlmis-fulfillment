@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository.custom.impl;
 
+import static org.openlmis.fulfillment.domain.BaseEntity.ID;
 import static org.openlmis.fulfillment.domain.Order.PROCESSING_PERIOD_ID;
 import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
 import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
@@ -68,6 +69,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isOneOf(STATUS, statuses, root, predicate, builder);
 
     query.where(predicate);
+    query.orderBy(builder.asc(root.get(ID)));
 
     return entityManager.createQuery(query).getResultList();
   }
