@@ -62,6 +62,7 @@ import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -146,9 +147,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     order.setRequestingFacilityId(facility.getId());
     order.setReceivingFacilityId(facility.getId());
 
-    given(orderRepository.findOne(order.getId())).willReturn(order);
-    given(orderRepository.exists(order.getId())).willReturn(true);
-
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setId(UUID.randomUUID());
     orderLineItem.setOrderableId(product.getId());
@@ -156,6 +154,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLineItem.setFilledQuantity(100L);
     orderLineItem.setApprovedQuantity(0L);
     orderLineItem.setPacksToShip(100L);
+
+    order.setOrderLineItems(Collections.singletonList(orderLineItem));
+
+    given(orderRepository.findOne(order.getId())).willReturn(order);
+    given(orderRepository.exists(order.getId())).willReturn(true);
 
     proofOfDeliveryLineItem.setId(UUID.randomUUID());
     proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);

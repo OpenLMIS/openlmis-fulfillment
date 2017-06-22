@@ -13,50 +13,47 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service.referencedata;
+package org.openlmis.fulfillment.service;
 
+import org.openlmis.fulfillment.domain.Order;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class OrderableReferenceDataService
-    extends BaseReferenceDataService<OrderableDto> {
+public class OrderSecurityService {
 
-  @Override
-  protected String getUrl() {
-    return "/api/orderables/";
-  }
-
-  @Override
-  protected Class<OrderableDto> getResultClass() {
-    return OrderableDto.class;
-  }
-
-  @Override
-  protected Class<OrderableDto[]> getArrayResultClass() {
-    return OrderableDto[].class;
-  }
+  @Autowired
+  private PermissionService permissionService;
 
   /**
-   * Finds orderables by their ids.
+   * Filters orders based on user permissions. It strives to make as little calls to the
+   * reference data service as possible.
    *
-   * @param ids ids to look for.
-   * @return a page of orderables
+   * @param orders input list containing any orders
+   * @return filtered input list of orders, containing only those that the user has access to
    */
-  public List<OrderableDto> findByIds(Set<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Collections.emptyList();
-    }
-    Map<String, Object> requestBody = new HashMap<>();
-    requestBody.put("ids", ids);
+  public List<Order> filterInaccessibleOrders(List<Order> orders) {
+    Map<UUID, Boolean> verified = new HashMap<>();
+    List<Order> filteredList = new ArrayList<>();
 
-    return getPage("search", Collections.emptyMap(), requestBody).getContent();
+    for (Order order : orders) {
+      Boolean accessible = verified.computeIfAbsent(
+          order.getSupplyingFacilityId(),
+          key -> permissionService.canViewOrderOrManagePod(order)
+      );
+
+      if (accessible) {
+        filteredList.add(order);
+      }
+    }
+
+    return filteredList;
   }
+
 }

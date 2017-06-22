@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -79,8 +80,10 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
     proofOfDeliveryDto.setOrder(OrderDto.newInstance(proofOfDelivery.getOrder(), exporter));
 
     if (proofOfDelivery.getProofOfDeliveryLineItems() != null) {
+      List<OrderableDto> orderables = exporter.getLineItemOrderables(proofOfDelivery.getOrder());
+
       proofOfDeliveryDto.setProofOfDeliveryLineItems(proofOfDelivery.getProofOfDeliveryLineItems()
-          .stream().map(item -> ProofOfDeliveryLineItemDto.newInstance(item, exporter))
+          .stream().map(item -> ProofOfDeliveryLineItemDto.newInstance(item, exporter, orderables))
           .collect(Collectors.toList()));
     }
     return proofOfDeliveryDto;

@@ -22,6 +22,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
@@ -33,7 +34,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ExporterBuilder {
@@ -78,10 +81,14 @@ public class ExporterBuilder {
    * Copy data from the given order line item to the instance that implement
    * {@link OrderLineItem.Exporter} interface.
    */
-  public void export(OrderLineItem item, OrderLineItem.Exporter exporter) {
+  public void export(OrderLineItem item, OrderLineItem.Exporter exporter,
+                     List<OrderableDto> orderables) {
     exporter.setId(item.getId());
     exporter.setApprovedQuantity(item.getApprovedQuantity());
-    exporter.setOrderable(getIfPresent(products, item.getOrderableId()));
+    Optional<OrderableDto> orderableDto = orderables.stream().filter(
+        orderable -> orderable.getId().equals(item.getOrderableId())).findAny();
+    exporter.setOrderable(orderableDto.orElse(
+            getIfPresent(products, item.getOrderableId())));
     exporter.setFilledQuantity(item.getFilledQuantity());
     exporter.setOrderedQuantity(item.getOrderedQuantity());
     exporter.setPacksToShip(item.getPacksToShip());
@@ -128,6 +135,17 @@ public class ExporterBuilder {
       dtos.add(dto);
     }
     return dtos;
+  }
+
+  /**
+   * Fetch orderables for each line item of given order.
+   * @param order related order
+   * @return a list of orderable dtos
+   */
+  public List<OrderableDto> getLineItemOrderables(Order order) {
+    Set<UUID> ids = order.getOrderLineItems().stream().map(
+            OrderLineItem::getOrderableId).collect(Collectors.toSet());
+    return products.findByIds(ids);
   }
 
   private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {
