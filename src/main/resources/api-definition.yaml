@@ -174,7 +174,7 @@ resourceTypes:
               201:
                   body:
                     application/json:
-                      schema: basicOrderDto
+                      schema: orderDto
               409:
                   body:
                     application/json:
