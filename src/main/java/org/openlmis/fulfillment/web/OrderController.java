@@ -193,7 +193,11 @@ public class OrderController extends BaseController {
     List<Order> orders = orderService.searchOrders(params);
 
     List<Order> filteredList = orderSecurityService.filterInaccessibleOrders(orders);
-    Iterable<BasicOrderDto> data = BasicOrderDto.newInstance(filteredList, exporter);
+    // with this we will only create basic order dto objects for elements that would be
+    // returned by this endpoint
+    Page<Order> page = Pagination.getPage(filteredList, pageable);
+
+    Iterable<BasicOrderDto> data = BasicOrderDto.newInstance(page, exporter);
     
     return Pagination.getPage(data, pageable);
   }
