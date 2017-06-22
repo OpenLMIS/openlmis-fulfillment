@@ -39,7 +39,7 @@ public class OrderSecurityServiceTest {
   private PermissionService permissionService;
 
   @InjectMocks
-  private OrderSecurityService requisitionSecurityService = new OrderSecurityService();
+  private OrderSecurityService orderSecurityService = new OrderSecurityService();
 
   @Before
   public void setUp() {
@@ -48,54 +48,52 @@ public class OrderSecurityServiceTest {
 
   @Test
   public void shouldUseCachedRightIfOneExists() {
-    final Order requisition = mockRequisition(UUID.randomUUID());
+    final Order order = mockOrder(UUID.randomUUID());
 
-    List<Order> allRequisitions = Lists.newArrayList(requisition, requisition, requisition);
+    List<Order> orders = Lists.newArrayList(order, order, order);
 
-    requisitionSecurityService.filterInaccessibleOrders(allRequisitions);
+    orderSecurityService.filterInaccessibleOrders(orders);
 
-    // The permission service should be called only one time, despite having 3 requisitions, due
+    // The permission service should be called only one time, despite having 3 orders, due
     // to caching
     verify(permissionService, times(1)).canViewOrderOrManagePod(any(Order.class));
   }
 
   @Test
   public void shouldNotUseCachedRightIfAllCallsAreDifferent() {
-    final Order requisition = mockRequisition(UUID.randomUUID());
-    final Order requisition2 = mockRequisition(UUID.randomUUID());
-    final Order requisition3 = mockRequisition(UUID.randomUUID());
+    final Order order = mockOrder(UUID.randomUUID());
+    final Order order2 = mockOrder(UUID.randomUUID());
+    final Order order3 = mockOrder(UUID.randomUUID());
 
-    List<Order> allRequisitions = Lists.newArrayList(requisition, requisition2, requisition3);
+    List<Order> orders = Lists.newArrayList(order, order2, order3);
 
-    requisitionSecurityService.filterInaccessibleOrders(allRequisitions);
+    orderSecurityService.filterInaccessibleOrders(orders);
 
-    // The permission service should be called one time for each requisition (no cache hits)
+    // The permission service should be called one time for each order (no cache hits)
     verify(permissionService, times(3)).canViewOrderOrManagePod(any(Order.class));
   }
 
   @Test
-  public void shouldProperlyFilterAccessibleRequisitions() {
-    final Order requisition = mockRequisition(UUID.randomUUID());
-    final Order requisition2 = mockRequisition(UUID.randomUUID());
-    final Order requisition3 = mockRequisition(UUID.randomUUID());
-    final Order requisition4 = mockRequisition(UUID.randomUUID());
+  public void shouldProperlyFilterAccessibleOrders() {
+    final Order order = mockOrder(UUID.randomUUID());
+    final Order order2 = mockOrder(UUID.randomUUID());
+    final Order order3 = mockOrder(UUID.randomUUID());
+    final Order order4 = mockOrder(UUID.randomUUID());
 
     when(permissionService.canViewOrderOrManagePod(any(Order.class)))
         .thenReturn(true, false, false, true);
 
-    List<Order> allRequisitions = Lists.newArrayList(requisition, requisition2,
-        requisition3, requisition4);
-    List<Order> result = requisitionSecurityService
-        .filterInaccessibleOrders(allRequisitions);
+    List<Order> orders = Lists.newArrayList(order, order2, order3, order4);
+    List<Order> result = orderSecurityService.filterInaccessibleOrders(orders);
 
     assertEquals(2, result.size());
-    assertEquals(requisition, result.get(0));
-    assertEquals(requisition4, result.get(1));
+    assertEquals(order, result.get(0));
+    assertEquals(order4, result.get(1));
   }
 
-  private Order mockRequisition(UUID facilityId) {
-    Order requisition = new Order();
-    requisition.setSupplyingFacilityId(facilityId);
-    return requisition;
+  private Order mockOrder(UUID facilityId) {
+    Order order = new Order();
+    order.setSupplyingFacilityId(facilityId);
+    return order;
   }
 }
