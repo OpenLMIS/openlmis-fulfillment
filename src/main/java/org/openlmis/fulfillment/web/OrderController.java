@@ -18,6 +18,8 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
+import com.google.common.collect.Lists;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -197,9 +199,9 @@ public class OrderController extends BaseController {
     // returned by this endpoint
     Page<Order> page = Pagination.getPage(filteredList, pageable);
 
-    Iterable<BasicOrderDto> data = BasicOrderDto.newInstance(page, exporter);
+    List<BasicOrderDto> data = Lists.newArrayList(BasicOrderDto.newInstance(page, exporter));
     
-    return Pagination.getPage(data, pageable);
+    return Pagination.getPage(data, pageable, filteredList.size());
   }
 
   /**
