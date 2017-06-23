@@ -61,13 +61,6 @@ schemas:
 
   - localizedMessage: !include schemas/localizedMessage.json
 
-  - configurationSetting: !include schemas/configurationSetting.json
-  - configurationSettingArray: |
-      {
-          "type": "array",
-          "items": { "type": "object", "$ref": "schemas/configurationSetting.json" }
-      }
-
   - resultDto: !include schemas/resultDto.json
 
   - badRequestResponse: |
@@ -741,36 +734,3 @@ resourceTypes:
                             application/json:
                               schema: localizedMessage
                       404:
-  /configurationSettings:
-      displayName: Configuration settings.
-      get:
-          is: [ secured ]
-          description: Get all configuration settings.
-          responses:
-              200:
-                  body:
-                    application/json:
-                      schema: configurationSettingArray
-              403:
-                  body:
-                    application/json:
-                      schema: localizedMessage
-      put:
-          is: [ secured ]
-          description: update configuration setting with the given key.
-          body:
-            application/json:
-                schema: configurationSetting
-          responses:
-              200:
-                  body:
-                    application/json:
-                      schema: configurationSetting
-              404:
-                  body:
-                    application/json:
-                      schema: localizedMessage
-              403:
-                  body:
-                    application/json:
-                      schema: localizedMessage

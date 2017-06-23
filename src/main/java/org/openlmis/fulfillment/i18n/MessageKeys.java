@@ -25,9 +25,6 @@ public abstract class MessageKeys {
       + ".data-integrity-violation";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
 
-  public static final String ERROR_CONFIGURATION_SETTING_NOT_FOUND = ERROR_PREFIX
-      + ".configuration.setting-not-found";
-
   public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
   public static final String ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE = ERROR_JASPER

@@ -1,3 +1,10 @@
+5.0.0
+==================
+
+Contract breaking changes:
+* [OLMIS-2612](https://openlmis.atlassian.net/browse/OLMIS-2612): Configuration settings endpoints
+(/api/configurationSettings) are no longer available. Use environment variables to configure the application.
+
 4.0.0 / 2017-06-23
 ==================
 

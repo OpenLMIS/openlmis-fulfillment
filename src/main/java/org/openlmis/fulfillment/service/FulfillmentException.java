@@ -50,7 +50,7 @@ public class FulfillmentException extends RuntimeException {
   }
 
   public Message asMessage() {
-    return new Message(messageKey, params);
+    return new Message(messageKey, (Object[])params);
   }
 
   /**
