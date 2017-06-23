@@ -3,14 +3,20 @@
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-2551](https://openlmis.atlassian.net/browse/OLMIS-2551): Added an endpoint for batch
-order creation, which allows creating multiple orders in one transaction.
-* [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file.
+order creation, which allows creating multiple orders in one transaction
+* Added pricePerPack to ProgramOrderableDto
+* [OLMIS-2611](https://openlmis.atlassian.net/browse/OLMIS-2611): Added using locale from env file
+
+Performance improvements added in a backwards-compatible manner:
+* Removed Products with Zero-Quantity Values from Order Export File
+* Set *LAZY* flag for all collections inside Order and Proof of Delivery classes
 * A single request with orderable IDs will be sent to reference-data service when Order Dto object
-is created.
-* Set *LAZY* flag for all collections inside Order and Proof of Delivery classes.
+is created
+* Improve performance of view right checking for multiple orders
+* Search endpoint performance fixes: Create basic order dto object only for orders that would be returned, moved sort command into database layer
 
 Contract breaking changes:
-* Order endpoints (except for */orders/{id}*) will now return new, smaller Dto object, which only
+* Order endpoints (except for *POST /orders* and *GET /orders/{id}*) will now return new, smaller Dto object, which only
 contains basic information about the order.
 
 3.0.3 / 2017-05-26
