@@ -13,11 +13,13 @@ Performance improvements added in a backwards-compatible manner:
 * A single request with orderable IDs will be sent to reference-data service when Order Dto object
 is created
 * Improve performance of view right checking for multiple orders
-* Search endpoint performance fixes: Create basic order dto object only for orders that would be returned, moved sort command into database layer
+* Search endpoint performance fixes:
+  * Create basic order dto object only for orders that would be returned.
+  * Moved sort command into database layer.
 
 Contract breaking changes:
-* Order endpoints (except for *POST /orders* and *GET /orders/{id}*) will now return new, smaller Dto object, which only
-contains basic information about the order.
+* Order endpoints (except for *POST /orders* and *GET /orders/{id}*) will now return new, smaller
+Dto object, which only contains basic information about the order.
 
 3.0.3 / 2017-05-26
 ==================
