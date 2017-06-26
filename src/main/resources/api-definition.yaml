@@ -11,7 +11,7 @@ documentation:
 
 schemas:
   - basicOrderDto: !include schemas/basicOrderDto.json
-  - basicOrderDtoPage: !include schemas/orderDtoPage.json
+  - basicOrderDtoPage: !include schemas/basicOrderDtoPage.json
   - basicOrderDtoArray: |
       {
           "type": "array",
