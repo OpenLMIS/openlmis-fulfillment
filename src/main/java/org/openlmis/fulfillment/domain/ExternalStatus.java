@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public enum ExternalStatus {
   INITIATED(1),
+  REJECTED(1),
   SUBMITTED(2),
   AUTHORIZED(3),
   IN_APPROVAL(4),

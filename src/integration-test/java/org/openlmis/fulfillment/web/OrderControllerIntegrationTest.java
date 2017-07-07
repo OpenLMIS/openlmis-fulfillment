@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.PageImplRepresentation;
+import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -57,9 +58,11 @@ import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -538,6 +541,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.getOrderLineItems().clear();
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrderDto = BasicOrderDto.newInstance(firstOrder, exporter);
+    firstOrderDto.setStatusChanges(sampleStatusChanges());
 
     restAssured.given()
         .queryParam(ACCESS_TOKEN, getToken())
@@ -967,5 +971,34 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(response, is(equalTo(ERROR_ORDER_NOT_FOUND)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private List<StatusChangeDto> sampleStatusChanges() {
+    UserDto user = new UserDto();
+    user.setUsername("user");
+    user.setId(UUID.randomUUID());
+
+    List<StatusChangeDto> list = new ArrayList<>();
+
+    list.add(new StatusChangeDto(ExternalStatus.INITIATED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.SUBMITTED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.AUTHORIZED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.IN_APPROVAL, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.REJECTED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.SUBMITTED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.AUTHORIZED, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.IN_APPROVAL, user.getId(),
+            ZonedDateTime.now(), user));
+    list.add(new StatusChangeDto(ExternalStatus.APPROVED, user.getId(),
+            ZonedDateTime.now(), user));
+
+    return list;
   }
 }
