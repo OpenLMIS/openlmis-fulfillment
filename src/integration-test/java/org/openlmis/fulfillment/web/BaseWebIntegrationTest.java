@@ -569,8 +569,8 @@ public abstract class BaseWebIntegrationTest {
     return column;
   }
 
-  protected String getToken() {
-    return "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
+  protected String getTokenHeader() {
+    return "Bearer 418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   }
 
   protected UUID getNonMatchingUuid(UUID match) {

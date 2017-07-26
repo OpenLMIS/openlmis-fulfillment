@@ -54,6 +54,7 @@ import org.openlmis.fulfillment.service.referencedata.SupervisoryNodeDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
@@ -77,7 +78,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
-  private static final String ACCESS_TOKEN = "access_token";
   private static final UUID ID = UUID.fromString("1752b457-0a4b-4de0-bf94-5a6a8002427e");
   private static final String MESSAGE_KEY = "messageKey";
 
@@ -211,7 +211,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(PRINT_URL)
         .then()
@@ -228,7 +228,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     // when
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(PRINT_URL)
         .then()
@@ -244,7 +244,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryDto.setDeliveredBy(somebody);
 
     ProofOfDeliveryDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .body(proofOfDeliveryDto)
@@ -263,7 +263,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDelivery.getOrder().setStatus(OrderStatus.RECEIVED);
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .body(proofOfDeliveryDto)
@@ -286,7 +286,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     proofOfDeliveryDto.setDeliveredBy(somebody);
 
     ProofOfDeliveryDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
         .body(proofOfDeliveryDto)
@@ -305,7 +305,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
 
     ProofOfDeliveryDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -322,7 +322,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   public void shouldGetChosenProofOfDelivery() {
 
     ProofOfDeliveryDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -341,7 +341,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -355,7 +355,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldSubmitValidObject() {
     ProofOfDeliveryDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -373,7 +373,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -391,7 +391,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -411,7 +411,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -432,7 +432,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     String response = restAssured
         .given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -450,7 +450,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     String response = restAssured
         .given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()
@@ -469,7 +469,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     String response = restAssured
         .given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .body(proofOfDeliveryDto)
@@ -490,7 +490,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     String response = restAssured
         .given()
         .pathParam("id", proofOfDelivery.getId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(PRINT_URL)
         .then()
@@ -507,7 +507,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     String response = restAssured
         .given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", proofOfDelivery.getId())
         .when()

@@ -64,7 +64,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     ResponseEntity response = mock(ResponseEntity.class);
 
     // when
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), eq(new HttpEntity<>(payload)),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
         .thenReturn(response);
 
@@ -77,13 +77,16 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
     // then
     verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.POST),
-            eq(new HttpEntity<>(payload)), any(ParameterizedTypeReference.class));
+            entityCaptor.capture(), any(ParameterizedTypeReference.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + "search";
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(user.getUsername(), is(equalTo(name)));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(payload));
   }
 
   @Test
@@ -91,7 +94,6 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     // given
     String name = "userName";
 
-    UserDto[] users = new UserDto[0];
     ResponseEntity response = mock(ResponseEntity.class);
 
     Map<String, Object> payload = new HashMap<>();
@@ -100,7 +102,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     UserReferenceDataService service = (UserReferenceDataService) prepareService();
 
     // when
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), eq(new HttpEntity<>(payload)),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
             .thenReturn(response);
 
@@ -113,13 +115,16 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
     // then
     verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.POST),
-            eq(new HttpEntity<>(payload)), any(ParameterizedTypeReference.class));
+            entityCaptor.capture(), any(ParameterizedTypeReference.class));
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + "search?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + "search";
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(user, is(nullValue()));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(payload));
   }
 
 }

@@ -30,6 +30,7 @@ import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.web.util.TemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -83,7 +84,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
     try (InputStream podStream = podReport.getInputStream()) {
       restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
+          .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
           .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
           .multiPart("file", podReport.getFilename(), podStream)
           .formParam("name", TEMPLATE_CONTROLLER_TEST)
@@ -104,7 +105,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     given(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST)).willReturn(new Template());
     try (InputStream podStream = podReport.getInputStream()) {
       restAssured.given()
-          .queryParam(ACCESS_TOKEN, getToken())
+          .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
           .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
           .multiPart("file", podReport.getFilename(), podStream)
           .formParam("name", TEMPLATE_CONTROLLER_TEST)
@@ -121,7 +122,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldDeleteTemplate() {
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
@@ -138,7 +139,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     given(templateRepository.exists(template.getId())).willReturn(false);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
@@ -155,7 +156,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
     TemplateDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .body(templateDto)
@@ -177,7 +178,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
     TemplateDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ID)
         .body(templateDto)
@@ -194,7 +195,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetAllTemplates() {
     TemplateDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -211,7 +212,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldGetChosenTemplate() {
 
     TemplateDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()
@@ -230,7 +231,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     given(templateRepository.exists(template.getId())).willReturn(false);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", template.getId())
         .when()

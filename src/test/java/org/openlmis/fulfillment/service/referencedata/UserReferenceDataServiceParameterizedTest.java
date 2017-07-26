@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -36,6 +37,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.MockitoAnnotations;
 import org.openlmis.fulfillment.service.ResultDto;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
@@ -119,7 +122,8 @@ public class UserReferenceDataServiceParameterizedTest
     ResponseEntity<ResultDto> response = mock(ResponseEntity.class);
 
     // when
-    when(restTemplate.getForEntity(any(URI.class), eq(ResultDto.class)))
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
+         any(HttpEntity.class), eq(ResultDto.class)))
         .thenReturn(response);
     when(response.getBody()).thenReturn(new ResultDto<>(expectedValue));
 
@@ -128,8 +132,8 @@ public class UserReferenceDataServiceParameterizedTest
     // then
     assertThat(result.getResult(), is(expectedValue));
 
-    verify(restTemplate, atLeastOnce()).getForEntity(
-        uriCaptor.capture(), eq(ResultDto.class)
+    verify(restTemplate, atLeastOnce()).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(), eq(ResultDto.class)
     );
 
     URI uri = uriCaptor.getValue();
@@ -139,6 +143,9 @@ public class UserReferenceDataServiceParameterizedTest
         hasProperty(URI_QUERY_NAME, is("rightId")),
         hasProperty(URI_QUERY_VALUE, is(right.toString())))
     ));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
 
     if (null != program) {
       assertThat(parse, hasItem(allOf(

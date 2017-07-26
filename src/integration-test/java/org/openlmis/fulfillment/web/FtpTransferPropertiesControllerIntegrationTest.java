@@ -32,6 +32,7 @@ import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import java.util.UUID;
 
@@ -60,7 +61,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
 
     // when
     TransferPropertiesDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ftpTransferProperties.getId())
         .body(newInstance(newProperties, exporter))
@@ -82,7 +83,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", ftpTransferProperties.getId())
         .body(toDto(ftpTransferProperties))
@@ -102,7 +103,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(toDto(ftpTransferProperties))
         .when()

@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.service.BaseCommunicationService;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
 import org.openlmis.fulfillment.service.DataRetrievalException;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,21 +52,25 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
     // when
     when(response.getBody()).thenReturn(instance);
     when(restTemplate.exchange(
-        any(URI.class), eq(HttpMethod.GET), eq(null), eq(service.getResultClass())
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(service.getResultClass())
     )).thenReturn(response);
 
     T found = service.findOne(id);
 
     // then
     verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), eq(null), eq(service.getResultClass())
+        uriCaptor.capture(), eq(HttpMethod.GET),
+            entityCaptor.capture(), eq(service.getResultClass())
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(instance));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   @Test
@@ -76,21 +81,25 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
 
     // when
     when(restTemplate.exchange(
-        any(URI.class), eq(HttpMethod.GET), eq(null), eq(service.getResultClass())
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(service.getResultClass())
     )).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
     T found = service.findOne(id);
 
     // then
     verify(restTemplate).exchange(
-        uriCaptor.capture(), eq(HttpMethod.GET), eq(null), eq(service.getResultClass())
+        uriCaptor.capture(), eq(HttpMethod.GET),
+            entityCaptor.capture(), eq(service.getResultClass())
     );
 
     URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl() + id + "?" + ACCESS_TOKEN;
+    String url = service.getServiceUrl() + service.getUrl() + id;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(found, is(nullValue()));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   @Test(expected = DataRetrievalException.class)
@@ -101,7 +110,7 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
 
     // when
     when(restTemplate.exchange(
-        any(URI.class), eq(HttpMethod.GET), eq(null), eq(service.getResultClass())
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(service.getResultClass())
     )).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
     service.findOne(id);

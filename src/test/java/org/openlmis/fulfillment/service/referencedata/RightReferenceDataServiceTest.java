@@ -26,6 +26,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
@@ -55,23 +57,28 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
     ResponseEntity<RightDto[]> response = mock(ResponseEntity.class);
 
     // when
-    when(restTemplate.getForEntity(any(URI.class), eq(service.getArrayResultClass())))
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
+            any(HttpEntity.class), eq(service.getArrayResultClass())))
         .thenReturn(response);
     when(response.getBody()).thenReturn(rights);
 
     RightDto right = service.findRight(name);
 
     // then
-    verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(service.getArrayResultClass())
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
+            eq(service.getArrayResultClass())
     );
 
     URI uri = uriCaptor.getValue();
     String url = service.getServiceUrl() + service.getUrl()
-        + "search?" + ACCESS_TOKEN + "&name=" + name;
+        + "search?name=" + name;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(right.getName(), is(equalTo(name)));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
   @Test
@@ -84,23 +91,28 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
     ResponseEntity<RightDto[]> response = mock(ResponseEntity.class);
 
     // when
-    when(restTemplate.getForEntity(any(URI.class), eq(service.getArrayResultClass())))
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET),
+            any(HttpEntity.class), eq(service.getArrayResultClass())))
         .thenReturn(response);
     when(response.getBody()).thenReturn(rights);
 
     RightDto right = service.findRight(name);
 
     // then
-    verify(restTemplate).getForEntity(
-        uriCaptor.capture(), eq(service.getArrayResultClass())
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+          entityCaptor.capture(), eq(service.getArrayResultClass())
     );
 
     URI uri = uriCaptor.getValue();
     String url = service.getServiceUrl() + service.getUrl()
-        + "search?" + ACCESS_TOKEN + "&name=" + name;
+        + "search?name=" + name;
 
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(right, is(nullValue()));
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertThat(entityCaptor.getValue().getBody(), is(nullValue()));
   }
 
 }

@@ -24,9 +24,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class NotificationService extends BaseCommunicationService<NotificationRequest> {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -43,13 +40,10 @@ public class NotificationService extends BaseCommunicationService<NotificationRe
   public boolean send(NotificationRequest request) {
     String url = getServiceUrl() + getUrl();
 
-    Map<String, String> params = new HashMap<>();
-    params.put(ACCESS_TOKEN, obtainAccessToken());
-
-    HttpEntity<NotificationRequest> body = new HttpEntity<>(request);
+    HttpEntity<NotificationRequest> body = createEntityWithAuthHeader(request);
 
     try {
-      restTemplate.postForEntity(buildUri(url, params), body, getResultClass());
+      restTemplate.postForEntity(buildUri(url), body, getResultClass());
     } catch (RestClientException ex) {
       logger.error("Can not send a notification request", ex);
       return false;

@@ -15,7 +15,9 @@
 
 package org.openlmis.fulfillment.service;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -34,6 +36,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -49,8 +52,6 @@ public abstract class BaseCommunicationServiceTest {
   private static final String TOKEN = UUID.randomUUID().toString();
   private static final String AUTHORIZATION_URL = "http://localhost/auth/oauth/token";
 
-  protected static final String ACCESS_TOKEN = "access_token=" + TOKEN;
-
   private static final URI AUTHORIZATION_URI =
       URI.create(AUTHORIZATION_URL + "?grant_type=client_credentials");
 
@@ -59,6 +60,9 @@ public abstract class BaseCommunicationServiceTest {
 
   @Captor
   protected ArgumentCaptor<URI> uriCaptor;
+
+  @Captor
+  protected ArgumentCaptor<HttpEntity<String>> entityCaptor;
 
   @Captor
   private ArgumentCaptor<HttpEntity<String>> entityStringCaptor;
@@ -86,6 +90,11 @@ public abstract class BaseCommunicationServiceTest {
     return service;
   }
 
+  protected void assertAuthHeader(HttpEntity entity) {
+    assertThat(entity.getHeaders().get(HttpHeaders.AUTHORIZATION),
+            is(singletonList("Bearer " + TOKEN)));
+  }
+
   private void mockAuth() {
     ResponseEntity<Object> response = mock(ResponseEntity.class);
     Map<String, String> body = ImmutableMap.of("access_token", TOKEN);
@@ -109,7 +118,6 @@ public abstract class BaseCommunicationServiceTest {
           contains("Basic dHJ1c3RlZC1jbGllbnQ6c2VjcmV0")
       );
     }
-
   }
 
 }

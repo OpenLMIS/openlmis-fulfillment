@@ -35,6 +35,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.http.HttpHeaders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
   @Test
   public void shouldSavePodReportTemplate() throws Exception {
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType("multipart/form-data")
         .multiPart("file", podReport.getFilename(), podReport.getInputStream())
         .when()
@@ -99,7 +100,7 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     given(templateRepository.findByName(anyString())).willReturn(template);
 
     String jrxml = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType("application/xml")
         .when()
         .get(RESOURCE_URL)
@@ -119,7 +120,7 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     given(templateRepository.findByName(anyString())).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType("application/xml")
         .when()
         .get(RESOURCE_URL)
@@ -134,7 +135,7 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType("application/xml")
         .when()
         .get(RESOURCE_URL)
@@ -150,7 +151,7 @@ public class ProofOfDeliveryTemplateControllerIntegrationTest extends BaseWebInt
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType("multipart/form-data")
         .multiPart("file", podReport.getFilename(), podReport.getInputStream())
         .when()

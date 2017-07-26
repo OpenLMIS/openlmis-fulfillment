@@ -46,12 +46,9 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   public T findOne(UUID id) {
     String url = getServiceUrl() + getUrl() + id;
 
-    Map<String, String> params = new HashMap<>();
-    params.put(ACCESS_TOKEN, obtainAccessToken());
-
     try {
       ResponseEntity<T> responseEntity = restTemplate.exchange(
-          buildUri(url, params), HttpMethod.GET, null, getResultClass());
+          buildUri(url), HttpMethod.GET, createAuthEntityNoBody(), getResultClass());
       return responseEntity.getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
@@ -93,17 +90,11 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
     Map<String, Object> params = new HashMap<>();
-    params.put(ACCESS_TOKEN, obtainAccessToken());
     params.putAll(uriParameters);
 
     try {
-      ResponseEntity<T[]> responseEntity;
-      if (HttpMethod.GET == method) {
-        responseEntity = restTemplate.getForEntity(buildUri(url, params), getArrayResultClass());
-      } else {
-        responseEntity = restTemplate.postForEntity(buildUri(url, params), payload,
-            getArrayResultClass());
-      }
+      ResponseEntity<T[]> responseEntity = restTemplate.exchange(buildUri(url, params),
+              method, createEntityWithAuthHeader(payload), getArrayResultClass());
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
     } catch (HttpStatusCodeException ex) {
@@ -114,10 +105,10 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
     Map<String, Object> params = new HashMap<>();
-    params.put(ACCESS_TOKEN, obtainAccessToken());
     params.putAll(parameters);
 
-    ResponseEntity<P> response = restTemplate.getForEntity(buildUri(url, params), type);
+    ResponseEntity<P> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
+            createAuthEntityNoBody(), type);
 
     return response.getBody();
   }

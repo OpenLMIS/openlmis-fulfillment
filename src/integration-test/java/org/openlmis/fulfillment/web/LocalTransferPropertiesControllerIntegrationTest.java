@@ -33,6 +33,7 @@ import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import java.util.UUID;
 
@@ -73,7 +74,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
         (FtpTransferPropertiesDto) newInstance(newProperties, exporter);
     propertiesDto.setPassword(newProperties.getPassword());
     TransferPropertiesDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", localTransferProperties.getId())
         .body(propertiesDto)
@@ -95,7 +96,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", localTransferProperties.getId())
         .body(newInstance(localTransferProperties, exporter))
@@ -115,7 +116,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(newInstance(localTransferProperties, exporter))
         .when()

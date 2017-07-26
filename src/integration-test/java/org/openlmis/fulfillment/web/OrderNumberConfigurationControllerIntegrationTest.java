@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
 
 import com.google.common.collect.Lists;
 
@@ -34,6 +33,7 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
@@ -102,7 +102,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .willReturn(true);
 
     OrderNumberConfigurationDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -119,7 +119,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     given(orderNumberConfigurationRepository.findAll()).willReturn(new ArrayList());
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -136,7 +136,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .newInstance(orderNumberConfiguration);
 
     OrderNumberConfigurationDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderNumberConfigurationDto)
         .when()
@@ -191,7 +191,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   private void postForOrderNumberConfiguration(OrderNumberConfigurationDto orderNumberConfiguration,
                                                Integer code) {
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderNumberConfiguration)
         .when()
@@ -205,7 +205,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -224,7 +224,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .newInstance(orderNumberConfiguration);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderNumberConfigurationDto)
         .when()

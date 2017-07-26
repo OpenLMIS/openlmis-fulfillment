@@ -67,6 +67,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.springframework.http.HttpHeaders;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -227,7 +228,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldPrintOrderAsCsv() {
     String csvContent = restAssured.given()
         .queryParam(FORMAT, CSV)
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .when()
         .get(PRINT_URL)
@@ -243,7 +244,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldPrintOrderAsPdf() {
     restAssured.given()
         .queryParam(FORMAT, "pdf")
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", thirdOrder.getId().toString())
         .when()
         .get(PRINT_URL)
@@ -259,7 +260,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     restAssured.given()
         .queryParam(FORMAT, "pdf")
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId().toString())
         .when()
         .get(PRINT_URL)
@@ -278,7 +279,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -309,7 +310,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -346,7 +347,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -388,7 +389,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(STATUS, READY_TO_PACK.toString())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -428,7 +429,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     PageImplRepresentation response = restAssured.given()
         .queryParam(STATUS, firstOrder.getStatus().toString())
         .queryParam(STATUS, secondOrder.getStatus().toString())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -452,7 +453,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("page", 0)
         .queryParam("size", 1)
         .when()
@@ -486,7 +487,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam("processingPeriod", firstOrder.getProcessingPeriodId())
         .queryParam(STATUS, READY_TO_PACK.toString())
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -526,7 +527,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(STATUS, "abc")
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -544,7 +545,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrderDto.setStatusChanges(sampleStatusChanges());
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
@@ -562,7 +563,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldCreateMultipleOrders() {
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(asList(firstOrderDto, secondOrderDto))
         .when()
@@ -585,7 +586,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldGetAllOrders() {
 
     BasicOrderDto[] response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -602,7 +603,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldGetChosenOrder() {
 
     OrderDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
@@ -620,7 +621,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
@@ -644,7 +645,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrderDto = BasicOrderDto.newInstance(firstOrder, exporter);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
@@ -660,7 +661,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
@@ -676,7 +677,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(asList(firstOrderDto, secondOrderDto))
         .when()
@@ -690,7 +691,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldExportOrderIfTypeIsNotSpecified() {
     String csvContent = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .when()
         .get(EXPORT_URL)
@@ -715,7 +716,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldExportOrderIfTypeIsCsv() {
     String csvContent = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .queryParam("type", CSV)
         .when()
@@ -732,7 +733,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldNotExportOrderIfTypeIsDifferentThanCsv() {
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .queryParam("type", "pdf")
         .when()
@@ -748,7 +749,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId())
         .queryParam("type", CSV)
         .when()
@@ -764,7 +765,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
 
     String message = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId())
         .when()
         .get(RETRY_URL)
@@ -784,7 +785,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
 
     String message = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId())
         .when()
         .get(RETRY_URL)
@@ -804,7 +805,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
 
     ResultDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId())
         .when()
         .get(RETRY_URL)
@@ -832,7 +833,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     PageImplRepresentation response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
         .then()
@@ -851,7 +852,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
         .when()
@@ -870,7 +871,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     String response = restAssured.given()
         .queryParam(FORMAT, CSV)
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .when()
         .get(PRINT_URL)
@@ -887,7 +888,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
         .when()
         .get(EXPORT_URL)
@@ -904,7 +905,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
@@ -925,7 +926,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .willReturn(proofOfDelivery);
 
     ProofOfDeliveryDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
@@ -942,7 +943,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     denyUserAllRights();
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()
@@ -960,7 +961,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findOne(any(UUID.class))).willReturn(null);
 
     String response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", firstOrder.getId().toString())
         .contentType(APPLICATION_JSON_VALUE)
         .when()

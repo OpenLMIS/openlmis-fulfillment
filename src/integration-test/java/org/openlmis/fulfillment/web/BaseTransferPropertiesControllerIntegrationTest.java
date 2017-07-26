@@ -27,13 +27,13 @@ import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends TransferProperties>
     extends BaseWebIntegrationTest {
-  static final String ACCESS_TOKEN = "access_token";
   static final String RESOURCE_URL = "/api/transferProperties";
   static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String SEARCH = RESOURCE_URL + "/search";
@@ -51,7 +51,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(toDto(properties))
         .when()
@@ -77,7 +77,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     TransferPropertiesDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
         .body(toDto(newProperties))
@@ -104,7 +104,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
         .body(toDto(newProperties))
@@ -135,7 +135,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     object.getFacility().setId(UUID.randomUUID());
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
         .body(object)
@@ -156,7 +156,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -176,7 +176,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -197,7 +197,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -217,7 +217,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
     // when
     TransferPropertiesDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -238,7 +238,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     given(transferPropertiesRepository.findOne(properties.getId())).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -256,7 +256,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .willReturn(properties);
 
     TransferPropertiesDto response = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FACILITY, properties.getFacilityId())
         .when()
         .get(SEARCH)
@@ -274,7 +274,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
         .willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FACILITY, UUID.randomUUID())
         .when()
         .get(SEARCH)
@@ -290,7 +290,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     T properties = generateProperties();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -308,7 +308,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     T properties = generateProperties();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(toDto(properties))
         .when()
@@ -327,7 +327,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     T newProperties = generateProperties();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", oldProperties.getId())
         .body(toDto(newProperties))
@@ -346,7 +346,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     T properties = generateProperties();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("id", properties.getId())
         .when()
@@ -363,7 +363,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(FACILITY, UUID.randomUUID())
         .when()
         .get(SEARCH)

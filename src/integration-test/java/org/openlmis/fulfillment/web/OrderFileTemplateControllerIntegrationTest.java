@@ -33,6 +33,7 @@ import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orderFileTemplates";
-  private static final String ACCESS_TOKEN = "access_token";
 
   private OrderFileTemplate orderFileTemplate = new OrderFileTemplate();
   private OrderFileTemplateDto orderFileTemplateDto;
@@ -72,7 +72,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -96,7 +96,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
     // when
     OrderFileTemplateDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -133,7 +133,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -150,7 +150,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -175,7 +175,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -203,7 +203,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
     // when
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(orderFileTemplateDto)
         .when()
@@ -224,7 +224,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     given(orderFileTemplateService.getOrderFileTemplate()).willReturn(orderFileTemplate);
 
     OrderFileTemplateDto result = restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -242,7 +242,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     given(orderFileTemplateService.getOrderFileTemplate()).willReturn(null);
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
@@ -257,7 +257,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam(ACCESS_TOKEN, getToken())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
