@@ -48,7 +48,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
 
     try {
       ResponseEntity<T> responseEntity = restTemplate.exchange(
-          buildUri(url), HttpMethod.GET, createAuthEntityNoBody(), getResultClass());
+          buildUri(url), HttpMethod.GET, createEntity(), getResultClass());
       return responseEntity.getBody();
     } catch (HttpStatusCodeException ex) {
       // rest template will handle 404 as an exception, instead of returning null
@@ -94,7 +94,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
 
     try {
       ResponseEntity<T[]> responseEntity = restTemplate.exchange(buildUri(url, params),
-              method, createEntityWithAuthHeader(payload), getArrayResultClass());
+              method, createEntity(payload), getArrayResultClass());
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
     } catch (HttpStatusCodeException ex) {
@@ -108,7 +108,7 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
     params.putAll(parameters);
 
     ResponseEntity<P> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
-            createAuthEntityNoBody(), type);
+            createEntity(), type);
 
     return response.getBody();
   }

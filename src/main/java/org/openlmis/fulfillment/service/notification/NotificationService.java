@@ -40,7 +40,7 @@ public class NotificationService extends BaseCommunicationService<NotificationRe
   public boolean send(NotificationRequest request) {
     String url = getServiceUrl() + getUrl();
 
-    HttpEntity<NotificationRequest> body = createEntityWithAuthHeader(request);
+    HttpEntity<NotificationRequest> body = createEntity(request);
 
     try {
       restTemplate.postForEntity(buildUri(url), body, getResultClass());

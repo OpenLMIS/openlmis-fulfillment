@@ -122,7 +122,7 @@ public abstract class BaseCommunicationService<T> {
       ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
               buildUri(url, params),
               method,
-              createEntityWithAuthHeader(payload),
+              createEntity(payload),
               new DynamicPageTypeReference<>(type)
       );
       return response.getBody();
@@ -138,15 +138,15 @@ public abstract class BaseCommunicationService<T> {
     );
   }
 
-  protected <E> HttpEntity<E> createEntityWithAuthHeader(E payload) {
+  protected <E> HttpEntity<E> createEntity(E payload) {
     if (payload == null) {
-      return createAuthEntityNoBody();
+      return createEntity();
     } else {
       return new HttpEntity<>(payload, createHeadersWithAuth());
     }
   }
 
-  protected HttpEntity createAuthEntityNoBody() {
+  protected HttpEntity createEntity() {
     return new HttpEntity(createHeadersWithAuth());
   }
 
