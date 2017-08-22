@@ -17,9 +17,11 @@ package org.openlmis.fulfillment.repository;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 
@@ -32,6 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -131,6 +136,33 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus())
     );
     assertSearchOrders(list, one, four);
+  }
+
+  @Test
+  public void shouldOrderOrdersByCreatedDate() {
+    final Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    final Order two = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    final Order three = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    final Order four = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+
+    two.setCreatedDate(ZonedDateTime.of(2017, 3, 29, 0, 0, 0, 0, ZoneId.systemDefault()));
+    four.setCreatedDate(ZonedDateTime.of(2017, 3, 29, 1, 0, 0, 0, ZoneId.systemDefault()));
+    one.setCreatedDate(ZonedDateTime.of(2017, 3, 30, 0, 0, 0, 0, ZoneId.systemDefault()));
+    three.setCreatedDate(ZonedDateTime.of(2017, 4, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
+
+    orderRepository.save(one);
+    orderRepository.save(two);
+    orderRepository.save(three);
+    orderRepository.save(four);
+
+    List<Order> result = orderRepository.searchOrders(null, null, null, null,
+        Collections.singleton(OrderStatus.ORDERED));
+
+    assertEquals(4, result.size());
+    // They should be returned from the most recent to the least recent
+    assertTrue(result.get(0).getCreatedDate().isAfter(result.get(1).getCreatedDate()));
+    assertTrue(result.get(1).getCreatedDate().isAfter(result.get(2).getCreatedDate()));
+    assertTrue(result.get(2).getCreatedDate().isAfter(result.get(3).getCreatedDate()));
   }
 
   private void assertSearchOrders(List<Order> actual, Order... expected) {

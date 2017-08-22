@@ -57,6 +57,7 @@ public class Order extends BaseEntity {
   public static final String PROGRAM_ID = "programId";
   public static final String STATUS = "status";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
+  public static final String CREATED_DATE = "createdDate";
 
   @Column(nullable = false, unique = true)
   @Getter
