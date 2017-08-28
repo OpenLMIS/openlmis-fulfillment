@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.repository;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,6 +45,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
 
   private static final String ORDER_REPOSITORY_INTEGRATION_TEST
@@ -63,6 +65,19 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   private Order generateInstance(OrderStatus status) {
+    return generateInstance(status, UUID.randomUUID(), UUID.randomUUID());
+  }
+
+  private Order generateInstance(UUID supplyingFacilityId) {
+    return generateInstance(OrderStatus.PICKING, supplyingFacilityId, UUID.randomUUID());
+  }
+
+  private Order generateInstance(UUID supplyingFacilityId, UUID requestingFacilityId) {
+    return generateInstance(OrderStatus.PICKING, supplyingFacilityId, requestingFacilityId);
+  }
+
+  private Order generateInstance(OrderStatus status, UUID supplyingFacilityId,
+                                 UUID requestingFacilityId) {
     Order order = new Order();
     order.setExternalId(UUID.randomUUID());
     order.setEmergency(false);
@@ -72,9 +87,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     order.setStatus(status);
     order.setProgramId(UUID.randomUUID());
     order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacilityId(UUID.randomUUID());
+    order.setRequestingFacilityId(requestingFacilityId);
     order.setReceivingFacilityId(UUID.randomUUID());
-    order.setSupplyingFacilityId(UUID.randomUUID());
+    order.setSupplyingFacilityId(supplyingFacilityId);
     order.setProcessingPeriodId(UUID.randomUUID());
 
     return order;
@@ -163,6 +178,57 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertTrue(result.get(0).getCreatedDate().isAfter(result.get(1).getCreatedDate()));
     assertTrue(result.get(1).getCreatedDate().isAfter(result.get(2).getCreatedDate()));
     assertTrue(result.get(2).getCreatedDate().isAfter(result.get(3).getCreatedDate()));
+  }
+
+  @Test
+  public void shouldRetrieveRequestingFacilities() {
+    Order one = orderRepository.save(generateInstance());
+    Order two = orderRepository.save(generateInstance());
+    Order three = orderRepository.save(generateInstance());
+    Order four = orderRepository.save(generateInstance());
+    Order five = orderRepository.save(generateInstance());
+
+    List<UUID> uuids = orderRepository.getRequestingFacilities(null);
+
+    assertThat(uuids, hasSize(5));
+    assertThat(uuids, hasItems(
+        one.getRequestingFacilityId(), two.getRequestingFacilityId(),
+        three.getRequestingFacilityId(), four.getRequestingFacilityId(),
+        five.getRequestingFacilityId()));
+  }
+
+  @Test
+  public void shouldRetrieveDistinctRequestingFacilities() {
+    UUID requestingFacilityId = UUID.randomUUID();
+
+    orderRepository.save(generateInstance(UUID.randomUUID(), requestingFacilityId));
+    orderRepository.save(generateInstance(UUID.randomUUID(), requestingFacilityId));
+    Order one = orderRepository.save(generateInstance(UUID.randomUUID(), requestingFacilityId));
+    Order two = orderRepository.save(generateInstance(UUID.randomUUID()));
+    Order three = orderRepository.save(generateInstance(UUID.randomUUID()));
+
+    List<UUID> uuids = orderRepository.getRequestingFacilities(null);
+
+    assertThat(uuids, hasSize(3));
+    assertThat(uuids, hasItems(
+        one.getRequestingFacilityId(), two.getRequestingFacilityId(),
+        three.getRequestingFacilityId()));
+  }
+
+  @Test
+  public void shouldRetrieveDistinctRequestingFacilitiesForGiven() {
+    Order one = orderRepository.save(generateInstance());
+    Order two = orderRepository.save(generateInstance());
+    Order three = orderRepository.save(generateInstance());
+    Order four = orderRepository.save(generateInstance());
+    Order five = orderRepository.save(generateInstance());
+
+    for (Order order : Lists.newArrayList(one, two, three, four, five)) {
+      List<UUID> uuids = orderRepository.getRequestingFacilities(order.getSupplyingFacilityId());
+
+      assertThat(uuids, hasSize(1));
+      assertThat(uuids, hasItems(order.getRequestingFacilityId()));
+    }
   }
 
   private void assertSearchOrders(List<Order> actual, Order... expected) {

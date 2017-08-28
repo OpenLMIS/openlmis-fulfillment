@@ -205,6 +205,17 @@ public class OrderController extends BaseController {
   }
 
   /**
+   * Retrieves the distinct UUIDs of the available requesting facilities.
+   */
+  @RequestMapping(value = "/orders/requestingFacilities", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public List<UUID> getRequestingFacilities(
+      @RequestParam(name = "supplyingFacility", required = false) UUID supplyingFacility) {
+    return orderRepository.getRequestingFacilities(supplyingFacility);
+  }
+
+  /**
    * Returns csv or pdf of defined object in response.
    *
    * @param orderId UUID of order to print

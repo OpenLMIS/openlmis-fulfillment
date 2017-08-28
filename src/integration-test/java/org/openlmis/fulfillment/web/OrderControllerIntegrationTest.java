@@ -67,6 +67,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.springframework.http.HttpHeaders;
 
 import java.math.BigDecimal;
@@ -83,6 +84,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RESOURCE_URL = "/api/orders";
   private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String BATCH_URL = RESOURCE_URL + "/batch";
+  private static final String REQUESTING_FACILITIES_URL = RESOURCE_URL + "/requestingFacilities";
 
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String EXPORT_URL = ID_URL + "/export";
@@ -848,6 +850,48 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnAvailableRequestingFacilities() {
+    given(orderRepository.getRequestingFacilities(null))
+        .willReturn(Lists.newArrayList(facility, facility2));
+
+    UUID[] response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .get(REQUESTING_FACILITIES_URL)
+        .then()
+        .extract()
+        .as(UUID[].class);
+
+    assertThat(response.length, is(equalTo(2)));
+    assertThat(response[0], equalTo(facility));
+    assertThat(response[1], equalTo(facility2));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnAvailableRequestingFacilitiesForGivenSupplyingFacility() {
+    given(orderRepository.getRequestingFacilities(facility))
+        .willReturn(Lists.newArrayList(facility));
+    given(orderRepository.getRequestingFacilities(facility1))
+        .willReturn(Lists.newArrayList(facility2));
+
+    UUID[] response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("supplyingFacility", facility1)
+        .when()
+        .get(REQUESTING_FACILITIES_URL)
+        .then()
+        .extract()
+        .as(UUID[].class);
+
+    assertThat(response.length, is(equalTo(1)));
+    assertThat(response[0], equalTo(facility2));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldRejectGetRequestWhenUserHasNoRights() {
     denyUserAllRights();
 
@@ -982,23 +1026,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     List<StatusChangeDto> list = new ArrayList<>();
 
     list.add(new StatusChangeDto(ExternalStatus.INITIATED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.SUBMITTED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.AUTHORIZED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.IN_APPROVAL, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.REJECTED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.SUBMITTED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.AUTHORIZED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.IN_APPROVAL, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
     list.add(new StatusChangeDto(ExternalStatus.APPROVED, user.getId(),
-            ZonedDateTime.now(), user));
+        ZonedDateTime.now(), user));
 
     return list;
   }

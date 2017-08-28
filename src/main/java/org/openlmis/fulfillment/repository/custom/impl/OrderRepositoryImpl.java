@@ -74,6 +74,24 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     return entityManager.createQuery(query).getResultList();
   }
 
+  /**
+   * Retrieves the distinct UUIDs of the available requesting facilities.
+   */
+  @Override
+  public List<UUID> getRequestingFacilities(UUID supplyingFacility) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<UUID> query = builder.createQuery(UUID.class);
+    Root<Order> root = query.from(Order.class);
+
+    if (null != supplyingFacility) {
+      query.where(builder.equal(root.get(SUPPLYING_FACILITY_ID), supplyingFacility));
+    }
+
+    query.select(root.get(REQUESTING_FACILITY_ID)).distinct(true);
+
+    return entityManager.createQuery(query).getResultList();
+  }
+
   private Predicate isOneOf(String field, Collection collection, Root root, Predicate predicate,
                             CriteriaBuilder builder) {
     if (!isEmpty(collection)) {
