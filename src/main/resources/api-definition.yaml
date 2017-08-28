@@ -378,7 +378,7 @@ resourceTypes:
       /requestingFacilities:
           get:
               is: [ secured ]
-              description: Retrieve requesting facilities based on supplying facility ID
+              description: Return UUIDs of all the available, distinct requesting facilities. The supplying facility when provided, it will also filter the available requesting facilities by the supplying facility of the order.
               queryParameters:
                   supplyingFacility:
                       displayName: supplyingFacility
