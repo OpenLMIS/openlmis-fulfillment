@@ -216,7 +216,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void shouldRetrieveDistinctRequestingFacilitiesForGiven() {
+  public void shouldRetrieveDistinctRequestingFacilitiesForGivenSupplyingFacility() {
     Order one = orderRepository.save(generateInstance());
     Order two = orderRepository.save(generateInstance());
     Order three = orderRepository.save(generateInstance());
