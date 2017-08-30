@@ -1,6 +1,8 @@
-5.1.0 / WIP
+6.0.0 / WIP
 ==================
 
+Contract breaking changes:
+* [OLMIS-2898](https://openlmis.atlassian.net/browse/OLMIS-2898): Changed POD receivedDate from ZonedDateTime to LocalDate.
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-2724](https://openlmis.atlassian.net/browse/OLMIS-2724): Added an endpoint for retriving all the available, distinct requesting facilities.
