@@ -4,27 +4,27 @@
     "order": { "id": "35e5059a-fd92-4078-a448-b00402b3fb5b" },
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-05-01T16:45:22"
+    "receivedDate": "2016-05-01"
   },
   {
     "id": "f384f067-e9e8-4360-92f5-63d1e04d58a0",
     "order": { "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6" },
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-14T12:22:20"
+    "receivedDate": "2016-06-14"
   },
   {
     "id": "f02e1b11-87c8-4809-ae86-ebefa2867ca2",
     "order": { "id": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3" },
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-16T12:00:00"
+    "receivedDate": "2016-06-16"
   },
   {
     "id": "b47d3586-2daa-4251-bd82-15b14e57bac2",
     "order": { "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2" },
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-22T17:17:17"
+    "receivedDate": "2016-06-22"
   }
 ]

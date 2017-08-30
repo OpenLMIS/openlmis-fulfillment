@@ -24,7 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -82,8 +82,7 @@ public class ProofOfDelivery extends BaseEntity {
 
   @Getter
   @Setter
-  @Column(columnDefinition = "timestamp with time zone")
-  private ZonedDateTime receivedDate;
+  private LocalDate receivedDate;
 
   /**
    * Creates a new instance of Proof Of Delivery based on the passed order.
@@ -192,7 +191,7 @@ public class ProofOfDelivery extends BaseEntity {
 
     void setReceivedBy(String receivedBy);
 
-    void setReceivedDate(ZonedDateTime zonedDateTime);
+    void setReceivedDate(LocalDate receivedDate);
 
   }
 
@@ -207,7 +206,7 @@ public class ProofOfDelivery extends BaseEntity {
 
     String getReceivedBy();
 
-    ZonedDateTime getReceivedDate();
+    LocalDate getReceivedDate();
 
   }
 }

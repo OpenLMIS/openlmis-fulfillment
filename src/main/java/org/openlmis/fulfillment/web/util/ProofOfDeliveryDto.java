@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDeli
   private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
   private String deliveredBy;
   private String receivedBy;
-  private ZonedDateTime receivedDate;
+  private LocalDate receivedDate;
 
   @Override
   public List<ProofOfDeliveryLineItem.Importer> getProofOfDeliveryLineItems() {
