@@ -5,7 +5,7 @@ Contract breaking changes:
 * [OLMIS-2898](https://openlmis.atlassian.net/browse/OLMIS-2898): Changed POD receivedDate from ZonedDateTime to LocalDate.
 
 New functionality added in a backwards-compatible manner:
-* [OLMIS-2724](https://openlmis.atlassian.net/browse/OLMIS-2724): Added an endpoint for retriving all the available, distinct requesting facilities.
+* [OLMIS-2724](https://openlmis.atlassian.net/browse/OLMIS-2724): Added an endpoint for retrieving all the available, distinct requesting facilities.
 
 Bug fixes and improvements (backwards-compatible):
 * [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
