@@ -1,4 +1,4 @@
-6.0.0 / WIP
+6.0.0 / 2017-09-01
 ==================
 
 Contract breaking changes:
