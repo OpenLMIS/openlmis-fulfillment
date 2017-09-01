@@ -6,10 +6,15 @@ Contract breaking changes:
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-2724](https://openlmis.atlassian.net/browse/OLMIS-2724): Added an endpoint for retrieving all the available, distinct requesting facilities.
+* [OLMIS-2851](https://openlmis.atlassian.net/browse/OLMIS-2851): Let external applications (that run in a browser) access our APIs
+  * Add CORS support.
 
 Bug fixes and improvements (backwards-compatible):
 * [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
 * [OLMIS-3059](https://openlmis.atlassian.net/browse/OLMIS-3059): The search orders endpoint now sorts the orders by created date property (most recent first).
+* [OLMIS-3045](https://openlmis.atlassian.net/browse/OLMIS-3045): Fix Single Order Report
+  * Display the approvedQuantity rather than orderedQuantity. Note that OrderController loads this JRXML file directly from disk. It is therefore unnecessary to insert a compiled version of it into the database via a migration script.
+
 
 5.0.0 / 2017-07-20
 ==================
