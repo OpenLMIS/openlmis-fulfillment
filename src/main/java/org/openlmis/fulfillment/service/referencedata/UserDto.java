@@ -33,7 +33,7 @@ public class UserDto {
   private boolean verified;
   private boolean active;
   private boolean loginRestricted;
-  private FacilityDto homeFacility;
+  private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
 
   /**

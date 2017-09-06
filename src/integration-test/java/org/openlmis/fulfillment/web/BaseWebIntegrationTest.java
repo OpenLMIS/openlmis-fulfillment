@@ -170,7 +170,7 @@ public abstract class BaseWebIntegrationTest {
       + "\"verified\":false,"
       + "\"active\": true,"
       + "\"loginRestricted\": false,"
-      + "\"homeFacility\": " + MOCK_FIND_FACILITY_RESULT + ","
+      + "\"homeFacilityId\": \"" + FACILITY_ID + "\","
       + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
       + "}";
 
