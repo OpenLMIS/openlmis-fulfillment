@@ -27,7 +27,7 @@ public class FtpTransferPropertiesValidator extends BaseValidator {
 
   private static final String PROTOCOL = "protocol";
   private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
+  private static final String PASSWORD_FIELD_NAME = "password";
   private static final String HOST = "serverHost";
   private static final String PORT = "serverPort";
   private static final String REMOTE_DIRECTORY = "remoteDirectory";
@@ -44,7 +44,7 @@ public class FtpTransferPropertiesValidator extends BaseValidator {
 
     rejectIfNull(errors, target.getProtocol(), PROTOCOL);
     rejectIfBlank(errors, target.getUsername(), USERNAME);
-    rejectIfBlank(errors, target.getPassword(), PASSWORD);
+    rejectIfBlank(errors, target.getPassword(), PASSWORD_FIELD_NAME);
     rejectIfBlank(errors, target.getServerHost(), HOST);
     rejectIfLessThanZero(errors, target.getServerPort(), PORT);
     rejectIfBlank(errors, target.getRemoteDirectory(), REMOTE_DIRECTORY);

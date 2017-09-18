@@ -47,7 +47,6 @@ public class ProofOfDeliveryTemplateController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderFileTemplateController.class);
 
-
   private static final String PRINT_POD = "Print POD";
   private static final String DESCRIPTION_POD = "Template to print Proof Of Delivery";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
