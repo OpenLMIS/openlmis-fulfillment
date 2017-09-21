@@ -51,7 +51,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, true, true, true);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(order, program);
+        orderNumberConfiguration.formatOrderNumber(order, program, UUID_STRING);
 
     assertEquals(PREFIX + PROGRAM_CODE + UUID_STRING + EMERGENCY, generatedNumber);
   }
@@ -62,7 +62,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, false, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(order, null);
+        orderNumberConfiguration.formatOrderNumber(order, null, UUID_STRING);
 
     assertEquals(UUID_STRING, generatedNumber);
   }
@@ -73,7 +73,7 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(null, true, false, false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(order, program);
+        orderNumberConfiguration.formatOrderNumber(order, program, UUID_STRING);
 
     assertEquals(UUID_STRING, generatedNumber);
   }
@@ -85,7 +85,7 @@ public class OrderNumberConfigurationTest {
         new OrderNumberConfiguration(null, true, false, true);
     order.setEmergency(false);
     String generatedNumber =
-        orderNumberConfiguration.generateOrderNumber(order, program);
+        orderNumberConfiguration.formatOrderNumber(order, program, UUID_STRING);
 
     String expectedResult = UUID_STRING + NOT_EMERGENCY;
 
@@ -98,6 +98,6 @@ public class OrderNumberConfigurationTest {
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration(PREFIX, true, false, false);
 
-    orderNumberConfiguration.generateOrderNumber(null, program);
+    orderNumberConfiguration.formatOrderNumber(null, program, UUID_STRING);
   }
 }

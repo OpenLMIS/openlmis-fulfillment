@@ -57,35 +57,35 @@ public class OrderNumberConfiguration extends BaseEntity {
   private Boolean includeTypeSuffix;
 
   /**
-   * Generates order number for given parameters.
+   * Formats order number by including prefix, suffix and program code (if configured so).
    *
    * @param order   order instance.
    * @param program Program associated with the order.
-   * @return Generated orderNumber.
+   * @return order code.
    * @throws OrderNumberException if the order parameter is {@code null}
    */
-  public String generateOrderNumber(Order order, ProgramDto program) {
+  public String formatOrderNumber(Order order, ProgramDto program, String orderNumber) {
     if (order == null) {
       throw new OrderNumberException("Order cannot be empty");
     }
 
-    StringBuilder orderNumber = new StringBuilder();
+    StringBuilder orderCode = new StringBuilder();
 
     if (includeOrderNumberPrefix && orderNumberPrefix != null) {
-      orderNumber.append(getOrderNumberPrefix());
+      orderCode.append(getOrderNumberPrefix());
     }
 
     if (includeProgramCode && program != null) {
-      orderNumber.append(getTruncatedProgramCode(program.getCode()));
+      orderCode.append(getTruncatedProgramCode(program.getCode()));
     }
 
-    orderNumber.append(order.getExternalId().toString());
+    orderCode.append(orderNumber);
 
     if (includeTypeSuffix) {
-      orderNumber.append(order.getEmergency() ? "E" : "R");
+      orderCode.append(order.getEmergency() ? "E" : "R");
     }
 
-    return orderNumber.toString();
+    return orderCode.toString();
   }
 
   private String getTruncatedProgramCode(String code) {
