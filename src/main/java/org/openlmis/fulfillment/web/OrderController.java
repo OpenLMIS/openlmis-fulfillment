@@ -25,6 +25,8 @@ import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -99,12 +101,6 @@ public class OrderController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @Autowired
   private ExporterBuilder exporter;
 
   @Autowired
@@ -118,6 +114,15 @@ public class OrderController extends BaseController {
 
   @Autowired
   private OrderSecurityService orderSecurityService;
+
+  @Autowired
+  private ExtensionManager extensionManager;
+
+  @Autowired
+  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
 
   /**
    * Allows creating new orders.
@@ -200,7 +205,7 @@ public class OrderController extends BaseController {
     Page<Order> page = Pagination.getPage(filteredList, pageable);
 
     List<BasicOrderDto> data = Lists.newArrayList(BasicOrderDto.newInstance(page, exporter));
-    
+
     return Pagination.getPage(data, pageable, filteredList.size());
   }
 
@@ -366,8 +371,13 @@ public class OrderController extends BaseController {
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 
+    OrderNumberGenerator orderNumberGenerator = extensionManager.getExtension(
+        OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class);
+
+    String orderNumber = orderNumberGenerator.generate(order);
+
+    order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
     order.setId(null);
-    order.setOrderCode(orderNumberConfiguration.generateOrderNumber(order, program));
     Order newOrder = orderService.save(order);
 
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);

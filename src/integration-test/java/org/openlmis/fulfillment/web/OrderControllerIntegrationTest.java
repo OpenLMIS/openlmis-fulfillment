@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.PageImplRepresentation;
+import org.openlmis.fulfillment.domain.Base36EncodedOrderNumberGenerator;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -559,7 +560,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
     verify(orderRepository).save(orderCaptor.capture());
-    assertThat(orderCaptor.getValue().getExternalId(), is(firstOrderDto.getExternalId()));
+
+    Order savedOrder = orderCaptor.getValue();
+    assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
+
+    Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();
+    String expectedCode = "ORDER-" + generator.generate(savedOrder) + "R";
+    assertEquals(expectedCode, savedOrder.getOrderCode());
   }
 
   @Test

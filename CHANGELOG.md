@@ -1,3 +1,9 @@
+6.0.1 / WIP
+==================
+
+Improvements added in a backwards-compatible manner:
+* [OLMIS-3112](https://openlmis.atlassian.net/browse/OLMIS-3206): Added OrderNumberGenerator extension point. Changed the default implementation to provide 8 character, base36 order numbers.
+
 6.0.0 / 2017-09-01
 ==================
 
