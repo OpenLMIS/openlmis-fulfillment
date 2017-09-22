@@ -16,6 +16,8 @@ services:
 
   sonar:
     image: openlmis/dev:3
+    links:
+      - log
     volumes:
       - '.:/app'
     entrypoint:
