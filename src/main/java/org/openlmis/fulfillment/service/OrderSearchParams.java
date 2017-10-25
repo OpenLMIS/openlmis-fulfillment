@@ -56,10 +56,10 @@ public class OrderSearchParams {
   Set<String> status;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  LocalDate startDate;
+  LocalDate periodStartDate;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  LocalDate endDate;
+  LocalDate periodEndDate;
 
   /**
    * Tries to convert the string representation of each status in the <strong>status</strong> field

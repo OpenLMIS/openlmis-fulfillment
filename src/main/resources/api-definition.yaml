@@ -315,13 +315,13 @@ resourceTypes:
                               - TRANSFER_FAILED
                               - IN_ROUTE
                               - READY_TO_PACK
-                      startDate:
-                          displayName: startDate
+                      periodStartDate:
+                          displayName: periodStartDate
                           type: string
                           required: false
                           repeat: false
-                      endDate:
-                          displayName: endDate
+                      periodEndDate:
+                          displayName: periodEndDate
                           type: string
                           required: false
                           repeat: false

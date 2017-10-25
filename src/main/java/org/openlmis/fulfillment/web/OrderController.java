@@ -18,8 +18,6 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
-import com.google.common.collect.Lists;
-
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -45,6 +43,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderPeriodFilter;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,13 +199,13 @@ public class OrderController extends BaseController {
     List<Order> orders = orderService.searchOrders(params);
 
     List<Order> filteredList = orderSecurityService.filterInaccessibleOrders(orders);
-    // with this we will only create basic order dto objects for elements that would be
-    // returned by this endpoint
-    Page<Order> page = Pagination.getPage(filteredList, pageable);
+    List<BasicOrderDto> data = BasicOrderDto.newInstance(filteredList, exporter);
+    List<BasicOrderDto> filteredData = data
+        .stream()
+        .filter(new OrderPeriodFilter(params.getPeriodStartDate(), params.getPeriodEndDate()))
+        .collect(Collectors.toList());
 
-    List<BasicOrderDto> data = Lists.newArrayList(BasicOrderDto.newInstance(page, exporter));
-
-    return Pagination.getPage(data, pageable, filteredList.size());
+    return Pagination.getPage(filteredData, pageable);
   }
 
   /**

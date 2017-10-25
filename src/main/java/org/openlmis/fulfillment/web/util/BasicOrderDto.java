@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,6 +39,7 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class BasicOrderDto implements Order.Exporter {
 
   @Getter
@@ -111,8 +113,7 @@ public class BasicOrderDto implements Order.Exporter {
    * @param orders list on orders
    * @return list of OrderDto.
    */
-  public static Iterable<BasicOrderDto> newInstance(Iterable<Order> orders,
-                                               ExporterBuilder exporter) {
+  public static List<BasicOrderDto> newInstance(Iterable<Order> orders, ExporterBuilder exporter) {
     List<BasicOrderDto> orderDtos = new ArrayList<>();
     orders.forEach(o -> orderDtos.add(newInstance(o, exporter)));
     return orderDtos;
@@ -129,5 +130,5 @@ public class BasicOrderDto implements Order.Exporter {
 
     return orderDto;
   }
-  
+
 }

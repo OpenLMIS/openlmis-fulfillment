@@ -2,7 +2,7 @@
 ==================
 
 New functionality added in a backwards-compatible manner:
-* [OLMIS-3221](https://openlmis.atlassian.net/browse/OLMIS-3221): Added start and end dates parameters to the order search endpoint
+* [OLMIS-3221](https://openlmis.atlassian.net/browse/OLMIS-3221): Added period start and end dates parameters to the order search endpoint
 
 Improvements added in a backwards-compatible manner:
 * [OLMIS-3112](https://openlmis.atlassian.net/browse/OLMIS-3206): Added OrderNumberGenerator extension point. Changed the default implementation to provide 8 character, base36 order numbers.

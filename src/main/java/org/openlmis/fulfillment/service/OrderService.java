@@ -88,8 +88,7 @@ public class OrderService {
   public List<Order> searchOrders(OrderSearchParams params) {
     return orderRepository.searchOrders(
         params.getSupplyingFacility(), params.getRequestingFacility(), params.getProgram(),
-        params.getProcessingPeriod(), params.getStatusAsEnum(), params.getStartDate(),
-        params.getEndDate()
+        params.getProcessingPeriod(), params.getStatusAsEnum()
     );
   }
 

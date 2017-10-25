@@ -28,7 +28,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
@@ -71,7 +70,6 @@ import org.springframework.http.HttpHeaders;
 import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -97,13 +95,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
+  private static final String PROCESSING_PERIOD = "processingPeriod";
   private static final String PROGRAM = "program";
   private static final String FORMAT = "format";
   private static final String MESSAGE_KEY = "messageKey";
+  private static final String PERIOD_START_DATE = "periodStartDate";
+  private static final String PERIOD_END_DATE = "periodEndDate";
 
   private static final String CSV = "csv";
-  
+
   private static final UUID PROGRAM_ID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
+  private static final UUID PERIOD_ID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
 
   private UUID facility = UUID.randomUUID();
   private UUID facility1 = UUID.randomUUID();
@@ -281,7 +283,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), null, null, null, null, null, null
+        firstOrder.getSupplyingFacilityId(), null, null, null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -312,7 +314,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        null, null, null, null, null
+        null, null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -348,7 +350,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null, null, null, null
+        firstOrder.getProgramId(), null, null
     )).willReturn(Lists.newArrayList(firstOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -389,7 +391,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK), null, null
+        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK)
     )).willReturn(Lists.newArrayList(firstOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -432,7 +434,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     secondOrder.setStatus(IN_ROUTE);
 
     given(orderRepository.searchOrders(
-        null, null, null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE), null, null
+        null, null, null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE)
     )).willReturn(Lists.newArrayList(firstOrder, secondOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -458,7 +460,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnSearchPage() throws Exception {
-    given(orderRepository.searchOrders(null, null, null, null, null, null, null))
+    given(orderRepository.searchOrders(null, null, null, null, null))
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     PageImplRepresentation response = restAssured.given()
@@ -483,20 +485,127 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
-    firstOrder.setProcessingPeriodId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
+    firstOrder.setProcessingPeriodId(PERIOD_ID);
 
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
-        null, null
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
     )).willReturn(Lists.newArrayList(firstOrder));
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
-        .queryParam("processingPeriod", firstOrder.getProcessingPeriodId())
+        .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(STATUS, READY_TO_PACK.toString())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(content, hasSize(1));
+
+    for (BasicOrderDto order : content) {
+      assertEquals(
+          order.getSupplyingFacility().getId(),
+          firstOrder.getSupplyingFacilityId());
+      assertEquals(
+          order.getRequestingFacility().getId(),
+          firstOrder.getRequestingFacilityId());
+      assertEquals(
+          order.getProgram().getId(),
+          firstOrder.getProgramId());
+      assertEquals(
+          order.getStatus(),
+          firstOrder.getStatus()
+      );
+      assertEquals(
+          order.getProcessingPeriod().getId(),
+          firstOrder.getProcessingPeriodId()
+      );
+    }
+  }
+
+  @Test
+  public void shouldFindOrdersByPeriodStartDate() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setProgramId(PROGRAM_ID);
+    firstOrder.setStatus(READY_TO_PACK);
+    firstOrder.setProcessingPeriodId(PERIOD_ID);
+    firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+
+    given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
+    )).willReturn(Lists.newArrayList(firstOrder));
+
+    PageImplRepresentation response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
+        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(PERIOD_START_DATE, "2017-01-01")
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(SEARCH_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(content, hasSize(1));
+
+    for (BasicOrderDto order : content) {
+      assertEquals(
+          order.getSupplyingFacility().getId(),
+          firstOrder.getSupplyingFacilityId());
+      assertEquals(
+          order.getRequestingFacility().getId(),
+          firstOrder.getRequestingFacilityId());
+      assertEquals(
+          order.getProgram().getId(),
+          firstOrder.getProgramId());
+      assertEquals(
+          order.getStatus(),
+          firstOrder.getStatus()
+      );
+      assertEquals(
+          order.getProcessingPeriod().getId(),
+          firstOrder.getProcessingPeriodId()
+      );
+    }
+  }
+
+  @Test
+  public void shouldFindOrdersByPeriodEndDate() {
+    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
+    firstOrder.setProgramId(PROGRAM_ID);
+    firstOrder.setStatus(READY_TO_PACK);
+    firstOrder.setProcessingPeriodId(PERIOD_ID);
+    firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+
+    given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
+    )).willReturn(Lists.newArrayList(firstOrder));
+
+    PageImplRepresentation response = restAssured.given()
+        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
+        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(PERIOD_END_DATE, "2017-01-31")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
@@ -536,26 +645,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
-    firstOrder.setProcessingPeriodId(UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611"));
+    firstOrder.setProcessingPeriodId(PERIOD_ID);
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        eq(firstOrder.getSupplyingFacilityId()), eq(firstOrder.getRequestingFacilityId()),
-        eq(firstOrder.getProgramId()), eq(firstOrder.getProcessingPeriodId()),
-        eq(EnumSet.of(READY_TO_PACK)), any(LocalDate.class), any(LocalDate.class)
+        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
     )).willReturn(Lists.newArrayList(firstOrder));
-
-    LocalDate dateFrom = LocalDate.of(2015, 5, 1);
-    LocalDate dateTo = LocalDate.of(2015, 5, 10);
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
-        .queryParam("processingPeriod", firstOrder.getProcessingPeriodId())
+        .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(STATUS, READY_TO_PACK.toString())
-        .queryParam("startDate", dateFrom.toString())
-        .queryParam("endDate", dateTo.toString())
+        .queryParam(PERIOD_START_DATE, "2017-01-01")
+        .queryParam(PERIOD_END_DATE, "2017-01-31")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
@@ -783,7 +888,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     for (OrderLineItem lineItem : secondOrder.getOrderLineItems()) {
       String string = secondOrder.getOrderCode()
           + ",facilityCode,Product Code,Product Name," + lineItem.getApprovedQuantity()
-          + ",03/16," + orderDate;
+          + ",01/17," + orderDate;
       assertThat(csvContent, containsString(string));
     }
   }
@@ -904,7 +1009,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(null, null, null, null, null, null, null))
+    given(orderRepository.searchOrders(null, null, null, null, null))
         .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
 
     PageImplRepresentation response = restAssured.given()

@@ -226,8 +226,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"name\":\"Period Name\","
       + " \"description\":\"Period Description\","
       + "\"processingSchedule\":" + MOCK_FIND_PROCESSING_SCHEDULE + ","
-      + " \"startDate\":\"2016-03-01\","
-      + " \"endDate\":\"2017-03-01\""
+      + " \"startDate\":\"2017-01-01\","
+      + " \"endDate\":\"2017-01-31\""
       + " }";
 
   private static final String MOCK_FIND_FACILITY_TYPE = "{"
