@@ -23,13 +23,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -40,6 +44,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
+@ToString
 public class OrderSearchParams {
   private static final ToEnum TO_ENUM = new ToEnum();
 
@@ -48,6 +54,12 @@ public class OrderSearchParams {
   UUID program;
   UUID processingPeriod;
   Set<String> status;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  LocalDate startDate;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  LocalDate endDate;
 
   /**
    * Tries to convert the string representation of each status in the <strong>status</strong> field

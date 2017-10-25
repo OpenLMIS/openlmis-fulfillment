@@ -31,6 +31,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,6 +65,7 @@ import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.util.NotificationRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -232,13 +234,13 @@ public class OrderServiceTest {
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), EnumSet.of(order.getStatus()))
-    ).thenReturn(Collections.singletonList(order));
+        order.getProcessingPeriodId(), EnumSet.of(order.getStatus()), null, null))
+        .thenReturn(Collections.singletonList(order));
 
     // when
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString())
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
     );
     List<Order> receivedOrders = orderService.searchOrders(params);
 
@@ -248,8 +250,9 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.get(0).getRequestingFacilityId(), order.getRequestingFacilityId());
     assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
 
-    verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+    verify(orderRepository, atLeastOnce()).searchOrders(
+        anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject()
+    );
   }
 
   @Test

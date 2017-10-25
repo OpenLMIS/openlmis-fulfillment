@@ -315,6 +315,16 @@ resourceTypes:
                               - TRANSFER_FAILED
                               - IN_ROUTE
                               - READY_TO_PACK
+                      startDate:
+                          displayName: startDate
+                          type: string
+                          required: false
+                          repeat: false
+                      endDate:
+                          displayName: endDate
+                          type: string
+                          required: false
+                          repeat: false
                   responses:
                       200:
                           body:

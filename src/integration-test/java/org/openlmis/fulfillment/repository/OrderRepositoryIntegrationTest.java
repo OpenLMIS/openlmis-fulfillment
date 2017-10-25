@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -129,32 +130,66 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order four = orderRepository.save(generateInstance(OrderStatus.PICKED));
     Order five = orderRepository.save(generateInstance(OrderStatus.SHIPPED));
 
-    List<Order> list = orderRepository.searchOrders(null, null, null, null, null);
+    List<Order> list = orderRepository.searchOrders(null, null, null, null, null, null, null);
     assertSearchOrders(list, one, two, three, four, five);
 
-    list = orderRepository.searchOrders(one.getSupplyingFacilityId(), null, null, null, null);
+    list = orderRepository.searchOrders(
+        one.getSupplyingFacilityId(), null, null, null, null, null, null
+    );
     assertSearchOrders(list, one);
 
-    list = orderRepository.searchOrders(null, two.getRequestingFacilityId(), null, null, null);
+    list = orderRepository.searchOrders(
+        null, two.getRequestingFacilityId(), null, null, null, null, null
+    );
     assertSearchOrders(list, two);
 
-    list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null);
+    list = orderRepository.searchOrders(
+        null, null, three.getProgramId(), null, null, null, null
+    );
     assertSearchOrders(list, three);
 
-    list = orderRepository.searchOrders(null, null, null, four.getProcessingPeriodId(), null);
+    list = orderRepository.searchOrders(
+        null, null, null, four.getProcessingPeriodId(), null, null, null
+    );
     assertSearchOrders(list, four);
 
-    list = orderRepository.searchOrders(null, null, null, null, EnumSet.of(five.getStatus()));
+    list = orderRepository.searchOrders(
+        null, null, null, null, EnumSet.of(five.getStatus()), null, null
+    );
     assertSearchOrders(list, five);
 
     list = orderRepository.searchOrders(
-        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus())
+        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), null, null
     );
     assertSearchOrders(list, one, four);
+
+    // createdDate is set on insert so we need to change it and update orders
+    one.setCreatedDate(ZonedDateTime.of(2017, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()));
+    two.setCreatedDate(ZonedDateTime.of(2017, 2, 2, 2, 2, 2, 2, ZoneId.systemDefault()));
+    three.setCreatedDate(ZonedDateTime.of(2017, 3, 3, 3, 3, 3, 3, ZoneId.systemDefault()));
+    four.setCreatedDate(ZonedDateTime.of(2017, 4, 4, 4, 4, 4, 4, ZoneId.systemDefault()));
+    five.setCreatedDate(ZonedDateTime.of(2017, 5, 5, 5, 5, 5, 5, ZoneId.systemDefault()));
+
+    orderRepository.save(Lists.newArrayList(one, two, three, four, five));
+
+    list = orderRepository.searchOrders(
+        null, null, null, null, null, LocalDate.of(2017, 2, 2), LocalDate.of(2017, 4, 4)
+    );
+    assertSearchOrders(list, two, three, four);
+
+    list = orderRepository.searchOrders(
+        null, null, null, null, null, null, LocalDate.of(2017, 4, 4)
+    );
+    assertSearchOrders(list, one, two, three, four);
+
+    list = orderRepository.searchOrders(
+        null, null, null, null, null, LocalDate.of(2017, 2, 2), null
+    );
+    assertSearchOrders(list, two, three, four, five);
   }
 
   @Test
-  public void shouldOrderOrdersByCreatedDate() {
+  public void shouldSortOrdersByCreatedDate() {
     final Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
     final Order two = orderRepository.save(generateInstance(OrderStatus.ORDERED));
     final Order three = orderRepository.save(generateInstance(OrderStatus.ORDERED));
@@ -170,8 +205,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(three);
     orderRepository.save(four);
 
-    List<Order> result = orderRepository.searchOrders(null, null, null, null,
-        Collections.singleton(OrderStatus.ORDERED));
+    List<Order> result = orderRepository.searchOrders(
+        null, null, null, null, Collections.singleton(OrderStatus.ORDERED), null, null
+    );
 
     assertEquals(4, result.size());
     // They should be returned from the most recent to the least recent

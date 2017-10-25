@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.repository.custom;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -25,7 +26,8 @@ import java.util.UUID;
 public interface OrderRepositoryCustom {
 
   List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program,
-                           UUID processingPeriod, Set<OrderStatus> statuses);
+                           UUID processingPeriod, Set<OrderStatus> statuses, LocalDate startDate,
+                           LocalDate endDate);
 
   List<UUID> getRequestingFacilities(UUID supplyingFacility);
 

@@ -35,6 +35,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
+import java.time.Clock;
 import java.util.Locale;
 
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
@@ -127,6 +128,11 @@ public class Application {
     };
 
     return strategy;
+  }
+
+  @Bean
+  public Clock clock() {
+    return Clock.systemDefaultZone();
   }
 
 }
