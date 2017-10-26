@@ -1,0 +1,55 @@
+execution:
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-order-number-configuration
+  - concurrency: 1
+    hold-for: 2m
+    scenario: update-order-number-configuration
+
+scenarios:
+  get-user-token:
+    requests:
+      - url: ${__P(base-uri)}/api/oauth/token
+        method: POST
+        label: GetUserToken
+        headers:
+          Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+        body:
+          grant_type: password
+          username: ${__P(username)}
+          password: ${__P(password)}
+        extract-jsonpath:
+          access_token:
+            jsonpath: $.access_token
+  get-order-number-configuration:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/orderNumberConfigurations
+        method: GET
+        label: GetOrderNumberConfiguration
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+  update-order-number-configuration:
+    requests:
+      - include-scenario: get-user-token
+      - url: ${__P(base-uri)}/api/orderNumberConfigurations
+        method: POST
+        label: UpdateOrderNumberConfiguration
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          execute: before
+          script-text: |
+            import groovy.json.JsonOutput;
+
+            def config = [
+              orderNumberPrefix: "ORDER",
+              includeOrderNumberPrefix: true,
+              includeProgramCode: false,
+              includeTypeSuffix: false
+            ]
+
+            vars.put("new_config", JsonOutput.toJson(config));
+        body: ${new_config}
