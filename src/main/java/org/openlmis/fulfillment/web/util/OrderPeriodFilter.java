@@ -17,39 +17,30 @@ package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 
-import lombok.AllArgsConstructor;
-
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.function.Predicate;
 
-@AllArgsConstructor
 public class OrderPeriodFilter implements Predicate<BasicOrderDto> {
   private LocalDate periodFrom;
   private LocalDate periodTo;
 
+  public OrderPeriodFilter(LocalDate periodFrom, LocalDate periodTo) {
+    this.periodFrom = Optional.ofNullable(periodFrom).orElse(LocalDate.MIN);
+    this.periodTo = Optional.ofNullable(periodTo).orElse(LocalDate.MAX);
+  }
+
   @Override
   public boolean test(BasicOrderDto order) {
-    if (null == periodFrom && null == periodTo) {
-      return true;
-    }
-
     ProcessingPeriodDto period = order.getProcessingPeriod();
     LocalDate periodStartDate = period.getStartDate();
     LocalDate periodEndDate = period.getEndDate();
 
-    if (null != periodFrom && null != periodTo) {
-      return !periodStartDate.isBefore(periodFrom) && !periodEndDate.isAfter(periodTo);
-    }
+    return inBetween(periodStartDate) || inBetween(periodEndDate);
+  }
 
-    if (null != periodTo) {
-      return !periodEndDate.isAfter(periodTo);
-    }
-
-    if (null != periodFrom) {
-      return !periodStartDate.isBefore(periodFrom);
-    }
-
-    return false;
+  private boolean inBetween(LocalDate date) {
+    return !date.isBefore(periodFrom) && !date.isAfter(periodTo);
   }
 
 }

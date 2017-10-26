@@ -15,80 +15,119 @@
 
 package org.openlmis.fulfillment.web.util;
 
-import static java.time.temporal.TemporalAdjusters.firstDayOfMonth;
-import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Arrays;
+import java.util.Collection;
 
+@RunWith(Parameterized.class)
 public class OrderPeriodFilterTest {
-  private static final List<BasicOrderDto> ORDERS;
 
-  static {
-    ORDERS = IntStream
-        .rangeClosed(1, 12)
-        .mapToObj(idx -> {
-          LocalDate date = LocalDate.of(2017, idx, idx);
-          return createOrder(date.with(firstDayOfMonth()), date.with(lastDayOfMonth()));
-        })
-        .collect(Collectors.toList());
+  /**
+   * Test data.
+   */
+  @Parameterized.Parameters(name = "{index} = {0} - {1}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][]{
+        // one month period
+        {LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 31)},
+        // two months period
+        {LocalDate.of(2017, 2, 1), LocalDate.of(2017, 3, 31)},
+        // three months period
+        {LocalDate.of(2017, 4, 1), LocalDate.of(2017, 6, 30)},
+        // four months period
+        {LocalDate.of(2017, 7, 1), LocalDate.of(2017, 10, 31)},
+        // five months period
+        {LocalDate.of(2017, 11, 1), LocalDate.of(2018, 3, 31)},
+        // six months period
+        {LocalDate.of(2018, 4, 1), LocalDate.of(2018, 9, 30)}
+    });
   }
 
-  private static BasicOrderDto createOrder(LocalDate start, LocalDate end) {
+  private LocalDate periodStartDate;
+  private LocalDate periodEndDate;
+  private BasicOrderDto order;
+
+  /**
+   * Creates new instance of test.
+   */
+  public OrderPeriodFilterTest(LocalDate periodStartDate, LocalDate periodEndDate) {
+    this.periodStartDate = periodStartDate;
+    this.periodEndDate = periodEndDate;
+
     ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setStartDate(start);
-    period.setEndDate(end);
+    period.setStartDate(periodStartDate);
+    period.setEndDate(periodEndDate);
 
-    BasicOrderDto order = new BasicOrderDto();
+    order = new BasicOrderDto();
     order.setProcessingPeriod(period);
-
-    return order;
   }
 
   @Test
-  public void shouldPassIfPeriodIsBetween() throws Exception {
-    shouldPass(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 12, 31));
+  public void shouldPassIfOrderIsInPeriod() throws Exception {
+    // same period
+    test(periodStartDate, periodEndDate, true);
+
+    // bigger period
+    test(periodStartDate.minusDays(5), periodEndDate.plusDays(5), true);
+
+    // move to left
+    test(periodStartDate.minusDays(10), periodEndDate.minusDays(5), true);
+
+    // move to right
+    test(periodStartDate.plusDays(5), periodEndDate.plusDays(10), true);
+
+    // smaller end
+    test(periodStartDate, periodEndDate.minusDays(5), true);
+
+    // bigger start
+    test(periodStartDate.plusDays(5), periodEndDate, true);
+
+    // without end
+    test(periodStartDate, null, true);
+
+    // smaller start and without end
+    test(periodStartDate.minusDays(5), null, true);
+
+    // bigger start and without end
+    test(periodStartDate.plusDays(5), null, true);
+
+    // without start
+    test(null, periodEndDate, true);
+
+    // bigger end and without start
+    test(null, periodEndDate.plusDays(5), true);
+
+    // smaller end and without start
+    test(null, periodEndDate.minusDays(5), true);
+
+    // without period
+    test(null, null, true);
   }
 
   @Test
-  public void shouldFailIfPeriodIsNotBetween() throws Exception {
-    shouldFail(LocalDate.of(2016, 1, 1), LocalDate.of(2016, 12, 31));
+  public void shouldFailIfOrderIsNotInPeriod() throws Exception {
+    // smaller period
+    test(periodStartDate.plusDays(5), periodEndDate.minusDays(5), false);
+
+    // not in
+    test(periodStartDate.minusYears(1), periodEndDate.minusYears(1), false);
   }
 
-  @Test
-  public void shouldPassIfPeriodIsAfterStartDate() throws Exception {
-    shouldPass(LocalDate.of(2017, 1, 1), null);
-  }
+  private void test(LocalDate start, LocalDate end, boolean result) {
+    String msg = String.format(
+        "Period %s - %s should %s be in interval %s - %s",
+        periodStartDate, periodEndDate, (result ? "" : "not"), start, end
+    );
 
-  @Test
-  public void shouldFailIfPeriodIsBeforeStartDate() throws Exception {
-    shouldFail(LocalDate.of(2018, 1, 1), null);
-  }
-
-  @Test
-  public void shouldPassIfPeriodIsBeforeEndDate() throws Exception {
-    shouldPass(null, LocalDate.of(2017, 12, 31));
-  }
-
-  @Test
-  public void shouldFailIfPeriodIsAfterEndDate() throws Exception {
-    shouldFail(null, LocalDate.of(2016, 12, 31));
-  }
-
-  private void shouldPass(LocalDate start, LocalDate end) {
     OrderPeriodFilter filter = new OrderPeriodFilter(start, end);
-    ORDERS.forEach(order -> assertTrue(filter.test(order)));
-  }
-
-  private void shouldFail(LocalDate start, LocalDate end) {
-    OrderPeriodFilter filter = new OrderPeriodFilter(start, end);
-    ORDERS.forEach(order -> assertFalse(filter.test(order)));
+    assertThat(msg, filter.test(order), equalTo(result));
   }
 }
