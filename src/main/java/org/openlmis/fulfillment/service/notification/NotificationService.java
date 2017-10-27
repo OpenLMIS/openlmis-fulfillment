@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @Service
 public class NotificationService extends BaseCommunicationService<NotificationRequest> {
@@ -44,8 +44,11 @@ public class NotificationService extends BaseCommunicationService<NotificationRe
 
     try {
       restTemplate.postForEntity(buildUri(url), body, getResultClass());
-    } catch (RestClientException ex) {
-      logger.error("Can not send a notification request", ex);
+    } catch (HttpStatusCodeException ex) {
+      logger.error(
+          "Unable to send notification. Error code: {}, response message: {}",
+          ex.getStatusCode(), ex.getResponseBodyAsString()
+      );
       return false;
     }
 
