@@ -5,6 +5,9 @@ modules:
       user-auth: user-client:changeme
       username: administrator
       password: password
+      order_id: 35e5059a-fd92-4078-a448-b00402b3fb5b
+      pod_id: b204aa9e-5c95-4962-b418-571dbdf7796e
+      supplying_facility_id: 19121381-9f3d-4e77-b9e5-d3f59fc1639e
     xml-jtl-flags:
       responseData: true
 reporting:

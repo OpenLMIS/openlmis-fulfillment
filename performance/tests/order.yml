@@ -48,7 +48,7 @@ scenarios:
   get-order:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/35e5059a-fd92-4078-a448-b00402b3fb5b
+      - url: ${__P(base-uri)}/api/orders/${__P(order_id)}
         method: GET
         label: GetOrder
         headers:
@@ -57,7 +57,7 @@ scenarios:
   search-orders:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/search?supplyingFacility=19121381-9f3d-4e77-b9e5-d3f59fc1639e
+      - url: ${__P(base-uri)}/api/orders/search?supplyingFacility=${__P(supplying_facility_id)}
         method: GET
         label: FindOrdersBySupplyingFacility
         headers:
@@ -66,7 +66,7 @@ scenarios:
   get-requesting-facilities:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/requestingFacilities?supplyingFacility=19121381-9f3d-4e77-b9e5-d3f59fc1639e
+      - url: ${__P(base-uri)}/api/orders/requestingFacilities?supplyingFacility=${__P(supplying_facility_id)}
         method: GET
         label: GetRequestingFacilities
         headers:
@@ -75,7 +75,7 @@ scenarios:
   print-order-pdf:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/35e5059a-fd92-4078-a448-b00402b3fb5b/print?format=pdf
+      - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/print?format=pdf
         method: GET
         label: PrintOrderAsPdf
         headers:
@@ -84,7 +84,7 @@ scenarios:
   print-order-csv:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/35e5059a-fd92-4078-a448-b00402b3fb5b/print?format=csv
+      - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/print?format=csv
         method: GET
         label: PrintOrderAsCsv
         headers:
@@ -93,7 +93,7 @@ scenarios:
   export-order-csv:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/35e5059a-fd92-4078-a448-b00402b3fb5b/export?type=csv
+      - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/export?type=csv
         method: GET
         label: ExportOrderAsCsv
         headers:

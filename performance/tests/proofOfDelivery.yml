@@ -39,16 +39,16 @@ scenarios:
   get-pod:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/b204aa9e-5c95-4962-b418-571dbdf7796e
+      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}
         method: GET
-        label: GetOrder
+        label: GetProofOfDelivery
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   print-pod-pdf:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/b204aa9e-5c95-4962-b418-571dbdf7796e/print?format=pdf
+      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=pdf
         method: GET
         label: PrintOrderAsPdf
         headers:
@@ -57,7 +57,7 @@ scenarios:
   print-pod-csv:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/b204aa9e-5c95-4962-b418-571dbdf7796e/print?format=csv
+      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=csv
         method: GET
         label: PrintOrderAsCsv
         headers:
