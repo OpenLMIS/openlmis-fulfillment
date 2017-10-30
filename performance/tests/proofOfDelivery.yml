@@ -32,7 +32,7 @@ scenarios:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/proofOfDeliveries
         method: GET
-        label: GetProofOfDeliveries
+        label: GetAllProofOfDeliveries
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
@@ -50,7 +50,7 @@ scenarios:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=pdf
         method: GET
-        label: PrintOrderAsPdf
+        label: PrintProofOfDeliveryAsPdf
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
@@ -59,7 +59,7 @@ scenarios:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=csv
         method: GET
-        label: PrintOrderAsCsv
+        label: PrintProofOfDeliveryAsCsv
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json

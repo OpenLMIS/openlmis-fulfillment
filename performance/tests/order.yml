@@ -41,7 +41,7 @@ scenarios:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders
         method: GET
-        label: GetOrders
+        label: GetAllOrders
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
