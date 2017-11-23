@@ -84,7 +84,6 @@ public class ExporterBuilder {
   public void export(OrderLineItem item, OrderLineItem.Exporter exporter,
                      List<OrderableDto> orderables) {
     exporter.setId(item.getId());
-    exporter.setApprovedQuantity(item.getApprovedQuantity());
     Optional<OrderableDto> orderableDto = orderables.stream().filter(
         orderable -> orderable.getId().equals(item.getOrderableId())).findAny();
     exporter.setOrderable(orderableDto.orElse(

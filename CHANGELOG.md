@@ -1,3 +1,10 @@
+7.0.0 / WIP
+===========
+
+Contract breaking changes:
+* [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
+
+
 6.1.0 / 2017-11-09
 ==================
 

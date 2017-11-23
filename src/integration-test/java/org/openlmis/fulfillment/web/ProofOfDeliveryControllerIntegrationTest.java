@@ -28,10 +28,11 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,6 +57,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -152,7 +155,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     orderLineItem.setOrderableId(product.getId());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
-    orderLineItem.setApprovedQuantity(0L);
     orderLineItem.setPacksToShip(100L);
 
     order.setOrderLineItems(Collections.singletonList(orderLineItem));

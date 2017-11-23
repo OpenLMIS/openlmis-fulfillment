@@ -21,10 +21,6 @@
       "type": "integer",
       "title": "filledQuantity"
     },
-    "approvedQuantity": {
-      "type": "integer",
-      "title": "approvedQuantity"
-    },
     "packsToShip": {
       "type": "integer",
       "title": "packsToShip"
@@ -35,7 +31,6 @@
     "orderable",
     "orderedQuantity",
     "filledQuantity",
-    "approvedQuantity",
     "packsToShip"
   ]
 }

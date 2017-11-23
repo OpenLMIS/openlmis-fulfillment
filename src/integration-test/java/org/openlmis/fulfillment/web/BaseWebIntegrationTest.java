@@ -497,8 +497,8 @@ public abstract class BaseWebIntegrationTest {
         "fullProductName", template
     );
     OrderFileColumn column5 = addOrderFileColumn(
-        "cd57f329-f549-4717-882e-ecbf98122c39", true, "fulfillment.header.approved.quantity",
-        "Approved quantity", true, 5, null, "lineItem", "approvedQuantity", null, null, template
+        "cd57f329-f549-4717-882e-ecbf98122c39", true, "fulfillment.header.ordered.quantity",
+        "Ordered quantity", true, 5, null, "lineItem", "orderedQuantity", null, null, template
     );
     OrderFileColumn column6 = addOrderFileColumn(
         "d0e1aec7-1556-4dc1-8e21-d80a2d76b678", true, "fulfillment.header.period", "Period", true,

@@ -44,9 +44,6 @@
 	<field name="filledQuantity" class="java.lang.Long">
 		<fieldDescription><![CDATA[filledQuantity]]></fieldDescription>
 	</field>
-	<field name="approvedQuantity" class="java.lang.Long">
-		<fieldDescription><![CDATA[approvedQuantity]]></fieldDescription>
-	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -294,7 +291,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{approvedQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orderedQuantity}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

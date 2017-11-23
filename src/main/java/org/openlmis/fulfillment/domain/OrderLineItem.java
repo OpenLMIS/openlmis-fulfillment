@@ -58,11 +58,6 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long filledQuantity;
 
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  private Long approvedQuantity;
-
   @Getter
   @Setter
   private Long packsToShip;
@@ -81,7 +76,6 @@ public class OrderLineItem extends BaseEntity {
 
     orderLineItem.setOrderedQuantity(importer.getOrderedQuantity());
     orderLineItem.setFilledQuantity(importer.getFilledQuantity());
-    orderLineItem.setApprovedQuantity(importer.getApprovedQuantity());
     orderLineItem.setPacksToShip(importer.getPacksToShip());
 
     return orderLineItem;
@@ -96,8 +90,6 @@ public class OrderLineItem extends BaseEntity {
 
     void setFilledQuantity(Long filledQuantity);
 
-    void setApprovedQuantity(Long approvedQuantity);
-
     void setPacksToShip(Long packsToShip);
 
   }
@@ -111,8 +103,6 @@ public class OrderLineItem extends BaseEntity {
 
     Long getFilledQuantity();
 
-    Long getApprovedQuantity();
-    
     Long getPacksToShip();
 
   }

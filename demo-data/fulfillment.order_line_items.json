@@ -5,7 +5,6 @@
     "orderableId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
     "orderedQuantity": 50,
     "filledQuantity": 100,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -14,7 +13,6 @@
     "orderableId": "23819693-0670-4c4b-b400-28e009b86b51",
     "orderedQuantity": 0,
     "filledQuantity": 50,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -23,7 +21,6 @@
     "orderableId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
     "orderedQuantity": 0,
     "filledQuantity": 800,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -32,7 +29,6 @@
     "orderableId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "orderedQuantity": 0,
     "filledQuantity": 250,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -41,7 +37,6 @@
     "orderableId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
     "orderedQuantity": 50,
     "filledQuantity": 50,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -50,7 +45,6 @@
     "orderableId": "23819693-0670-4c4b-b400-28e009b86b51",
     "orderedQuantity": 0,
     "filledQuantity": 70,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -59,7 +53,6 @@
     "orderableId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
     "orderedQuantity": 0,
     "filledQuantity": 30,
-    "approvedQuantity": 0,
     "packsToShip": 0
   },
   {
@@ -68,7 +61,6 @@
     "orderableId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
     "orderedQuantity": 0,
     "filledQuantity": 1200,
-    "approvedQuantity": 0,
     "packsToShip": 0
   }
 ]

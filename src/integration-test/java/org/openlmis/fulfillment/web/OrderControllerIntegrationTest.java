@@ -224,7 +224,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orderLineItem.setOrderableId(product);
     orderLineItem.setOrderedQuantity(orderedQuantity);
     orderLineItem.setFilledQuantity(filledQuantity);
-    orderLineItem.setApprovedQuantity(3L);
     orderLineItem.setPacksToShip(0L);
 
     order.getOrderLineItems().add(orderLineItem);
@@ -881,13 +880,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
-        + "Approved quantity,Period,Order date"));
+        + "Ordered quantity,Period,Order date"));
 
     String orderDate = secondOrder.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     for (OrderLineItem lineItem : secondOrder.getOrderLineItems()) {
       String string = secondOrder.getOrderCode()
-          + ",facilityCode,Product Code,Product Name," + lineItem.getApprovedQuantity()
+          + ",facilityCode,Product Code,Product Name," + lineItem.getOrderedQuantity()
           + ",01/17," + orderDate;
       assertThat(csvContent, containsString(string));
     }
@@ -907,7 +906,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertTrue(csvContent.startsWith("Order number,Facility code,Product code,Product name,"
-        + "Approved quantity,Period,Order date"));
+        + "Ordered quantity,Period,Order date"));
   }
 
   @Test

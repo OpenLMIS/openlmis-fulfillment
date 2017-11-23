@@ -60,7 +60,7 @@ public class OrderCsvHelperTest {
 
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
-  private static final String APPROVED_QUANTITY = "Approved quantity";
+  private static final String ORDERED_QUANTITY = "Ordered quantity";
   private static final String PERIOD = "Period";
   private static final String ORDER_DATE = "Order date";
   private static final String HEADER_ORDERABLE = "header.orderable";
@@ -128,8 +128,8 @@ public class OrderCsvHelperTest {
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.quantity.approved", APPROVED_QUANTITY,
-        true, 2, null, LINE_ITEM, "approvedQuantity", null, null, null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.quantity.ordered", ORDERED_QUANTITY,
+        true, 2, null, LINE_ITEM, "orderedQuantity", null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
@@ -178,8 +178,8 @@ public class OrderCsvHelperTest {
         true, 1, null, ORDER, "orderCode", null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 2, null, LINE_ITEM, ORDERABLE, null, null, null));
-    orderFileColumns.add(new OrderFileColumn(true, "header.approved.quantity", APPROVED_QUANTITY,
-        false, 3, null, LINE_ITEM, "approvedQuantity", null, null, null));
+    orderFileColumns.add(new OrderFileColumn(true, "header.ordered.quantity", ORDERED_QUANTITY,
+        false, 3, null, LINE_ITEM, "orderedQuantity", null, null, null));
     orderFileColumns.add(new OrderFileColumn(true, "header.order.date", ORDER_DATE,
         false, 5, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
@@ -234,7 +234,6 @@ public class OrderCsvHelperTest {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setOrderableId(UUID.randomUUID());
     orderLineItem.setOrderedQuantity(1L);
-    orderLineItem.setApprovedQuantity(1L);
 
     OrderLineItem zeroQuantityItem = new OrderLineItem();
     zeroQuantityItem.setOrderableId(UUID.randomUUID());

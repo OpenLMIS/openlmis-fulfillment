@@ -105,7 +105,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     line.setOrder(instance);
     line.setOrderedQuantity(5L);
     line.setFilledQuantity(0L);
-    line.setApprovedQuantity(0L);
     line.setPacksToShip(0L);
 
     instance.setOrderLineItems(Lists.newArrayList(line));

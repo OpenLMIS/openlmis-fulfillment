@@ -35,7 +35,6 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
   private OrderableDto orderable;
   private Long orderedQuantity;
   private Long filledQuantity;
-  private Long approvedQuantity;
   private Long packsToShip;
 
   /**

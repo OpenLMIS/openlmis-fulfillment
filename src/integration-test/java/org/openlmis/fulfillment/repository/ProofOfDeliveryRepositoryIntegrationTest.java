@@ -68,7 +68,6 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     orderLineItem.setOrderableId(UUID.randomUUID());
     orderLineItem.setOrderedQuantity(100L);
     orderLineItem.setFilledQuantity(100L);
-    orderLineItem.setApprovedQuantity(0L);
     orderLineItem.setPacksToShip(0L);
 
     order.setOrderLineItems(Lists.newArrayList(orderLineItem));
