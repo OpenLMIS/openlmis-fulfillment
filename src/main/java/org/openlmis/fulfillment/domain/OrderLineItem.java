@@ -18,11 +18,11 @@ package org.openlmis.fulfillment.domain;
 import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -35,6 +35,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "order_line_items")
 @NoArgsConstructor
+@AllArgsConstructor
 public class OrderLineItem extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
@@ -68,15 +69,15 @@ public class OrderLineItem extends BaseEntity {
    * @return new instance of OrderLineItem.
    */
   public static OrderLineItem newInstance(Importer importer) {
-    OrderLineItem orderLineItem = new OrderLineItem();
+    UUID orderable = null != importer.getOrderable()
+        ? importer.getOrderable().getId()
+        : null;
+
+    OrderLineItem orderLineItem = new OrderLineItem(
+        null, orderable, importer.getOrderedQuantity(), importer.getFilledQuantity(),
+        importer.getPacksToShip()
+    );
     orderLineItem.setId(importer.getId());
-
-    Optional.ofNullable(importer.getOrderable())
-        .ifPresent(product -> orderLineItem.setOrderableId(product.getId()));
-
-    orderLineItem.setOrderedQuantity(importer.getOrderedQuantity());
-    orderLineItem.setFilledQuantity(importer.getFilledQuantity());
-    orderLineItem.setPacksToShip(importer.getPacksToShip());
 
     return orderLineItem;
   }
