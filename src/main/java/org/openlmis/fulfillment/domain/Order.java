@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.openlmis.fulfillment.web.util.StatusMessageDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -51,6 +52,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "orders")
 @NoArgsConstructor
+@AllArgsConstructor
 public class Order extends BaseEntity {
   public static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
