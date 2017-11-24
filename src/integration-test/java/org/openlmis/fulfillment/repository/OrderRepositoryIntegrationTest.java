@@ -27,14 +27,13 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Lists;
 
 import org.junit.Test;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
-import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -47,9 +46,6 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
-
-  private static final String ORDER_REPOSITORY_INTEGRATION_TEST
-      = "OrderRepositoryIntegrationTest";
 
   @Autowired
   private OrderRepository orderRepository;
@@ -78,40 +74,23 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   private Order generateInstance(OrderStatus status, UUID supplyingFacilityId,
                                  UUID requestingFacilityId) {
-    Order order = new Order();
-    order.setExternalId(UUID.randomUUID());
-    order.setEmergency(false);
-    order.setFacilityId(UUID.randomUUID());
-    order.setOrderCode(ORDER_REPOSITORY_INTEGRATION_TEST + getNextInstanceNumber());
-    order.setQuotedCost(new BigDecimal("1.29"));
-    order.setStatus(status);
-    order.setProgramId(UUID.randomUUID());
-    order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacilityId(requestingFacilityId);
-    order.setReceivingFacilityId(UUID.randomUUID());
-    order.setSupplyingFacilityId(supplyingFacilityId);
-    order.setProcessingPeriodId(UUID.randomUUID());
-
-    return order;
+    return new OrderDataBuilder()
+        .withoutId()
+        .withoutLineItems()
+        .withStatus(status)
+        .withSupplyingFacilityId(supplyingFacilityId)
+        .withRequestingFacilityId(requestingFacilityId)
+        .build();
   }
 
   @Test
   public void testDeleteWithLine() {
-    Order instance = generateInstance();
+    Order instance = new OrderDataBuilder().withoutId().build();
     assertNotNull(instance);
-
-    // add line
-    OrderLineItem line = new OrderLineItem();
-    line.setOrder(instance);
-    line.setOrderedQuantity(5L);
-    line.setFilledQuantity(0L);
-    line.setPacksToShip(0L);
-
-    instance.setOrderLineItems(Lists.newArrayList(line));
 
     instance = orderRepository.save(instance);
     assertInstance(instance);
-    assertNotNull(line.getId());
+    instance.forEachLine(line -> assertNotNull(line.getId()));
 
     UUID instanceId = instance.getId();
 

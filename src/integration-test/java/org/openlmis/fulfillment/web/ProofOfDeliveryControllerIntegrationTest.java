@@ -36,6 +36,8 @@ import net.sf.jasperreports.engine.JasperReport;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -60,13 +62,10 @@ import org.springframework.http.MediaType;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -133,31 +132,20 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     period.setStartDate(LocalDate.of(2015, Month.JANUARY, 1));
     period.setEndDate(LocalDate.of(2015, Month.DECEMBER, 31));
 
-    Order order = new Order();
-    order.setId(UUID.randomUUID());
-    order.setExternalId(UUID.randomUUID());
-    order.setProgramId(program.getId());
-    order.setFacilityId(facility.getId());
-    order.setProcessingPeriodId(period.getId());
-    order.setEmergency(false);
-    order.setStatus(OrderStatus.SHIPPED);
-    order.setCreatedDate(ZonedDateTime.now());
-    order.setCreatedById(UUID.randomUUID());
-    order.setOrderCode("O1");
-    order.setProgramId(program.getId());
-    order.setQuotedCost(new BigDecimal(100));
-    order.setSupplyingFacilityId(facility.getId());
-    order.setRequestingFacilityId(facility.getId());
-    order.setReceivingFacilityId(facility.getId());
+    OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
+        .withOrderableId(product.getId())
+        .build();
 
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setId(UUID.randomUUID());
-    orderLineItem.setOrderableId(product.getId());
-    orderLineItem.setOrderedQuantity(100L);
-    orderLineItem.setFilledQuantity(100L);
-    orderLineItem.setPacksToShip(100L);
-
-    order.setOrderLineItems(Collections.singletonList(orderLineItem));
+    Order order = new OrderDataBuilder()
+        .withLineItems(orderLineItem)
+        .withShippedStatus()
+        .withProgramId(program.getId())
+        .withProcessingPeriodId(period.getId())
+        .withFacilityId(facility.getId())
+        .withSupplyingFacilityId(facility.getId())
+        .withRequestingFacilityId(facility.getId())
+        .withReceivingFacilityId(facility.getId())
+        .build();
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
     given(orderRepository.exists(order.getId())).willReturn(true);

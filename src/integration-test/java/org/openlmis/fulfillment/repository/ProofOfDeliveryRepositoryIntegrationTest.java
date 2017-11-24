@@ -23,20 +23,18 @@ import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
-
-  private static final String CODE = "ProofOfDeliveryRepositoryIntegrationTest";
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
@@ -54,23 +52,16 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Before
   public void setUp() {
-    order.setOrderCode(CODE);
-    order.setExternalId(UUID.randomUUID());
-    order.setEmergency(false);
-    order.setQuotedCost(new BigDecimal("1.29"));
-    order.setStatus(OrderStatus.PICKING);
-    order.setProgramId(UUID.randomUUID());
-    order.setCreatedById(UUID.randomUUID());
-    order.setRequestingFacilityId(UUID.randomUUID());
-    order.setReceivingFacilityId(UUID.randomUUID());
-    order.setSupplyingFacilityId(UUID.randomUUID());
+    orderLineItem = new OrderLineItemDataBuilder()
+        .withRandomOrderedQuantity()
+        .withRandomFilledQuantity()
+        .build();
 
-    orderLineItem.setOrderableId(UUID.randomUUID());
-    orderLineItem.setOrderedQuantity(100L);
-    orderLineItem.setFilledQuantity(100L);
-    orderLineItem.setPacksToShip(0L);
-
-    order.setOrderLineItems(Lists.newArrayList(orderLineItem));
+    order = new OrderDataBuilder()
+        .withoutId()
+        .withPickingStatus()
+        .withLineItems(orderLineItem)
+        .build();
 
     order = orderRepository.save(order);
   }
@@ -112,17 +103,12 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   @Test
   public void shouldFindProofOfDeliveriesByOrderId() {
     //given
-    Order anotherOrder = new Order();
-    anotherOrder.setOrderCode("Another Code");
-    anotherOrder.setExternalId(UUID.randomUUID());
-    anotherOrder.setEmergency(true);
-    anotherOrder.setQuotedCost(new BigDecimal("1.29"));
-    anotherOrder.setStatus(OrderStatus.PICKING);
-    anotherOrder.setProgramId(UUID.randomUUID());
-    anotherOrder.setCreatedById(UUID.randomUUID());
-    anotherOrder.setRequestingFacilityId(UUID.randomUUID());
-    anotherOrder.setReceivingFacilityId(UUID.randomUUID());
-    anotherOrder.setSupplyingFacilityId(UUID.randomUUID());
+    Order anotherOrder = new OrderDataBuilder()
+        .withoutId()
+        .withPickingStatus()
+        .withEmergencyFlag()
+        .build();
+
     orderRepository.save(anotherOrder);
 
     // This generates POD linked to order declared in @Before

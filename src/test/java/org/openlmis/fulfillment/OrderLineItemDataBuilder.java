@@ -33,8 +33,28 @@ public class OrderLineItemDataBuilder {
     return this;
   }
 
+  public OrderLineItemDataBuilder withOrderableId(UUID orderableId) {
+    this.orderableId = orderableId;
+    return this;
+  }
+
   public OrderLineItemDataBuilder withRandomOrderedQuantity() {
-    orderedQuantity = (long) (Math.random() * (5000));
+    orderedQuantity = randomValue();
+    return this;
+  }
+
+  public OrderLineItemDataBuilder withOrderedQuantity(Long orderedQuantity) {
+    this.orderedQuantity = orderedQuantity;
+    return this;
+  }
+
+  public OrderLineItemDataBuilder withRandomFilledQuantity() {
+    filledQuantity = randomValue();
+    return this;
+  }
+
+  public OrderLineItemDataBuilder withFilledQuantity(Long filledQuantity) {
+    this.filledQuantity = filledQuantity;
     return this;
   }
 
@@ -49,5 +69,10 @@ public class OrderLineItemDataBuilder {
 
     return lineItem;
   }
+
+  private long randomValue() {
+    return (long) (Math.random() * (5000));
+  }
+
 
 }

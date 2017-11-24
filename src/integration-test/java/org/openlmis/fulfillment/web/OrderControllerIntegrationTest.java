@@ -45,6 +45,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Base36EncodedOrderNumberGenerator;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
@@ -146,29 +148,23 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void setUp() {
     this.setUpBootstrapData();
 
-    firstOrder = addOrder(UUID.randomUUID(), facility, period1, "orderCode", UUID.randomUUID(),
-        INITIAL_USER_ID, facility, facility, facility, OrderStatus.ORDERED,
-        new BigDecimal("1.29"));
+    firstOrder = createOrder(
+        period1, UUID.randomUUID(), facility, facility, new BigDecimal("1.29"),
+        createOrderLineItem(product1, 35L, 50L)
+    );
 
-    secondOrder = addOrder(UUID.randomUUID(), facility2, period1, "O2", program1, INITIAL_USER_ID,
-        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(100));
+    secondOrder = createOrder(
+        period1, program1, facility2, facility1, new BigDecimal(100),
+        createOrderLineItem(product1, 35L, 50L),
+        createOrderLineItem(product2, 10L, 15L)
+    );
 
-    thirdOrder = addOrder(UUID.randomUUID(), facility2, period2, "O3", program2, INITIAL_USER_ID,
-        facility2, facility2, facility1, OrderStatus.RECEIVED, new BigDecimal(200));
+    thirdOrder = createOrder(
+        period2, program2, facility2, facility1, new BigDecimal(200),
+        createOrderLineItem(product1, 50L, 50L),
+        createOrderLineItem(product2, 5L, 10L)
+    );
 
-    addOrderLineItem(secondOrder, product1, 35L, 50L);
-
-    addOrderLineItem(secondOrder, product2, 10L, 15L);
-
-    addOrderLineItem(thirdOrder, product1, 50L, 50L);
-
-    addOrderLineItem(thirdOrder, product2, 5L, 10L);
-
-    OrderLineItem orderLineItem = addOrderLineItem(firstOrder, product1, 35L, 50L);
-
-    List<OrderLineItem> orderLineItems = new ArrayList<>();
-    orderLineItems.add(orderLineItem);
-    firstOrder.setOrderLineItems(orderLineItems);
     firstOrder.setExternalId(secondOrder.getExternalId());
 
     firstOrderDto = BasicOrderDto.newInstance(firstOrder, exporter);
@@ -189,26 +185,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         });
   }
 
-  private Order addOrder(UUID requisition, UUID facility, UUID processingPeriod,
-                         String orderCode, UUID program, UUID user,
-                         UUID requestingFacility, UUID receivingFacility,
-                         UUID supplyingFacility, OrderStatus orderStatus, BigDecimal cost) {
-    Order order = new Order();
-    order.setId(UUID.randomUUID());
-    order.setExternalId(requisition);
-    order.setEmergency(false);
-    order.setFacilityId(facility);
-    order.setProcessingPeriodId(processingPeriod);
-    order.setOrderCode(orderCode);
-    order.setQuotedCost(cost);
-    order.setStatus(orderStatus);
-    order.setProgramId(program);
-    order.setCreatedDate(ZonedDateTime.now());
-    order.setCreatedById(user);
-    order.setRequestingFacilityId(requestingFacility);
-    order.setReceivingFacilityId(receivingFacility);
-    order.setSupplyingFacilityId(supplyingFacility);
-    order.setOrderLineItems(new ArrayList<>());
+  private Order createOrder(UUID processingPeriod, UUID program, UUID facility,
+                            UUID supplyingFacility, BigDecimal cost,
+                            OrderLineItem... lineItems) {
+    Order order = new OrderDataBuilder()
+        .withProcessingPeriodId(processingPeriod)
+        .withQuotedCost(cost)
+        .withProgramId(program)
+        .withCreatedById(INITIAL_USER_ID)
+        .withFacilityId(facility)
+        .withRequestingFacilityId(facility)
+        .withReceivingFacilityId(facility)
+        .withSupplyingFacilityId(supplyingFacility)
+        .withLineItems(lineItems)
+        .build();
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
     given(orderRepository.exists(order.getId())).willReturn(true);
@@ -216,19 +206,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return order;
   }
 
-  private OrderLineItem addOrderLineItem(Order order, UUID product, Long filledQuantity,
-                                         Long orderedQuantity) {
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setId(UUID.randomUUID());
-    orderLineItem.setOrder(order);
-    orderLineItem.setOrderableId(product);
-    orderLineItem.setOrderedQuantity(orderedQuantity);
-    orderLineItem.setFilledQuantity(filledQuantity);
-    orderLineItem.setPacksToShip(0L);
-
-    order.getOrderLineItems().add(orderLineItem);
-
-    return orderLineItem;
+  private OrderLineItem createOrderLineItem(UUID product, Long filledQuantity,
+                                            Long orderedQuantity) {
+    return new OrderLineItemDataBuilder()
+        .withOrderableId(product)
+        .withOrderedQuantity(orderedQuantity)
+        .withFilledQuantity(filledQuantity)
+        .build();
   }
 
   @Test

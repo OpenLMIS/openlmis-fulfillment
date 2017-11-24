@@ -15,9 +15,10 @@
 
 package org.openlmis.fulfillment.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -26,27 +27,27 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.service.referencedata.DispensableDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,12 +104,12 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(ORDER_NUMBER));
+    assertThat(csv, startsWith(ORDER_NUMBER));
 
     orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     csv = writeCsvFile(order, orderFileTemplate);
-    assertFalse(csv.startsWith(ORDER_NUMBER));
+    assertThat(csv, not(startsWith(ORDER_NUMBER)));
   }
 
   @Test
@@ -120,7 +121,7 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("code"));
+    assertThat(csv, startsWith(order.getOrderCode()));
   }
 
   @Test
@@ -135,8 +136,11 @@ public class OrderCsvHelperTest {
 
     String csv = writeCsvFile(order, orderFileTemplate);
 
-    assertTrue(csv.startsWith(order.getOrderLineItems().get(0).getOrderableId()
-        + ",1"));
+    OrderLineItem lineItem = order.getOrderLineItems().get(0);
+    assertThat(
+        csv,
+        startsWith(lineItem.getOrderableId() + "," + lineItem.getOrderedQuantity())
+    );
   }
 
   @Test
@@ -145,14 +149,14 @@ public class OrderCsvHelperTest {
 
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
-            true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
+        true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
     int numberOfLines = csv.split(System.lineSeparator()).length;
 
-    assertEquals(1, numberOfLines);
+    assertThat(numberOfLines, is(1));
   }
 
   @Test
@@ -161,14 +165,14 @@ public class OrderCsvHelperTest {
 
     List<OrderFileColumn> orderFileColumns = new ArrayList<>();
     orderFileColumns.add(new OrderFileColumn(true, HEADER_ORDERABLE, PRODUCT,
-            true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
+        true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
 
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
     int numberOfLines = csv.split(System.lineSeparator()).length;
 
-    assertEquals(2, numberOfLines);
+    assertThat(numberOfLines, is(2));
   }
 
   @Test
@@ -186,7 +190,7 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", true, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith(ORDER_NUMBER + ",Product"));
+    assertThat(csv, startsWith(ORDER_NUMBER + ",Product"));
   }
 
   @Test
@@ -204,7 +208,7 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("facilityCode,productCode,productName,01/16"));
+    assertThat(csv, startsWith("facilityCode,productCode,productName,01/16"));
   }
 
   @Test
@@ -218,7 +222,9 @@ public class OrderCsvHelperTest {
     OrderFileTemplate orderFileTemplate = new OrderFileTemplate("O", false, orderFileColumns);
 
     String csv = writeCsvFile(order, orderFileTemplate);
-    assertTrue(csv.startsWith("01/16,01/01/16"));
+    String date = order.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
+
+    assertThat(csv, startsWith("01/16," + date));
   }
 
   private String writeCsvFile(Order order, OrderFileTemplate orderFileTemplate)
@@ -231,23 +237,18 @@ public class OrderCsvHelperTest {
   }
 
   private Order createOrder() {
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setOrderableId(UUID.randomUUID());
-    orderLineItem.setOrderedQuantity(1L);
+    OrderLineItem orderLineItem1 = new OrderLineItemDataBuilder()
+        .withRandomOrderedQuantity()
+        .build();
 
-    OrderLineItem zeroQuantityItem = new OrderLineItem();
-    zeroQuantityItem.setOrderableId(UUID.randomUUID());
-    zeroQuantityItem.setOrderedQuantity(0L);
+    OrderLineItem orderLineItem2 = new OrderLineItemDataBuilder()
+        .withOrderedQuantity(0L)
+        .build();
 
-    Order order = new Order();
-    order.setOrderCode("code");
-    order.setCreatedDate(ZonedDateTime.of(2016, 1, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
-    order.setExternalId(UUID.randomUUID());
-    order.setProcessingPeriodId(UUID.randomUUID());
-    order.setFacilityId(UUID.randomUUID());
-    order.setOrderLineItems(Arrays.asList(orderLineItem, zeroQuantityItem));
-
-    return order;
+    return new OrderDataBuilder()
+        .withoutId()
+        .withLineItems(orderLineItem1, orderLineItem2)
+        .build();
   }
 
   private FacilityDto createFacility() {
