@@ -114,6 +114,14 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   @Setter
   private List<StatusChangeDto> statusChanges;
 
+  @Getter
+  @Setter
+  private UUID lastUpdaterId;
+
+  @Getter
+  @Setter
+  private ZonedDateTime lastUpdatedDate;
+
   @Override
   public List<OrderLineItem.Importer> getOrderLineItems() {
     return new ArrayList<>(

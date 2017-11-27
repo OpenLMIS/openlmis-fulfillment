@@ -98,6 +98,14 @@ public class BasicOrderDto implements Order.Exporter {
   @Setter
   private BigDecimal quotedCost;
 
+  @Getter
+  @Setter
+  private UUID lastUpdaterId;
+
+  @Getter
+  @Setter
+  private ZonedDateTime lastUpdatedDate;
+
   @Override
   public void setStatusMessages(List<StatusMessageDto> statusMessages) {
     // nothing to do here

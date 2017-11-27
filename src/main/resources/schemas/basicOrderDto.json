@@ -72,6 +72,14 @@
     "quotedCost": {
       "type": "number",
       "title": "quotedCost"
+    },
+    "lastUpdaterId": {
+      "type": ["string", "null"],
+      "title": "lastUpdaterId"
+    },
+    "lastUpdatedDate": {
+      "type": ["string", "null"],
+      "title": "lastUpdatedDate"
     }
   },
   "required": [

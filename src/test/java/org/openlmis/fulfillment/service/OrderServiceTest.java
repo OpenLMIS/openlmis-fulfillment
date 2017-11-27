@@ -40,6 +40,9 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
+import org.openlmis.fulfillment.StatusChangeDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -133,26 +136,22 @@ public class OrderServiceTest {
     when(orderNumberConfigurationRepository.findAll())
         .thenReturn(Collections.singletonList(orderNumberConfiguration));
 
-    Order order = new Order();
-    order.setId(UUID.randomUUID());
-    order.setExternalId(UUID.randomUUID());
-    order.setEmergency(true);
-    order.setProgramId(program.getId());
-    order.setStatus(OrderStatus.ORDERED);
-    order.setQuotedCost(BigDecimal.ZERO);
-    order.setSupplyingFacilityId(UUID.randomUUID());
+    OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
+        .withOrderedQuantity(100L)
+        .build();
 
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setOrderedQuantity(1000L);
+    StatusChange statusChange = new StatusChangeDataBuilder().build();
 
-    order.setOrderLineItems(Lists.newArrayList(orderLineItem));
-    order.setCreatedById(UUID.randomUUID());
-
-    StatusChange statusChange = new StatusChange();
-    statusChange.setStatus(ExternalStatus.APPROVED);
-    statusChange.setCreatedDate(ZonedDateTime.now());
-    statusChange.setAuthorId(UUID.randomUUID());
-    order.setStatusChanges(Lists.newArrayList(statusChange));
+    Order order = new OrderDataBuilder()
+        .withQuotedCost(BigDecimal.ZERO)
+        .withProgramId(program.getId())
+        .withCreatedById(UUID.randomUUID())
+        .withEmergencyFlag()
+        .withStatus(OrderStatus.ORDERED)
+        .withStatusChanges(statusChange)
+        .withSupplyingFacilityId(UUID.randomUUID())
+        .withLineItems(orderLineItem)
+        .build();
 
     // when
     when(orderRepository.save(any(Order.class))).thenReturn(order);

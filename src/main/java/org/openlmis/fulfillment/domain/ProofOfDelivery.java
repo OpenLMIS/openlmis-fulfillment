@@ -157,7 +157,10 @@ public class ProofOfDelivery extends BaseEntity {
    */
   public static ProofOfDelivery newInstance(Importer importer) {
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
-    proofOfDelivery.setOrder(Order.newInstance(importer.getOrder()));
+    Order order = Order.newInstance(importer.getOrder(),
+        new UpdateDetails(importer.getOrder().getLastUpdaterId(),
+            importer.getOrder().getLastUpdatedDate()));
+    proofOfDelivery.setOrder(order);
     proofOfDelivery.setDeliveredBy(importer.getDeliveredBy());
     proofOfDelivery.setReceivedBy(importer.getReceivedBy());
     proofOfDelivery.setReceivedDate(importer.getReceivedDate());

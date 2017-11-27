@@ -58,7 +58,10 @@ public class StatusChange extends BaseEntity {
   @Setter
   private ZonedDateTime createdDate;
 
-  private StatusChange(ExternalStatus status, UUID authorId, ZonedDateTime date) {
+  /**
+   * Constructor with status, authorId and date.
+   */
+  public StatusChange(ExternalStatus status, UUID authorId, ZonedDateTime date) {
     this.status = status;
     this.authorId = authorId;
     this.createdDate = date;

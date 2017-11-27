@@ -717,6 +717,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Order savedOrder = orderCaptor.getValue();
     assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
+    assertThat(savedOrder.getUpdateDetailsEmbedded().getLastUpdaterId(),
+        is(firstOrderDto.getLastUpdaterId()));
 
     Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();
     String expectedCode = "ORDER-" + generator.generate(savedOrder) + "R";

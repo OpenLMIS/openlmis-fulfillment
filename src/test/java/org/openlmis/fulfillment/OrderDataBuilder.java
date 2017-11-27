@@ -32,11 +32,13 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class OrderDataBuilder {
   private UUID id = UUID.randomUUID();
   private UUID externalId = UUID.randomUUID();
+  private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private Boolean emergency = false;
   private UUID facilityId = UUID.randomUUID();
   private UUID processingPeriodId = UUID.randomUUID();
@@ -51,7 +53,8 @@ public class OrderDataBuilder {
   private BigDecimal quotedCost = new BigDecimal("1.29");
   private List<OrderLineItem> orderLineItems = Lists.newArrayList(); // check constructor
   private List<StatusMessage> statusMessages = Lists.emptyList();
-  private List<StatusChange> statusChanges = Lists.emptyList();
+  private List<StatusChange> statusChanges = Lists.newArrayList();
+  private UpdateDetails updateDetails = new UpdateDetails(lastUpdaterId, ZonedDateTime.now());
 
   public OrderDataBuilder() {
     orderLineItems.add(new OrderLineItemDataBuilder().withRandomOrderedQuantity().build());
@@ -73,6 +76,15 @@ public class OrderDataBuilder {
   public OrderDataBuilder withLineItems(OrderLineItem... lineItems) {
     orderLineItems.clear();
     Collections.addAll(orderLineItems, lineItems);
+    return this;
+  }
+
+  /**
+   * Sets order line items that should be in the order.
+   */
+  public OrderDataBuilder withStatusChanges(StatusChange... changes) {
+    statusChanges.clear();
+    Collections.addAll(statusChanges, changes);
     return this;
   }
 
@@ -146,7 +158,7 @@ public class OrderDataBuilder {
     Order order = new Order(
         externalId, emergency, facilityId, processingPeriodId, createdDate, createdById, programId,
         requestingFacilityId, receivingFacilityId, supplyingFacilityId, orderCode, status,
-        quotedCost, orderLineItems, statusMessages, statusChanges
+        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails
     );
     order.setId(id);
     order.forEachLine(line -> prepareLineItems(line, order));

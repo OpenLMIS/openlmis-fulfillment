@@ -13,7 +13,9 @@
     "supplyingFacilityId": "19121381-9f3d-4e77-b9e5-d3f59fc1639e",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000006R",
     "status": "RECEIVED",
-    "quotedCost": 1000000
+    "quotedCost": 1000000,
+    "lastUpdatedDate": "2016-04-30T16:45:22",
+    "lastUpdaterId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb"
   },
   {
     "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6",
@@ -29,7 +31,9 @@
     "supplyingFacilityId": "9318b2ea-9ae0-42b2-a7e1-353683f54000",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000007R",
     "status": "IN_ROUTE",
-    "quotedCost": 30000
+    "quotedCost": 30000,
+    "lastUpdatedDate": "2016-06-13T12:22:20",
+    "lastUpdaterId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb"
   },
   {
     "id": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3",
@@ -45,7 +49,9 @@
     "supplyingFacilityId": "19121381-9f3d-4e77-b9e5-d3f59fc1639e",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000008R",
     "status": "READY_TO_PACK",
-    "quotedCost": 5000
+    "quotedCost": 5000,
+    "lastUpdatedDate": "2016-06-15T12:00:00",
+    "lastUpdaterId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb"
   },
   {
     "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2",
@@ -61,6 +67,8 @@
     "supplyingFacilityId": "9318b2ea-9ae0-42b2-a7e1-353683f54000",
     "orderCode": "ORDER-00000000-0000-0000-0000-000000000009R",
     "status": "IN_ROUTE",
-    "quotedCost": 100000
+    "quotedCost": 100000,
+    "lastUpdatedDate": "2016-06-21T17:17:17",
+    "lastUpdaterId": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb"
   }
 ]

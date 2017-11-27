@@ -15,6 +15,9 @@
 
 package org.openlmis.fulfillment.domain;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Embedded;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -162,6 +165,21 @@ public class Order extends BaseEntity {
   @Setter
   private List<StatusChange> statusChanges;
 
+  @Getter
+  @Setter
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "lastUpdaterId", column = @Column(name = "lastupdaterid")),
+      @AttributeOverride(name = "lastUpdatedDate", column = @Column(name = "lastupdateddate"))
+      })
+  private UpdateDetails updateDetailsEmbedded;
+
+  /**
+   * Constructor with update details.
+   */
+  public Order(UpdateDetails updateDetails) {
+    this.updateDetailsEmbedded = updateDetails;
+  }
 
   @PrePersist
   private void prePersist() {
@@ -197,6 +215,7 @@ public class Order extends BaseEntity {
     this.status = order.status;
     this.quotedCost = order.quotedCost;
     this.statusChanges = order.statusChanges;
+    this.updateDetailsEmbedded = order.updateDetailsEmbedded;
   }
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {
@@ -220,8 +239,8 @@ public class Order extends BaseEntity {
    * @param importer instance of {@link Order.Importer}
    * @return new instance of order.
    */
-  public static Order newInstance(Importer importer) {
-    Order order = new Order();
+  public static Order newInstance(Importer importer, UpdateDetails updateDetails) {
+    Order order = new Order(updateDetails);
     order.setId(importer.getId());
     order.setExternalId(importer.getExternalId());
     order.setEmergency(importer.getEmergency());
@@ -307,6 +326,10 @@ public class Order extends BaseEntity {
     void setStatusMessages(List<StatusMessageDto> statusMessages);
 
     void setStatusChanges(List<StatusChangeDto> statusChanges);
+
+    void setLastUpdatedDate(ZonedDateTime lastUpdatedDate);
+
+    void setLastUpdaterId(UUID lastUpdaterId);
   }
 
   public interface Importer {
