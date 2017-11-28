@@ -23,6 +23,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.StatusMessage;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderDto implements Order.Importer, Order.Exporter {
+public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.Exporter {
 
   @Getter
   @Setter
@@ -115,11 +116,9 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   private List<StatusChangeDto> statusChanges;
 
   @Getter
-  @Setter
   private UUID lastUpdaterId;
 
   @Getter
-  @Setter
   private ZonedDateTime lastUpdatedDate;
 
   @Override
@@ -137,6 +136,21 @@ public class OrderDto implements Order.Importer, Order.Exporter {
   @Override
   public List<StatusChange.Importer> getStatusChanges() {
     return new ArrayList<>(Optional.ofNullable(statusChanges).orElse(Collections.emptyList()));
+  }
+
+  @Override
+  public void setUpdateDetails(UpdateDetails updateDetails) {
+    updateDetails.export(this);
+  }
+
+  @Override
+  public void setUpdaterId(UUID updaterId) {
+    this.lastUpdaterId = updaterId;
+  }
+
+  @Override
+  public void setUpdatedDate(ZonedDateTime updatedDate) {
+    this.lastUpdatedDate = updatedDate;
   }
 
   /**

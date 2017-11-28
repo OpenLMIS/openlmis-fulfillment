@@ -30,7 +30,7 @@ public class StatusChangeDataBuilder {
    * Creates new instance of {@link StatusChange} based on passed data.
    */
   public StatusChange build() {
-    StatusChange statusChange = new StatusChange(status, authorId, createdDate);
+    StatusChange statusChange = new StatusChange(null, status, authorId, createdDate);
 
     return statusChange;
   }

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,6 +35,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "status_changes")
 @NoArgsConstructor
+@AllArgsConstructor
 public class StatusChange extends BaseEntity {
 
   @ManyToOne(cascade = {CascadeType.REFRESH})
@@ -58,17 +60,8 @@ public class StatusChange extends BaseEntity {
   @Setter
   private ZonedDateTime createdDate;
 
-  /**
-   * Constructor with status, authorId and date.
-   */
-  public StatusChange(ExternalStatus status, UUID authorId, ZonedDateTime date) {
-    this.status = status;
-    this.authorId = authorId;
-    this.createdDate = date;
-  }
-
   public static StatusChange newStatusChange(Importer importer) {
-    return new StatusChange(importer.getStatus(),
+    return new StatusChange(null, importer.getStatus(),
             importer.getAuthorId(), importer.getCreatedDate());
   }
 

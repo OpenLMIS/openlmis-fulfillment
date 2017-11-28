@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web.util;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
@@ -40,7 +41,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class BasicOrderDto implements Order.Exporter {
+public class BasicOrderDto implements Order.Exporter, UpdateDetails.Exporter {
 
   @Getter
   @Setter
@@ -99,11 +100,9 @@ public class BasicOrderDto implements Order.Exporter {
   private BigDecimal quotedCost;
 
   @Getter
-  @Setter
   private UUID lastUpdaterId;
 
   @Getter
-  @Setter
   private ZonedDateTime lastUpdatedDate;
 
   @Override
@@ -114,6 +113,21 @@ public class BasicOrderDto implements Order.Exporter {
   @Override
   public void setStatusChanges(List<StatusChangeDto> statusChanges) {
     // nothing to do here
+  }
+
+  @Override
+  public void setUpdateDetails(UpdateDetails updateDetails) {
+    updateDetails.export(this);
+  }
+
+  @Override
+  public void setUpdaterId(UUID updaterId) {
+    this.lastUpdaterId = updaterId;
+  }
+
+  @Override
+  public void setUpdatedDate(ZonedDateTime updatedDate) {
+    this.lastUpdatedDate = updatedDate;
   }
 
   /**

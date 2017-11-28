@@ -22,23 +22,34 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class UpdateDetails {
 
-  @Setter
-  @Getter
   @Type(type = UUID_TYPE)
-  private UUID lastUpdaterId;
+  private UUID updaterId;
 
-  @Setter
-  @Getter
   @Column(columnDefinition = "timestamp with time zone")
-  private ZonedDateTime lastUpdatedDate;
+  private ZonedDateTime updatedDate;
+
+  public interface Exporter {
+    void setUpdaterId(UUID updaterId);
+
+    void setUpdatedDate(ZonedDateTime updatedDate);
+  }
+
+  /**
+   * Copy data from the given update details to the instance that implement
+   * {@link UpdateDetails.Exporter} interface.
+   */
+  public void export(UpdateDetails.Exporter exporter) {
+    exporter.setUpdatedDate(updatedDate);
+    exporter.setUpdaterId(updaterId);
+  }
 }

@@ -169,16 +169,16 @@ public class Order extends BaseEntity {
   @Setter
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "lastUpdaterId", column = @Column(name = "lastupdaterid")),
-      @AttributeOverride(name = "lastUpdatedDate", column = @Column(name = "lastupdateddate"))
+      @AttributeOverride(name = "updaterId", column = @Column(name = "lastupdaterid")),
+      @AttributeOverride(name = "updatedDate", column = @Column(name = "lastupdateddate"))
       })
-  private UpdateDetails updateDetailsEmbedded;
+  private UpdateDetails updateDetails;
 
   /**
    * Constructor with update details.
    */
   public Order(UpdateDetails updateDetails) {
-    this.updateDetailsEmbedded = updateDetails;
+    this.updateDetails = updateDetails;
   }
 
   @PrePersist
@@ -215,7 +215,7 @@ public class Order extends BaseEntity {
     this.status = order.status;
     this.quotedCost = order.quotedCost;
     this.statusChanges = order.statusChanges;
-    this.updateDetailsEmbedded = order.updateDetailsEmbedded;
+    this.updateDetails = order.updateDetails;
   }
 
   public void forEachLine(Consumer<OrderLineItem> consumer) {
@@ -327,9 +327,7 @@ public class Order extends BaseEntity {
 
     void setStatusChanges(List<StatusChangeDto> statusChanges);
 
-    void setLastUpdatedDate(ZonedDateTime lastUpdatedDate);
-
-    void setLastUpdaterId(UUID lastUpdaterId);
+    void setUpdateDetails(UpdateDetails updateDetails);
   }
 
   public interface Importer {

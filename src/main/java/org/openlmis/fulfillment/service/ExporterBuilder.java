@@ -75,8 +75,7 @@ public class ExporterBuilder {
     exporter.setQuotedCost(order.getQuotedCost());
     exporter.setCreatedBy(getIfPresent(users, order.getCreatedById()));
     exporter.setCreatedDate(order.getCreatedDate());
-    exporter.setLastUpdatedDate(order.getUpdateDetailsEmbedded().getLastUpdatedDate());
-    exporter.setLastUpdaterId(order.getUpdateDetailsEmbedded().getLastUpdaterId());
+    exporter.setUpdateDetails(order.getUpdateDetails());
   }
 
   /**
