@@ -23,20 +23,26 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 
 @Embeddable
-@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 public class UpdateDetails {
 
   @Type(type = UUID_TYPE)
-  private UUID updaterId;
+  private final UUID updaterId;
 
   @Column(columnDefinition = "timestamp with time zone")
-  private ZonedDateTime updatedDate;
+  private final ZonedDateTime updatedDate;
+
+  /**
+   * Default constructor needed by framework.
+   */
+  private UpdateDetails() {
+    this.updaterId = null;
+    this.updatedDate = null;
+  }
 
   public interface Exporter {
     void setUpdaterId(UUID updaterId);
