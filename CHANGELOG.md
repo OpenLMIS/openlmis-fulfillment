@@ -1,6 +1,9 @@
 7.0.0 / WIP
 ===========
 
+Improvements added in a backwards-compatible manner:
+* [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order
+
 Contract breaking changes:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
 

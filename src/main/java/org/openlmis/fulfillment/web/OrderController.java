@@ -18,7 +18,6 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
 
-import java.time.ZonedDateTime;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -44,6 +43,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -129,6 +129,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   /**
    * Allows creating new orders.
@@ -366,7 +369,7 @@ public class OrderController extends BaseController {
                                   OAuth2Authentication authentication) {
     UserDto currentUser = authenticationHelper.getCurrentUser();
     Order order = Order.newInstance(orderDto,
-        new UpdateDetails(currentUser.getId(), ZonedDateTime.now()));
+        new UpdateDetails(currentUser.getId(), dateHelper.getCurrentDateTimeWithSystemZone()));
 
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to create order");

@@ -151,6 +151,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withUpdateDetails(UpdateDetails newDetails) {
+    this.updateDetails = newDetails;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link Order} based on passed data.
    */

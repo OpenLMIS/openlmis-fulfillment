@@ -30,6 +30,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
@@ -53,6 +54,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.OrderFileStorage;
@@ -60,6 +62,7 @@ import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -135,6 +138,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Mock
+  private DateHelper dateHelper;
+
+  @Mock
   private ProofOfDelivery proofOfDelivery;
 
   private Order firstOrder = new Order();
@@ -147,6 +153,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Before
   public void setUp() {
     this.setUpBootstrapData();
+
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+
+    ZonedDateTime current = dateHelper.getCurrentDateTimeWithSystemZone();
 
     firstOrder = createOrder(
         period1, UUID.randomUUID(), facility, facility, new BigDecimal("1.29"),
@@ -179,7 +190,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
           @Override
           void extraSteps(Order obj) {
-            obj.setCreatedDate(ZonedDateTime.now());
+            obj.setCreatedDate(current);
+            obj.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID, current));
           }
 
         });
@@ -198,6 +210,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .withReceivingFacilityId(facility)
         .withSupplyingFacilityId(supplyingFacility)
         .withLineItems(lineItems)
+        .withUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
+            dateHelper.getCurrentDateTimeWithSystemZone()))
         .build();
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
@@ -717,7 +731,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Order savedOrder = orderCaptor.getValue();
     assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
-    assertThat(savedOrder.getUpdateDetails(), notNullValue());
+
+    UpdateDetails updateDetails = new UpdateDetails(firstOrderDto.getLastUpdaterId(),
+        firstOrderDto.getLastUpdatedDate());
+    assertEquals(savedOrder.getUpdateDetails(), updateDetails);
 
     Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();
     String expectedCode = "ORDER-" + generator.generate(savedOrder) + "R";

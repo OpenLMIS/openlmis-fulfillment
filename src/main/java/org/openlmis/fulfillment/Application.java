@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment;
 
+import java.time.Clock;
+import java.time.ZoneId;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -45,6 +47,9 @@ public class Application {
 
   @Value("${defaultLocale}")
   private Locale locale;
+
+  @Value("${time.zoneId}")
+  private String timeZoneId;
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -106,6 +111,16 @@ public class Application {
   @Bean
   public ProducerTemplate camelTemplate() {
     return camelContext().createProducerTemplate();
+  }
+
+  /**
+   * Creates new Clock.
+   *
+   * @return Created clock.
+   */
+  @Bean
+  public Clock clock() {
+    return Clock.system(ZoneId.of(timeZoneId));
   }
 
   /**
