@@ -28,8 +28,8 @@ public class DateHelper {
   private Clock clock;
 
   /**
-   * Obtains the current date from the system clock in the system time zone.
-   * @return the current date using the system clock
+   * Obtains the current date time from the system clock in the system time zone.
+   * @return the current date time using the system clock
    */
   public ZonedDateTime getCurrentDateTimeWithSystemZone() {
     return ZonedDateTime.now(clock);
