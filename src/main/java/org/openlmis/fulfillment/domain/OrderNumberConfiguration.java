@@ -33,8 +33,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Entity
 @Table(name = "order_number_configurations")
-@EqualsAndHashCode(callSuper = false)
-public class OrderNumberConfiguration extends BaseEntity {
+@EqualsAndHashCode(callSuper = true)
+public final class OrderNumberConfiguration extends BaseEntity {
 
   @Getter
   @Setter

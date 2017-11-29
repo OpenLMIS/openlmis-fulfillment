@@ -104,6 +104,6 @@ public class OrderNumberConfigurationTest {
 
   @Test
   public void equalsContract() throws Exception {
-    EqualsVerifier.forClass(OrderNumberConfiguration.class).withIgnoredFields("id").verify();
+    EqualsVerifier.forClass(OrderNumberConfiguration.class).withRedefinedSuperclass().verify();
   }
 }

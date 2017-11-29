@@ -15,37 +15,14 @@
 
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 
-import lombok.EqualsAndHashCode;
-import org.openlmis.util.View;
+public class BaseEntityTest {
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+  @Test
+  public void equalsContract() throws Exception {
+    EqualsVerifier.forClass(BaseEntity.class).verify();
+  }
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.UUID;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-
-@MappedSuperclass
-@EqualsAndHashCode
-public abstract class BaseEntity {
-  public static final String ID = "id";
-  
-  static final String TEXT_COLUMN_DEFINITION = "text";
-  static final String UUID_TYPE = "pg-uuid";
-
-  @Id
-  @GeneratedValue(generator = "uuid-gen")
-  @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
-  @JsonView(View.BasicInformation.class)
-  @Type(type = UUID_TYPE)
-  @Getter
-  @Setter
-  protected UUID id;
 }
