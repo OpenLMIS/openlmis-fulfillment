@@ -40,7 +40,6 @@ public class StatusChange extends BaseEntity {
 
   @ManyToOne(cascade = {CascadeType.REFRESH})
   @JoinColumn(name = "orderId", nullable = false)
-  @Getter
   @Setter
   private Order order;
 

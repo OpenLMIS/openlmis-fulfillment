@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.util;
 
 import java.time.Clock;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,10 +32,6 @@ public class DateHelper {
    */
   public ZonedDateTime getCurrentDateTimeWithSystemZone() {
     return ZonedDateTime.now(clock);
-  }
-
-  public ZoneId getZone() {
-    return clock.getZone();
   }
 
 }

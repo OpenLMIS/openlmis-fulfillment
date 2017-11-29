@@ -40,12 +40,10 @@ public class OrderLineItem extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
-  @Getter
   @Setter
   private Order order;
 
   @Getter
-  @Setter
   @Type(type = UUID_TYPE)
   private UUID orderableId;
 
@@ -60,7 +58,6 @@ public class OrderLineItem extends BaseEntity {
   private Long filledQuantity;
 
   @Getter
-  @Setter
   private Long packsToShip;
 
   /**

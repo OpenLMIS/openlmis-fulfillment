@@ -60,7 +60,7 @@ public class Order extends BaseEntity {
   public static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
   public static final String PROGRAM_ID = "programId";
-  public static final String STATUS = "status";
+  public static final String ORDER_STATUS = "status";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String CREATED_DATE = "createdDate";
 

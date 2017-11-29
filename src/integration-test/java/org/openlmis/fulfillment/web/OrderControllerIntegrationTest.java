@@ -31,7 +31,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.domain.Order.STATUS;
+import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
@@ -97,7 +97,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String PRINT_URL = ID_URL + "/print";
   private static final String POD_URL = ID_URL + "/proofOfDeliveries";
 
-  private static final String ACCESS_TOKEN = "access_token";
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
   private static final String PROCESSING_PERIOD = "processingPeriod";
@@ -395,7 +394,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
-        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
@@ -435,8 +434,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     )).willReturn(Lists.newArrayList(firstOrder, secondOrder));
 
     PageImplRepresentation response = restAssured.given()
-        .queryParam(STATUS, firstOrder.getStatus().toString())
-        .queryParam(STATUS, secondOrder.getStatus().toString())
+        .queryParam(ORDER_STATUS, firstOrder.getStatus().toString())
+        .queryParam(ORDER_STATUS, secondOrder.getStatus().toString())
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
@@ -494,7 +493,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
-        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
@@ -547,7 +546,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
-        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_START_DATE, "2017-01-01")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
@@ -601,7 +600,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
-        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_END_DATE, "2017-01-31")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
@@ -655,7 +654,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
-        .queryParam(STATUS, READY_TO_PACK.toString())
+        .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_START_DATE, "2017-01-01")
         .queryParam(PERIOD_END_DATE, "2017-01-31")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -697,7 +696,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
-        .queryParam(STATUS, "abc")
+        .queryParam(ORDER_STATUS, "abc")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
         .get(SEARCH_URL)
