@@ -19,7 +19,7 @@ import static org.openlmis.fulfillment.domain.Order.CREATED_DATE;
 import static org.openlmis.fulfillment.domain.Order.PROCESSING_PERIOD_ID;
 import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
 import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
-import static org.openlmis.fulfillment.domain.Order.STATUS;
+import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.Order.SUPPLYING_FACILITY_ID;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -66,7 +66,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
     predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
-    predicate = isOneOf(STATUS, statuses, root, predicate, builder);
+    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
 
     query.where(predicate);
     query.orderBy(builder.desc(root.get(CREATED_DATE)));
