@@ -196,28 +196,6 @@ public class Order extends BaseEntity {
     forEachStatusChange(change -> change.setOrder(this));
   }
 
-  /**
-   * Copy values of attributes into new or updated Order.
-   *
-   * @param order Order with new values.
-   */
-  public void updateFrom(Order order) {
-    this.externalId = order.externalId;
-    this.emergency = order.emergency;
-    this.facilityId = order.facilityId;
-    this.processingPeriodId = order.processingPeriodId;
-    this.createdById = order.createdById;
-    this.programId = order.programId;
-    this.requestingFacilityId = order.requestingFacilityId;
-    this.receivingFacilityId = order.receivingFacilityId;
-    this.supplyingFacilityId = order.supplyingFacilityId;
-    this.orderCode = order.orderCode;
-    this.status = order.status;
-    this.quotedCost = order.quotedCost;
-    this.statusChanges = order.statusChanges;
-    this.updateDetails = order.updateDetails;
-  }
-
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));

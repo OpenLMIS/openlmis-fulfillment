@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.domain;
 
 import static org.junit.Assert.assertEquals;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -99,5 +100,10 @@ public class OrderNumberConfigurationTest {
         new OrderNumberConfiguration(PREFIX, true, false, false);
 
     orderNumberConfiguration.formatOrderNumber(null, program, UUID_STRING);
+  }
+
+  @Test
+  public void equalsContract() throws Exception {
+    EqualsVerifier.forClass(OrderNumberConfiguration.class).withIgnoredFields("id").verify();
   }
 }
