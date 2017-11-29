@@ -41,8 +41,6 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -69,7 +67,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -77,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -126,9 +122,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private AuthenticationHelper authenticationHelper;
 
   @Autowired
   private DateHelper dateHelper;
@@ -367,9 +360,9 @@ public class OrderController extends BaseController {
 
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
-    UserDto currentUser = authenticationHelper.getCurrentUser();
     Order order = Order.newInstance(orderDto,
-        new UpdateDetails(currentUser.getId(), dateHelper.getCurrentDateTimeWithSystemZone()));
+        new UpdateDetails(orderDto.getLastUpdaterId(),
+            dateHelper.getCurrentDateTimeWithSystemZone()));
 
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to create order");
