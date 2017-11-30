@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static org.openlmis.fulfillment.service.ResourceNames.USERS;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,6 +47,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.Exporter {
+
+  @Setter
+  private String serviceUrl;
 
   @Getter
   @Setter
@@ -112,7 +117,7 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   private List<StatusChangeDto> statusChanges;
 
   @Getter
-  private UUID lastUpdaterId;
+  private ObjectReferenceDto lastUpdater;
 
   @Getter
   private ZonedDateTime lastUpdatedDate;
@@ -135,13 +140,20 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   }
 
   @Override
+  public UpdateDetails getUpdateDetails() {
+    return new UpdateDetails(lastUpdater.getId(), lastUpdatedDate);
+  }
+
+  @Override
   public void setUpdateDetails(UpdateDetails updateDetails) {
     updateDetails.export(this);
   }
 
   @Override
   public void setUpdaterId(UUID updaterId) {
-    this.lastUpdaterId = updaterId;
+    if (updaterId != null) {
+      this.lastUpdater = ObjectReferenceDto.create(updaterId, serviceUrl, USERS);
+    }
   }
 
   @Override
@@ -175,7 +187,7 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
 
       orderDto.setOrderLineItems(order.getOrderLineItems().stream()
           .map(item -> OrderLineItemDto.newInstance(item, exporter, orderables))
-              .collect(Collectors.toList()));
+          .collect(Collectors.toList()));
     }
 
     if (order.getStatusMessages() != null) {
@@ -185,7 +197,7 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
 
     if (order.getStatusChanges() != null) {
       orderDto.setStatusChanges(order.getStatusChanges().stream()
-              .map(StatusChangeDto::newInstance).collect(Collectors.toList()));
+          .map(StatusChangeDto::newInstance).collect(Collectors.toList()));
     }
 
     return orderDto;
@@ -197,8 +209,11 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
    */
   @JsonIgnore
   public StatusChangeDto getStatusChangeByStatus(ExternalStatus status) {
-    return Optional.ofNullable(statusChanges).orElse(new ArrayList<>()).stream()
-            .filter(statusChange -> status.equals(statusChange.getStatus())
-    ).findFirst().orElse(null);
+    return Optional.ofNullable(statusChanges)
+        .orElse(new ArrayList<>())
+        .stream()
+        .filter(statusChange -> status.equals(statusChange.getStatus()))
+        .findFirst()
+        .orElse(null);
   }
 }

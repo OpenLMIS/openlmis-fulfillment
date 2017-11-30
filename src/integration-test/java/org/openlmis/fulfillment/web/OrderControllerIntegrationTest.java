@@ -731,7 +731,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Order savedOrder = orderCaptor.getValue();
     assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
 
-    UpdateDetails updateDetails = new UpdateDetails(firstOrderDto.getLastUpdaterId(),
+    UpdateDetails updateDetails = new UpdateDetails(firstOrderDto.getLastUpdater().getId(),
         firstOrderDto.getLastUpdatedDate());
     assertEquals(savedOrder.getUpdateDetails(), updateDetails);
 

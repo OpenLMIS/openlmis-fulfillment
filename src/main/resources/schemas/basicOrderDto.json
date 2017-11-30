@@ -73,9 +73,10 @@
       "type": "number",
       "title": "quotedCost"
     },
-    "lastUpdaterId": {
-      "type": ["string", "null"],
-      "title": "lastUpdaterId"
+    "lastUpdater": {
+      "type": ["object", "null"],
+      "$ref": "referenceObjectDto.json",
+      "title": "last updater"
     },
     "lastUpdatedDate": {
       "type": ["string", "null"],

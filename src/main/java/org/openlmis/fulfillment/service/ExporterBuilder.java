@@ -29,6 +29,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,11 +57,15 @@ public class ExporterBuilder {
   @Autowired
   private OrderableReferenceDataService products;
 
+  @Value("${service.url}")
+  private String serviceUrl;
+
   /**
    * Copy data from the given order to the instance that implemenet {@link Order.Exporter}
    * interface.
    */
   public void export(Order order, Order.Exporter exporter) {
+    exporter.setServiceUrl(serviceUrl);
     exporter.setId(order.getId());
     exporter.setExternalId(order.getExternalId());
     exporter.setEmergency(order.getEmergency());

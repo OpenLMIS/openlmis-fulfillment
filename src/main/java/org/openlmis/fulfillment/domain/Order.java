@@ -217,6 +217,16 @@ public class Order extends BaseEntity {
    * @param importer instance of {@link Order.Importer}
    * @return new instance of order.
    */
+  public static Order newInstance(Importer importer) {
+    return newInstance(importer, importer.getUpdateDetails());
+  }
+
+  /**
+   * Create a new instance of Order based on data from {@link Order.Importer}
+   *
+   * @param importer instance of {@link Order.Importer}
+   * @return new instance of order.
+   */
   public static Order newInstance(Importer importer, UpdateDetails updateDetails) {
     Order order = new Order(updateDetails);
     order.setId(importer.getId());
@@ -306,6 +316,8 @@ public class Order extends BaseEntity {
     void setStatusChanges(List<StatusChangeDto> statusChanges);
 
     void setUpdateDetails(UpdateDetails updateDetails);
+
+    void setServiceUrl(String serviceUrl);
   }
 
   public interface Importer {
@@ -342,5 +354,7 @@ public class Order extends BaseEntity {
     UserDto getCreatedBy();
 
     List<StatusChange.Importer> getStatusChanges();
+
+    UpdateDetails getUpdateDetails();
   }
 }

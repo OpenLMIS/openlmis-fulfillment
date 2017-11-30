@@ -32,10 +32,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderLineItemDto;
-
+import org.springframework.test.util.ReflectionTestUtils;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +46,8 @@ import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExporterBuilderTest {
+
+  private static final String SERVICE_URL = "localhost";
 
   @Mock
   private OrderableReferenceDataService products;
@@ -54,15 +59,35 @@ public class ExporterBuilderTest {
   private ArgumentCaptor<Set<UUID>> argumentCaptor;
 
   private UUID orderableId = UUID.randomUUID();
+  private UUID lastUpdaterId = UUID.randomUUID();
   private OrderableDto orderableDto = mock(OrderableDto.class);
   private Order order = mock(Order.class);
   private OrderLineItem orderLineItem = mock(OrderLineItem.class);
+  private ZonedDateTime updatedDate = ZonedDateTime.now();
 
   @Before
   public void setUp() {
     when(orderLineItem.getOrderableId()).thenReturn(orderableId);
     when(orderableDto.getId()).thenReturn(orderableId);
     when(order.getOrderLineItems()).thenReturn(Collections.singletonList(orderLineItem));
+
+    ReflectionTestUtils.setField(exportBuilder, "serviceUrl", SERVICE_URL);
+  }
+
+  @Test
+  public void shouldExportOrderWithReferenceDto() {
+    when(order.getUpdateDetails())
+        .thenReturn(new UpdateDetails(lastUpdaterId, updatedDate));
+
+    OrderDto exporter = new OrderDto();
+    exportBuilder.export(order, exporter);
+
+    assertEquals(lastUpdaterId, exporter.getLastUpdater().getId());
+    assertEquals(
+        SERVICE_URL + ResourceNames.getUsersPath() + lastUpdaterId,
+        exporter.getLastUpdater().getHref())  ;
+
+    assertEquals(updatedDate, exporter.getLastUpdatedDate());
   }
 
   @Test

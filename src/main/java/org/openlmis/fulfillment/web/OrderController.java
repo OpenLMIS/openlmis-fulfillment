@@ -361,7 +361,7 @@ public class OrderController extends BaseController {
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
     Order order = Order.newInstance(orderDto,
-        new UpdateDetails(orderDto.getLastUpdaterId(),
+        new UpdateDetails(orderDto.getLastUpdater().getId(),
             dateHelper.getCurrentDateTimeWithSystemZone()));
 
     if (!authentication.isClientOnly()) {
