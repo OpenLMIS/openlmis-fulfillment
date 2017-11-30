@@ -209,8 +209,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .withReceivingFacilityId(facility)
         .withSupplyingFacilityId(supplyingFacility)
         .withLineItems(lineItems)
-        .withUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
-            dateHelper.getCurrentDateTimeWithSystemZone()))
+        .withUpdateDetails(new UpdateDetails(UUID.randomUUID(),
+            ZonedDateTime.now()))
         .build();
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
@@ -731,8 +731,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Order savedOrder = orderCaptor.getValue();
     assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
 
-    UpdateDetails updateDetails = new UpdateDetails(firstOrderDto.getLastUpdater().getId(),
-        firstOrderDto.getLastUpdatedDate());
+    UpdateDetails updateDetails = new UpdateDetails(INITIAL_USER_ID,
+        dateHelper.getCurrentDateTimeWithSystemZone());
     assertEquals(savedOrder.getUpdateDetails(), updateDetails);
 
     Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();

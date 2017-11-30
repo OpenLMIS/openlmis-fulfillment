@@ -23,11 +23,13 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.Type;
 
 @Embeddable
 @AllArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class UpdateDetails {
 
   @Type(type = UUID_TYPE)
