@@ -13,24 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.testutils;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.Test;
-import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
+import org.openlmis.fulfillment.domain.UpdateDetails;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
-public class UpdateDetailsTest {
+public class UpdateDetailsDataBuilder {
 
-  @Test
-  public void equalsContract() throws Exception {
-    EqualsVerifier.forClass(UpdateDetails.class).verify();
+  private UUID updaterId = UUID.randomUUID();
+  private ZonedDateTime updatedDate = ZonedDateTime.parse("2016-12-03T09:15:30Z[UTC]");
+
+  /**
+   * Builds instance of {@link UpdateDetails}.
+   */
+  public UpdateDetails build() {
+    return new UpdateDetails(updaterId, updatedDate);
   }
-
-  @Test
-  public void shouldImplementToString() {
-    UpdateDetails updateDetails = new UpdateDetailsDataBuilder().build();
-    ToStringTestUtils.verify(UpdateDetails.class, updateDetails);
-  }
-
 }

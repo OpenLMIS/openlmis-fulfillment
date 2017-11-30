@@ -13,24 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.testutils;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.Test;
-import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
+import be.joengenduvel.java.verifiers.ToStringVerifier;
 
-public class UpdateDetailsTest {
+public class ToStringTestUtils {
 
-  @Test
-  public void equalsContract() throws Exception {
-    EqualsVerifier.forClass(UpdateDetails.class).verify();
+  /**
+   * Checks if given class has proper toString method.
+   */
+  public static <T> void verify(Class<T> clazz, T object) {
+    ToStringVerifier
+        .forClass(clazz)
+        .ignore("$jacocoData") // external library is checking for this field, has to be ignored
+        .containsAllPrivateFields(object);
   }
-
-  @Test
-  public void shouldImplementToString() {
-    UpdateDetails updateDetails = new UpdateDetailsDataBuilder().build();
-    ToStringTestUtils.verify(UpdateDetails.class, updateDetails);
-  }
-
 }
