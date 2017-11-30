@@ -21,21 +21,21 @@ import static org.openlmis.fulfillment.service.ResourceNames.SEPARATOR;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import java.util.UUID;
 
 @EqualsAndHashCode
 public class ObjectReferenceDto {
 
   @Getter
-  @Setter
-  private UUID id;
+  private final UUID id;
 
   @Getter
-  @Setter
-  private String href;
+  private final String href;
 
-  private ObjectReferenceDto() {}
+  private ObjectReferenceDto() {
+    this.id = null;
+    this.href = null;
+  }
 
   /**
    * Returns new object reference.
@@ -43,7 +43,7 @@ public class ObjectReferenceDto {
    * @param id   object id
    */
   public ObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
-    setId(id);
+    this.id = id;
     this.href = joinWith(SEPARATOR, serviceUrl + BASE_PATH, resourceName, id);
   }
 

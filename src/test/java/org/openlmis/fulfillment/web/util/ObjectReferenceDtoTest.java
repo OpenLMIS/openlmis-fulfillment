@@ -24,8 +24,8 @@ public class ObjectReferenceDtoTest {
   @Test
   public void equalsContract() {
     EqualsVerifier.forClass(ObjectReferenceDto.class)
-        .suppress(Warning.STRICT_INHERITANCE) // to prevent check for equals method being final
-        .suppress(Warning.NONFINAL_FIELDS) // to prevent check for fields being final
+        // ObjectReferenceDto cannot be final because it can be extended
+        .suppress(Warning.STRICT_INHERITANCE)
         .verify();
   }
 }
