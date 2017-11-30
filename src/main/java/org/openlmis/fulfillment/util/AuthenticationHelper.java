@@ -22,6 +22,7 @@ import org.openlmis.fulfillment.service.referencedata.RightReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,11 +42,13 @@ public class AuthenticationHelper {
    * @throws AuthenticationException if user cannot be found.
    */
   public UserDto getCurrentUser() {
-    String username =
-        (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    OAuth2Authentication authentication =
+        (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+    String username = (String) authentication.getPrincipal();
+
     UserDto user = userReferenceDataService.findUser(username);
 
-    if (user == null) {
+    if (!authentication.isClientOnly() && user == null) {
       throw new AuthenticationException("User with name \"" + username + "\" not found.");
     }
 

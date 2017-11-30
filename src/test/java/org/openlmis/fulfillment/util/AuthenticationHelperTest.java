@@ -34,9 +34,9 @@ import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.RightReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthenticationHelperTest {
@@ -50,9 +50,10 @@ public class AuthenticationHelperTest {
   @InjectMocks
   private AuthenticationHelper authenticationHelper;
 
+  private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
+
   @Before
   public void setUp() {
-    Authentication authentication = mock(Authentication.class);
     when(authentication.getPrincipal()).thenReturn("username");
 
     SecurityContext securityContext = mock(SecurityContext.class);
@@ -77,10 +78,24 @@ public class AuthenticationHelperTest {
   @Test(expected = AuthenticationException.class)
   public void shouldThrowExceptionIfUserDoesNotExist() {
     // given
+    when(authentication.isClientOnly()).thenReturn(false);
     when(userReferenceDataService.findUser(any(String.class))).thenReturn(null);
 
     // when
     authenticationHelper.getCurrentUser();
+  }
+
+  @Test
+  public void shouldNotThrowExceptionIfAuthenticationIsClientOnly() {
+    // given
+    when(authentication.isClientOnly()).thenReturn(true);
+    when(userReferenceDataService.findUser(any(String.class))).thenReturn(null);
+
+    // when
+    UserDto user = authenticationHelper.getCurrentUser();
+
+    //then
+    assertEquals(null, user);
   }
 
   @Test

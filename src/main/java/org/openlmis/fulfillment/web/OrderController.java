@@ -41,6 +41,8 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -125,6 +127,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private DateHelper dateHelper;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
 
   /**
    * Allows creating new orders.
@@ -360,9 +365,11 @@ public class OrderController extends BaseController {
 
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
+
     Order order = Order.newInstance(orderDto,
-        new UpdateDetails(orderDto.getLastUpdater().getId(),
-            dateHelper.getCurrentDateTimeWithSystemZone()));
+        new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
 
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to create order");
