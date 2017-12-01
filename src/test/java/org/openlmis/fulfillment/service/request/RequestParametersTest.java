@@ -29,17 +29,17 @@ public class RequestParametersTest {
 
   @Test
   public void shouldConstructFromMap() throws Exception {
-    RequestParameters params = RequestParameters.init().set("a", "b");
-    assertThat(toMap(params), hasEntry("a", "b"));
-  }
-
-  @Test
-  public void shouldSetParameter() throws Exception {
     HashMap<String, Object> map = new HashMap<>();
     map.put("a", "b");
 
     RequestParameters requestParameters = RequestParameters.of(map);
     assertThat(toMap(requestParameters), hasEntry("a", "b"));
+  }
+
+  @Test
+  public void shouldSetParameter() throws Exception {
+    RequestParameters params = RequestParameters.init().set("a", "b");
+    assertThat(toMap(params), hasEntry("a", "b"));
   }
 
   @Test
