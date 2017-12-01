@@ -63,6 +63,7 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -213,8 +214,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .withReceivingFacilityId(facility)
         .withSupplyingFacilityId(supplyingFacility)
         .withLineItems(lineItems)
-        .withUpdateDetails(new UpdateDetails(UUID.randomUUID(),
-            ZonedDateTime.now()))
+        .withUpdateDetails(new UpdateDetailsDataBuilder()
+            .withUpdaterId(UUID.randomUUID())
+            .withUpdatedDate(ZonedDateTime.now())
+            .build())
         .build();
 
     given(orderRepository.findOne(order.getId())).willReturn(order);
@@ -735,8 +738,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Order savedOrder = orderCaptor.getValue();
     assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
 
-    UpdateDetails updateDetails = new UpdateDetails(INITIAL_USER_ID,
-        dateHelper.getCurrentDateTimeWithSystemZone());
+    UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
+        .withUpdaterId(INITIAL_USER_ID)
+        .withUpdatedDate(dateHelper.getCurrentDateTimeWithSystemZone())
+        .build();
     assertEquals(savedOrder.getUpdateDetails(), updateDetails);
 
     Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();

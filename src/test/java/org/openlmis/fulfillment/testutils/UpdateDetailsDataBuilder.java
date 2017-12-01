@@ -24,6 +24,16 @@ public class UpdateDetailsDataBuilder {
   private UUID updaterId = UUID.randomUUID();
   private ZonedDateTime updatedDate = ZonedDateTime.parse("2016-12-03T09:15:30Z[UTC]");
 
+  public UpdateDetailsDataBuilder withUpdaterId(UUID updaterId) {
+    this.updaterId = updaterId;
+    return this;
+  }
+
+  public UpdateDetailsDataBuilder withUpdatedDate(ZonedDateTime updatedDate) {
+    this.updatedDate = updatedDate;
+    return this;
+  }
+
   /**
    * Builds instance of {@link UpdateDetails}.
    */
