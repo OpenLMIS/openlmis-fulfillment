@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service;
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
+import org.springframework.web.client.HttpStatusCodeException;
 
 /**
  * Signals we were unable to retrieve reference data
@@ -28,6 +29,16 @@ public class DataRetrievalException extends RuntimeException {
   private final String resource;
   private final HttpStatus status;
   private final String response;
+
+  /**
+   * Constructs the exception.
+   *
+   * @param resource the resource that we were trying to retrieve
+   * @param ex       exception with status code and response body from server
+   */
+  DataRetrievalException(String resource, HttpStatusCodeException ex) {
+    this(resource, ex.getStatusCode(), ex.getResponseBodyAsString());
+  }
 
   /**
    * Constructs the exception.

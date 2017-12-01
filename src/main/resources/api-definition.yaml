@@ -108,6 +108,13 @@ traits:
                   type: integer
                   required: false
                   repeat: false
+    - expandable:
+          queryParameters:
+              expand:
+                  description: Allows to specify which reference fields should contain an expanded representation.
+                  type: string
+                  required: false
+                  repeat: true
 
 resourceTypes:
     - collection:
@@ -197,7 +204,7 @@ resourceTypes:
                   required: true
                   repeat: false
           get:
-              is: [ secured ]
+              is: [ secured, expandable ]
               description: Get chosen order.
               responses:
                   200:

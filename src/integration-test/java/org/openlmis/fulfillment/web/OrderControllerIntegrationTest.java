@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,7 +43,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -57,13 +59,14 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -73,9 +76,6 @@ import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -109,6 +109,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String PERIOD_END_DATE = "periodEndDate";
 
   private static final String CSV = "csv";
+  private static final String EXPAND = "expand";
+  private static final String LAST_UPDATER = "lastUpdater";
 
   private static final UUID PROGRAM_ID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
   private static final UUID PERIOD_ID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
@@ -137,6 +139,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @MockBean
+  private ObjReferenceExpander objReferenceExpander;
 
   @Mock
   private DateHelper dateHelper;
@@ -832,6 +837,25 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().as(OrderDto.class);
 
     assertTrue(orderRepository.exists(response.getId()));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetOrderWithExpandedLastUpdater() {
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam(ID, firstOrder.getId())
+        .queryParam(EXPAND, LAST_UPDATER)
+        .when()
+        .get(ID_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto.class);
+
+    ArgumentCaptor<OrderDto> captor = ArgumentCaptor.forClass(OrderDto.class);
+    verify(objReferenceExpander).expandDto(captor.capture(), eq(singleton(LAST_UPDATER)));
+    assertEquals(firstOrder.getId(), captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

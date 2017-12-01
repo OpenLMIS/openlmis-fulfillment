@@ -91,9 +91,7 @@ public abstract class BaseCommunicationService<T> {
   }
 
   protected DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
-    return new DataRetrievalException(
-            getResultClass().getSimpleName(), ex.getStatusCode(), ex.getResponseBodyAsString()
-    );
+    return new DataRetrievalException(getResultClass().getSimpleName(), ex);
   }
 
   protected <E> HttpEntity<E> createEntity(E payload) {

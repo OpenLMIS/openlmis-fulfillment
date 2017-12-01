@@ -31,6 +31,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
+import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSearchParams;
@@ -74,6 +75,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -131,6 +133,9 @@ public class OrderController extends BaseController {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
+  @Autowired
+  private ObjReferenceExpander objReferenceExpander;
+
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -181,16 +186,20 @@ public class OrderController extends BaseController {
    * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get
+   * @param expand a set of field names to expand
    * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId) {
+  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId,
+                                           @RequestParam(required = false) Set<String> expand) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
       permissionService.canViewOrder(order);
-      return new ResponseEntity<>(OrderDto.newInstance(order, exporter), HttpStatus.OK);
+      OrderDto orderDto = OrderDto.newInstance(order, exporter);
+      objReferenceExpander.expandDto(orderDto, expand);
+      return new ResponseEntity<>(orderDto, HttpStatus.OK);
     }
   }
 

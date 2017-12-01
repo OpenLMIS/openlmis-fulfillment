@@ -117,7 +117,7 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   private List<StatusChangeDto> statusChanges;
 
   @Getter
-  private ObjectReferenceDto lastUpdater;
+  private UserObjectReferenceDto lastUpdater;
 
   @Getter
   private ZonedDateTime lastUpdatedDate;
@@ -140,11 +140,13 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   }
 
   @Override
+  @JsonIgnore
   public UpdateDetails getUpdateDetails() {
     return new UpdateDetails(lastUpdater.getId(), lastUpdatedDate);
   }
 
   @Override
+  @JsonIgnore
   public void setUpdateDetails(UpdateDetails updateDetails) {
     updateDetails.export(this);
   }
@@ -152,11 +154,12 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   @Override
   public void setUpdaterId(UUID updaterId) {
     if (updaterId != null) {
-      this.lastUpdater = ObjectReferenceDto.create(updaterId, serviceUrl, USERS);
+      this.lastUpdater = UserObjectReferenceDto.create(updaterId, serviceUrl, USERS);
     }
   }
 
   @Override
+  @JsonIgnore
   public void setUpdatedDate(ZonedDateTime updatedDate) {
     this.lastUpdatedDate = updatedDate;
   }
