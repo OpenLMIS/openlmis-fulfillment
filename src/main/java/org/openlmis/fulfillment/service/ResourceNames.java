@@ -18,12 +18,11 @@ package org.openlmis.fulfillment.service;
 import org.apache.commons.lang3.StringUtils;
 
 public class ResourceNames {
-  private ResourceNames() {}
-
   public static final String SEPARATOR = "/";
-
   public static final String BASE_PATH = "/api";
   public static final String USERS = "users";
+
+  private ResourceNames() {}
 
   public static String getUsersPath() {
     return getPath(USERS);
