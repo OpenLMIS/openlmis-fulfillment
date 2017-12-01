@@ -66,6 +66,7 @@ public class AuthenticationHelperTest {
   public void shouldReturnUser() {
     // given
     UserDto userMock = mock(UserDto.class);
+    when(authentication.isClientOnly()).thenReturn(false);
     when(userReferenceDataService.findUser("username")).thenReturn(userMock);
 
     // when

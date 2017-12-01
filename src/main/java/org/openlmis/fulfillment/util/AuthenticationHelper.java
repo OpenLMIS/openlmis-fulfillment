@@ -45,11 +45,14 @@ public class AuthenticationHelper {
     OAuth2Authentication authentication =
         (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
     String username = (String) authentication.getPrincipal();
+    UserDto user = null;
 
-    UserDto user = userReferenceDataService.findUser(username);
+    if (!authentication.isClientOnly()) {
+      user = userReferenceDataService.findUser(username);
 
-    if (!authentication.isClientOnly() && user == null) {
-      throw new AuthenticationException("User with name \"" + username + "\" not found.");
+      if (user == null) {
+        throw new AuthenticationException("User with name \"" + username + "\" not found.");
+      }
     }
 
     return user;
