@@ -13,18 +13,17 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web;
+package org.openlmis.fulfillment.web.util;
 
-import org.openlmis.fulfillment.service.FulfillmentException;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 
-public class ValidationException extends FulfillmentException {
+public class UserReferenceDtoTest {
 
-  public ValidationException(String messageKey, String... params) {
-    super(messageKey, params);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(UserObjectReferenceDto.class)
+        .withRedefinedSuperclass()
+        .verify();
   }
-
-  public ValidationException(Throwable cause, String messageKey, String... params) {
-    super(cause, messageKey, params);
-  }
-
 }

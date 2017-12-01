@@ -15,29 +15,30 @@
 
 package org.openlmis.fulfillment.service;
 
-import org.apache.commons.codec.binary.Base64;
+import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
+
+import org.openlmis.fulfillment.service.request.RequestHeaders;
+import org.openlmis.fulfillment.service.request.RequestHelper;
+import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
 
 public abstract class BaseCommunicationService<T> {
-  private static final String ACCESS_TOKEN = "access_token";
-
   protected RestOperations restTemplate = new RestTemplate();
+
+  @Autowired
+  private AuthService authService;
 
   protected abstract String getServiceUrl();
 
@@ -47,56 +48,16 @@ public abstract class BaseCommunicationService<T> {
 
   protected abstract Class<T[]> getArrayResultClass();
 
-  @Value("${auth.server.clientId}")
-  private String clientId;
-
-  @Value("${auth.server.clientSecret}")
-  private String clientSecret;
-
-  @Value("${auth.server.authorizationUrl}")
-  private String authorizationUrl;
-
-  protected String obtainAccessToken() {
-    String plainCreds = clientId + ":" + clientSecret;
-    byte[] plainCredsBytes = plainCreds.getBytes();
-    byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-    String base64Creds = new String(base64CredsBytes);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + base64Creds);
-
-    HttpEntity<String> request = new HttpEntity<>(headers);
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("grant_type", "client_credentials");
-
-    ResponseEntity<?> response = restTemplate.exchange(
-        buildUri(authorizationUrl, params), HttpMethod.POST, request, Object.class);
-
-
-    return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
-  }
-
   protected URI buildUri(String url) {
-    return buildUri(url, null);
+    return createUri(url);
   }
 
-  protected URI buildUri(String url, Map<String, ?> params) {
-    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
-
-    if (params != null) {
-      params.forEach(builder::queryParam);
-    }
-
-    return builder.build(true).toUri();
+  protected URI buildUri(String url, Map<String, Object> params) {
+    return createUri(url, RequestParameters.of(params));
   }
 
   public void setRestTemplate(RestOperations template) {
     this.restTemplate = template;
-  }
-
-  protected Page<T> getPage(String resourceUrl, Map<String, Object> parameters) {
-    return getPage(resourceUrl, parameters, null, HttpMethod.GET, getResultClass());
   }
 
   /**
@@ -115,12 +76,9 @@ public abstract class BaseCommunicationService<T> {
                                 HttpMethod method, Class<P> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
-    Map<String, Object> params = new HashMap<>();
-    params.putAll(parameters);
-
     try {
       ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
-              buildUri(url, params),
+              buildUri(url, parameters),
               method,
               createEntity(payload),
               new DynamicPageTypeReference<>(type)
@@ -142,17 +100,15 @@ public abstract class BaseCommunicationService<T> {
     if (payload == null) {
       return createEntity();
     } else {
-      return new HttpEntity<>(payload, createHeadersWithAuth());
+      return RequestHelper.createEntity(payload, createHeadersWithAuth());
     }
   }
 
-  protected HttpEntity createEntity() {
-    return new HttpEntity(createHeadersWithAuth());
+  protected  <E> HttpEntity<E> createEntity() {
+    return RequestHelper.createEntity(createHeadersWithAuth());
   }
 
-  private HttpHeaders createHeadersWithAuth() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + obtainAccessToken());
-    return headers;
+  private RequestHeaders createHeadersWithAuth() {
+    return RequestHeaders.init().setAuth(authService.obtainAccessToken());
   }
 }

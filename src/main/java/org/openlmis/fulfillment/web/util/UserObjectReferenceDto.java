@@ -13,18 +13,29 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web;
+package org.openlmis.fulfillment.web.util;
 
-import org.openlmis.fulfillment.service.FulfillmentException;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import java.util.UUID;
 
-public class ValidationException extends FulfillmentException {
+@EqualsAndHashCode(callSuper = true)
+public final class UserObjectReferenceDto extends ObjectReferenceDto {
 
-  public ValidationException(String messageKey, String... params) {
-    super(messageKey, params);
+  @Getter
+  private final String username;
+
+  private UserObjectReferenceDto() {
+    this.username = null;
   }
 
-  public ValidationException(Throwable cause, String messageKey, String... params) {
-    super(cause, messageKey, params);
+  private UserObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
+    super(id, serviceUrl, resourceName);
+    this.username = null;
+  }
+
+  public static UserObjectReferenceDto create(UUID id, String serviceUrl, String resourceName) {
+    return new UserObjectReferenceDto(id, serviceUrl, resourceName);
   }
 
 }

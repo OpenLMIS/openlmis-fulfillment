@@ -32,7 +32,7 @@ public class ObjectReferenceDto {
   @Getter
   private final String href;
 
-  private ObjectReferenceDto() {
+  protected ObjectReferenceDto() {
     this.id = null;
     this.href = null;
   }

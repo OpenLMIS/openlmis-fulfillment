@@ -15,8 +15,13 @@
 
 package org.openlmis.fulfillment.i18n;
 
+import java.util.Arrays;
+
 public abstract class MessageKeys {
+  private static final String DELIMITER = ".";
+
   private static final String SERVICE_PREFIX = "fulfillment";
+  private static final String SERVICE_ERROR_PREFIX = join(SERVICE_PREFIX, "error");
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
   private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
 
@@ -24,6 +29,8 @@ public abstract class MessageKeys {
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
       + ".data-integrity-violation";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
+  public static final String ERROR_ENCODING =
+      join(SERVICE_ERROR_PREFIX, "encoding", "notSupported");
 
   public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
   public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
@@ -89,6 +96,16 @@ public abstract class MessageKeys {
       = "fulfillment.email.orderCreation.subject";
   public static final String FULFILLMENT_EMAIL_ORDER_CREATION_BODY
       = "fulfillment.email.orderCreation.body";
+
+  private static final String ERROR_DTO_EXPANSION = join(SERVICE_ERROR_PREFIX, "dtoExpansion");
+  public static final String ERROR_DTO_EXPANSION_CAST = join(ERROR_DTO_EXPANSION, "cast");
+  public static final String ERROR_DTO_EXPANSION_HREF = join(ERROR_DTO_EXPANSION, "href");
+  public static final String ERROR_DTO_EXPANSION_ASSIGNMENT = join(ERROR_DTO_EXPANSION,
+      "assignment");
+
+  protected static String join(String... params) {
+    return String.join(DELIMITER, Arrays.asList(params));
+  }
 
   private MessageKeys() {
     throw new UnsupportedOperationException();
