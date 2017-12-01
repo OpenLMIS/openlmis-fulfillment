@@ -769,8 +769,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     Order savedOrder = orderCaptor.getValue();
 
-    UpdateDetails updateDetails = new UpdateDetails(firstOrderDto.getLastUpdater().getId(),
-        firstOrderDto.getLastUpdatedDate());
+    UpdateDetails updateDetails = new UpdateDetails(INITIAL_USER_ID,
+        dateHelper.getCurrentDateTimeWithSystemZone());
     assertEquals(savedOrder.getUpdateDetails(), updateDetails);
   }
 
