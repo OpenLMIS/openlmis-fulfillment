@@ -17,13 +17,15 @@ package org.openlmis.fulfillment.web.util;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 public final class UserObjectReferenceDto extends ObjectReferenceDto {
 
   @Getter
-  private final String username;
+  @Setter
+  private String username;
 
   private UserObjectReferenceDto() {
     this.username = null;

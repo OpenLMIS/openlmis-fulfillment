@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web.util;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 public class UserReferenceDtoTest {
@@ -24,6 +25,8 @@ public class UserReferenceDtoTest {
   public void equalsContract() {
     EqualsVerifier.forClass(UserObjectReferenceDto.class)
         .withRedefinedSuperclass()
+        //ObjReferenceExpander require fields not to be final
+        .suppress(Warning.NONFINAL_FIELDS)
         .verify();
   }
 }
