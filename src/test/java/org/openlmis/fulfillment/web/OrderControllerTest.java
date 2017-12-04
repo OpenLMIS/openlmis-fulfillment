@@ -138,7 +138,6 @@ public class OrderControllerTest {
     when(orderNumberGenerator.generate(any())).thenReturn(ORDER_NUMBER);
     when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
 
-    orderDto.setUpdatedDate(dateHelper.getCurrentDateTimeWithSystemZone());
     orderDto.setUpdaterId(UUID.fromString("35316636-6264-6331-2d34-3933322d3462"));
 
     ReflectionTestUtils.setField(exporterBuilder, "serviceUrl", SERVICE_URL);
