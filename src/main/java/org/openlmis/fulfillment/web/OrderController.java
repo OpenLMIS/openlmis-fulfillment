@@ -57,7 +57,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -190,16 +189,17 @@ public class OrderController extends BaseController {
    * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
-  public ResponseEntity<OrderDto> getOrder(@PathVariable("id") UUID orderId,
-                                           @RequestParam(required = false) Set<String> expand) {
+  @ResponseBody
+  public OrderDto getOrder(@PathVariable("id") UUID orderId,
+                           @RequestParam(required = false) Set<String> expand) {
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      throw new OrderNotFoundException(orderId);
     } else {
       permissionService.canViewOrder(order);
       OrderDto orderDto = OrderDto.newInstance(order, exporter);
       objReferenceExpander.expandDto(orderDto, expand);
-      return new ResponseEntity<>(orderDto, HttpStatus.OK);
+      return orderDto;
     }
   }
 
