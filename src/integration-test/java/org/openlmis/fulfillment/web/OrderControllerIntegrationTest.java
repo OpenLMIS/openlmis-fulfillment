@@ -66,7 +66,6 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
-import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -149,9 +148,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Mock
   private ProofOfDelivery proofOfDelivery;
 
-  @Mock
-  private AuthenticationHelper authenticationHelper;
-
   private Order firstOrder = new Order();
   private Order secondOrder = new Order();
   private Order thirdOrder = new Order();
@@ -165,8 +161,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
         ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
-
-    ZonedDateTime current = dateHelper.getCurrentDateTimeWithSystemZone();
 
     firstOrder = createOrder(
         period1, UUID.randomUUID(), facility, facility, new BigDecimal("1.29"),
@@ -194,13 +188,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         Lists.newArrayList(firstOrder, secondOrder, thirdOrder)
     );
 
+    ZonedDateTime current = dateHelper.getCurrentDateTimeWithSystemZone();
+
+    UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
+        .withUpdaterId(INITIAL_USER_ID)
+        .withUpdatedDate(current)
+        .build();
+
     given(orderRepository.save(any(Order.class)))
         .willAnswer(new SaveAnswer<Order>() {
 
           @Override
           void extraSteps(Order obj) {
             obj.setCreatedDate(current);
-            obj.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID, current));
+            obj.setUpdateDetails(updateDetails);
           }
 
         });
@@ -752,36 +753,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();
     String expectedCode = "ORDER-" + generator.generate(savedOrder) + "R";
     assertEquals(expectedCode, savedOrder.getOrderCode());
-  }
-
-  @Test
-  public void shouldGetLastUpdaterIdFromDtoIfCurrentUserIsNull() {
-    when(authenticationHelper.getCurrentUser()).thenReturn(null);
-
-    firstOrder.getOrderLineItems().clear();
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrderDto = BasicOrderDto.newInstance(firstOrder, exporter);
-    firstOrderDto.setStatusChanges(sampleStatusChanges());
-
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON_VALUE)
-        .body(firstOrderDto)
-        .when()
-        .post(RESOURCE_URL)
-        .then()
-        .statusCode(201);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
-    verify(orderRepository).save(orderCaptor.capture());
-
-    Order savedOrder = orderCaptor.getValue();
-
-    UpdateDetails updateDetails = new UpdateDetails(INITIAL_USER_ID,
-        dateHelper.getCurrentDateTimeWithSystemZone());
-    assertEquals(savedOrder.getUpdateDetails(), updateDetails);
   }
 
   @Test
