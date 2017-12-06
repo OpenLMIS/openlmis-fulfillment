@@ -56,7 +56,7 @@
   {
     "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2",
     "externalId": "fbb8d966-e3d1-42e5-825f-f75dd63b9a0a",
-    "emergency": "false",
+    "emergency": "true",
     "createdDate": "2016-06-21T17:17:17",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
     "facilityId": "13037147-1769-4735-90a7-b9b310d128b8",
