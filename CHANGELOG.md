@@ -5,6 +5,10 @@ Improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order
 * [OLMIS-3608](https://openlmis.atlassian.net/browse/OLMIS-3608): Added possibility to extend last updater object in Order
 
+Bug fixes and improvements (backwards-compatible):
+* [OLMIS-3135](https://openlmis.atlassian.net/browse/OLMIS-3135): Handle API Key requests.
+  * For now all requests are blocked.
+
 Contract breaking changes:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
 
