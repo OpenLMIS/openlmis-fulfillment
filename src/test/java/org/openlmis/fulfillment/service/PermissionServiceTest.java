@@ -28,9 +28,6 @@ import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
-import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asApiKey;
-import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asClient;
-import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asService;
 
 import com.google.common.collect.Lists;
 
@@ -48,6 +45,7 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.security.core.context.SecurityContext;
@@ -113,9 +111,9 @@ public class PermissionServiceTest {
     securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
 
-    trustedClient = asService();
-    userClient = asClient("admin");
-    apiKeyClient = asApiKey();
+    trustedClient = new OAuth2AuthenticationDataBuilder().buildServiceAuthentication();
+    userClient = new OAuth2AuthenticationDataBuilder().buildUserAuthentication();
+    apiKeyClient = new OAuth2AuthenticationDataBuilder().buildApiKeyAuthentication();
 
     order.setCreatedById(userId);
     order.setProgramId(programId);
