@@ -27,6 +27,7 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
+@SuppressWarnings("PMD.TooManyMethods")
 public class PermissionService {
   static final String ORDERS_TRANSFER = "ORDERS_TRANSFER";
   static final String PODS_MANAGE = "PODS_MANAGE";
@@ -49,6 +51,9 @@ public class PermissionService {
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Value("${auth.server.clientId}")
+  private String serviceTokenClientId;
 
   public void canTransferOrder(Order order) {
     checkPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
@@ -96,11 +101,26 @@ public class PermissionService {
   }
 
   private boolean hasPermission(String rightName, UUID warehouse, boolean allowServiceTokens) {
-    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+    return hasPermission(rightName, warehouse, true, allowServiceTokens, false);
+  }
+
+  private boolean hasPermission(String rightName, UUID warehouse, boolean allowUserTokens,
+                                boolean allowServiceTokens, boolean allowApiKey) {
+    OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
+        .getContext()
         .getAuthentication();
-    if (authentication.isClientOnly()) {
-      return allowServiceTokens;
+
+    return authentication.isClientOnly()
+        ? checkServiceToken(allowServiceTokens, allowApiKey, authentication)
+        : checkUserToken(rightName, warehouse, allowUserTokens);
+  }
+
+  private boolean checkUserToken(String rightName, UUID warehouse,
+                                 boolean allowUserTokens) {
+    if (!allowUserTokens) {
+      return false;
     }
+
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result =  userReferenceDataService.hasRight(
@@ -108,6 +128,14 @@ public class PermissionService {
     );
 
     return null != result && isTrue(result.getResult());
+  }
+
+  private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
+                                    OAuth2Authentication authentication) {
+    String clientId = authentication.getOAuth2Request().getClientId();
+    boolean isServiceToken = serviceTokenClientId.equals(clientId);
+
+    return isServiceToken ? allowServiceTokens : allowApiKey;
   }
 
   private void checkPermission(String rightName, UUID warehouse, boolean

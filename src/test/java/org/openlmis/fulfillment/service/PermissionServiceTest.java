@@ -22,11 +22,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
-import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
+import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
+import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asApiKey;
+import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asClient;
+import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.asService;
 
 import com.google.common.collect.Lists;
 
@@ -46,11 +50,10 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.UUID;
 
@@ -96,19 +99,24 @@ public class PermissionServiceTest {
   private UUID systemSettingsManageRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private Order order =  new Order();
+  private Order order = new Order();
   private ProofOfDelivery proofOfDelivery;
   private SecurityContext securityContext;
   private OAuth2Authentication userClient;
   private OAuth2Authentication trustedClient;
+  private OAuth2Authentication apiKeyClient;
+
 
   @Before
   public void setUp() {
 
     securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
-    userClient = new OAuth2Authentication(mock(OAuth2Request.class), mock(Authentication.class));
-    trustedClient = new OAuth2Authentication(mock(OAuth2Request.class), null);
+
+    trustedClient = asService();
+    userClient = asClient("admin");
+    apiKeyClient = asApiKey();
+
     order.setCreatedById(userId);
     order.setProgramId(programId);
     order.setSupplyingFacilityId(facilityId);
@@ -136,6 +144,8 @@ public class PermissionServiceTest {
         fulfillmentOrdersEditRight);
     when(authenticationHelper.getRight(SYSTEM_SETTINGS_MANAGE)).thenReturn(
         systemSettingsManageRight);
+
+    ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
   }
 
   @Test
@@ -170,6 +180,15 @@ public class PermissionServiceTest {
     order.verify(authenticationHelper, never()).getRight(SYSTEM_SETTINGS_MANAGE);
     order.verify(userReferenceDataService, never()).hasRight(userId, systemSettingsManageRightId,
         null, null, null);
+  }
+
+  @Test
+  public void cannotManageSystemSettingsByApiKeyToken() {
+    when(securityContext.getAuthentication()).thenReturn(apiKeyClient);
+    expectException(SYSTEM_SETTINGS_MANAGE);
+
+    //If endpoint does not allow for service level token authorization, method will throw Exception.
+    permissionService.canManageSystemSettings();
   }
 
   @Test
