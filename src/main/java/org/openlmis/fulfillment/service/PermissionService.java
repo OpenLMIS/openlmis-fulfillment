@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service;
 
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.startsWith;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -54,6 +55,9 @@ public class PermissionService {
 
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
+
+  @Value("${auth.server.clientId.apiKey.prefix}")
+  private String apiKeyPrefix;
 
   public void canTransferOrder(Order order) {
     checkPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
@@ -133,9 +137,16 @@ public class PermissionService {
   private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
                                     OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
-    boolean isServiceToken = serviceTokenClientId.equals(clientId);
 
-    return isServiceToken ? allowServiceTokens : allowApiKey;
+    if (serviceTokenClientId.equals(clientId)) {
+      return allowServiceTokens;
+    }
+
+    if (startsWith(clientId, apiKeyPrefix)) {
+      return allowApiKey;
+    }
+
+    return false;
   }
 
   private void checkPermission(String rightName, UUID warehouse, boolean

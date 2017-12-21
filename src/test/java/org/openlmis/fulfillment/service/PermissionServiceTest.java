@@ -27,6 +27,7 @@ import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
+import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
 import com.google.common.collect.Lists;
@@ -144,6 +145,7 @@ public class PermissionServiceTest {
         systemSettingsManageRight);
 
     ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
+    ReflectionTestUtils.setField(permissionService, "apiKeyPrefix", API_KEY_PREFIX);
   }
 
   @Test
