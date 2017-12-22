@@ -59,6 +59,11 @@ schemas:
         }
   - transferProperties: !include schemas/transferProperties.json
 
+  - shipmentDraft: !include schemas/shipmentDraft.json
+  - shipmentDraftPage: !include schemas/shipmentDraftPage.json
+
+  - shipment: !include schemas/shipment.json
+
   - localizedMessage: !include schemas/localizedMessage.json
 
   - resultDto: !include schemas/resultDto.json
@@ -763,23 +768,185 @@ resourceTypes:
                         application/json:
                           schema: localizedMessage
       /search:
-              get:
-                  is: [ secured ]
-                  description: Find transfer properties by facility id.
-                  queryParameters:
-                      facility:
-                          displayName: facility
-                          description: facility ID
-                          type: string
-                          required: true
-                          repeat: false
-                  responses:
-                      200:
-                          body:
-                            application/json:
-                              schema: transferProperties
-                      403:
-                          body:
-                            application/json:
-                              schema: localizedMessage
-                      404:
+          get:
+              is: [ secured ]
+              description: Find transfer properties by facility id.
+              queryParameters:
+                  facility:
+                      displayName: facility
+                      description: facility ID
+                      type: string
+                      required: true
+                      repeat: false
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: transferProperties
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  404:
+  /shipmentDrafts:
+      post:
+          is: [ secured ]
+          description: Create a shipment draft. Only one draft can exists in system for given order.
+          body:
+              application/json:
+                schema: shipmentDraft
+          responses:
+              201:
+                  description: Draft crated.
+                  body:
+                    application/json:
+                      schema: shipmentDraft
+              400:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+              401:
+                  body:
+                    application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          put:
+              is: [ secured ]
+              description: Create or update shipment draft.
+              body:
+                  application/json:
+                    schema: shipmentDraft
+              responses:
+                  200:
+                      description: Draft saved.
+                      body:
+                        application/json:
+                          schema: shipmentDraft
+                  400:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  401:
+                      body:
+                        application/json:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+          get:
+              is: [ secured ]
+              description: Get chosen shipment draft.
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: shipmentDraft
+                  401:
+                      body:
+                        application/json:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  404:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+          delete:
+              is: [ secured ]
+              description: Delete chosen shipment draft.
+              responses:
+                  204:
+                  401:
+                      body:
+                        application/json:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  404:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+      get:
+          is: [ secured ]
+          description: Get shipment drafts.
+          queryParameters:
+              orderId:
+                  displayName: orderId
+                  description: order ID
+                  type: string
+                  required: true
+                  repeat: false
+          responses:
+              200:
+                  body:
+                    application/json:
+                      schema: shipmentDraftPage
+              401:
+                  body:
+                    application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+
+  /shipments:
+      post:
+          is: [ secured ]
+          description: Create a shipment.
+          body:
+              application/json:
+                schema: shipment
+          responses:
+              201:
+                  description: Shipment created.
+                  body:
+                    application/json:
+                      schema: shipment
+              400:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+              401:
+                  body:
+                    application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Get chosen shipment.
+              responses:
+                  200:
+                      body:
+                        application/json:
+                          schema: shipment
+                  401:
+                      body:
+                        application/json:
+                  403:
+                      body:
+                        application/json:
+                          schema: localizedMessage
+                  404:
+                      body:
+                        application/json:
+                          schema: localizedMessage

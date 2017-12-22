@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "ShipmentDraftLineItem",
+  "description": "A shipment draft line item",
+  "properties": {
+    "orderableId": {
+      "type": "string",
+      "title": "orderableId"
+    },
+    "lotId": {
+      "type": "string",
+      "title": "lotId"
+    },
+    "quantityFilled": {
+      "type": "integer",
+      "title": "quantityFilled"
+    }
+  },
+  "required": [
+    "orderableId"
+  ]
+}

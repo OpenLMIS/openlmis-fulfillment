@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "ShipmentLineItem",
+  "description": "A shipment line item",
+  "properties": {
+    "orderableId": {
+      "type": "string",
+      "title": "orderableId"
+    },
+    "lotId": {
+      "type": "string",
+      "title": "lotId"
+    },
+    "quantityShipped": {
+      "type": "integer",
+      "title": "quantityShipped"
+    }
+  },
+  "required": [
+    "orderableId",
+    "quantityShipped"
+  ]
+}

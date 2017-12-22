@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Shipment",
+  "description": "A shipment",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "order": {
+      "type": "object",
+      "$ref": "orderDto.json",
+      "title": "order"
+    },
+    "finalized": {
+      "type": "boolean",
+      "title": "finalized"
+    },
+    "shippedBy": {
+      "type": "string",
+      "title": "shippedBy"
+    },
+    "shippedDate": {
+      "type": "string",
+      "title": "shippedDate"
+    },
+    "notes": {
+      "type": "string",
+      "title": "verified"
+    },
+    "lineItems": {
+      "type": ["array"],
+      "title": "lineItems",
+      "items": {
+        "type": "object",
+        "$ref": "shipmentLineItem.json"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "finalized",
+    "lineItems"
+  ]
+}

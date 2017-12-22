@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "ShipmentDraft",
+  "description": "A shipment draft",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "id"
+    },
+    "order": {
+      "type": "object",
+      "$ref": "orderDto.json",
+      "title": "order"
+    },
+    "notes": {
+      "type": "string",
+      "title": "verified"
+    },
+    "lineItems": {
+      "type": ["array"],
+      "title": "lineItems",
+      "items": {
+        "type": "object",
+        "$ref": "shipmentDraftLineItem.json"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "lineItems"
+  ]
+}
