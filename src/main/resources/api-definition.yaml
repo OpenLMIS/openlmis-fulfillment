@@ -812,6 +812,28 @@ resourceTypes:
                   body:
                     application/json:
                       schema: localizedMessage
+      get:
+          is: [ secured ]
+          description: Get shipment drafts.
+          queryParameters:
+              orderId:
+                  displayName: orderId
+                  description: order ID
+                  type: string
+                  required: true
+                  repeat: false
+          responses:
+              200:
+                  body:
+                    application/json:
+                      schema: shipmentDraftPage
+              401:
+                  body:
+                    application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -877,28 +899,6 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
-      get:
-          is: [ secured ]
-          description: Get shipment drafts.
-          queryParameters:
-              orderId:
-                  displayName: orderId
-                  description: order ID
-                  type: string
-                  required: true
-                  repeat: false
-          responses:
-              200:
-                  body:
-                    application/json:
-                      schema: shipmentDraftPage
-              401:
-                  body:
-                    application/json:
-              403:
-                  body:
-                    application/json:
-                      schema: localizedMessage
 
   /shipments:
       post:

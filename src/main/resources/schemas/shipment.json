@@ -18,7 +18,8 @@
       "title": "finalized"
     },
     "shippedBy": {
-      "type": "string",
+      "type": ["object"],
+      "$ref": "referenceObjectDto.json",
       "title": "shippedBy"
     },
     "shippedDate": {
