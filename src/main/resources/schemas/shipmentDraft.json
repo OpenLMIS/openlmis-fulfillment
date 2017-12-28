@@ -15,14 +15,14 @@
     },
     "notes": {
       "type": "string",
-      "title": "verified"
+      "title": "notes"
     },
     "lineItems": {
       "type": ["array"],
-      "title": "lineItems",
+      "title": "line items",
       "items": {
         "type": "object",
-        "$ref": "shipmentDraftLineItem.json"
+        "$ref": "shipmentLineItem.json"
       },
       "uniqueItems": true
     }

@@ -797,7 +797,7 @@ resourceTypes:
                 schema: shipmentDraft
           responses:
               201:
-                  description: Draft crated.
+                  description: Draft created.
                   body:
                     application/json:
                       schema: shipmentDraft

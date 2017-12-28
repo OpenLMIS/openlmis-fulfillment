@@ -13,26 +13,22 @@
       "$ref": "orderDto.json",
       "title": "order"
     },
-    "finalized": {
-      "type": "boolean",
-      "title": "finalized"
-    },
     "shippedBy": {
       "type": ["object"],
       "$ref": "referenceObjectDto.json",
-      "title": "shippedBy"
+      "title": "shipped by"
     },
     "shippedDate": {
       "type": "string",
-      "title": "shippedDate"
+      "title": "shipped date"
     },
     "notes": {
       "type": "string",
-      "title": "verified"
+      "title": "notes"
     },
     "lineItems": {
       "type": ["array"],
-      "title": "lineItems",
+      "title": "line items",
       "items": {
         "type": "object",
         "$ref": "shipmentLineItem.json"
@@ -41,7 +37,6 @@
     }
   },
   "required": [
-    "finalized",
     "lineItems"
   ]
 }
