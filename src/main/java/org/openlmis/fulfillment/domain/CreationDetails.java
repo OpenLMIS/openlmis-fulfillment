@@ -15,37 +15,49 @@
 
 package org.openlmis.fulfillment.domain;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import static org.openlmis.fulfillment.domain.BaseEntity.UUID_TYPE;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import org.openlmis.util.View;
-
-import org.hibernate.annotations.GenericGenerator;
+import lombok.ToString;
 import org.hibernate.annotations.Type;
-
-import lombok.Getter;
-import lombok.Setter;
-
+import java.time.ZonedDateTime;
 import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-
-@MappedSuperclass
+@Embeddable
+@AllArgsConstructor
 @EqualsAndHashCode
-public abstract class BaseEntity implements Identifiable {
-  public static final String ID = "id";
-  
-  static final String TEXT_COLUMN_DEFINITION = "text";
-  static final String UUID_TYPE = "pg-uuid";
+@ToString
+public final class CreationDetails {
 
-  @Id
-  @GeneratedValue(generator = "uuid-gen")
-  @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
-  @JsonView(View.BasicInformation.class)
   @Type(type = UUID_TYPE)
-  @Getter
-  @Setter
-  protected UUID id;
+  private final UUID userId;
+
+  @Column(columnDefinition = "timestamp with time zone")
+  private final ZonedDateTime date;
+
+  /**
+   * Default constructor needed by framework.
+   */
+  private CreationDetails() {
+    this.userId = null;
+    this.date = null;
+  }
+
+  public interface Exporter {
+    void setUserId(UUID updaterId);
+
+    void setDate(ZonedDateTime updatedDate);
+  }
+
+  /**
+   * Copy data from the given update details to the instance that implement
+   * {@link CreationDetails.Exporter} interface.
+   */
+  public void export(CreationDetails.Exporter exporter) {
+    exporter.setDate(date);
+    exporter.setUserId(userId);
+  }
 }

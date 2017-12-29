@@ -1,0 +1,64 @@
+/*
+ * This program is part of the OpenLMIS logistics management information system platform software.
+ * Copyright © 2017 VillageReach
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Affero General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * See the GNU Affero General Public License for more details. You should have received a copy of
+ * the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ */
+
+package org.openlmis.fulfillment.testutils;
+
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.domain.CreationDetails;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.Shipment;
+import java.util.UUID;
+
+public class ShipmentDataBuilder {
+
+  private UUID id = UUID.randomUUID();
+  private Order order = new OrderDataBuilder().build();
+  private CreationDetails shipDetails = new CreationDetailsDataBuilder().build();
+  private String notes = "all shipped";
+
+  public ShipmentDataBuilder withOrder(Order order) {
+    this.order = order;
+    return this;
+  }
+
+  public ShipmentDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
+  public ShipmentDataBuilder withShipDetails(CreationDetails shipDetails) {
+    this.shipDetails = shipDetails;
+    return this;
+  }
+
+  public ShipmentDataBuilder withNotes(String notes) {
+    this.notes = notes;
+    return this;
+  }
+
+  public ShipmentDataBuilder withoutId() {
+    this.id = null;
+    return this;
+  }
+
+  /**
+   * Builds instance of {@link Shipment}.
+   */
+  public Shipment build() {
+    Shipment shipment = new Shipment(order, shipDetails, notes);
+    shipment.setId(id);
+    return shipment;
+  }
+}

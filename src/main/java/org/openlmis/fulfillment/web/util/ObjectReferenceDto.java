@@ -21,10 +21,11 @@ import static org.openlmis.fulfillment.service.ResourceNames.SEPARATOR;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.openlmis.fulfillment.domain.Identifiable;
 import java.util.UUID;
 
 @EqualsAndHashCode
-public class ObjectReferenceDto {
+public class ObjectReferenceDto implements Identifiable {
 
   @Getter
   private final UUID id;
@@ -32,9 +33,13 @@ public class ObjectReferenceDto {
   @Getter
   private final String href;
 
-  protected ObjectReferenceDto() {
-    this.id = null;
+  public ObjectReferenceDto(UUID id) {
+    this.id = id;
     this.href = null;
+  }
+
+  protected ObjectReferenceDto() {
+    this(null);
   }
 
   /**

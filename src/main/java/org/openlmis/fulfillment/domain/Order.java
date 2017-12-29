@@ -181,6 +181,13 @@ public class Order extends BaseEntity {
     this.updateDetails = updateDetails;
   }
 
+  /**
+   * Constructor with id.
+   */
+  public Order(UUID id) {
+    setId(id);
+  }
+
   @PrePersist
   private void prePersist() {
     this.createdDate = ZonedDateTime.now();

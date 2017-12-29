@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +25,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserDto {
   private UUID id;
   private String username;
@@ -35,6 +37,10 @@ public class UserDto {
   private boolean loginRestricted;
   private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
+
+  public UserDto(UUID id) {
+    this.id = id;
+  }
 
   /**
    * Prints the name of the user for display purposes.

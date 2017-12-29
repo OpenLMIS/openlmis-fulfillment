@@ -13,24 +13,22 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment;
 
-import org.apache.commons.lang3.StringUtils;
+import org.javers.common.date.DateProvider;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
+/**
+ * This class may be used by JaVers to retrieve the LocalDateTime that it associates with commits.
+ * It is intended to be used, rather than JaVers' default DateProvider, so as to be explicit and
+ * consistent with the use of UTC within JaVers' domain. (Otherwise, JaVers uses the default
+ * system timezone, which may change, when constructing a LocalDateTime.)
+ */
+public class JaVersDateProvider implements DateProvider {
+  private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.UTC;
 
-  private ResourceNames() {}
-
-  public static String getUsersPath() {
-    return getPath(USERS);
-  }
-
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
+  public LocalDateTime now() {
+    return LocalDateTime.now(DATE_TIME_ZONE);
   }
 }

@@ -13,24 +13,31 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment.testutils;
 
-import org.apache.commons.lang3.StringUtils;
+import org.openlmis.fulfillment.domain.CreationDetails;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
+public class CreationDetailsDataBuilder {
 
-  private ResourceNames() {}
+  private UUID userId = UUID.randomUUID();
+  private ZonedDateTime date = ZonedDateTime.parse("2017-12-01T01:25:00Z[UTC]");
 
-  public static String getUsersPath() {
-    return getPath(USERS);
+  public CreationDetailsDataBuilder withUserId(UUID userId) {
+    this.userId = userId;
+    return this;
   }
 
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
+  public CreationDetailsDataBuilder withDate(ZonedDateTime date) {
+    this.date = date;
+    return this;
+  }
+
+  /**
+   * Builds instance of {@link CreationDetails}.
+   */
+  public CreationDetails build() {
+    return new CreationDetails(userId, date);
   }
 }

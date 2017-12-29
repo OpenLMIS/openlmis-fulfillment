@@ -13,24 +13,31 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment.security;
 
-import org.apache.commons.lang3.StringUtils;
+import org.javers.spring.auditable.AuthorProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
+/**
+ * This class is used by JaVers to retrieve the name of the user currently logged in.
+ * JaVers then associates audited changes being made with this particular user.
+ */
+public class UserNameProvider implements AuthorProvider {
 
-  private ResourceNames() {}
+  @Override
+  public String provide() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-  public static String getUsersPath() {
-    return getPath(USERS);
-  }
+    if (null == auth) {
+      return "unauthenticated user";
+    }
 
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
+    Object principal = auth.getPrincipal();
+    if (null == principal) {
+      return "unknown user";
+    }
+
+    return principal.toString();
   }
 }

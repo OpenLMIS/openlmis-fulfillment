@@ -9,8 +9,11 @@
       "title": "id"
     },
     "href": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "href"
     }
-  }
+  },
+  "required": [
+    "id"
+  ]
 }

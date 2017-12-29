@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
+
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RequestMapping("/api")
+@RequestMapping(BASE_PATH)
 public abstract class BaseController {
 
   protected Map<String, String> getErrors(BindingResult bindingResult) {

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment;
 
+import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.PICKING;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
@@ -130,6 +131,10 @@ public class OrderDataBuilder {
 
   public OrderDataBuilder withPickingStatus() {
     return withStatus(PICKING);
+  }
+
+  public OrderDataBuilder withOrderedStatus() {
+    return withStatus(ORDERED);
   }
 
   public OrderDataBuilder withShippedStatus() {

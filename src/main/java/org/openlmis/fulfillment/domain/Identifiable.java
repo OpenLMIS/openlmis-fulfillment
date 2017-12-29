@@ -13,24 +13,10 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment.domain;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.UUID;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
-
-  private ResourceNames() {}
-
-  public static String getUsersPath() {
-    return getPath(USERS);
-  }
-
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
-  }
+public interface Identifiable {
+  UUID getId();
 }

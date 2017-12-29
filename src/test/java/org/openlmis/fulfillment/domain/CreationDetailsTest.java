@@ -13,24 +13,24 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment.domain;
 
-import org.apache.commons.lang3.StringUtils;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
+import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
+import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
+public class CreationDetailsTest {
 
-  private ResourceNames() {}
-
-  public static String getUsersPath() {
-    return getPath(USERS);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(CreationDetails.class).verify();
   }
 
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
+  @Test
+  public void shouldImplementToString() {
+    CreationDetails creationDetails = new CreationDetailsDataBuilder().build();
+    ToStringTestUtils.verify(CreationDetails.class, creationDetails);
   }
+
 }

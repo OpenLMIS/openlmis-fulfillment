@@ -70,6 +70,7 @@ import javax.annotation.PostConstruct;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 public abstract class BaseWebIntegrationTest {
+
   protected static final String ID = "id";
   protected static final UUID INITIAL_USER_ID =
       UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
@@ -85,6 +86,8 @@ public abstract class BaseWebIntegrationTest {
   protected static final String CONTENT_TYPE = "Content-Type";
   protected static final String APPLICATION_JSON = "application/json";
   protected static final String FACILITY_ID = "1d5bdd9c-8702-11e6-ae22-56b6b6499611";
+  protected static final UUID SAVE_ANSWER_ID = UUID.randomUUID();
+
   private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
       + "    \"auth\",\n"
@@ -651,7 +654,7 @@ public abstract class BaseWebIntegrationTest {
       }
 
       if (null == obj.getId()) {
-        obj.setId(UUID.randomUUID());
+        obj.setId(SAVE_ANSWER_ID);
       }
 
       extraSteps(obj);

@@ -5,29 +5,29 @@
   "description": "A shipment",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "id"
     },
     "order": {
-      "type": "object",
-      "$ref": "orderDto.json",
+      "type": ["object", "null"],
+      "$ref": "referenceObjectDto.json",
       "title": "order"
     },
     "shippedBy": {
-      "type": ["object"],
+      "type": ["object", "null"],
       "$ref": "referenceObjectDto.json",
       "title": "shipped by"
     },
     "shippedDate": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "shipped date"
     },
     "notes": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "notes"
     },
     "lineItems": {
-      "type": ["array"],
+      "type": ["array", "null"],
       "title": "line items",
       "items": {
         "type": "object",
@@ -35,8 +35,5 @@
       },
       "uniqueItems": true
     }
-  },
-  "required": [
-    "lineItems"
-  ]
+  }
 }

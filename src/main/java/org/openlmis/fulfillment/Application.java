@@ -17,15 +17,29 @@ package org.openlmis.fulfillment;
 
 import java.time.Clock;
 import java.time.ZoneId;
+import com.google.gson.internal.bind.TypeAdapters;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.flywaydb.core.Flyway;
+import org.javers.core.Javers;
+import org.javers.core.MappingStyle;
+import org.javers.core.diff.ListCompareAlgorithm;
+import org.javers.hibernate.integration.HibernateUnproxyObjectAccessHook;
+import org.javers.repository.sql.ConnectionProvider;
+import org.javers.repository.sql.DialectName;
+import org.javers.repository.sql.JaversSqlRepository;
+import org.javers.repository.sql.SqlRepositoryBuilder;
+import org.javers.spring.auditable.AuthorProvider;
+import org.javers.spring.boot.sql.JaversProperties;
+import org.javers.spring.jpa.TransactionalJaversBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.i18n.ExposedMessageSource;
 import org.openlmis.fulfillment.i18n.ExposedMessageSourceImpl;
+import org.openlmis.fulfillment.security.UserNameProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,12 +47,14 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
 @EntityScan(basePackageClasses = BaseEntity.class)
 public class Application {
@@ -50,6 +66,15 @@ public class Application {
 
   @Value("${time.zoneId}")
   private String timeZoneId;
+
+  @Value("${spring.jpa.properties.hibernate.default_schema}")
+  private String preferredSchema;
+
+  @Autowired
+  DialectName dialectName;
+
+  @Autowired
+  private JaversProperties javersProperties;
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
@@ -142,6 +167,58 @@ public class Application {
     };
 
     return strategy;
+  }
+
+
+  /**
+   * Create and return a UserNameProvider. By default, if we didn't do so, an instance of
+   * SpringSecurityAuthorProvider would automatically be created and returned instead.
+   */
+  @Bean
+  public AuthorProvider authorProvider() {
+    return new UserNameProvider();
+  }
+
+  /**
+   * Create and return an instance of JaVers precisely configured as necessary.
+   * This is particularly helpful for getting JaVers to create and use tables
+   * within a particular schema (specified via the withSchema method).
+   *
+   * @See <a href="https://github.com/javers/javers/blob/master/javers-spring-boot-starter-sql/src
+   * /main/java/org/javers/spring/boot/sql/JaversSqlAutoConfiguration.java">
+   * JaversSqlAutoConfiguration.java</a> for the default configuration upon which this code is based
+   */
+  @Bean
+  public Javers javersProvider(ConnectionProvider connectionProvider,
+                               PlatformTransactionManager transactionManager) {
+    JaversSqlRepository sqlRepository = SqlRepositoryBuilder
+        .sqlRepository()
+        .withConnectionProvider(connectionProvider)
+        .withDialect(dialectName)
+        .withSchema(preferredSchema)
+        .build();
+
+    JaVersDateProvider customDateProvider = new JaVersDateProvider();
+
+    return TransactionalJaversBuilder
+        .javers()
+        .withTxManager(transactionManager)
+        .registerJaversRepository(sqlRepository)
+        .withObjectAccessHook(new HibernateUnproxyObjectAccessHook())
+        .withListCompareAlgorithm(
+            ListCompareAlgorithm.valueOf(javersProperties.getAlgorithm().toUpperCase()))
+        .withMappingStyle(
+            MappingStyle.valueOf(javersProperties.getMappingStyle().toUpperCase()))
+        .withNewObjectsSnapshot(javersProperties.isNewObjectSnapshot())
+        .withPrettyPrint(javersProperties.isPrettyPrint())
+        .withTypeSafeValues(javersProperties.isTypeSafeValues())
+        .withPackagesToScan(javersProperties.getPackagesToScan())
+        .withDateTimeProvider(customDateProvider)
+        .registerValueGsonTypeAdapter(double.class, TypeAdapters.DOUBLE)
+        .registerValueGsonTypeAdapter(Double.class, TypeAdapters.DOUBLE)
+        .registerValueGsonTypeAdapter(float.class, TypeAdapters.FLOAT)
+        .registerValueGsonTypeAdapter(Float.class, TypeAdapters.FLOAT)
+        .build();
   }
 
 }
