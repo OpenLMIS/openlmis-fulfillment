@@ -19,6 +19,7 @@ import static org.openlmis.fulfillment.service.ResourceNames.ORDERS;
 import static org.openlmis.fulfillment.service.ResourceNames.SHIPMENTS;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -76,6 +77,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
     shippedDate = updatedDate;
   }
 
+  @JsonProperty
   public void setOrder(ObjectReferenceDto order) {
     this.order = order;
   }

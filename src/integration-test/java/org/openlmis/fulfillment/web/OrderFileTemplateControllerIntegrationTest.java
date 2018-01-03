@@ -25,21 +25,18 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.OrderFileColumn;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
 import java.util.ArrayList;
 import java.util.UUID;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
 
 public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -47,9 +44,6 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
 
   private OrderFileTemplate orderFileTemplate = new OrderFileTemplate();
   private OrderFileTemplateDto orderFileTemplateDto;
-
-  @MockBean
-  private OrderFileTemplateRepository orderFileTemplateRepository;
 
   @MockBean
   private OrderFileTemplateService orderFileTemplateService;

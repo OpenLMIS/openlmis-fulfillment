@@ -22,22 +22,18 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.web.util.OrderNumberConfigurationDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -47,15 +43,12 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
   private static final String RESOURCE_URL = "/api/orderNumberConfigurations";
 
   @MockBean
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @MockBean
   private OrderRepository orderRepository;
 
   private UUID facility = UUID.fromString("1d5bdd9c-8702-11e6-ae22-56b6b6499611");
 
-  OrderNumberConfiguration firstOrderNumberConfiguration;
-  OrderNumberConfiguration secondOrderNumberConfiguration;
+  private OrderNumberConfiguration firstOrderNumberConfiguration;
+  private OrderNumberConfiguration secondOrderNumberConfiguration;
 
   @Before
   public void setUp() {
