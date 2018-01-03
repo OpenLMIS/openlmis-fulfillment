@@ -43,12 +43,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
+import org.openlmis.fulfillment.web.shipment.ShipmentDto;
+import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -68,6 +72,9 @@ public class PermissionServiceTest {
 
   @Mock
   private AuthenticationHelper authenticationHelper;
+
+  @Mock
+  private OrderRepository orderRepository;
 
   @InjectMocks
   private PermissionService permissionService;
@@ -104,7 +111,8 @@ public class PermissionServiceTest {
   private OAuth2Authentication userClient;
   private OAuth2Authentication trustedClient;
   private OAuth2Authentication apiKeyClient;
-
+  private ShipmentDto shipmentDto;
+  private Shipment shipment;
 
   @Before
   public void setUp() {
@@ -120,8 +128,16 @@ public class PermissionServiceTest {
     order.setProgramId(programId);
     order.setSupplyingFacilityId(facilityId);
     order.setOrderLineItems(Lists.newArrayList());
+    order.setId(UUID.randomUUID());
 
     proofOfDelivery = new ProofOfDelivery(order);
+
+    //TODO: data builder
+    shipment = new Shipment(order, null, null);
+    shipmentDto = new ShipmentDto();
+    shipmentDto.setOrder(new ObjectReferenceDto(order.getId()));
+
+    when(orderRepository.findOne(order.getId())).thenReturn(order);
 
     when(user.getId()).thenReturn(userId);
 
@@ -132,6 +148,7 @@ public class PermissionServiceTest {
     when(systemSettingsManageRight.getId()).thenReturn(systemSettingsManageRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
+    when(securityContext.getAuthentication()).thenReturn(userClient);
 
     when(authenticationHelper.getRight(ORDERS_TRANSFER)).thenReturn(
         fulfillmentTransferOrderRight);
@@ -261,8 +278,7 @@ public class PermissionServiceTest {
 
     permissionService.canEditOrder(order);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
+    verifyOrderEditRight();
   }
 
   @Test
@@ -272,6 +288,45 @@ public class PermissionServiceTest {
     expectException(ORDERS_EDIT);
 
     permissionService.canEditOrder(order);
+  }
+
+  @Test
+  public void canManageShipment() throws Exception {
+    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+
+    permissionService.canManageShipments(shipmentDto);
+
+    verifyOrderEditRight();
+  }
+
+  @Test
+  public void canViewShipment() throws Exception {
+    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+
+    permissionService.canManageShipments(shipment);
+
+    verifyOrderEditRight();
+  }
+
+  private void verifyOrderEditRight() {
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
+  }
+
+  @Test
+  public void cannotManageShipmentWhenUserHasNoRights() throws Exception {
+    expectException(ORDERS_EDIT);
+
+    permissionService.canManageShipments(shipmentDto);
+  }
+
+  @Test
+  public void cannotManageShipmentWhenOrderIsNotFound() throws Exception {
+    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+    when(orderRepository.findOne(order.getId())).thenReturn(null);
+    expectException(ORDERS_EDIT);
+
+    permissionService.canManageShipments(shipmentDto);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {

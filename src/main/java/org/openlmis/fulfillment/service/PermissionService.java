@@ -21,18 +21,20 @@ import static org.apache.commons.lang3.StringUtils.startsWith;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
+import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
 import java.util.UUID;
 
 @Service
@@ -53,6 +55,9 @@ public class PermissionService {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
+  @Autowired
+  private OrderRepository orderRepository;
+
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
 
@@ -60,7 +65,7 @@ public class PermissionService {
   private String apiKeyPrefix;
 
   public void canTransferOrder(Order order) {
-    checkPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId(), false);
+    checkPermission(ORDERS_TRANSFER, order.getSupplyingFacilityId());
   }
 
   /**
@@ -79,12 +84,11 @@ public class PermissionService {
   }
 
   public void canManagePod(ProofOfDelivery proofOfDelivery) {
-    checkPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId(),
-        false);
+    checkPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId());
   }
 
   public void canManageSystemSettings() {
-    checkPermission(SYSTEM_SETTINGS_MANAGE, null, true);
+    checkPermission(SYSTEM_SETTINGS_MANAGE, null);
   }
 
   public void canViewOrder(Order order) {
@@ -92,30 +96,57 @@ public class PermissionService {
   }
 
   public void canViewOrder(UUID supplyingFacility) {
-    checkPermission(ORDERS_VIEW, supplyingFacility, true);
+    checkPermission(ORDERS_VIEW, supplyingFacility);
   }
 
   public void canEditOrder(Order order) {
-    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId(), false);
+    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
+  }
+
+  /**
+   * Checks if user has permission to manage Shipments.
+   *
+   * @param shipmentDto a shipment dto
+   */
+  public void canManageShipments(ShipmentDto shipmentDto) {
+    UUID orderId = shipmentDto.getOrder().getId();
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      throw new MissingPermissionException(ORDERS_EDIT);
+    }
+    canManageShipments(order);
+  }
+
+  /**
+   * Checks if user has permission to manage Shipments.
+   *
+   * @param shipment a shipment
+   */
+  public void canManageShipments(Shipment shipment) {
+    canManageShipments(shipment.getOrder());
+  }
+
+  private void canManageShipments(Order order) {
+    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
   }
 
   public boolean canViewOrderOrManagePod(Order order) {
-    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId(), true)
-        || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId(), false);
+    return hasPermission(ORDERS_VIEW, order.getSupplyingFacilityId())
+        || hasPermission(PODS_MANAGE, order.getSupplyingFacilityId());
   }
 
-  private boolean hasPermission(String rightName, UUID warehouse, boolean allowServiceTokens) {
-    return hasPermission(rightName, warehouse, true, allowServiceTokens, false);
+  private boolean hasPermission(String rightName, UUID warehouse) {
+    return hasPermission(rightName, warehouse, true, false);
   }
 
   private boolean hasPermission(String rightName, UUID warehouse, boolean allowUserTokens,
-                                boolean allowServiceTokens, boolean allowApiKey) {
+                                boolean allowApiKey) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
         .getContext()
         .getAuthentication();
 
     return authentication.isClientOnly()
-        ? checkServiceToken(allowServiceTokens, allowApiKey, authentication)
+        ? checkServiceToken(allowApiKey, authentication)
         : checkUserToken(rightName, warehouse, allowUserTokens);
   }
 
@@ -134,12 +165,12 @@ public class PermissionService {
     return null != result && isTrue(result.getResult());
   }
 
-  private boolean checkServiceToken(boolean allowServiceTokens, boolean allowApiKey,
+  private boolean checkServiceToken(boolean allowApiKey,
                                     OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
 
     if (serviceTokenClientId.equals(clientId)) {
-      return allowServiceTokens;
+      return true;
     }
 
     if (startsWith(clientId, apiKeyPrefix)) {
@@ -149,9 +180,8 @@ public class PermissionService {
     return false;
   }
 
-  private void checkPermission(String rightName, UUID warehouse, boolean
-      allowServiceTokens) {
-    if (!hasPermission(rightName, warehouse, allowServiceTokens)) {
+  private void checkPermission(String rightName, UUID warehouse) {
+    if (!hasPermission(rightName, warehouse)) {
       throw new MissingPermissionException(rightName);
     }
   }

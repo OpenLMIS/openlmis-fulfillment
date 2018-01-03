@@ -103,6 +103,11 @@ public abstract class MessageKeys {
   public static final String ERROR_DTO_EXPANSION_ASSIGNMENT = join(ERROR_DTO_EXPANSION,
       "assignment");
 
+  public static final String SHIPMENT_NOT_FOUND =
+      join(SERVICE_ERROR_PREFIX, "shipment", "notFound");
+  public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
+      join(SERVICE_ERROR_PREFIX, "shipment", "orderless", "notSupported");
+
   protected static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
   }

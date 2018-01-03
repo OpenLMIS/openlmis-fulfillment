@@ -15,10 +15,13 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -28,7 +31,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
@@ -59,6 +64,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private DateHelper dateHelper;
+
+  @MockBean
+  private PermissionService permissionService;
 
   private ShipmentDto shipmentDto;
   private ShipmentDto shipmentDtoExpected;
@@ -113,6 +121,43 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnBadRequestIfShipmentOrderIsNotGiven() {
+    shipmentDto.setOrder((ObjectReferenceDto) null);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED));
+
+    verify(shipmentRepository, never()).save(any(Shipment.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRights() {
+    doThrow(new MissingPermissionException("test"))
+        .when(permissionService).canManageShipments(any(ShipmentDto.class));
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    verify(shipmentRepository, never()).save(any(Shipment.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
   public void shouldGetShipment() {
     ShipmentDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -126,5 +171,41 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertEquals(shipmentDtoExpected, extracted);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundIfShipmentIsNotFound() {
+    when(shipmentRepository.findOne(shipmentDtoExpected.getId())).thenReturn(null);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam(ID, shipmentDtoExpected.getId())
+        .when()
+        .get(ID_RESOURCE_URL)
+        .then()
+        .statusCode(404)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_NOT_FOUND));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightsToGetShipment() {
+    doThrow(new MissingPermissionException("test"))
+        .when(permissionService).canManageShipments(shipment);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDto)
+        .pathParam(ID, shipmentDtoExpected.getId())
+        .when()
+        .get(ID_RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 }

@@ -17,8 +17,7 @@ package org.openlmis.fulfillment.web.errorhandler;
 
 import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.MissingPermissionException;
-import org.openlmis.fulfillment.web.OrderNotFoundException;
-import org.openlmis.fulfillment.web.ProofOfDeliveryNotFoundException;
+import org.openlmis.fulfillment.web.NotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -39,19 +38,11 @@ public class WebErrorHandling extends AbstractErrorHandling {
     return logErrorAndRespond("Missing permission for this action", ex);
   }
 
-  @ExceptionHandler(OrderNotFoundException.class)
+  @ExceptionHandler(NotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
-  public Message.LocalizedMessage handleOrderNotFoundException(OrderNotFoundException ex) {
-    return logErrorAndRespond("Cannot find an order", ex);
-  }
-
-  @ExceptionHandler(ProofOfDeliveryNotFoundException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  @ResponseBody
-  public Message.LocalizedMessage handleProofOfDeliveryNotFoundException(
-      ProofOfDeliveryNotFoundException ex) {
-    return logErrorAndRespond("Cannot find a proof od delivery", ex);
+  public Message.LocalizedMessage handleOrderNotFoundException(NotFoundException ex) {
+    return logErrorAndRespond("Cannot find an resource", ex);
   }
 
   @ExceptionHandler(ValidationException.class)

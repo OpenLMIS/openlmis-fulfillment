@@ -72,6 +72,7 @@ import javax.annotation.PostConstruct;
 public abstract class BaseWebIntegrationTest {
 
   protected static final String ID = "id";
+  protected static final String MESSAGE_KEY = "messageKey";
   protected static final UUID INITIAL_USER_ID =
       UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   protected static final String RAML_ASSERT_MESSAGE =

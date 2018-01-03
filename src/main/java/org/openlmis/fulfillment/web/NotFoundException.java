@@ -15,14 +15,15 @@
 
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_NOT_FOUND;
+import org.openlmis.fulfillment.service.FulfillmentException;
 
-import java.util.UUID;
+/**
+ * Exception for indicating that an entity explicitly asked for wasn't found.  This should result
+ * in a NOT FOUND api response.
+ */
+public class NotFoundException extends FulfillmentException {
 
-public class ProofOfDeliveryNotFoundException extends NotFoundException {
-
-  public ProofOfDeliveryNotFoundException(UUID id) {
-    super(ERROR_PROOF_OF_DELIVERY_NOT_FOUND, id.toString());
+  public NotFoundException(String messageKey, String... params) {
+    super(messageKey, params);
   }
-
 }

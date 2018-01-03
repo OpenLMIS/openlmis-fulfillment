@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
 import java.util.UUID;
@@ -38,6 +39,7 @@ public class Shipment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "orderid")
+  @Getter
   private Order order;
 
   @Embedded
