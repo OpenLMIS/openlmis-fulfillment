@@ -44,6 +44,8 @@ public class PermissionService {
   static final String PODS_MANAGE = "PODS_MANAGE";
   static final String ORDERS_VIEW = "ORDERS_VIEW";
   static final String ORDERS_EDIT = "ORDERS_EDIT";
+  static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
+  static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
 
   @Autowired
@@ -106,28 +108,24 @@ public class PermissionService {
   /**
    * Checks if user has permission to manage Shipments.
    *
-   * @param shipmentDto a shipment dto
+   * @param shipment a shipment
    */
-  public void canManageShipments(ShipmentDto shipmentDto) {
-    UUID orderId = shipmentDto.getOrder().getId();
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      throw new MissingPermissionException(ORDERS_EDIT);
-    }
-    canManageShipments(order);
+  public void canViewShipments(Shipment shipment) {
+    checkPermission(SHIPMENTS_VIEW, shipment.getOrder().getSupplyingFacilityId());
   }
 
   /**
-   * Checks if user has permission to manage Shipments.
+   * Checks if user has permission to edit Shipments.
    *
-   * @param shipment a shipment
+   * @param shipmentDto a shipment dto
    */
-  public void canManageShipments(Shipment shipment) {
-    canManageShipments(shipment.getOrder());
-  }
-
-  private void canManageShipments(Order order) {
-    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
+  public void canEditShipments(ShipmentDto shipmentDto) {
+    UUID orderId = shipmentDto.getOrder().getId();
+    Order order = orderRepository.findOne(orderId);
+    if (order == null) {
+      throw new MissingPermissionException(SHIPMENTS_EDIT);
+    }
+    checkPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId());
   }
 
   public boolean canViewOrderOrManagePod(Order order) {

@@ -26,6 +26,8 @@ import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
@@ -92,6 +94,12 @@ public class PermissionServiceTest {
   private RightDto fulfillmentManagePodRight;
 
   @Mock
+  private RightDto shipmentsViewRight;
+
+  @Mock
+  private RightDto shipmentsEditRight;
+
+  @Mock
   private RightDto fulfillmentOrdersViewRight;
 
   @Mock
@@ -102,6 +110,8 @@ public class PermissionServiceTest {
   private UUID fulfillmentManagePodRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersEditRightId = UUID.randomUUID();
+  private UUID shipmentsViewRightId = UUID.randomUUID();
+  private UUID shipmentsEditRightId = UUID.randomUUID();
   private UUID systemSettingsManageRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
@@ -146,20 +156,24 @@ public class PermissionServiceTest {
     when(fulfillmentOrdersViewRight.getId()).thenReturn(fulfillmentOrdersViewRightId);
     when(fulfillmentOrdersEditRight.getId()).thenReturn(fulfillmentOrdersEditRightId);
     when(systemSettingsManageRight.getId()).thenReturn(systemSettingsManageRightId);
+    when(shipmentsEditRight.getId()).thenReturn(shipmentsEditRightId);
+    when(shipmentsViewRight.getId()).thenReturn(shipmentsViewRightId);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
     when(securityContext.getAuthentication()).thenReturn(userClient);
 
-    when(authenticationHelper.getRight(ORDERS_TRANSFER)).thenReturn(
-        fulfillmentTransferOrderRight);
-    when(authenticationHelper.getRight(PODS_MANAGE)).thenReturn(
-        fulfillmentManagePodRight);
-    when(authenticationHelper.getRight(ORDERS_VIEW)).thenReturn(
-        fulfillmentOrdersViewRight);
-    when(authenticationHelper.getRight(ORDERS_EDIT)).thenReturn(
-        fulfillmentOrdersEditRight);
-    when(authenticationHelper.getRight(SYSTEM_SETTINGS_MANAGE)).thenReturn(
-        systemSettingsManageRight);
+    when(authenticationHelper.getRight(ORDERS_TRANSFER))
+        .thenReturn(fulfillmentTransferOrderRight);
+    when(authenticationHelper.getRight(PODS_MANAGE))
+        .thenReturn(fulfillmentManagePodRight);
+    when(authenticationHelper.getRight(ORDERS_VIEW))
+        .thenReturn(fulfillmentOrdersViewRight);
+    when(authenticationHelper.getRight(ORDERS_EDIT))
+        .thenReturn(fulfillmentOrdersEditRight);
+    when(authenticationHelper.getRight(SYSTEM_SETTINGS_MANAGE))
+        .thenReturn(systemSettingsManageRight);
+    when(authenticationHelper.getRight(SHIPMENTS_VIEW)).thenReturn(shipmentsViewRight);
+    when(authenticationHelper.getRight(SHIPMENTS_EDIT)).thenReturn(shipmentsEditRight);
 
     ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
     ReflectionTestUtils.setField(permissionService, "apiKeyPrefix", API_KEY_PREFIX);
@@ -278,7 +292,8 @@ public class PermissionServiceTest {
 
     permissionService.canEditOrder(order);
 
-    verifyOrderEditRight();
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
   }
 
   @Test
@@ -292,41 +307,45 @@ public class PermissionServiceTest {
 
   @Test
   public void canManageShipment() throws Exception {
-    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+    mockFulfillmentHasRight(shipmentsEditRightId, true, facilityId);
 
-    permissionService.canManageShipments(shipmentDto);
+    permissionService.canEditShipments(shipmentDto);
 
-    verifyOrderEditRight();
-  }
-
-  @Test
-  public void canViewShipment() throws Exception {
-    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
-
-    permissionService.canManageShipments(shipment);
-
-    verifyOrderEditRight();
-  }
-
-  private void verifyOrderEditRight() {
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
+    verifyFulfillmentRight(order, SHIPMENTS_EDIT, shipmentsEditRightId, facilityId);
   }
 
   @Test
   public void cannotManageShipmentWhenUserHasNoRights() throws Exception {
-    expectException(ORDERS_EDIT);
+    expectException(SHIPMENTS_EDIT);
 
-    permissionService.canManageShipments(shipmentDto);
+    permissionService.canEditShipments(shipmentDto);
   }
 
   @Test
   public void cannotManageShipmentWhenOrderIsNotFound() throws Exception {
     mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
     when(orderRepository.findOne(order.getId())).thenReturn(null);
-    expectException(ORDERS_EDIT);
+    expectException(SHIPMENTS_EDIT);
 
-    permissionService.canManageShipments(shipmentDto);
+    permissionService.canEditShipments(shipmentDto);
+  }
+
+  @Test
+  public void canViewShipment() throws Exception {
+    mockFulfillmentHasRight(shipmentsViewRightId, true, facilityId);
+
+    permissionService.canViewShipments(shipment);
+
+    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
+    verifyFulfillmentRight(order, SHIPMENTS_VIEW, shipmentsViewRightId, facilityId);
+  }
+
+  @Test
+  public void cannotViewShipmentWhenUserHasNoRights() throws Exception {
+    expectException(SHIPMENTS_VIEW);
+
+    permissionService.canViewShipments(shipment);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {

@@ -91,7 +91,7 @@ public class ShipmentController extends BaseController {
     }
 
     profiler.start("CHECK_RIGHTS");
-    permissionService.canManageShipments(shipmentDto);
+    permissionService.canEditShipments(shipmentDto);
 
     profiler.start("CREATE_DOMAIN_INSTANCE");
     setShipDetailsToDto(shipmentDto);
@@ -132,7 +132,7 @@ public class ShipmentController extends BaseController {
     Shipment shipment = shipmentRepository.findOne(id);
 
     profiler.start("CHECK_RIGHTS");
-    permissionService.canManageShipments(shipment);
+    permissionService.canViewShipments(shipment);
 
     if (shipment == null) {
       throw new NotFoundException(SHIPMENT_NOT_FOUND);
