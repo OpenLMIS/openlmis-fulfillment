@@ -19,6 +19,9 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class ShipmentDataBuilder {
@@ -27,6 +30,8 @@ public class ShipmentDataBuilder {
   private Order order = new OrderDataBuilder().build();
   private CreationDetails shipDetails = new CreationDetailsDataBuilder().build();
   private String notes = "all shipped";
+  private List<ShipmentLineItem> shipmentLineItems =
+      Collections.singletonList(new ShipmentLineItemDataBuilder().build());
 
   public ShipmentDataBuilder withOrder(Order order) {
     this.order = order;
@@ -48,6 +53,11 @@ public class ShipmentDataBuilder {
     return this;
   }
 
+  public ShipmentDataBuilder withLineItems(List<ShipmentLineItem> lineItems) {
+    this.shipmentLineItems = lineItems;
+    return this;
+  }
+
   public ShipmentDataBuilder withoutId() {
     this.id = null;
     return this;
@@ -57,7 +67,7 @@ public class ShipmentDataBuilder {
    * Builds instance of {@link Shipment}.
    */
   public Shipment build() {
-    Shipment shipment = new Shipment(order, shipDetails, notes);
+    Shipment shipment = new Shipment(order, shipDetails, notes, shipmentLineItems);
     shipment.setId(id);
     return shipment;
   }

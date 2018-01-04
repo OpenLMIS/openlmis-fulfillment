@@ -16,8 +16,11 @@
 package org.openlmis.fulfillment.web.shipment;
 
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ShipmentDtoBuilder {
@@ -36,16 +39,28 @@ public class ShipmentDtoBuilder {
     if (null == shipment) {
       return null;
     }
-
     return export(shipment);
   }
 
-  private ShipmentDto export(Shipment item) {
+  private ShipmentDto export(Shipment shipment) {
     ShipmentDto dto = new ShipmentDto();
     dto.setServiceUrl(serviceUrl);
-    item.export(dto);
+    shipment.export(dto);
+    dto.setLineItems(exportToDtos(shipment.getLineItems()));
 
     return dto;
+  }
+
+  private List<ShipmentLineItemDto> exportToDtos(List<ShipmentLineItem> lineItems) {
+    List<ShipmentLineItemDto> lineItemDtos = new ArrayList<>(lineItems.size());
+    lineItems.forEach(l -> lineItemDtos.add(exportToDto(l)));
+    return lineItemDtos;
+  }
+
+  private ShipmentLineItemDto exportToDto(ShipmentLineItem lineItem) {
+    ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
+    lineItem.export(lineItemDto);
+    return lineItemDto;
   }
 
 }

@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import be.joengenduvel.java.verifiers.ToStringVerifier;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
-import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
 public class ShipmentDtoTest {
 
@@ -36,6 +36,10 @@ public class ShipmentDtoTest {
     ShipmentDto shipmentDto = new ShipmentDto();
     shipmentDto.setServiceUrl("localhost");
     new ShipmentDataBuilder().build().export(shipmentDto);
-    ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
+    ToStringVerifier
+        .forClass(ShipmentDto.class)
+        .ignore("$jacocoData") // external library is checking for this field, has to be ignored
+        .ignore("lineItems") // library doesn't support lists
+        .containsAllPrivateFields(shipmentDto);
   }
 }

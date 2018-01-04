@@ -19,15 +19,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -52,7 +57,18 @@ public class Shipment extends BaseEntity {
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String notes;
 
+  @OneToMany(
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+      fetch = FetchType.LAZY,
+      orphanRemoval = true)
+  @JoinColumn(name = "shipmentid", nullable = false)
+  private List<ShipmentLineItem> lineItems;
+
   private Shipment() {}
+
+  public List<ShipmentLineItem> getLineItems() {
+    return Collections.unmodifiableList(lineItems);
+  }
 
   /**
    * Creates new instance based on data from {@link Importer}
@@ -61,10 +77,17 @@ public class Shipment extends BaseEntity {
    * @return new instance of Shipment.
    */
   public static Shipment newInstance(Importer importer) {
+    List<ShipmentLineItem> items = new ArrayList<>(importer.getLineItems().size());
+    if (importer.getLineItems() != null) {
+      importer.getLineItems().forEach(
+          sli -> items.add(ShipmentLineItem.newInstance(sli)));
+    }
+
     Shipment inventoryItem = new Shipment(
         new Order(importer.getOrder().getId()),
         importer.getShipDetails(),
-        importer.getNotes());
+        importer.getNotes(),
+        items);
     inventoryItem.setId(importer.getId());
 
     return inventoryItem;
@@ -88,6 +111,8 @@ public class Shipment extends BaseEntity {
     CreationDetails getShipDetails();
 
     String getNotes();
+
+    List<ShipmentLineItem.Importer> getLineItems();
   }
 
   /**

@@ -31,21 +31,26 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -88,6 +93,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private void generateShipment() {
     shipmentDtoExpected = new ShipmentDto();
     shipmentDtoExpected.setServiceUrl(serviceUrl);
+    ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder().build();
     shipment = new ShipmentDataBuilder()
         .withId(SAVE_ANSWER_ID)
         .withShipDetails(new CreationDetailsDataBuilder()
@@ -95,12 +101,22 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
             .withDate(dateHelper.getCurrentDateTimeWithSystemZone())
             .build())
         .withOrder(new Order(UUID.randomUUID()))
+        .withLineItems(Collections.singletonList(lineItem))
         .build();
-    shipment.export(shipmentDtoExpected);
+    List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
+    shipmentDtoExpected.setLineItems(lineItemsDtos);
 
     shipmentDto = new ShipmentDto(null, null,
         new ObjectReferenceDto(shipmentDtoExpected.getOrder().getId()), null, null,
-        shipmentDtoExpected.getNotes());
+        shipmentDtoExpected.getNotes(), lineItemsDtos);
+  }
+
+  private List<ShipmentLineItemDto> exportToDto(ShipmentLineItem lineItem) {
+    shipment.export(shipmentDtoExpected);
+    ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
+    lineItem.export(lineItemDto);
+
+    return Collections.singletonList(lineItemDto);
   }
 
   @Test

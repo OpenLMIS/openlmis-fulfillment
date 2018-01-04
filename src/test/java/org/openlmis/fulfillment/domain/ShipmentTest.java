@@ -22,8 +22,11 @@ import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,6 +36,18 @@ public class ShipmentTest {
   private Order order = new Order(UUID.randomUUID());
   private CreationDetails shipDetails = new CreationDetailsDataBuilder().build();
   private String notes = "some notes";
+
+  private UUID lineItemId = UUID.randomUUID();
+  private UUID orderableId = UUID.randomUUID();
+  private UUID lotId = UUID.randomUUID();
+  private Long quantityShipped = 15L;
+  private List<ShipmentLineItem> lineItems =
+      Collections.singletonList(new ShipmentLineItemDataBuilder()
+          .withId(lineItemId)
+          .withOrderableId(orderableId)
+          .withLotId(lotId)
+          .withQuantityShipped(quantityShipped)
+          .build());
 
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
@@ -56,6 +71,33 @@ public class ShipmentTest {
       @Override
       public String getNotes() {
         return notes;
+      }
+
+      @Override
+      public List<ShipmentLineItem.Importer> getLineItems() {
+        return Collections.singletonList(new ShipmentLineItem.Importer() {
+
+          @Override
+          public UUID getId() {
+            return lineItemId;
+          }
+
+          @Override
+          public UUID getOrderableId() {
+            return orderableId;
+          }
+
+          @Override
+          public UUID getLotId() {
+            return lotId;
+          }
+
+          @Override
+          public Long getQuantityShipped() {
+            return quantityShipped;
+          }
+
+        });
       }
     };
 
@@ -104,6 +146,7 @@ public class ShipmentTest {
         .withOrder(order)
         .withShipDetails(shipDetails)
         .withNotes(notes)
+        .withLineItems(lineItems)
         .build();
   }
 

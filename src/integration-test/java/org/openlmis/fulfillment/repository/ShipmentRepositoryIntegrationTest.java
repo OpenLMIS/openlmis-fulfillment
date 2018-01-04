@@ -20,9 +20,12 @@ import org.junit.Before;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
+import java.util.Collections;
 import java.util.UUID;
 
 @JaversSpringDataAuditable
@@ -35,6 +38,7 @@ public class ShipmentRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
   private OrderRepository orderRepository;
 
   private Order order;
+  private ShipmentLineItem shipmentLineItem;
 
   @Override
   CrudRepository<Shipment, UUID> getRepository() {
@@ -46,6 +50,7 @@ public class ShipmentRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
     return new ShipmentDataBuilder()
         .withoutId()
         .withOrder(order)
+        .withLineItems(Collections.singletonList(shipmentLineItem))
         .build();
   }
 
@@ -57,6 +62,10 @@ public class ShipmentRepositoryIntegrationTest extends BaseCrudRepositoryIntegra
         .build();
 
     order = orderRepository.save(order);
+
+    shipmentLineItem = new ShipmentLineItemDataBuilder()
+        .withoutId()
+        .build();
   }
 
 }
