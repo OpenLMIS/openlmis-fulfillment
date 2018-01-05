@@ -36,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
+import javax.validation.constraints.NotNull;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -110,7 +111,7 @@ public class PermissionService {
    *
    * @param shipment a shipment
    */
-  public void canViewShipment(Shipment shipment) {
+  public void canViewShipment(@NotNull Shipment shipment) {
     checkPermission(SHIPMENTS_VIEW, shipment.getOrder().getSupplyingFacilityId());
   }
 
@@ -119,7 +120,7 @@ public class PermissionService {
    *
    * @param shipmentDto a shipment dto
    */
-  public void canEditShipment(ShipmentDto shipmentDto) {
+  public void canEditShipment(@NotNull ShipmentDto shipmentDto) {
     UUID orderId = shipmentDto.getOrder().getId();
     Order order = orderRepository.findOne(orderId);
     if (order == null) {

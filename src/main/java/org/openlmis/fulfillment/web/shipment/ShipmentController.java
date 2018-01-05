@@ -131,12 +131,12 @@ public class ShipmentController extends BaseController {
     profiler.start("FIND_IN_DB");
     Shipment shipment = shipmentRepository.findOne(id);
 
-    profiler.start("CHECK_RIGHTS");
-    permissionService.canViewShipment(shipment);
-
     if (shipment == null) {
       throw new NotFoundException(SHIPMENT_NOT_FOUND);
     }
+
+    profiler.start("CHECK_RIGHTS");
+    permissionService.canViewShipment(shipment);
 
     profiler.start("CREATE_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
