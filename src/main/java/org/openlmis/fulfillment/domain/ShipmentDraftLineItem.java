@@ -25,11 +25,11 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "shipment_line_items")
-@TypeName("ShipmentLineItem")
+@Table(name = "shipment_draft_line_items")
+@TypeName("ShipmentDraftLineItem")
 @AllArgsConstructor
 @ToString
-public class ShipmentLineItem extends BaseEntity {
+public class ShipmentDraftLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
   @Column(nullable = false)
@@ -41,49 +41,29 @@ public class ShipmentLineItem extends BaseEntity {
   @Column(nullable = false)
   private Long quantityShipped;
 
-  private ShipmentLineItem() {}
+  private ShipmentDraftLineItem() {}
 
   /**
-   * Creates new instance based on data from {@link Importer}
+   * Creates new instance based on data from {@link ShipmentLineItem.Importer}
    *
-   * @param importer instance of {@link Importer}
-   * @return new instance of shipment line item.
+   * @param importer instance of {@link ShipmentLineItem.Importer}
+   * @return new instance of shipment draft line item.
    */
-  protected static ShipmentLineItem newInstance(Importer importer) {
-    ShipmentLineItem shipmentLineItem = new ShipmentLineItem(
+  protected static ShipmentDraftLineItem newInstance(ShipmentLineItem.Importer importer) {
+    ShipmentDraftLineItem shipmentLineItem = new ShipmentDraftLineItem(
         importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
   }
 
   /**
-   * Exports data from the given shipment to the instance that implement
-   * {@link Exporter} interface.
+   * Exports data from the given shipment draft to the instance that implement
+   * {@link ShipmentLineItem.Exporter} interface.
    */
-  public void export(Exporter exporter) {
+  public void export(ShipmentLineItem.Exporter exporter) {
     exporter.setId(getId());
     exporter.setOrderableId(orderableId);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
-  }
-
-  public interface Exporter {
-    void setId(UUID id);
-
-    void setOrderableId(UUID orderableId);
-
-    void setLotId(UUID lotId);
-
-    void setQuantityShipped(Long quantityShipped);
-  }
-
-  public interface Importer {
-    UUID getId();
-
-    UUID getOrderableId();
-
-    UUID getLotId();
-
-    Long getQuantityShipped();
   }
 }

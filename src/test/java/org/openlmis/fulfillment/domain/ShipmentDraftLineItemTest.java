@@ -18,11 +18,11 @@ package org.openlmis.fulfillment.domain;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import java.util.UUID;
 
-public class ShipmentLineItemTest {
+public class ShipmentDraftLineItemTest {
 
   private UUID lineItemId = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
@@ -33,7 +33,7 @@ public class ShipmentLineItemTest {
   public void shouldExportValues() {
     DummyShipmentLineItemDto exporter = new DummyShipmentLineItemDto();
 
-    ShipmentLineItem shipmentLineItem = createShipmentLineItem();
+    ShipmentDraftLineItem shipmentLineItem = createShipmentLineItem();
     shipmentLineItem.export(exporter);
 
     assertEquals(lineItemId, exporter.getId());
@@ -42,8 +42,8 @@ public class ShipmentLineItemTest {
     assertEquals(quantityShipped, exporter.getQuantityShipped());
   }
 
-  private ShipmentLineItem createShipmentLineItem() {
-    return new ShipmentLineItemDataBuilder()
+  private ShipmentDraftLineItem createShipmentLineItem() {
+    return new ShipmentDraftLineItemDataBuilder()
         .withId(lineItemId)
         .withLotId(lotId)
         .withOrderableId(orderableId)
@@ -53,8 +53,8 @@ public class ShipmentLineItemTest {
 
   @Test
   public void shouldImplementToString() {
-    ShipmentLineItem shipmentLineItem = new ShipmentLineItemDataBuilder().build();
-    ToStringTestUtils.verify(ShipmentLineItem.class, shipmentLineItem);
+    ShipmentDraftLineItem shipmentLineItem = new ShipmentDraftLineItemDataBuilder().build();
+    ToStringTestUtils.verify(ShipmentDraftLineItem.class, shipmentLineItem);
   }
 
 }

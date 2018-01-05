@@ -20,9 +20,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
-import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
-import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
-import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,19 +29,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class ShipmentTest {
+public class ShipmentDraftTest {
 
   private UUID id = UUID.randomUUID();
   private Order order = new Order(UUID.randomUUID());
-  private CreationDetails shipDetails = new CreationDetailsDataBuilder().build();
   private String notes = "some notes";
 
   private UUID lineItemId = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
-  private List<ShipmentLineItem> lineItems =
-      Collections.singletonList(new ShipmentLineItemDataBuilder()
+  private List<ShipmentDraftLineItem> lineItems =
+      Collections.singletonList(new ShipmentDraftLineItemDataBuilder()
           .withId(lineItemId)
           .withOrderableId(orderableId)
           .withLotId(lotId)
@@ -51,8 +49,8 @@ public class ShipmentTest {
 
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
-    Shipment expected = createShipment();
-    Shipment.Importer importer = new Shipment.Importer() {
+    ShipmentDraft expected = createShipment();
+    ShipmentDraft.Importer importer = new ShipmentDraft.Importer() {
       @Override
       public UUID getId() {
         return id;
@@ -61,11 +59,6 @@ public class ShipmentTest {
       @Override
       public Identifiable getOrder() {
         return order;
-      }
-
-      @Override
-      public CreationDetails getShipDetails() {
-        return shipDetails;
       }
 
       @Override
@@ -80,7 +73,7 @@ public class ShipmentTest {
       }
     };
 
-    Shipment actual = Shipment.newInstance(importer);
+    ShipmentDraft actual = ShipmentDraft.newInstance(importer);
 
     assertThat(expected, new ReflectionEquals(actual));
   }
@@ -88,7 +81,7 @@ public class ShipmentTest {
   @Test
   public void shouldExportValues() {
     Map<String, Object> values = new HashMap<>();
-    Shipment.Exporter exporter = new Shipment.Exporter() {
+    ShipmentDraft.Exporter exporter = new ShipmentDraft.Exporter() {
       @Override
       public void setId(UUID id) {
         values.put("id", id);
@@ -100,30 +93,23 @@ public class ShipmentTest {
       }
 
       @Override
-      public void setShipDetails(CreationDetails shipDetails) {
-        values.put("shipDetails", shipDetails);
-      }
-
-      @Override
       public void setNotes(String notes) {
         values.put("notes", notes);
       }
     };
 
-    Shipment shipment = createShipment();
+    ShipmentDraft shipment = createShipment();
     shipment.export(exporter);
 
     assertThat(values, hasEntry("id", id));
     assertThat(values, hasEntry("order", order));
-    assertThat(values, hasEntry("shipDetails", shipDetails));
     assertThat(values, hasEntry("notes", notes));
   }
 
-  private Shipment createShipment() {
-    return new ShipmentDataBuilder()
+  private ShipmentDraft createShipment() {
+    return new ShipmentDraftDataBuilder()
         .withId(id)
         .withOrder(order)
-        .withShipDetails(shipDetails)
         .withNotes(notes)
         .withLineItems(lineItems)
         .build();
@@ -131,8 +117,8 @@ public class ShipmentTest {
 
   @Test
   public void shouldImplementToString() {
-    Shipment shipment = new ShipmentDataBuilder().build();
-    ToStringTestUtils.verify(Shipment.class, shipment);
+    ShipmentDraft shipment = new ShipmentDraftDataBuilder().build();
+    ToStringTestUtils.verify(ShipmentDraft.class, shipment);
   }
 
 }
