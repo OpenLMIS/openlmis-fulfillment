@@ -27,7 +27,7 @@
       "title": "notes"
     },
     "lineItems": {
-      "type": ["array", "null"],
+      "type": ["array"],
       "title": "line items",
       "items": {
         "type": "object",
@@ -35,5 +35,8 @@
       },
       "uniqueItems": true
     }
-  }
+  },
+  "required": [
+    "lineItems"
+  ]
 }
