@@ -19,13 +19,29 @@ import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 
 public class ShipmentLineItemDtoDataBuilder {
 
+  private ShipmentLineItemDto shipmentLineItemDto;
+
+  ShipmentLineItemDtoDataBuilder() {
+    shipmentLineItemDto = new ShipmentLineItemDto();
+    shipmentLineItemDto.setServiceUrl("localhost");
+    new ShipmentLineItemDataBuilder().build().export(shipmentLineItemDto);
+  }
+
+  public ShipmentLineItemDtoDataBuilder withoutOrderable() {
+    shipmentLineItemDto.setOrderable(null);
+    return this;
+  }
+
+  public ShipmentLineItemDtoDataBuilder withoutLot() {
+    shipmentLineItemDto.setLot(null);
+    return this;
+  }
+
   /**
    * Builds instance of {@link ShipmentLineItemDto}.
    */
   public ShipmentLineItemDto build() {
-    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDto();
-    shipmentLineItemDto.setServiceUrl("localhost");
-    new ShipmentLineItemDataBuilder().build().export(shipmentLineItemDto);
+    shipmentLineItemDto.setServiceUrl(null);
     return shipmentLineItemDto;
   }
 

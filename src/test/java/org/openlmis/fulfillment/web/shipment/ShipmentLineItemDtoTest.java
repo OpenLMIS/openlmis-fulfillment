@@ -15,6 +15,9 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
@@ -34,6 +37,38 @@ public class ShipmentLineItemDtoTest {
   public void shouldImplementToString() {
     ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
     ToStringTestUtils.verify(ShipmentLineItemDto.class, shipmentLineItemDto);
+  }
+
+  @Test
+  public void shouldGetOrderableId() {
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
+
+    assertEquals(shipmentLineItemDto.getOrderable().getId(), shipmentLineItemDto.getOrderableId());
+  }
+
+  @Test
+  public void shouldReturnNullIfOrderableIsNull() {
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder()
+        .withoutOrderable()
+        .build();
+
+    assertNull(shipmentLineItemDto.getOrderableId());
+  }
+
+  @Test
+  public void shouldGetLotId() {
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
+
+    assertEquals(shipmentLineItemDto.getLot().getId(), shipmentLineItemDto.getLotId());
+  }
+
+  @Test
+  public void shouldReturnNullIfLotIsNull() {
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder()
+        .withoutLot()
+        .build();
+
+    assertNull(shipmentLineItemDto.getLotId());
   }
 
 }

@@ -42,6 +42,7 @@ import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
+import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,7 +95,22 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     shipmentDtoExpected = new ShipmentDto();
     shipmentDtoExpected.setServiceUrl(serviceUrl);
     ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder().build();
-    shipment = new ShipmentDataBuilder()
+    shipment = generateShipment(lineItem);
+    List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
+    shipmentDtoExpected.setLineItems(lineItemsDtos);
+
+    shipmentDto = new ShipmentDtoDataBuilder()
+        .withoutId()
+        .withoutShippedBy()
+        .withoutShippedDate()
+        .withOrder(new ObjectReferenceDto(shipmentDtoExpected.getOrder().getId()))
+        .withNotes(shipmentDtoExpected.getNotes())
+        .withLineItems(lineItemsDtos)
+        .build();
+  }
+
+  private Shipment generateShipment(ShipmentLineItem lineItem) {
+    return new ShipmentDataBuilder()
         .withId(SAVE_ANSWER_ID)
         .withShipDetails(new CreationDetailsDataBuilder()
             .withUserId(userId)
@@ -103,12 +119,6 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .withOrder(new Order(UUID.randomUUID()))
         .withLineItems(Collections.singletonList(lineItem))
         .build();
-    List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
-    shipmentDtoExpected.setLineItems(lineItemsDtos);
-
-    shipmentDto = new ShipmentDto(null, null,
-        new ObjectReferenceDto(shipmentDtoExpected.getOrder().getId()), null, null,
-        shipmentDtoExpected.getNotes(), lineItemsDtos);
   }
 
   private List<ShipmentLineItemDto> exportToDto(ShipmentLineItem lineItem) {
