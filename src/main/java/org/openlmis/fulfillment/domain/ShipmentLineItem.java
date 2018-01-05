@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Type;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -25,6 +26,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "shipment_line_items")
 @AllArgsConstructor
+@ToString
 public class ShipmentLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)

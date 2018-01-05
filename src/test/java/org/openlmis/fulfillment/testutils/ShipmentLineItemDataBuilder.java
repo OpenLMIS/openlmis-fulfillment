@@ -54,7 +54,7 @@ public class ShipmentLineItemDataBuilder {
    * Builds instance of {@link ShipmentLineItem}.
    */
   public ShipmentLineItem build() {
-    ShipmentLineItem line = new ShipmentLineItem(orderableId,lotId, quantityShipped);
+    ShipmentLineItem line = new ShipmentLineItem(orderableId, lotId, quantityShipped);
     line.setId(id);
     return line;
   }

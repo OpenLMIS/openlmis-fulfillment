@@ -114,6 +114,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private List<ShipmentLineItemDto> exportToDto(ShipmentLineItem lineItem) {
     shipment.export(shipmentDtoExpected);
     ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
+    lineItemDto.setServiceUrl(serviceUrl);
     lineItem.export(lineItemDto);
 
     return Collections.singletonList(lineItemDto);

@@ -13,26 +13,20 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service;
+package org.openlmis.fulfillment.web.shipment;
 
-import org.apache.commons.lang3.StringUtils;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 
-public class ResourceNames {
-  public static final String SEPARATOR = "/";
-  public static final String BASE_PATH = "/api";
-  public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
-  public static final String ORDERS = "orders";
-  public static final String ORDERABLES = "orderables";
-  public static final String LOTS = "lots";
+public class ShipmentLineItemDtoDataBuilder {
 
-  private ResourceNames() {}
-
-  public static String getUsersPath() {
-    return getPath(USERS);
+  /**
+   * Builds instance of {@link ShipmentLineItemDto}.
+   */
+  public ShipmentLineItemDto build() {
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDto();
+    shipmentLineItemDto.setServiceUrl("localhost");
+    new ShipmentLineItemDataBuilder().build().export(shipmentLineItemDto);
+    return shipmentLineItemDto;
   }
 
-  private static String getPath(String resourseName) {
-    return StringUtils.joinWith(SEPARATOR, BASE_PATH, resourseName) + SEPARATOR;
-  }
 }

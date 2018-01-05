@@ -21,10 +21,12 @@ import static org.openlmis.fulfillment.service.ResourceNames.SEPARATOR;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.openlmis.fulfillment.domain.Identifiable;
 import java.util.UUID;
 
 @EqualsAndHashCode
+@ToString
 public class ObjectReferenceDto implements Identifiable {
 
   @Getter

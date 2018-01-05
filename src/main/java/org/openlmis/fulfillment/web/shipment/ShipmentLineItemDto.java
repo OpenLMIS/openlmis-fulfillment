@@ -15,6 +15,10 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
+import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,13 +26,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"serviceUrl"})
 @ToString
-public class ShipmentLineItemDto implements ShipmentLineItem.Exporter, ShipmentLineItem.Importer {
+public final class ShipmentLineItemDto
+    implements ShipmentLineItem.Exporter, ShipmentLineItem.Importer {
+
+  @Setter
+  private String serviceUrl;
 
   @Getter
   @Setter
@@ -36,13 +45,47 @@ public class ShipmentLineItemDto implements ShipmentLineItem.Exporter, ShipmentL
 
   @Getter
   @Setter
-  private UUID orderableId;
+  private ObjectReferenceDto orderable;
 
   @Getter
   @Setter
-  private UUID lotId;
+  private ObjectReferenceDto lot;
 
   @Getter
   @Setter
   private Long quantityShipped;
+
+  @Override
+  @JsonIgnore
+  public void setOrderableId(UUID orderableId) {
+    if (orderableId != null) {
+      this.orderable = ObjectReferenceDto.create(orderableId, serviceUrl, ORDERABLES);
+    }
+  }
+
+  @Override
+  @JsonIgnore
+  public void setLotId(UUID lotId) {
+    if (lotId != null) {
+      this.lot = ObjectReferenceDto.create(lotId, serviceUrl, LOTS);
+    }
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getOrderableId() {
+    if (orderable == null) {
+      return null;
+    }
+    return orderable.getId();
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getLotId() {
+    if (lot == null) {
+      return null;
+    }
+    return lot.getId();
+  }
 }

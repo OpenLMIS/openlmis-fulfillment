@@ -18,15 +18,13 @@ package org.openlmis.fulfillment.web.shipment;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import java.util.Collections;
 
-public class ShipmentDtoTest {
+public class ShipmentLineItemDtoTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier.forClass(ShipmentDto.class)
+    EqualsVerifier.forClass(ShipmentLineItemDto.class)
         .suppress(Warning.NONFINAL_FIELDS)
         .withIgnoredFields("serviceUrl")
         .verify();
@@ -34,13 +32,8 @@ public class ShipmentDtoTest {
 
   @Test
   public void shouldImplementToString() {
-    ShipmentDto shipmentDto = new ShipmentDto();
-    shipmentDto.setServiceUrl("localhost");
-    new ShipmentDataBuilder().build().export(shipmentDto);
-
     ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
-    shipmentDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
-
     ToStringTestUtils.verify(ShipmentLineItemDto.class, shipmentLineItemDto);
   }
+
 }

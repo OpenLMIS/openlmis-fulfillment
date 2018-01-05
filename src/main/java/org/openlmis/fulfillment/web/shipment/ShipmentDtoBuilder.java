@@ -59,6 +59,7 @@ public class ShipmentDtoBuilder {
 
   private ShipmentLineItemDto exportToDto(ShipmentLineItem lineItem) {
     ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
+    lineItemDto.setServiceUrl(serviceUrl);
     lineItem.export(lineItemDto);
     return lineItemDto;
   }
