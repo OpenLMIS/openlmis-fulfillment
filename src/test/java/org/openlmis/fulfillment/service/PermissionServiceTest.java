@@ -307,7 +307,7 @@ public class PermissionServiceTest {
   public void canManageShipment() throws Exception {
     mockFulfillmentHasRight(shipmentsEditRightId, true, facilityId);
 
-    permissionService.canEditShipments(shipmentDto);
+    permissionService.canEditShipment(shipmentDto);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyFulfillmentRight(order, SHIPMENTS_EDIT, shipmentsEditRightId, facilityId);
@@ -317,7 +317,7 @@ public class PermissionServiceTest {
   public void cannotManageShipmentWhenUserHasNoRights() throws Exception {
     expectException(SHIPMENTS_EDIT);
 
-    permissionService.canEditShipments(shipmentDto);
+    permissionService.canEditShipment(shipmentDto);
   }
 
   @Test
@@ -326,14 +326,14 @@ public class PermissionServiceTest {
     when(orderRepository.findOne(order.getId())).thenReturn(null);
     expectException(SHIPMENTS_EDIT);
 
-    permissionService.canEditShipments(shipmentDto);
+    permissionService.canEditShipment(shipmentDto);
   }
 
   @Test
   public void canViewShipment() throws Exception {
     mockFulfillmentHasRight(shipmentsViewRightId, true, facilityId);
 
-    permissionService.canViewShipments(shipment);
+    permissionService.canViewShipment(shipment);
 
     InOrder order = inOrder(authenticationHelper, userReferenceDataService);
     verifyFulfillmentRight(order, SHIPMENTS_VIEW, shipmentsViewRightId, facilityId);
@@ -343,7 +343,7 @@ public class PermissionServiceTest {
   public void cannotViewShipmentWhenUserHasNoRights() throws Exception {
     expectException(SHIPMENTS_VIEW);
 
-    permissionService.canViewShipments(shipment);
+    permissionService.canViewShipment(shipment);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {

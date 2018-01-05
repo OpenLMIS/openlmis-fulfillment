@@ -110,7 +110,7 @@ public class PermissionService {
    *
    * @param shipment a shipment
    */
-  public void canViewShipments(Shipment shipment) {
+  public void canViewShipment(Shipment shipment) {
     checkPermission(SHIPMENTS_VIEW, shipment.getOrder().getSupplyingFacilityId());
   }
 
@@ -119,7 +119,7 @@ public class PermissionService {
    *
    * @param shipmentDto a shipment dto
    */
-  public void canEditShipments(ShipmentDto shipmentDto) {
+  public void canEditShipment(ShipmentDto shipmentDto) {
     UUID orderId = shipmentDto.getOrder().getId();
     Order order = orderRepository.findOne(orderId);
     if (order == null) {

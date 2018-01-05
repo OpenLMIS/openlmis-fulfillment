@@ -157,7 +157,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToEditShipments() {
     doThrow(new MissingPermissionException("test"))
-        .when(permissionService).canEditShipments(any(ShipmentDto.class));
+        .when(permissionService).canEditShipment(any(ShipmentDto.class));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -209,7 +209,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToGetShipment() {
     doThrow(new MissingPermissionException("test"))
-        .when(permissionService).canViewShipments(shipment);
+        .when(permissionService).canViewShipment(shipment);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
