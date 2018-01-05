@@ -43,7 +43,7 @@ import javax.persistence.Table;
 public class Shipment extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "orderid")
+  @JoinColumn(name = "orderid", unique = true)
   @Getter
   private Order order;
 
