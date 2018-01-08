@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.repository;
 
-import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.junit.Before;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
@@ -28,7 +27,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Collections;
 import java.util.UUID;
 
-@JaversSpringDataAuditable
 public class ShipmentDraftRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<ShipmentDraft> {
 
