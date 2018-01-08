@@ -107,7 +107,7 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
     Assert.assertFalse(repository.exists(id));
   }
 
-  static Pageable mockPageable(int pageSize, int pageNumber) {
+  Pageable mockPageable(int pageSize, int pageNumber) {
     Pageable pageable = mock(Pageable.class);
     given(pageable.getPageNumber()).willReturn(pageNumber);
     given(pageable.getPageSize()).willReturn(pageSize);
