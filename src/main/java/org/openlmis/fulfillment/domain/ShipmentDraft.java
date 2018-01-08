@@ -54,6 +54,7 @@ public class ShipmentDraft extends BaseEntity {
   @JoinColumn(name = "shipmentdraftid", nullable = false)
   private List<ShipmentDraftLineItem> lineItems;
 
+  // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentDraft() {}
 
   public List<ShipmentDraftLineItem> getLineItems() {
@@ -69,8 +70,9 @@ public class ShipmentDraft extends BaseEntity {
   public static ShipmentDraft newInstance(Importer importer) {
     List<ShipmentDraftLineItem> items = new ArrayList<>(importer.getLineItems().size());
     if (importer.getLineItems() != null) {
-      importer.getLineItems().forEach(
-          sli -> items.add(ShipmentDraftLineItem.newInstance(sli)));
+      importer.getLineItems().stream()
+          .map(ShipmentDraftLineItem::newInstance)
+          .forEach(items::add);
     }
 
     ShipmentDraft inventoryItem = new ShipmentDraft(

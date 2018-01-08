@@ -40,6 +40,7 @@ public class ShipmentDraftLineItem extends BaseEntity {
 
   private Long quantityShipped;
 
+  // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentDraftLineItem() {}
 
   /**
