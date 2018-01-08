@@ -15,8 +15,6 @@
 
 package org.openlmis.fulfillment.web.util;
 
-import static org.openlmis.fulfillment.service.ResourceNames.USERS;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -154,7 +152,7 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   @Override
   public void setUpdaterId(UUID updaterId) {
     if (updaterId != null) {
-      this.lastUpdater = UserObjectReferenceDto.create(updaterId, serviceUrl, USERS);
+      this.lastUpdater = UserObjectReferenceDto.create(updaterId, serviceUrl);
     }
   }
 

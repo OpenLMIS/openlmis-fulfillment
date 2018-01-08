@@ -21,7 +21,6 @@ public class ResourceNames {
   public static final String SEPARATOR = "/";
   public static final String BASE_PATH = "/api";
   public static final String USERS = "users";
-  public static final String SHIPMENTS = "shipments";
   public static final String ORDERS = "orders";
   public static final String ORDERABLES = "orderables";
   public static final String LOTS = "lots";

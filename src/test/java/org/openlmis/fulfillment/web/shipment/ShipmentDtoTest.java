@@ -15,13 +15,19 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static org.junit.Assert.assertEquals;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.fulfillment.service.ResourceNames;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import java.util.Collections;
+import java.util.UUID;
 
 public class ShipmentDtoTest {
+
+  public static final String SERVICE_URL = "localhost";
 
   @Test
   public void equalsContract() {
@@ -39,5 +45,21 @@ public class ShipmentDtoTest {
     shipmentDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
 
     ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
+  }
+
+  @Test
+  public void shouldSetReferenceDtoForShippedBy() {
+    // No use of data builders because we actually tests setter here and builder hides what
+    // it really does.
+    ShipmentDto shipmentDto = new ShipmentDto();
+    shipmentDto.setServiceUrl(SERVICE_URL);
+
+    UUID userId = UUID.randomUUID();
+    shipmentDto.setUserId(userId);
+
+    assertEquals(userId, shipmentDto.getShippedBy().getId());
+    assertEquals(
+        SERVICE_URL + ResourceNames.getUsersPath() + userId,
+        shipmentDto.getShippedBy().getHref());
   }
 }

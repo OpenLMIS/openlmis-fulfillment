@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static org.openlmis.fulfillment.service.ResourceNames.USERS;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,8 +38,8 @@ public final class UserObjectReferenceDto extends ObjectReferenceDto {
     this.username = null;
   }
 
-  public static UserObjectReferenceDto create(UUID id, String serviceUrl, String resourceName) {
-    return new UserObjectReferenceDto(id, serviceUrl, resourceName);
+  public static UserObjectReferenceDto create(UUID id, String serviceUrl) {
+    return new UserObjectReferenceDto(id, serviceUrl, USERS);
   }
 
 }

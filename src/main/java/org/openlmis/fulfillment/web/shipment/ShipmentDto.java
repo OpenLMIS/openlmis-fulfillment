@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.web.shipment;
 
 import static org.openlmis.fulfillment.service.ResourceNames.ORDERS;
-import static org.openlmis.fulfillment.service.ResourceNames.SHIPMENTS;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -75,7 +74,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   @JsonIgnore
   public void setUserId(UUID updaterId) {
     if (updaterId != null) {
-      shippedBy = UserObjectReferenceDto.create(updaterId, serviceUrl, SHIPMENTS);
+      shippedBy = UserObjectReferenceDto.create(updaterId, serviceUrl);
     }
   }
 
