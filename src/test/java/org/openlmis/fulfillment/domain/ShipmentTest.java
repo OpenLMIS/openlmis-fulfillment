@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -76,6 +77,19 @@ public class ShipmentTest {
   public void shouldImplementToString() {
     Shipment shipment = new ShipmentDataBuilder().build();
     ToStringTestUtils.verify(Shipment.class, shipment);
+  }
+
+  @Test
+  public void shouldGetCopyOfLineItems() {
+    Shipment shipment = createShipment();
+
+    UUID newId = UUID.randomUUID();
+    ShipmentLineItem unchangedView = shipment.getLineItems().get(0);
+    ShipmentLineItem changedView = shipment.getLineItems().get(0);
+    changedView.setId(newId);
+
+    assertEquals(lineItems.get(0), unchangedView);
+    assertNotEquals(lineItems.get(0).getId(), changedView.getId());
   }
 
   private Shipment createShipment() {

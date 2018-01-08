@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
@@ -64,10 +65,15 @@ public class Shipment extends BaseEntity {
   @JoinColumn(name = "shipmentid", nullable = false)
   private List<ShipmentLineItem> lineItems;
 
+  // Constructor needed by framework. Use all args constructor to create new instance.
   private Shipment() {}
 
+  /**
+   * Gets a view of line items.
+   */
   public List<ShipmentLineItem> getLineItems() {
-    return Collections.unmodifiableList(lineItems);
+    return Collections.unmodifiableList(
+        lineItems.stream().map(ShipmentLineItem::copy).collect(Collectors.toList()));
   }
 
   /**
@@ -79,8 +85,9 @@ public class Shipment extends BaseEntity {
   public static Shipment newInstance(Importer importer) {
     List<ShipmentLineItem> items = new ArrayList<>(importer.getLineItems().size());
     if (importer.getLineItems() != null) {
-      importer.getLineItems().forEach(
-          sli -> items.add(ShipmentLineItem.newInstance(sli)));
+      importer.getLineItems().stream()
+          .map(ShipmentLineItem::newInstance)
+          .forEach(items::add);
     }
 
     Shipment inventoryItem = new Shipment(

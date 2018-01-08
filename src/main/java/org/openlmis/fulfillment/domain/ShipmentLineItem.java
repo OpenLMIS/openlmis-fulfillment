@@ -67,6 +67,16 @@ public class ShipmentLineItem extends BaseEntity {
     exporter.setQuantityShipped(quantityShipped);
   }
 
+  /**
+   * Returns a copy of line item.
+   */
+  public ShipmentLineItem copy() {
+    ShipmentLineItem clone = new ShipmentLineItem(orderableId, lotId, quantityShipped);
+    clone.setId(id);
+
+    return clone;
+  }
+
   public interface Exporter {
     void setId(UUID id);
 
