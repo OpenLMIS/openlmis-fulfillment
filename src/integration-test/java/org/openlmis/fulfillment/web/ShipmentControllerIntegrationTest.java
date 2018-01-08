@@ -29,6 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Answers;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
@@ -62,8 +63,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Value("${service.url}")
   private String serviceUrl;
 
-  @MockBean
-  private ShipmentRepository shipmentRepository;
+  @MockBean(answer = Answers.RETURNS_MOCKS)
+  protected ShipmentRepository shipmentRepository;
 
   @MockBean
   private AuthenticationHelper authenticationHelper;

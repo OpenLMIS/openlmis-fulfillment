@@ -35,13 +35,12 @@ public class ObjectReferenceDto implements Identifiable {
   @Getter
   private final String href;
 
-  public ObjectReferenceDto(UUID id) {
-    this.id = id;
-    this.href = null;
-  }
-
   protected ObjectReferenceDto() {
     this(null);
+  }
+
+  public ObjectReferenceDto(UUID id) {
+    this(id, null);
   }
 
   /**
@@ -50,8 +49,12 @@ public class ObjectReferenceDto implements Identifiable {
    * @param id   object id
    */
   public ObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
+    this(id, joinWith(SEPARATOR, serviceUrl + BASE_PATH, resourceName, id));
+  }
+
+  private ObjectReferenceDto(UUID id, String href) {
     this.id = id;
-    this.href = joinWith(SEPARATOR, serviceUrl + BASE_PATH, resourceName, id);
+    this.href = href;
   }
 
   public static ObjectReferenceDto create(UUID id, String serviceUrl, String resourceName) {

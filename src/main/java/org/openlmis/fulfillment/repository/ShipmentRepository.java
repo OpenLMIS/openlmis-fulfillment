@@ -15,9 +15,11 @@
 
 package org.openlmis.fulfillment.repository;
 
+import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.UUID;
 
+@JaversSpringDataAuditable
 public interface ShipmentRepository extends PagingAndSortingRepository<Shipment, UUID> {
 }
