@@ -114,7 +114,7 @@ public class PermissionServiceTest {
   private UUID systemSettingsManageRightId = UUID.randomUUID();
   private UUID programId = UUID.randomUUID();
   private UUID facilityId = UUID.randomUUID();
-  private Order order = new Order();
+  private Order order;
   private ProofOfDelivery proofOfDelivery;
   private SecurityContext securityContext;
   private OAuth2Authentication userClient;
@@ -125,7 +125,6 @@ public class PermissionServiceTest {
 
   @Before
   public void setUp() {
-
     securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
 
@@ -133,45 +132,23 @@ public class PermissionServiceTest {
     userClient = new OAuth2AuthenticationDataBuilder().buildUserAuthentication();
     apiKeyClient = new OAuth2AuthenticationDataBuilder().buildApiKeyAuthentication();
 
-    order.setCreatedById(userId);
-    order.setProgramId(programId);
-    order.setSupplyingFacilityId(facilityId);
-    order.setOrderLineItems(Lists.newArrayList());
-    order.setId(UUID.randomUUID());
-
+    order = createOrder();
     proofOfDelivery = new ProofOfDelivery(order);
-
-    shipment = new ShipmentDataBuilder().withOrder(order).build();
-    shipmentDto = new ShipmentDto();
-    shipmentDto.setOrder(new ObjectReferenceDto(order.getId()));
+    shipment = createShipment();
 
     when(orderRepository.findOne(order.getId())).thenReturn(order);
-
     when(user.getId()).thenReturn(userId);
 
-    when(fulfillmentTransferOrderRight.getId()).thenReturn(fulfillmentTransferOrderRightId);
-    when(fulfillmentManagePodRight.getId()).thenReturn(fulfillmentManagePodRightId);
-    when(fulfillmentOrdersViewRight.getId()).thenReturn(fulfillmentOrdersViewRightId);
-    when(fulfillmentOrdersEditRight.getId()).thenReturn(fulfillmentOrdersEditRightId);
-    when(systemSettingsManageRight.getId()).thenReturn(systemSettingsManageRightId);
-    when(shipmentsEditRight.getId()).thenReturn(shipmentsEditRightId);
-    when(shipmentsViewRight.getId()).thenReturn(shipmentsViewRightId);
+    mockRight(fulfillmentTransferOrderRight, fulfillmentTransferOrderRightId, ORDERS_TRANSFER);
+    mockRight(fulfillmentManagePodRight, fulfillmentManagePodRightId, PODS_MANAGE);
+    mockRight(fulfillmentOrdersViewRight, fulfillmentOrdersViewRightId, ORDERS_VIEW);
+    mockRight(fulfillmentOrdersEditRight, fulfillmentOrdersEditRightId, ORDERS_EDIT);
+    mockRight(systemSettingsManageRight, systemSettingsManageRightId, SYSTEM_SETTINGS_MANAGE);
+    mockRight(shipmentsEditRight, shipmentsEditRightId, SHIPMENTS_EDIT);
+    mockRight(shipmentsViewRight, shipmentsViewRightId, SHIPMENTS_VIEW);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
     when(securityContext.getAuthentication()).thenReturn(userClient);
-
-    when(authenticationHelper.getRight(ORDERS_TRANSFER))
-        .thenReturn(fulfillmentTransferOrderRight);
-    when(authenticationHelper.getRight(PODS_MANAGE))
-        .thenReturn(fulfillmentManagePodRight);
-    when(authenticationHelper.getRight(ORDERS_VIEW))
-        .thenReturn(fulfillmentOrdersViewRight);
-    when(authenticationHelper.getRight(ORDERS_EDIT))
-        .thenReturn(fulfillmentOrdersEditRight);
-    when(authenticationHelper.getRight(SYSTEM_SETTINGS_MANAGE))
-        .thenReturn(systemSettingsManageRight);
-    when(authenticationHelper.getRight(SHIPMENTS_VIEW)).thenReturn(shipmentsViewRight);
-    when(authenticationHelper.getRight(SHIPMENTS_EDIT)).thenReturn(shipmentsEditRight);
 
     ReflectionTestUtils.setField(permissionService, "serviceTokenClientId", SERVICE_CLIENT_ID);
     ReflectionTestUtils.setField(permissionService, "apiKeyPrefix", API_KEY_PREFIX);
@@ -344,6 +321,29 @@ public class PermissionServiceTest {
     expectException(SHIPMENTS_VIEW);
 
     permissionService.canViewShipment(shipment);
+  }
+
+  private Order createOrder() {
+    Order order = new Order();
+    order.setCreatedById(userId);
+    order.setProgramId(programId);
+    order.setSupplyingFacilityId(facilityId);
+    order.setOrderLineItems(Lists.newArrayList());
+    order.setId(UUID.randomUUID());
+    return order;
+  }
+
+  private Shipment createShipment() {
+    shipment = new ShipmentDataBuilder().withOrder(order).build();
+    shipmentDto = new ShipmentDto();
+    shipmentDto.setOrder(new ObjectReferenceDto(order.getId()));
+    return shipment;
+  }
+
+  private void mockRight(RightDto right, UUID rightId, String rightName) {
+    when(authenticationHelper.getRight(rightName))
+        .thenReturn(right);
+    when(right.getId()).thenReturn(rightId, rightId);
   }
 
   private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {
