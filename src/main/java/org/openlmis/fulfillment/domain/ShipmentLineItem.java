@@ -41,6 +41,7 @@ public class ShipmentLineItem extends BaseEntity {
   @Column(nullable = false)
   private Long quantityShipped;
 
+  // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentLineItem() {}
 
   /**
