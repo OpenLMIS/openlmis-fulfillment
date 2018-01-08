@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -25,9 +25,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class ShipmentTest {
@@ -52,71 +50,32 @@ public class ShipmentTest {
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
     Shipment expected = createShipment();
-    Shipment.Importer importer = new Shipment.Importer() {
-      @Override
-      public UUID getId() {
-        return id;
-      }
+    DummyShipmentDto shipmentDto =
+        new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
+            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)));
 
-      @Override
-      public Identifiable getOrder() {
-        return order;
-      }
-
-      @Override
-      public CreationDetails getShipDetails() {
-        return shipDetails;
-      }
-
-      @Override
-      public String getNotes() {
-        return notes;
-      }
-
-      @Override
-      public List<ShipmentLineItem.Importer> getLineItems() {
-        return Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped));
-      }
-    };
-
-    Shipment actual = Shipment.newInstance(importer);
+    Shipment actual = Shipment.newInstance(shipmentDto);
 
     assertThat(expected, new ReflectionEquals(actual));
   }
 
   @Test
   public void shouldExportValues() {
-    Map<String, Object> values = new HashMap<>();
-    Shipment.Exporter exporter = new Shipment.Exporter() {
-      @Override
-      public void setId(UUID id) {
-        values.put("id", id);
-      }
-
-      @Override
-      public void setOrder(Order order) {
-        values.put("order", order);
-      }
-
-      @Override
-      public void setShipDetails(CreationDetails shipDetails) {
-        values.put("shipDetails", shipDetails);
-      }
-
-      @Override
-      public void setNotes(String notes) {
-        values.put("notes", notes);
-      }
-    };
+    DummyShipmentDto shipmentDto = new DummyShipmentDto();
 
     Shipment shipment = createShipment();
-    shipment.export(exporter);
+    shipment.export(shipmentDto);
 
-    assertThat(values, hasEntry("id", id));
-    assertThat(values, hasEntry("order", order));
-    assertThat(values, hasEntry("shipDetails", shipDetails));
-    assertThat(values, hasEntry("notes", notes));
+    assertEquals(id, shipmentDto.getId());
+    assertEquals(order, shipmentDto.getOrder());
+    assertEquals(shipDetails, shipmentDto.getShipDetails());
+    assertEquals(notes, shipmentDto.getNotes());
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    Shipment shipment = new ShipmentDataBuilder().build();
+    ToStringTestUtils.verify(Shipment.class, shipment);
   }
 
   private Shipment createShipment() {
@@ -127,12 +86,6 @@ public class ShipmentTest {
         .withNotes(notes)
         .withLineItems(lineItems)
         .build();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    Shipment shipment = new ShipmentDataBuilder().build();
-    ToStringTestUtils.verify(Shipment.class, shipment);
   }
 
 }

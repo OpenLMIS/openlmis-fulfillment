@@ -42,6 +42,12 @@ public class ShipmentLineItemTest {
     assertEquals(quantityShipped, exporter.getQuantityShipped());
   }
 
+  @Test
+  public void shouldImplementToString() {
+    ShipmentLineItem shipmentLineItem = new ShipmentLineItemDataBuilder().build();
+    ToStringTestUtils.verify(ShipmentLineItem.class, shipmentLineItem);
+  }
+
   private ShipmentLineItem createShipmentLineItem() {
     return new ShipmentLineItemDataBuilder()
         .withId(lineItemId)
@@ -49,12 +55,6 @@ public class ShipmentLineItemTest {
         .withOrderableId(orderableId)
         .withQuantityShipped(quantityShipped)
         .build();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ShipmentLineItem shipmentLineItem = new ShipmentLineItemDataBuilder().build();
-    ToStringTestUtils.verify(ShipmentLineItem.class, shipmentLineItem);
   }
 
 }
