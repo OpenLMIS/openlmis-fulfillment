@@ -54,6 +54,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
+import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -134,7 +135,11 @@ public class PermissionServiceTest {
 
     order = createOrder();
     proofOfDelivery = new ProofOfDelivery(order);
-    shipment = createShipment();
+
+    shipment = new ShipmentDataBuilder().withOrder(order).build();
+    shipmentDto = new ShipmentDtoDataBuilder()
+        .withOrder(new ObjectReferenceDto(order.getId()))
+        .build();
 
     when(orderRepository.findOne(order.getId())).thenReturn(order);
     when(user.getId()).thenReturn(userId);
@@ -331,13 +336,6 @@ public class PermissionServiceTest {
     order.setOrderLineItems(Lists.newArrayList());
     order.setId(UUID.randomUUID());
     return order;
-  }
-
-  private Shipment createShipment() {
-    shipment = new ShipmentDataBuilder().withOrder(order).build();
-    shipmentDto = new ShipmentDto();
-    shipmentDto.setOrder(new ObjectReferenceDto(order.getId()));
-    return shipment;
   }
 
   private void mockRight(RightDto right, UUID rightId, String rightName) {
