@@ -15,11 +15,15 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.fulfillment.domain.BaseEntity;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -102,4 +106,13 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
     repository.delete(id);
     Assert.assertFalse(repository.exists(id));
   }
+
+  static Pageable mockPageable(int pageSize, int pageNumber) {
+    Pageable pageable = mock(Pageable.class);
+    given(pageable.getPageNumber()).willReturn(pageNumber);
+    given(pageable.getPageSize()).willReturn(pageSize);
+    given(pageable.getOffset()).willReturn(pageSize * pageNumber);
+    return pageable;
+  }
+
 }

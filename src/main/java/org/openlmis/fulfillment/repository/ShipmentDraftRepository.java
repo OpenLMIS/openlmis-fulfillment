@@ -16,10 +16,15 @@
 package org.openlmis.fulfillment.repository;
 
 import org.javers.spring.annotation.JaversSpringDataAuditable;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.UUID;
 
 @JaversSpringDataAuditable
 public interface ShipmentDraftRepository extends PagingAndSortingRepository<ShipmentDraft, UUID> {
+
+  Page<ShipmentDraft> findByOrder(Order order, Pageable pageable);
 }

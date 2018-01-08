@@ -15,7 +15,10 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
+import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
@@ -23,6 +26,7 @@ import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.CrudRepository;
 import java.util.Collections;
 import java.util.UUID;
@@ -65,6 +69,22 @@ public class ShipmentDraftRepositoryIntegrationTest
     shipmentLineItem = new ShipmentDraftLineItemDataBuilder()
         .withoutId()
         .build();
+  }
+
+  @Test
+  public void shouldFindShipmentDraftByOrder() {
+    ShipmentDraft save = shipmentDraftRepository.save(generateInstance());
+
+    Page<ShipmentDraft> page = shipmentDraftRepository.findByOrder(order, mockPageable(10, 0));
+
+    assertEquals(1, page.getContent().size());
+    assertEquals(save.getId(), page.getContent().get(0).getId());
+
+    assertEquals(10, page.getSize());
+    assertEquals(0, page.getNumber());
+    assertEquals(1, page.getNumberOfElements());
+    assertEquals(1, page.getTotalElements());
+    assertEquals(1, page.getTotalPages());
   }
 
 }

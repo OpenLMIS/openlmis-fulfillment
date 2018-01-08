@@ -813,7 +813,7 @@ resourceTypes:
                     application/json:
                       schema: localizedMessage
       get:
-          is: [ secured ]
+          is: [ secured, paginated ]
           description: Get shipment drafts.
           queryParameters:
               orderId:
@@ -827,6 +827,10 @@ resourceTypes:
                   body:
                     application/json:
                       schema: shipmentDraftPage
+              400:
+                  body:
+                    application/json:
+                      schema: localizedMessage
               401:
                   body:
                     application/json:

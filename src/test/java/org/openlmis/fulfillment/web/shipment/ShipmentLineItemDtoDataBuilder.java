@@ -21,7 +21,10 @@ public class ShipmentLineItemDtoDataBuilder {
 
   private ShipmentLineItemDto shipmentLineItemDto;
 
-  ShipmentLineItemDtoDataBuilder() {
+  /**
+   * Constructs new shipment line item dto data builder.
+   */
+  public ShipmentLineItemDtoDataBuilder() {
     shipmentLineItemDto = new ShipmentLineItemDto();
     shipmentLineItemDto.setServiceUrl("localhost");
     new ShipmentLineItemDataBuilder().build().export(shipmentLineItemDto);

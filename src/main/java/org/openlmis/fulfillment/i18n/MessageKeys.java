@@ -107,6 +107,10 @@ public abstract class MessageKeys {
       join(SERVICE_ERROR_PREFIX, "shipment", "notFound");
   public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
       join(SERVICE_ERROR_PREFIX, "shipment", "orderless", "notSupported");
+  public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
+      join(SERVICE_ERROR_PREFIX, "shipmentDraft", "orderId", "required");
+  public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
+      join(SERVICE_ERROR_PREFIX, "shipmentDraft", "order", "notFound");
 
   protected static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));

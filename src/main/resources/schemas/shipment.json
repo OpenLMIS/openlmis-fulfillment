@@ -9,7 +9,7 @@
       "title": "id"
     },
     "order": {
-      "type": ["object", "null"],
+      "type": ["object"],
       "$ref": "referenceObjectDto.json",
       "title": "order"
     },
@@ -37,6 +37,7 @@
     }
   },
   "required": [
-    "lineItems"
+    "lineItems",
+    "order"
   ]
 }

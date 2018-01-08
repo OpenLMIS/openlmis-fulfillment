@@ -13,19 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web.shipment;
+package org.openlmis.fulfillment.web.shipmentdraft;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDtoDataBuilder;
 import java.util.Collections;
 
-public class ShipmentDtoTest {
+public class ShipmentDraftDtoTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier.forClass(ShipmentDto.class)
+    EqualsVerifier.forClass(ShipmentDraftDto.class)
         .suppress(Warning.NONFINAL_FIELDS)
         .withIgnoredFields("serviceUrl")
         .verify();
@@ -33,11 +35,11 @@ public class ShipmentDtoTest {
 
   @Test
   public void shouldImplementToString() {
-    ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
+    ShipmentDraftDto shipmentDraftDto = new ShipmentDraftDtoDataBuilder().build();
 
     ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
-    shipmentDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
+    shipmentDraftDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
 
-    ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
+    ToStringTestUtils.verify(ShipmentDraftDto.class, shipmentDraftDto);
   }
 }

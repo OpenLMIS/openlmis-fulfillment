@@ -5,16 +5,16 @@
   "description": "A shipment draft",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "id"
     },
     "order": {
-      "type": "object",
-      "$ref": "orderDto.json",
+      "type": ["object"],
+      "$ref": "referenceObjectDto.json",
       "title": "order"
     },
     "notes": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "notes"
     },
     "lineItems": {
@@ -28,6 +28,7 @@
     }
   },
   "required": [
-    "lineItems"
+    "lineItems",
+    "order"
   ]
 }

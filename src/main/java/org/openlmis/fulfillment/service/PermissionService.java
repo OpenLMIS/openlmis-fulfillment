@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.startsWith;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
@@ -30,6 +31,8 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
+import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDto;
+import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -107,7 +110,7 @@ public class PermissionService {
   }
 
   /**
-   * Checks if user has permission to manage Shipments.
+   * Checks if user has permission to view Shipments.
    *
    * @param shipment a shipment
    */
@@ -116,13 +119,34 @@ public class PermissionService {
   }
 
   /**
+   * Checks if user has permission to view Shipments.
+   *
+   * @param shipmentDraft a shipment draft
+   */
+  public void canViewShipmentDrat(@NotNull ShipmentDraft shipmentDraft) {
+    checkPermission(SHIPMENTS_VIEW, shipmentDraft.getOrder().getSupplyingFacilityId());
+  }
+
+  /**
    * Checks if user has permission to edit Shipments.
    *
    * @param shipmentDto a shipment dto
    */
   public void canEditShipment(@NotNull ShipmentDto shipmentDto) {
-    UUID orderId = shipmentDto.getOrder().getId();
-    Order order = orderRepository.findOne(orderId);
+    checkShipmentEditWithOrder(shipmentDto.getOrder());
+  }
+
+  /**
+   * Checks if user has permission to edit Shipments.
+   *
+   * @param shipmentDto a shipment dto
+   */
+  public void canEditShipmentDraft(@NotNull ShipmentDraftDto shipmentDto) {
+    checkShipmentEditWithOrder(shipmentDto.getOrder());
+  }
+
+  private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
+    Order order = orderRepository.findOne(orderDto.getId());
     if (order == null) {
       throw new MissingPermissionException(SHIPMENTS_EDIT);
     }
