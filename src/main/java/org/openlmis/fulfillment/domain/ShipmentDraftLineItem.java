@@ -38,7 +38,6 @@ public class ShipmentDraftLineItem extends BaseEntity {
   @Type(type = UUID_TYPE)
   private UUID lotId;
 
-  @Column(nullable = false)
   private Long quantityShipped;
 
   private ShipmentDraftLineItem() {}

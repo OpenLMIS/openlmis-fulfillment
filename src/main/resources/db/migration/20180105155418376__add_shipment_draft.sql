@@ -8,7 +8,7 @@ CREATE TABLE shipment_draft_line_items (
   id uuid PRIMARY KEY,
   orderableid uuid NOT NULL,
   lotid uuid,
-  quantityshipped bigint NOT NULL,
+  quantityshipped bigint,
   shipmentdraftid uuid NOT NULL
 );
 
