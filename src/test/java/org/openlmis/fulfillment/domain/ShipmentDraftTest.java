@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -24,9 +24,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class ShipmentDraftTest {
@@ -50,60 +48,25 @@ public class ShipmentDraftTest {
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
     ShipmentDraft expected = createShipment();
-    ShipmentDraft.Importer importer = new ShipmentDraft.Importer() {
-      @Override
-      public UUID getId() {
-        return id;
-      }
+    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes,
+        Collections.singletonList(
+            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)));
 
-      @Override
-      public Identifiable getOrder() {
-        return order;
-      }
-
-      @Override
-      public String getNotes() {
-        return notes;
-      }
-
-      @Override
-      public List<ShipmentLineItem.Importer> getLineItems() {
-        return Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped));
-      }
-    };
-
-    ShipmentDraft actual = ShipmentDraft.newInstance(importer);
+    ShipmentDraft actual = ShipmentDraft.newInstance(shipmentDraftDto);
 
     assertThat(expected, new ReflectionEquals(actual));
   }
 
   @Test
   public void shouldExportValues() {
-    Map<String, Object> values = new HashMap<>();
-    ShipmentDraft.Exporter exporter = new ShipmentDraft.Exporter() {
-      @Override
-      public void setId(UUID id) {
-        values.put("id", id);
-      }
-
-      @Override
-      public void setOrder(Order order) {
-        values.put("order", order);
-      }
-
-      @Override
-      public void setNotes(String notes) {
-        values.put("notes", notes);
-      }
-    };
+    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto();
 
     ShipmentDraft shipment = createShipment();
-    shipment.export(exporter);
+    shipment.export(shipmentDraftDto);
 
-    assertThat(values, hasEntry("id", id));
-    assertThat(values, hasEntry("order", order));
-    assertThat(values, hasEntry("notes", notes));
+    assertEquals(id, shipmentDraftDto.getId());
+    assertEquals(order, shipmentDraftDto.getOrder());
+    assertEquals(notes, shipmentDraftDto.getNotes());
   }
 
   private ShipmentDraft createShipment() {
