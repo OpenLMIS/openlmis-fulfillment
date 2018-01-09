@@ -63,7 +63,7 @@ public class ShipmentDraftController extends BaseController {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentDraftController.class);
 
   static final String RESOURCE_PATH = BASE_PATH + "/shipmentDrafts";
-  public static final String CHECK_RIGHTS = "CHECK_RIGHTS";
+  private static final String CHECK_RIGHTS = "CHECK_RIGHTS";
 
   @Autowired
   private ShipmentDraftRepository repository;
