@@ -42,6 +42,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,6 +63,7 @@ public class ShipmentDraftController extends BaseController {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentDraftController.class);
 
   static final String RESOURCE_PATH = BASE_PATH + "/shipmentDrafts";
+  public static final String CHECK_RIGHTS = "CHECK_RIGHTS";
 
   @Autowired
   private ShipmentDraftRepository repository;
@@ -92,7 +94,7 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("VALIDATE");
     validateOrder(draftDto.getOrder());
 
-    profiler.start("CHECK_RIGHTS");
+    profiler.start(CHECK_RIGHTS);
     permissionService.canEditShipmentDraft(draftDto);
 
     profiler.start("CREATE_DOMAIN_INSTANCE");
@@ -128,7 +130,7 @@ public class ShipmentDraftController extends BaseController {
     }
     validateOrder(draftDto.getOrder());
 
-    profiler.start("CHECK_RIGHTS");
+    profiler.start(CHECK_RIGHTS);
     permissionService.canEditShipmentDraft(draftDto);
 
     profiler.start("CREATE_DOMAIN_INSTANCE");
@@ -169,6 +171,7 @@ public class ShipmentDraftController extends BaseController {
     Profiler profiler = new Profiler("GET_SHIPMENT_DRAFTS");
     profiler.setLogger(XLOGGER);
 
+    profiler.start("VALIDATE");
     if (orderId == null) {
       throw new ValidationException(SHIPMENT_DRAFT_ORDER_REQUIRED);
     }
@@ -178,11 +181,19 @@ public class ShipmentDraftController extends BaseController {
       throw new ValidationException(SHIPMENT_DRAFT_ORDER_NOT_FOUND);
     }
 
+    profiler.start(CHECK_RIGHTS);
+    permissionService.canViewShipmentDraft(order);
+
+    profiler.start("FIND_BY_ORDER_AND_BUILD_DTO");
     Page<ShipmentDraft> draftPage = repository.findByOrder(order, pageable);
     List<ShipmentDraftDto> draftDtos = draftDtoBuilder.build(draftPage.getContent());
 
     int numberOfElements = draftPage.getNumberOfElements();
-    return Pagination.getPage(draftDtos, pageable, numberOfElements);
+    Page<ShipmentDraftDto> page = Pagination.getPage(draftDtos, pageable, numberOfElements);
+
+    profiler.stop().log();
+    XLOGGER.exit(page);
+    return page;
   }
 
   /**
@@ -199,15 +210,10 @@ public class ShipmentDraftController extends BaseController {
     Profiler profiler = new Profiler("GET_SHIPMENT_DRAFT_BY_ID");
     profiler.setLogger(XLOGGER);
 
-    profiler.start("FIND_IN_DB");
-    ShipmentDraft shipment = repository.findOne(id);
+    ShipmentDraft shipment = findShipmentDraft(id, profiler);
 
-    if (shipment == null) {
-      throw new NotFoundException(SHIPMENT_NOT_FOUND);
-    }
-
-    profiler.start("CHECK_RIGHTS");
-    permissionService.canViewShipmentDrat(shipment);
+    profiler.start(CHECK_RIGHTS);
+    permissionService.canViewShipmentDraft(shipment);
 
     profiler.start("CREATE_DTO");
     ShipmentDraftDto dto = draftDtoBuilder.build(shipment);
@@ -215,6 +221,39 @@ public class ShipmentDraftController extends BaseController {
     profiler.stop().log();
     XLOGGER.exit(dto);
     return dto;
+  }
+
+  /**
+   * Delete chosen shipment draft.
+   *
+   * @param id UUID of shipment draft item which we want to delete.
+   */
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteShipmentDraft(@PathVariable UUID id) {
+    XLOGGER.entry(id);
+    Profiler profiler = new Profiler("DELETE_SHIPMENT_DRAFT");
+    profiler.setLogger(XLOGGER);
+
+    ShipmentDraft shipment = findShipmentDraft(id, profiler);
+
+    profiler.start(CHECK_RIGHTS);
+    permissionService.canEditShipmentDraft(shipment);
+
+    profiler.start("DELETE");
+    repository.delete(id);
+
+    profiler.stop().log();
+    XLOGGER.exit();
+  }
+
+  private ShipmentDraft findShipmentDraft(UUID id, Profiler profiler) {
+    profiler.start("FIND_IN_DB");
+    ShipmentDraft shipment = repository.findOne(id);
+    if (shipment == null) {
+      throw new NotFoundException(SHIPMENT_NOT_FOUND);
+    }
+    return shipment;
   }
 
   private void validateOrder(ObjectReferenceDto dtoOrder) {

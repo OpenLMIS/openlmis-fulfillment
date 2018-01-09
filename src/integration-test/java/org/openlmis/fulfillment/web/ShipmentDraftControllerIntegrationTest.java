@@ -60,6 +60,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private static final String RESOURCE_URL = "/api/shipmentDrafts";
   private static final String ID_RESOURCE_URL = RESOURCE_URL + "/{id}";
 
+  private static final String PERMISSION_NAME = "test";
+  private static final String ORDER_ID = "orderId";
+
   @Value("${service.url}")
   private String serviceUrl;
 
@@ -76,6 +79,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private ShipmentDraftDto shipmentDraftDtoExpected;
   private ShipmentDraft shipmentDraft;
   private UUID draftIdFromUser = UUID.randomUUID();
+  private UUID orderId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -105,7 +109,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private ShipmentDraft generateShipmentDraft(ShipmentDraftLineItem lineItem) {
     return new ShipmentDraftDataBuilder()
         .withId(SAVE_ANSWER_ID)
-        .withOrder(new Order(UUID.randomUUID()))
+        .withOrder(new Order(orderId))
         .withLineItems(Collections.singletonList(lineItem))
         .build();
   }
@@ -313,7 +317,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToGetShipmentDraft() {
     doThrow(new MissingPermissionException("test"))
-        .when(permissionService).canViewShipmentDrat(shipmentDraft);
+        .when(permissionService).canViewShipmentDraft(shipmentDraft);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -340,7 +344,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .queryParam("page", 2)
         .queryParam("size", 10)
         .contentType(APPLICATION_JSON_VALUE)
-        .queryParam("orderId", shipmentDraftDtoExpected.getOrder().getId())
+        .queryParam(ORDER_ID, shipmentDraftDtoExpected.getOrder().getId())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -385,8 +389,85 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_DRAFT_ORDER_REQUIRED));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
-
   }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightsToGetDrafts() {
+    when(orderRepository.findOne(orderId))
+        .thenReturn(shipmentDraft.getOrder());
+    doThrow(new MissingPermissionException(PERMISSION_NAME))
+        .when(permissionService).canViewShipmentDraft(shipmentDraft.getOrder());
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("orderId", orderId)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    verify(shipmentDraftRepository, never()).findByOrder(any(Order.class), any(Pageable.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldDeleteShipmentDraft() {
+    when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(shipmentDraft);
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .delete(ID_RESOURCE_URL)
+        .then()
+        .statusCode(204);
+
+    verify(shipmentDraftRepository).delete(draftIdFromUser);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundIfShipmentDraftIsNotFoundWhenDelete() {
+    when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(null);
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .delete(ID_RESOURCE_URL)
+        .then()
+        .statusCode(404)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_NOT_FOUND));
+
+    verify(shipmentDraftRepository, never()).delete(any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightsToDeleteShipmentDraft() {
+    when(shipmentDraftRepository.findOne(draftIdFromUser))
+        .thenReturn(shipmentDraft);
+    doThrow(new MissingPermissionException(PERMISSION_NAME))
+        .when(permissionService).canEditShipmentDraft(shipmentDraft);
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .delete(ID_RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    verify(shipmentDraftRepository, never()).delete(any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
 
   private void verifyAfterPut(ShipmentDraftDto extracted) {
     verify(shipmentDraftRepository).findOne(draftIdFromUser);
@@ -398,7 +479,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   }
 
   private void stubMissingPermission() {
-    doThrow(new MissingPermissionException("test"))
+    doThrow(new MissingPermissionException(PERMISSION_NAME))
         .when(permissionService).canEditShipmentDraft(any(ShipmentDraftDto.class));
   }
 }

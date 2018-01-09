@@ -123,8 +123,17 @@ public class PermissionService {
    *
    * @param shipmentDraft a shipment draft
    */
-  public void canViewShipmentDrat(@NotNull ShipmentDraft shipmentDraft) {
+  public void canViewShipmentDraft(@NotNull ShipmentDraft shipmentDraft) {
     checkPermission(SHIPMENTS_VIEW, shipmentDraft.getOrder().getSupplyingFacilityId());
+  }
+
+  /**
+   * Checks if user has permission to view Shipments.
+   *
+   * @param order an order associated with draft
+   */
+  public void canViewShipmentDraft(@NotNull Order order) {
+    checkPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId());
   }
 
   /**
@@ -143,6 +152,15 @@ public class PermissionService {
    */
   public void canEditShipmentDraft(@NotNull ShipmentDraftDto shipmentDto) {
     checkShipmentEditWithOrder(shipmentDto.getOrder());
+  }
+
+  /**
+   * Checks if user has permission to edit Shipments.
+   *
+   * @param shipmentDraft a shipment dto
+   */
+  public void canEditShipmentDraft(@NotNull ShipmentDraft shipmentDraft) {
+    checkPermission(SHIPMENTS_EDIT, shipmentDraft.getOrder().getSupplyingFacilityId());
   }
 
   private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
