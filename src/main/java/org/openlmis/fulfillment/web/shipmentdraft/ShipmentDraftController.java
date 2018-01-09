@@ -90,7 +90,7 @@ public class ShipmentDraftController extends BaseController {
     profiler.setLogger(XLOGGER);
 
     profiler.start("VALIDATE");
-    validateOrder(draftDto);
+    validateOrder(draftDto.getOrder());
 
     profiler.start("CHECK_RIGHTS");
     permissionService.canEditShipmentDraft(draftDto);
@@ -126,7 +126,7 @@ public class ShipmentDraftController extends BaseController {
     if (draftDto.getId() != null && !draftDto.getId().equals(id)) {
       throw new ValidationException(SHIPMENT_DRAFT_ID_MISMATCH);
     }
-    validateOrder(draftDto);
+    validateOrder(draftDto.getOrder());
 
     profiler.start("CHECK_RIGHTS");
     permissionService.canEditShipmentDraft(draftDto);
@@ -217,8 +217,7 @@ public class ShipmentDraftController extends BaseController {
     return dto;
   }
 
-  private void validateOrder(@RequestBody ShipmentDraftDto draftDto) {
-    ObjectReferenceDto dtoOrder = draftDto.getOrder();
+  private void validateOrder(ObjectReferenceDto dtoOrder) {
     if (dtoOrder == null || dtoOrder.getId() == null) {
       throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
     }
