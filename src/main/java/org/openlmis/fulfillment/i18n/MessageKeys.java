@@ -103,16 +103,21 @@ public abstract class MessageKeys {
   public static final String ERROR_DTO_EXPANSION_ASSIGNMENT = join(ERROR_DTO_EXPANSION,
       "assignment");
 
+
   public static final String SHIPMENT_NOT_FOUND =
       join(SERVICE_ERROR_PREFIX, "shipment", "notFound");
   public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
       join(SERVICE_ERROR_PREFIX, "shipment", "orderless", "notSupported");
+
+  private static final String SHIPMENT_DRAFT = "shipmentDraft";
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, "shipmentDraft", "orderId", "required");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", "required");
   public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, "shipmentDraft", "order", "notFound");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "order", "notFound");
   public static final String SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, "shipmentDraft", "lineItems", "required");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "lineItems", "required");
+  public static final String SHIPMENT_DRAFT_ID_MISMATCH =
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
 
   protected static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));

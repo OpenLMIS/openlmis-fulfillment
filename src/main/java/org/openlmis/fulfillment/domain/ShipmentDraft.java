@@ -69,7 +69,7 @@ public class ShipmentDraft extends BaseEntity {
   /**
    * Creates new instance based on data from {@link Importer}
    *
-   * @param importer instance of {@link Importer}
+   * @param importer instance of {@link Importer}.
    * @return new instance of ShipmentDraft.
    */
   @NotNull
@@ -89,6 +89,17 @@ public class ShipmentDraft extends BaseEntity {
     inventoryItem.setId(importer.getId());
 
     return inventoryItem;
+  }
+
+  /**
+   * Allows update existing draft
+   *
+   * @param newDraft new draft to update from.
+   */
+  public void updateFrom(ShipmentDraft newDraft) {
+    order = newDraft.order;
+    notes = newDraft.notes;
+    lineItems = newDraft.lineItems;
   }
 
   public interface Exporter {

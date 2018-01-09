@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.testutils;
 
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
+import java.util.Random;
 import java.util.UUID;
 
 public class ShipmentDraftLineItemDataBuilder {
@@ -23,7 +24,7 @@ public class ShipmentDraftLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
-  private Long quantityShipped = 10L;
+  private Long quantityShipped = new Random().nextLong();
 
   public ShipmentDraftLineItemDataBuilder withId(UUID id) {
     this.id = id;

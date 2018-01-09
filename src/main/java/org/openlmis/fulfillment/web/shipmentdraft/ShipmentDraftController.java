@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web.shipmentdraft;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ID_MISMATCH;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ORDER_NOT_FOUND;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,10 +89,8 @@ public class ShipmentDraftController extends BaseController {
     Profiler profiler = new Profiler("CREATE_SHIPMENT_DRAFT");
     profiler.setLogger(XLOGGER);
 
-    ObjectReferenceDto dtoOrder = draftDto.getOrder();
-    if (dtoOrder == null || dtoOrder.getId() == null) {
-      throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
-    }
+    profiler.start("VALIDATE");
+    validateOrder(draftDto);
 
     profiler.start("CHECK_RIGHTS");
     permissionService.canEditShipmentDraft(draftDto);
@@ -100,6 +100,53 @@ public class ShipmentDraftController extends BaseController {
 
     profiler.start("SAVE_AND_CREATE_DTO");
     draft = repository.save(draft);
+    ShipmentDraftDto dto = draftDtoBuilder.build(draft);
+
+    profiler.stop().log();
+    XLOGGER.exit(dto);
+    return dto;
+  }
+
+  /**
+   * Allows update shipment. If draft does not exist, new one will be created.
+   *
+   * @param draftDto A shipment draft DTO bound to the request body.
+   * @return created or updated shipment draft.
+   */
+  @PutMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public ShipmentDraftDto updateShipmentDraft(@PathVariable UUID id,
+                                              @RequestBody ShipmentDraftDto draftDto) {
+    XLOGGER.entry(draftDto);
+    Profiler profiler = new Profiler("UPDATE_SHIPMENT_DRAFT");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("VALIDATE");
+    if (draftDto.getId() != null && !draftDto.getId().equals(id)) {
+      throw new ValidationException(SHIPMENT_DRAFT_ID_MISMATCH);
+    }
+    validateOrder(draftDto);
+
+    profiler.start("CHECK_RIGHTS");
+    permissionService.canEditShipmentDraft(draftDto);
+
+    profiler.start("CREATE_DOMAIN_INSTANCE");
+    ShipmentDraft newDraft = ShipmentDraft.newInstance(draftDto);
+
+    profiler.start("FIND_EXISTING_DRAFT");
+    ShipmentDraft draft;
+    ShipmentDraft existingDraft = repository.findOne(id);
+    if (existingDraft == null) {
+      profiler.start("SAVE_NEW_DRAFT");
+      draft = repository.save(newDraft);
+    } else {
+      profiler.start("UPDATE_AND_SAVE_DRAFT");
+      existingDraft.updateFrom(newDraft);
+      draft = repository.save(existingDraft);
+    }
+
+    profiler.start("CREATE_DTO");
     ShipmentDraftDto dto = draftDtoBuilder.build(draft);
 
     profiler.stop().log();
@@ -170,4 +217,10 @@ public class ShipmentDraftController extends BaseController {
     return dto;
   }
 
+  private void validateOrder(@RequestBody ShipmentDraftDto draftDto) {
+    ObjectReferenceDto dtoOrder = draftDto.getOrder();
+    if (dtoOrder == null || dtoOrder.getId() == null) {
+      throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
+    }
+  }
 }

@@ -75,6 +75,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private ShipmentDraftDto shipmentDraftDto;
   private ShipmentDraftDto shipmentDraftDtoExpected;
   private ShipmentDraft shipmentDraft;
+  private UUID draftIdFromUser = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -159,8 +160,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToEditShipmentDrafts() {
-    doThrow(new MissingPermissionException("test"))
-        .when(permissionService).canEditShipmentDraft(any(ShipmentDraftDto.class));
+    stubMissingPermission();
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -173,6 +173,107 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).save(any(ShipmentDraft.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCreateShipmentDraftIfNotFoundById() {
+    when(shipmentDraftRepository.findOne(any(UUID.class))).thenReturn(null);
+    shipmentDraftDto.setId(draftIdFromUser);
+
+    ShipmentDraftDto extracted = restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .put(ID_RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(ShipmentDraftDto.class);
+
+    verifyAfterPut(extracted);
+  }
+
+  @Test
+  public void shouldUpdateShipmentDraftIfFoundById() {
+    ShipmentDraft existingDraft = new ShipmentDraftDataBuilder()
+        .withId(draftIdFromUser)
+        .withNotes("old notes")
+        .build();
+    when(shipmentDraftRepository.findOne(any(UUID.class))).thenReturn(existingDraft);
+    shipmentDraftDto.setId(draftIdFromUser);
+
+    ShipmentDraftDto extracted = restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .put(ID_RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(ShipmentDraftDto.class);
+
+    verifyAfterPut(extracted);
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfIdMismatch() {
+    shipmentDraftDto.setId(UUID.randomUUID());
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .put(ID_RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_DRAFT_ID_MISMATCH));
+
+    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfShipmentDraftOrderIsNotGivenWhenPut() {
+    shipmentDraftDto.setOrder((ObjectReferenceDto) null);
+    shipmentDraftDto.setId(draftIdFromUser);
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .put(ID_RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED));
+
+    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightsToEditShipmentDraftsWhenPut() {
+    stubMissingPermission();
+    shipmentDraftDto.setId(draftIdFromUser);
+
+    restAssured.given()
+        .pathParam(ID, draftIdFromUser)
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .put(ID_RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -285,5 +386,19 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
 
+  }
+
+  private void verifyAfterPut(ShipmentDraftDto extracted) {
+    verify(shipmentDraftRepository).findOne(draftIdFromUser);
+    shipmentDraft.setId(draftIdFromUser);
+    verify(shipmentDraftRepository).save(refEq(shipmentDraft));
+    shipmentDraftDtoExpected.setId(draftIdFromUser);
+    assertEquals(shipmentDraftDtoExpected, extracted);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  private void stubMissingPermission() {
+    doThrow(new MissingPermissionException("test"))
+        .when(permissionService).canEditShipmentDraft(any(ShipmentDraftDto.class));
   }
 }
