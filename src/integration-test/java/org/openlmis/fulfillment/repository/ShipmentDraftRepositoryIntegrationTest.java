@@ -75,7 +75,7 @@ public class ShipmentDraftRepositoryIntegrationTest
   public void shouldFindShipmentDraftByOrder() {
     ShipmentDraft save = shipmentDraftRepository.save(generateInstance());
 
-    Page<ShipmentDraft> page = shipmentDraftRepository.findByOrder(order, mockPageable(10, 0));
+    Page<ShipmentDraft> page = shipmentDraftRepository.findByOrder(order, createPageable(10, 0));
 
     assertEquals(1, page.getContent().size());
     assertEquals(save.getId(), page.getContent().get(0).getId());

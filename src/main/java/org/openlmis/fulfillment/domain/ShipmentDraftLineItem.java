@@ -57,6 +57,16 @@ public class ShipmentDraftLineItem extends BaseEntity {
   }
 
   /**
+   * Returns a copy of line item.
+   */
+  public ShipmentDraftLineItem copy() {
+    ShipmentDraftLineItem clone = new ShipmentDraftLineItem(orderableId, lotId, quantityShipped);
+    clone.setId(id);
+
+    return clone;
+  }
+
+  /**
    * Exports data from the given shipment draft to the instance that implement
    * {@link ShipmentLineItem.Exporter} interface.
    */

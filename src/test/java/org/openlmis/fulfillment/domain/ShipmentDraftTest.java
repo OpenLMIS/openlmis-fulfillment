@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
+import org.openlmis.fulfillment.web.ValidationException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +59,27 @@ public class ShipmentDraftTest {
     assertThat(expected, new ReflectionEquals(actual));
   }
 
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionIfLineItemsAreNotGiven() {
+    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes,
+        Collections.emptyList());
+
+    ShipmentDraft.newInstance(shipmentDraftDto);
+  }
+
+  @Test
+  public void shouldGetCopyOfLineItems() {
+    ShipmentDraft shipment = createShipment();
+
+    UUID newId = UUID.randomUUID();
+    ShipmentDraftLineItem unchangedView = shipment.getLineItems().get(0);
+    ShipmentDraftLineItem changedView = shipment.getLineItems().get(0);
+    changedView.setId(newId);
+
+    assertEquals(lineItems.get(0), unchangedView);
+    assertNotEquals(lineItems.get(0).getId(), changedView.getId());
+  }
+
   @Test
   public void shouldExportValues() {
     DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto();
@@ -69,6 +92,12 @@ public class ShipmentDraftTest {
     assertEquals(notes, shipmentDraftDto.getNotes());
   }
 
+  @Test
+  public void shouldImplementToString() {
+    ShipmentDraft shipment = new ShipmentDraftDataBuilder().build();
+    ToStringTestUtils.verify(ShipmentDraft.class, shipment);
+  }
+
   private ShipmentDraft createShipment() {
     return new ShipmentDraftDataBuilder()
         .withId(id)
@@ -76,12 +105,6 @@ public class ShipmentDraftTest {
         .withNotes(notes)
         .withLineItems(lineItems)
         .build();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ShipmentDraft shipment = new ShipmentDraftDataBuilder().build();
-    ToStringTestUtils.verify(ShipmentDraft.class, shipment);
   }
 
 }

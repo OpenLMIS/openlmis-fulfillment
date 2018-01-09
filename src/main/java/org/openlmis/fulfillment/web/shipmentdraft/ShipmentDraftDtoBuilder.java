@@ -37,8 +37,7 @@ public class ShipmentDraftDtoBuilder {
    * from {@link ShipmentDraft}.
    *
    * @param shipments collection used to create {@link ShipmentDraftDto} list (can be {@code null})
-   * @return new list of {@link ShipmentDraftDto}.
-   * {@code null} if passed argument is {@code null}.
+   * @return new list of {@link ShipmentDraftDto}. Empty list if passed argument is {@code null}.
    */
   public List<ShipmentDraftDto> build(Collection<ShipmentDraft> shipments) {
     if (null == shipments) {
@@ -58,10 +57,7 @@ public class ShipmentDraftDtoBuilder {
    * {@code null} if passed argument is {@code null}.
    */
   public ShipmentDraftDto build(ShipmentDraft draft) {
-    if (null == draft) {
-      return null;
-    }
-    return export(draft);
+    return draft != null ? export(draft) : null;
   }
 
   private ShipmentDraftDto export(ShipmentDraft draft) {

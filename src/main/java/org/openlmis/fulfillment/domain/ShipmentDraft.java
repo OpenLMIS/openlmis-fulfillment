@@ -19,10 +19,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.web.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,6 +34,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "shipment_drafts")
@@ -58,7 +62,8 @@ public class ShipmentDraft extends BaseEntity {
   private ShipmentDraft() {}
 
   public List<ShipmentDraftLineItem> getLineItems() {
-    return Collections.unmodifiableList(lineItems);
+    return Collections.unmodifiableList(
+        lineItems.stream().map(ShipmentDraftLineItem::copy).collect(Collectors.toList()));
   }
 
   /**
@@ -67,13 +72,15 @@ public class ShipmentDraft extends BaseEntity {
    * @param importer instance of {@link Importer}
    * @return new instance of ShipmentDraft.
    */
-  public static ShipmentDraft newInstance(Importer importer) {
-    List<ShipmentDraftLineItem> items = new ArrayList<>(importer.getLineItems().size());
-    if (importer.getLineItems() != null) {
-      importer.getLineItems().stream()
-          .map(ShipmentDraftLineItem::newInstance)
-          .forEach(items::add);
+  @NotNull
+  public static ShipmentDraft newInstance(@NotNull Importer importer) {
+    if (importer.getLineItems() == null || importer.getLineItems().isEmpty()) {
+      throw new ValidationException(MessageKeys.SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED);
     }
+    List<ShipmentDraftLineItem> items = new ArrayList<>(importer.getLineItems().size());
+    importer.getLineItems().stream()
+        .map(ShipmentDraftLineItem::newInstance)
+        .forEach(items::add);
 
     ShipmentDraft inventoryItem = new ShipmentDraft(
         new Order(importer.getOrder().getId()),

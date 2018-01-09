@@ -31,9 +31,7 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -74,8 +72,7 @@ public final class ShipmentDraftDto implements ShipmentDraft.Exporter, ShipmentD
 
   @Override
   public List<ShipmentLineItem.Importer> getLineItems() {
-    return new ArrayList<>(Optional.ofNullable(lineItems).orElse(Collections.emptyList())
-    );
+    return lineItems != null ? new ArrayList<>(lineItems) : null;
   }
 
 }
