@@ -96,7 +96,7 @@ public class ShipmentDraft extends BaseEntity {
    *
    * @param newDraft new draft to update from.
    */
-  public void updateFrom(ShipmentDraft newDraft) {
+  public void updateFrom(@NotNull ShipmentDraft newDraft) {
     order = newDraft.order;
     notes = newDraft.notes;
     lineItems = newDraft.lineItems;
