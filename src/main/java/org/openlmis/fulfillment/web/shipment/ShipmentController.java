@@ -21,7 +21,10 @@ import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipment.ShipmentController.RESOURCE_PATH;
 
 import org.openlmis.fulfillment.domain.CreationDetails;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -63,6 +66,9 @@ public class ShipmentController extends BaseController {
   private ShipmentDtoBuilder shipmentDtoBuilder;
 
   @Autowired
+  private OrderRepository orderRepository;
+
+  @Autowired
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
@@ -97,21 +103,22 @@ public class ShipmentController extends BaseController {
     setShipDetailsToDto(shipmentDto);
     Shipment shipment = Shipment.newInstance(shipmentDto);
 
-    profiler.start("SAVE_AND_CREATE_DTO");
+    profiler.start("SAVE_SHIPMENT");
     shipment = shipmentRepository.save(shipment);
+
+    profiler.start("UPDATE_ORDER_IF_EXISTS");
+    Order order = orderRepository.findOne(dtoOrder.getId());
+    if (order != null) {
+      order.setStatus(OrderStatus.SHIPPED);
+      orderRepository.save(order);
+    }
+
+    profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
 
     profiler.stop().log();
     XLOGGER.exit(dto);
     return dto;
-  }
-
-  private void setShipDetailsToDto(ShipmentDto shipmentDto) {
-    UserDto currentUser = authenticationHelper.getCurrentUser();
-    UUID userId = currentUser == null ? shipmentDto.getShippedBy().getId() : currentUser.getId();
-
-    shipmentDto.setShipDetails(
-        new CreationDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
   }
 
   /**
@@ -144,6 +151,14 @@ public class ShipmentController extends BaseController {
     profiler.stop().log();
     XLOGGER.exit(dto);
     return dto;
+  }
+
+  private void setShipDetailsToDto(ShipmentDto shipmentDto) {
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    UUID userId = currentUser == null ? shipmentDto.getShippedBy().getId() : currentUser.getId();
+
+    shipmentDto.setShipDetails(
+        new CreationDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
   }
 
 }
