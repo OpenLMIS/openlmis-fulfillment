@@ -12,6 +12,9 @@ Bug fixes and improvements (backwards-compatible):
 Contract breaking changes:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
 
+New features:
+* [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
+
 
 6.1.0 / 2017-11-09
 ==================
