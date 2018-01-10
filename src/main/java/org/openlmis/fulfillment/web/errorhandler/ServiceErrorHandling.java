@@ -27,6 +27,7 @@ import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
+import org.openlmis.fulfillment.web.ServerException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -84,6 +85,20 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
         "Error fetching from reference data",
         ERROR_REFERENCE_DATA_RETRIEVE, ex.getResource(), ex.getStatus().toString(), ex.getResponse()
     );
+  }
+
+  /**
+   * Handles the {@link ServerException} that indicates programmatic error.
+   *
+   * @param ex the exception that caused the issue
+   * @return the error response
+   */
+  @ExceptionHandler(ServerException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleServerException(ServerException ex) {
+    logger.error("An internal error occurred", ex);
+    return getLocalizedMessage(ex.getErrorMessage());
   }
 
   @ExceptionHandler(OrderStorageException.class)

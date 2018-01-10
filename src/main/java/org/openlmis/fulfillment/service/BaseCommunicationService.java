@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
@@ -38,7 +39,7 @@ public abstract class BaseCommunicationService<T> {
   protected RestOperations restTemplate = new RestTemplate();
 
   @Autowired
-  private AuthService authService;
+  protected AuthService authService;
 
   protected abstract String getServiceUrl();
 
@@ -108,5 +109,22 @@ public abstract class BaseCommunicationService<T> {
 
   private RequestHeaders createHeadersWithAuth() {
     return RequestHeaders.init().setAuth(authService.obtainAccessToken());
+  }
+
+  protected <T> ResponseEntity<T> runWithTokenRetry(HttpTask<T> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
+        // the token has (most likely) expired - clear the cache and retry once
+        authService.clearTokenCache();
+        return task.run();
+      }
+      throw ex;
+    }
+  }
+
+  protected interface HttpTask<T> {
+    ResponseEntity<T> run() throws HttpStatusCodeException;
   }
 }

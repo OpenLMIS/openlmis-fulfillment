@@ -29,6 +29,7 @@ import java.util.Locale;
  * Immutable value object for a message that is localizable.
  */
 public class Message {
+  @Getter
   private String key;
   private Object[] params;
 
