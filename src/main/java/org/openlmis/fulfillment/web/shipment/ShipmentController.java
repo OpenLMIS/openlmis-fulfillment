@@ -106,12 +106,10 @@ public class ShipmentController extends BaseController {
     profiler.start("SAVE_SHIPMENT");
     shipment = shipmentRepository.save(shipment);
 
-    profiler.start("UPDATE_ORDER_IF_EXISTS");
+    profiler.start("UPDATE_ORDER");
     Order order = orderRepository.findOne(dtoOrder.getId());
-    if (order != null) {
-      order.setStatus(OrderStatus.SHIPPED);
-      orderRepository.save(order);
-    }
+    order.setStatus(OrderStatus.SHIPPED);
+    orderRepository.save(order);
 
     profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);

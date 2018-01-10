@@ -17,7 +17,6 @@ package org.openlmis.fulfillment.web.shipment;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,7 +76,7 @@ public class ShipmentControllerTest {
   }
 
   @Test
-  public void shouldUpdateOrderStatusToShippedIfExists() {
+  public void shouldUpdateOrderStatusToShipped() {
     ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
     when(shipmentRepository.save(any(Shipment.class)))
         .thenReturn(Shipment.newInstance(shipmentDto));
@@ -91,16 +90,4 @@ public class ShipmentControllerTest {
     assertEquals(OrderStatus.SHIPPED, argument.getValue().getStatus());
   }
 
-  @Test
-  public void shouldNotUpdateOrderIfNoneIsLinked() {
-    ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
-    when(shipmentRepository.save(any(Shipment.class)))
-        .thenReturn(Shipment.newInstance(shipmentDto));
-    when(orderRepository.findOne(shipmentDto.getOrder().getId()))
-        .thenReturn(null);
-
-    shipmentController.createShipment(shipmentDto);
-
-    verify(orderRepository, never()).save(any(Order.class));
-  }
 }

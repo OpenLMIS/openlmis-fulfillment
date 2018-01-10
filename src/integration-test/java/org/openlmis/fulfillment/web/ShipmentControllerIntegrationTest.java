@@ -26,14 +26,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
+import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -49,6 +50,9 @@ import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -67,6 +71,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   protected ShipmentRepository shipmentRepository;
 
   @MockBean
+  private OrderRepository orderRepository;
+
+  @MockBean
   private AuthenticationHelper authenticationHelper;
 
   @MockBean
@@ -74,6 +81,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private PermissionService permissionService;
+
+  @Mock
+  private Order order;
 
   private ShipmentDto shipmentDto;
   private ShipmentDto shipmentDtoExpected;
@@ -90,6 +100,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(shipmentRepository.findOne(shipmentDtoExpected.getId())).thenReturn(shipment);
     when(shipmentRepository.save(any(Shipment.class))).thenAnswer(new SaveAnswer<>());
+    when(orderRepository.findOne(shipmentDtoExpected.getOrder().getId())).thenReturn(order);
+    when(orderRepository.save(any(Order.class))).thenAnswer(new SaveAnswer<>());
   }
 
   private void generateShipment() {
