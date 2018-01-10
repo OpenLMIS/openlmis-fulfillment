@@ -24,7 +24,9 @@ import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -48,6 +50,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.Collection;
 import java.util.UUID;
 
 @Controller
@@ -67,6 +71,9 @@ public class ShipmentController extends BaseController {
 
   @Autowired
   private OrderRepository orderRepository;
+
+  @Autowired
+  private ShipmentDraftRepository shipmentDraftRepository;
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -110,6 +117,9 @@ public class ShipmentController extends BaseController {
     Order order = orderRepository.findOne(dtoOrder.getId());
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
+
+    profiler.start("REMOVE_DRAFT_SHIPMENTS");
+    findAndRemoveShipmentDraftsForOrder(order);
 
     profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
@@ -159,4 +169,10 @@ public class ShipmentController extends BaseController {
         new CreationDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
   }
 
+  private void findAndRemoveShipmentDraftsForOrder(Order order) {
+    Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
+    for (ShipmentDraft draft : drafts) {
+      shipmentDraftRepository.delete(draft);
+    }
+  }
 }

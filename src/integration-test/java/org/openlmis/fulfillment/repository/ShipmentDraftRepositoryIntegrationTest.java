@@ -28,6 +28,8 @@ import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -50,11 +52,7 @@ public class ShipmentDraftRepositoryIntegrationTest
 
   @Override
   ShipmentDraft generateInstance() {
-    return new ShipmentDraftDataBuilder()
-        .withoutId()
-        .withOrder(order)
-        .withLineItems(Collections.singletonList(shipmentLineItem))
-        .build();
+    return generateInstanceWithOrder(order);
   }
 
   @Before
@@ -72,7 +70,7 @@ public class ShipmentDraftRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFindShipmentDraftByOrder() {
+  public void shouldFindShipmentDraftPageByOrder() {
     ShipmentDraft save = shipmentDraftRepository.save(generateInstance());
 
     Page<ShipmentDraft> page = shipmentDraftRepository.findByOrder(order, createPageable(10, 0));
@@ -87,4 +85,28 @@ public class ShipmentDraftRepositoryIntegrationTest
     assertEquals(1, page.getTotalPages());
   }
 
+  @Test
+  public void shouldFindShipmentDraftsByOrder() {
+    // Add another order
+    Order anotherOrder = orderRepository.save(new OrderDataBuilder().build());
+
+    shipmentDraftRepository.save(generateInstance());
+    shipmentDraftRepository.save(generateInstanceWithOrder(anotherOrder));
+
+    Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
+    assertEquals(1, drafts.size());
+    assertEquals(order.getId(), drafts.iterator().next().getOrder().getId());
+
+    drafts = shipmentDraftRepository.findByOrder(anotherOrder);
+    assertEquals(1, drafts.size());
+    assertEquals(anotherOrder.getId(), drafts.iterator().next().getOrder().getId());
+  }
+
+  private ShipmentDraft generateInstanceWithOrder(Order order) {
+    return new ShipmentDraftDataBuilder()
+        .withoutId()
+        .withOrder(order)
+        .withLineItems(Collections.singletonList(shipmentLineItem))
+        .build();
+  }
 }

@@ -35,6 +35,7 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -69,6 +70,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean(answer = Answers.RETURNS_MOCKS)
   protected ShipmentRepository shipmentRepository;
+
+  @MockBean(answer = Answers.RETURNS_MOCKS)
+  protected ShipmentDraftRepository shipmentDraftRepository;
 
   @MockBean
   private OrderRepository orderRepository;

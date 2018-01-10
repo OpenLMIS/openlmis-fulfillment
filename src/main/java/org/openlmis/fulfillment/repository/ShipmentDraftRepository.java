@@ -21,10 +21,14 @@ import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.util.Collection;
 import java.util.UUID;
 
 @JaversSpringDataAuditable
 public interface ShipmentDraftRepository extends PagingAndSortingRepository<ShipmentDraft, UUID> {
+
+  Collection<ShipmentDraft> findByOrder(Order order);
 
   Page<ShipmentDraft> findByOrder(Order order, Pageable pageable);
 }
