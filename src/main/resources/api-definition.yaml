@@ -64,6 +64,17 @@ schemas:
 
   - shipment: !include schemas/shipment.json
 
+  - shipmentExample: |
+      {
+          "order": {"id": "316c9b76-c90f-4040-8d53-61277112b947"},
+          "notes": "some notes",
+          "lineItems": [{
+              "orderable": {"id": "2a3484ce-4e45-46b1-901e-19a4fd770f73"},
+              "lot": {"id": "1d16ed3d-d4e5-474d-99fc-0ece0f5ddd67"},
+              "quantityShipped": 20
+          }]
+      }
+
   - localizedMessage: !include schemas/localizedMessage.json
 
   - resultDto: !include schemas/resultDto.json
@@ -801,6 +812,7 @@ resourceTypes:
                   body:
                     application/json:
                       schema: shipmentDraft
+                      example: shipmentExample
               400:
                   body:
                     application/json:
@@ -851,12 +863,14 @@ resourceTypes:
               body:
                   application/json:
                     schema: shipmentDraft
+                    example: shipmentExample
               responses:
                   200:
                       description: Draft saved.
                       body:
                         application/json:
                           schema: shipmentDraft
+                          example: shipmentExample
                   400:
                       body:
                         application/json:
@@ -910,7 +924,8 @@ resourceTypes:
           description: Create a shipment.
           body:
               application/json:
-                schema: shipment
+                  schema: shipment
+                  example: shipmentExample
           responses:
               201:
                   description: Shipment created.
