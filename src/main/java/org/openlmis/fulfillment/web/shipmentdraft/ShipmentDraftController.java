@@ -32,6 +32,7 @@ import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.BaseController;
 import org.openlmis.fulfillment.web.NotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -91,7 +92,7 @@ public class ShipmentDraftController extends BaseController {
     Profiler profiler = new Profiler("CREATE_SHIPMENT_DRAFT");
     profiler.setLogger(XLOGGER);
 
-    draftDto.setId(null);
+    nullIds(draftDto);
     profiler.start("VALIDATE");
     validateOrder(draftDto.getOrder());
 
@@ -246,6 +247,13 @@ public class ShipmentDraftController extends BaseController {
 
     profiler.stop().log();
     XLOGGER.exit();
+  }
+
+  private void nullIds(ShipmentDraftDto shipmentDto) {
+    shipmentDto.setId(null);
+    if (shipmentDto.lineItems() != null) {
+      shipmentDto.lineItems().forEach(l -> l.setId(null));
+    }
   }
 
   private ShipmentDraft findShipmentDraft(UUID id, Profiler profiler) {

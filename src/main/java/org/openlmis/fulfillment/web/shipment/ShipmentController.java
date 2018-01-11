@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
@@ -98,7 +99,7 @@ public class ShipmentController extends BaseController {
     Profiler profiler = new Profiler("CREATE_SHIPMENT");
     profiler.setLogger(XLOGGER);
 
-    shipmentDto.setId(null);
+    nullIds(shipmentDto);
     ObjectReferenceDto dtoOrder = shipmentDto.getOrder();
     if (dtoOrder == null || dtoOrder.getId() == null) {
       throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
@@ -160,6 +161,13 @@ public class ShipmentController extends BaseController {
     profiler.stop().log();
     XLOGGER.exit(dto);
     return dto;
+  }
+
+  private void nullIds(ShipmentDto shipmentDto) {
+    shipmentDto.setId(null);
+    if (shipmentDto.lineItems() != null) {
+      shipmentDto.lineItems().forEach(l -> l.setId(null));
+    }
   }
 
   private void setShipDetailsToDto(ShipmentDto shipmentDto) {

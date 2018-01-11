@@ -75,4 +75,8 @@ public final class ShipmentDraftDto implements ShipmentDraft.Exporter, ShipmentD
     return lineItems != null ? new ArrayList<>(lineItems) : null;
   }
 
+  public List<ShipmentLineItemDto> lineItems() {
+    return lineItems;
+  }
+
 }

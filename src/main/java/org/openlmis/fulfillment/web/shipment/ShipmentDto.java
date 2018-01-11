@@ -112,4 +112,8 @@ public final class ShipmentDto implements CreationDetails.Exporter,
     return lineItems != null ? new ArrayList<>(lineItems) : null;
   }
 
+  public List<ShipmentLineItemDto> lineItems() {
+    return lineItems;
+  }
+
 }
