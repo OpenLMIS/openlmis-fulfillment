@@ -87,7 +87,6 @@ public abstract class BaseWebIntegrationTest {
   protected static final String CONTENT_TYPE = "Content-Type";
   protected static final String APPLICATION_JSON = "application/json";
   protected static final String FACILITY_ID = "1d5bdd9c-8702-11e6-ae22-56b6b6499611";
-  protected static final UUID SAVE_ANSWER_ID = UUID.randomUUID();
 
   private static final String MOCK_CHECK_RESULT = "{"
       + "  \"aud\": [\n"
@@ -655,7 +654,7 @@ public abstract class BaseWebIntegrationTest {
       }
 
       if (null == obj.getId()) {
-        obj.setId(SAVE_ANSWER_ID);
+        obj.setId(UUID.randomUUID());
       }
 
       extraSteps(obj);

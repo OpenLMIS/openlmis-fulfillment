@@ -15,9 +15,13 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
@@ -31,6 +35,8 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
@@ -50,7 +56,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,6 +79,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @MockBean
   private OrderRepository orderRepository;
+
+  @Captor
+  private ArgumentCaptor<ShipmentDraft> captor;
 
   private ShipmentDraftDto shipmentDraftDto;
   private ShipmentDraftDto shipmentDraftDtoExpected;
@@ -99,7 +107,6 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     shipmentDraftDtoExpected.setLineItems(lineItemsDtos);
 
     shipmentDraftDto = new ShipmentDraftDtoDataBuilder()
-        .withoutId()
         .withOrder(new ObjectReferenceDto(shipmentDraftDtoExpected.getOrder().getId()))
         .withNotes(shipmentDraftDtoExpected.getNotes())
         .withLineItems(lineItemsDtos)
@@ -108,9 +115,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   private ShipmentDraft generateShipmentDraft(ShipmentDraftLineItem lineItem) {
     return new ShipmentDraftDataBuilder()
-        .withId(SAVE_ANSWER_ID)
         .withOrder(new Order(orderId))
-        .withLineItems(Collections.singletonList(lineItem))
+        .withLineItems(singletonList(lineItem))
         .build();
   }
 
@@ -124,11 +130,14 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     lineItemDto.setServiceUrl(serviceUrl);
     lineItem.export(lineItemDto);
 
-    return Collections.singletonList(lineItemDto);
+    return singletonList(lineItemDto);
   }
 
   @Test
   public void shouldCreateShipmentDraft() {
+    //necessary as SaveAnswer change shipment id value also in captor
+    when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenReturn(shipmentDraft);
+
     ShipmentDraftDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -139,8 +148,10 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(201)
         .extract().as(ShipmentDraftDto.class);
 
-    verify(shipmentDraftRepository).save(refEq(shipmentDraft));
     assertEquals(shipmentDraftDtoExpected, extracted);
+    verify(shipmentDraftRepository).save(captor.capture());
+    assertTrue(reflectionEquals(shipmentDraft, captor.getValue(), singletonList("id")));
+    assertNull(captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -337,7 +348,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     when(orderRepository.findOne(shipmentDraftDtoExpected.getOrder().getId()))
         .thenReturn(shipmentDraft.getOrder());
     when(shipmentDraftRepository.findByOrder(eq(shipmentDraft.getOrder()), any(Pageable.class)))
-        .thenReturn(new PageImpl<>(Collections.singletonList(shipmentDraft)));
+        .thenReturn(new PageImpl<>(singletonList(shipmentDraft)));
 
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

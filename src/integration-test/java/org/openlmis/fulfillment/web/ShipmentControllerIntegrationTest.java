@@ -15,20 +15,26 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -51,12 +57,8 @@ import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,6 +91,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Mock
   private Order order;
 
+  @Captor
+  private ArgumentCaptor<Shipment> captor;
+
   private ShipmentDto shipmentDto;
   private ShipmentDto shipmentDtoExpected;
   private UUID userId = UUID.randomUUID();
@@ -117,7 +122,6 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     shipmentDtoExpected.setLineItems(lineItemsDtos);
 
     shipmentDto = new ShipmentDtoDataBuilder()
-        .withoutId()
         .withoutShippedBy()
         .withoutShippedDate()
         .withOrder(new ObjectReferenceDto(shipmentDtoExpected.getOrder().getId()))
@@ -128,13 +132,12 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private Shipment generateShipment(ShipmentLineItem lineItem) {
     return new ShipmentDataBuilder()
-        .withId(SAVE_ANSWER_ID)
         .withShipDetails(new CreationDetailsDataBuilder()
             .withUserId(userId)
             .withDate(dateHelper.getCurrentDateTimeWithSystemZone())
             .build())
         .withOrder(new Order(UUID.randomUUID()))
-        .withLineItems(Collections.singletonList(lineItem))
+        .withLineItems(singletonList(lineItem))
         .build();
   }
 
@@ -144,11 +147,14 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     lineItemDto.setServiceUrl(serviceUrl);
     lineItem.export(lineItemDto);
 
-    return Collections.singletonList(lineItemDto);
+    return singletonList(lineItemDto);
   }
 
   @Test
   public void shouldCreateShipment() {
+    //necessary as SaveAnswer change shipment id value also in captor
+    when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
+
     ShipmentDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -159,8 +165,10 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(201)
         .extract().as(ShipmentDto.class);
 
-    verify(shipmentRepository).save(refEq(shipment));
     assertEquals(shipmentDtoExpected, extracted);
+    verify(shipmentRepository).save(captor.capture());
+    assertTrue(reflectionEquals(shipment, captor.getValue(), singletonList("id")));
+    assertNull(captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
