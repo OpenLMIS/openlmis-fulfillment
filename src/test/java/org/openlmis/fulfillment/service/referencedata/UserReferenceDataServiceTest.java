@@ -108,7 +108,6 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
     PageImplRepresentation<UserDto> page = mock(PageImplRepresentation.class);
     when(page.getContent()).thenReturn(Collections.emptyList());
-
     when(response.getBody()).thenReturn(page);
 
     UserDto user = service.findUser(name);
