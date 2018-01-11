@@ -18,8 +18,11 @@ package org.openlmis.fulfillment.domain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_LINE_ITEMS_REQUIRED;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
@@ -31,6 +34,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class ShipmentTest {
+
+  @Rule
+  public ExpectedException expected = ExpectedException.none();
 
   private UUID id = UUID.randomUUID();
   private Order order = new Order(UUID.randomUUID());
@@ -61,8 +67,10 @@ public class ShipmentTest {
     assertThat(expected, new ReflectionEquals(actual));
   }
 
-  @Test(expected = ValidationException.class)
+  @Test
   public void shouldThrowExceptionIfLineItemsAreNotGiven() {
+    expected.expect(ValidationException.class);
+    expected.expectMessage(SHIPMENT_LINE_ITEMS_REQUIRED);
     DummyShipmentDto shipmentDto =
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.emptyList());
 

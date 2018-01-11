@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -104,7 +106,7 @@ public class Shipment extends BaseEntity {
   }
 
   private static void validateLineItems(List<?> lineItems) {
-    if (lineItems == null || lineItems.isEmpty()) {
+    if (isEmpty(lineItems)) {
       throw new ValidationException(MessageKeys.SHIPMENT_LINE_ITEMS_REQUIRED);
     }
   }
