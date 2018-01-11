@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.web.shipment;
 
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import java.util.Collections;
 import java.util.List;
 
 public class ShipmentDtoDataBuilder {
@@ -30,6 +31,9 @@ public class ShipmentDtoDataBuilder {
     shipmentDto = new ShipmentDto();
     shipmentDto.setServiceUrl("localhost");
     new ShipmentDataBuilder().build().export(shipmentDto);
+
+    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
+    shipmentDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
   }
 
   public ShipmentDtoDataBuilder withOrder(ObjectReferenceDto order) {

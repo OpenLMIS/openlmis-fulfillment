@@ -104,10 +104,13 @@ public abstract class MessageKeys {
       "assignment");
 
 
+  private static final String SHIPMENT = "shipment";
   public static final String SHIPMENT_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, "shipment", "notFound");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, "notFound");
   public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
-      join(SERVICE_ERROR_PREFIX, "shipment", "orderless", "notSupported");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderless", "notSupported");
+  public static final String SHIPMENT_LINE_ITEMS_REQUIRED =
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, "lineItems", "required");
 
   private static final String SHIPMENT_DRAFT = "shipmentDraft";
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =

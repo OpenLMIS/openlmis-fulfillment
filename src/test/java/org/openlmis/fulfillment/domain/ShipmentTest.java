@@ -25,6 +25,7 @@ import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
+import org.openlmis.fulfillment.web.ValidationException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -58,6 +59,14 @@ public class ShipmentTest {
     Shipment actual = Shipment.newInstance(shipmentDto);
 
     assertThat(expected, new ReflectionEquals(actual));
+  }
+
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionIfLineItemsAreNotGiven() {
+    DummyShipmentDto shipmentDto =
+        new DummyShipmentDto(id, order, shipDetails, notes, Collections.emptyList());
+
+    Shipment.newInstance(shipmentDto);
   }
 
   @Test

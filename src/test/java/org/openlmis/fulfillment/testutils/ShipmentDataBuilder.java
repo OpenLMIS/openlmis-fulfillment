@@ -63,6 +63,11 @@ public class ShipmentDataBuilder {
     return this;
   }
 
+  public ShipmentDataBuilder withoutLineItems() {
+    this.shipmentLineItems = Collections.emptyList();
+    return this;
+  }
+
   /**
    * Builds instance of {@link Shipment}.
    */

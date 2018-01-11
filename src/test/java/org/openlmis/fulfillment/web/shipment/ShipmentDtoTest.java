@@ -22,7 +22,6 @@ import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.ResourceNames;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import java.util.Collections;
 import java.util.UUID;
 
 public class ShipmentDtoTest {
@@ -40,9 +39,6 @@ public class ShipmentDtoTest {
   @Test
   public void shouldImplementToString() {
     ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
-
-    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
-    shipmentDto.setLineItems(Collections.singletonList(shipmentLineItemDto));
 
     ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
   }

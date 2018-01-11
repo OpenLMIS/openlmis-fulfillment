@@ -19,6 +19,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.web.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +85,7 @@ public class Shipment extends BaseEntity {
    * @return new instance of Shipment.
    */
   public static Shipment newInstance(Importer importer) {
+    validateLineItems(importer.getLineItems());
     List<ShipmentLineItem> items = new ArrayList<>(importer.getLineItems().size());
     if (importer.getLineItems() != null) {
       importer.getLineItems().stream()
@@ -98,6 +101,12 @@ public class Shipment extends BaseEntity {
     inventoryItem.setId(importer.getId());
 
     return inventoryItem;
+  }
+
+  private static void validateLineItems(List<?> lineItems) {
+    if (lineItems == null || lineItems.isEmpty()) {
+      throw new ValidationException(MessageKeys.SHIPMENT_LINE_ITEMS_REQUIRED);
+    }
   }
 
   public interface Exporter {

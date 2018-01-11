@@ -33,9 +33,7 @@ import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.openlmis.fulfillment.web.util.UserObjectReferenceDto;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -111,8 +109,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
 
   @Override
   public List<ShipmentLineItem.Importer> getLineItems() {
-    return new ArrayList<>(Optional.ofNullable(lineItems).orElse(Collections.emptyList())
-    );
+    return lineItems != null ? new ArrayList<>(lineItems) : null;
   }
 
 }
