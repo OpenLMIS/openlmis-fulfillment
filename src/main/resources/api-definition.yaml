@@ -115,7 +115,7 @@ traits:
     - paginated:
           queryParameters:
               page:
-                  description: The page number which should be displayed. Note that the first page is numbered zero rather than one. Additionally, negative and undefined valued are interpreted as zero.
+                  description: The page number which should be displayed. Note that the first page is numbered zero rather than one. Additionally, negative and undefined values are interpreted as zero.
                   type: integer
                   required: false
                   repeat: false
@@ -802,7 +802,7 @@ resourceTypes:
   /shipmentDrafts:
       post:
           is: [ secured ]
-          description: Create a shipment draft. Only one draft can exists in system for given order.
+          description: Create a shipment draft. Only one draft can exist in the system for a given order.
           body:
               application/json:
                 schema: shipmentDraft

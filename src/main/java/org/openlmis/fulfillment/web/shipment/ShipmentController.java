@@ -147,7 +147,7 @@ public class ShipmentController extends BaseController {
     Shipment shipment = shipmentRepository.findOne(id);
 
     if (shipment == null) {
-      throw new NotFoundException(SHIPMENT_NOT_FOUND);
+      throw new NotFoundException(SHIPMENT_NOT_FOUND, id.toString());
     }
 
     profiler.start("CHECK_RIGHTS");

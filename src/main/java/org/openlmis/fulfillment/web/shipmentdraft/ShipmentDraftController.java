@@ -251,7 +251,7 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("FIND_IN_DB");
     ShipmentDraft shipment = repository.findOne(id);
     if (shipment == null) {
-      throw new NotFoundException(SHIPMENT_NOT_FOUND);
+      throw new NotFoundException(SHIPMENT_NOT_FOUND, id.toString());
     }
     return shipment;
   }
