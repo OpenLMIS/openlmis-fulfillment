@@ -16,10 +16,10 @@
 package org.openlmis.fulfillment.web.shipmentdraft;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ID_MISMATCH;
-import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
-import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ORDER_REQUIRED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftController.RESOURCE_PATH;
 
@@ -32,7 +32,6 @@ import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.BaseController;
 import org.openlmis.fulfillment.web.NotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
-import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;

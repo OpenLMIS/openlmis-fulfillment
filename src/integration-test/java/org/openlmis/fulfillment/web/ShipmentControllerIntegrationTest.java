@@ -116,7 +116,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private void generateShipment() {
     shipmentDtoExpected = new ShipmentDto();
     shipmentDtoExpected.setServiceUrl(serviceUrl);
-    ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder().build();
+    ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder().withoutId().build();
     shipment = generateShipment(lineItem);
     List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
     shipmentDtoExpected.setLineItems(lineItemsDtos);
