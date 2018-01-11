@@ -15,11 +15,16 @@
 
 package org.openlmis.fulfillment.web.errorhandler;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CONSTRAINT_VIOLATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIOLATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAT_ORDER_DUPLICATE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_DUPLICATE;
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 import net.sf.jasperreports.engine.JRException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
@@ -30,16 +35,27 @@ import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ServerException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Controller advice responsible for handling errors from service layer.
  */
 @ControllerAdvice
 public class ServiceErrorHandling extends AbstractErrorHandling {
+
+  private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
+  private static final String CONSTRAINT_VIOLATION = "Constraint violation";
+
+  static {
+    CONSTRAINT_MAP.put("shipments_order_unq", SHIPMENT_ORDER_DUPLICATE);
+    CONSTRAINT_MAP.put("shipment_drafts_orderid_unq", SHIPMENT_DRAT_ORDER_DUPLICATE);
+  }
 
   @ExceptionHandler(OrderFileException.class)
   public Message.LocalizedMessage handleOrderFileGenerationError(OrderFileException ex) {
@@ -54,20 +70,30 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   }
 
   /**
-   * Handles the {@link DataIntegrityViolationException} which signals a violation of some sort
-   * of a db constraint like unique. Returns error 409 (CONFLICT) and a JSON representation of the
-   * error as the body.
+   * Handles data integrity violation exception.
    *
-   * @return the localized message
+   * @param ex the data integrity exception
+   * @return the user-oriented error message.
    */
   @ExceptionHandler(DataIntegrityViolationException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  @ResponseBody
-  public Message.LocalizedMessage handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    return logErrorAndRespond(
-        "Data integrity violation",
-        ERROR_DATA_INTEGRITY_VIOLATION, ex.getMessage()
-    );
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<Message.LocalizedMessage> handleDataIntegrityViolation(
+      DataIntegrityViolationException ex) {
+    if (ex.getCause() instanceof ConstraintViolationException) {
+      ConstraintViolationException cause = (ConstraintViolationException) ex.getCause();
+      String messageKey = CONSTRAINT_MAP.get(cause.getConstraintName());
+      if (messageKey != null) {
+        logger.error(CONSTRAINT_VIOLATION, ex);
+        return new ResponseEntity<>(getLocalizedMessage(
+            new Message(messageKey)), HttpStatus.BAD_REQUEST);
+      } else {
+        return new ResponseEntity<>(logErrorAndRespond(CONSTRAINT_VIOLATION,
+            ERROR_CONSTRAINT_VIOLATION, ex.getMessage()), HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    return new ResponseEntity<>(logErrorAndRespond("Data integrity violation",
+        ERROR_DATA_INTEGRITY_VIOLATION, ex.getMessage()), CONFLICT);
   }
 
   /**

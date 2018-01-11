@@ -28,6 +28,8 @@ public abstract class MessageKeys {
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
       + ".data-integrity-violation";
+  public static final String ERROR_CONSTRAINT_VIOLATION = ERROR_PREFIX
+      + ".constraintViolation";
   public static final String ERROR_IO = ERROR_PREFIX + ".io";
   public static final String ERROR_ENCODING =
       join(SERVICE_ERROR_PREFIX, "encoding", "notSupported");
@@ -111,6 +113,8 @@ public abstract class MessageKeys {
       join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderless", "notSupported");
   public static final String SHIPMENT_LINE_ITEMS_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT, "lineItems", "required");
+  public static final String SHIPMENT_ORDER_DUPLICATE =
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, "order", "duplicate");
 
   private static final String SHIPMENT_DRAFT = "shipmentDraft";
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
@@ -121,6 +125,8 @@ public abstract class MessageKeys {
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "lineItems", "required");
   public static final String SHIPMENT_DRAFT_ID_MISMATCH =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
+  public static final String SHIPMENT_DRAT_ORDER_DUPLICATE =
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "order", "duplicate");
 
   protected static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
