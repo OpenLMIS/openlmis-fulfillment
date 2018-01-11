@@ -91,6 +91,7 @@ public class ShipmentDraftController extends BaseController {
     Profiler profiler = new Profiler("CREATE_SHIPMENT_DRAFT");
     profiler.setLogger(XLOGGER);
 
+    draftDto.setId(null);
     profiler.start("VALIDATE");
     validateOrder(draftDto.getOrder());
 

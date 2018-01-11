@@ -98,6 +98,7 @@ public class ShipmentController extends BaseController {
     Profiler profiler = new Profiler("CREATE_SHIPMENT");
     profiler.setLogger(XLOGGER);
 
+    shipmentDto.setId(null);
     ObjectReferenceDto dtoOrder = shipmentDto.getOrder();
     if (dtoOrder == null || dtoOrder.getId() == null) {
       throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
