@@ -56,6 +56,18 @@ public class ShipmentDraftLineItem extends BaseEntity {
     return shipmentLineItem;
   }
 
+
+  /**
+   * Allows update existing draft line item
+   *
+   * @param newItem new item to update from.
+   */
+  public void updateFrom(ShipmentDraftLineItem newItem) {
+    this.orderableId = newItem.orderableId;
+    this.lotId = newItem.lotId;
+    this.quantityShipped = newItem.quantityShipped;
+  }
+
   /**
    * Returns a copy of line item.
    */

@@ -93,7 +93,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private void generateShipmentDraft() {
     shipmentDraftDtoExpected = new ShipmentDraftDto();
     shipmentDraftDtoExpected.setServiceUrl(serviceUrl);
-    ShipmentDraftLineItem lineItem = new ShipmentDraftLineItemDataBuilder().build();
+    ShipmentDraftLineItem lineItem = new ShipmentDraftLineItemDataBuilder().withoutId().build();
     shipmentDraft = generateShipmentDraft(lineItem);
     List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
     shipmentDraftDtoExpected.setLineItems(lineItemsDtos);

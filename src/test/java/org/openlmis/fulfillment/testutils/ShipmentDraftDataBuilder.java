@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.testutils;
 
+import com.google.common.collect.Lists;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ public class ShipmentDraftDataBuilder {
   private Order order = new OrderDataBuilder().build();
   private String notes = "all shipped";
   private List<ShipmentDraftLineItem> shipmentLineItems =
-      Collections.singletonList(new ShipmentDraftLineItemDataBuilder().build());
+      Lists.newArrayList(new ShipmentDraftLineItemDataBuilder().build());
 
   public ShipmentDraftDataBuilder withId(UUID id) {
     this.id = id;

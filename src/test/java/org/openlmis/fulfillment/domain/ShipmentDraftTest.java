@@ -15,18 +15,23 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class ShipmentDraftTest {
@@ -72,12 +77,43 @@ public class ShipmentDraftTest {
     ShipmentDraft shipment = createShipment();
 
     UUID newId = UUID.randomUUID();
-    ShipmentDraftLineItem unchangedView = shipment.getLineItems().get(0);
-    ShipmentDraftLineItem changedView = shipment.getLineItems().get(0);
+    ShipmentDraftLineItem unchangedView = shipment.viewLineItems().get(0);
+    ShipmentDraftLineItem changedView = shipment.viewLineItems().get(0);
     changedView.setId(newId);
 
     assertEquals(lineItems.get(0), unchangedView);
     assertNotEquals(lineItems.get(0).getId(), changedView.getId());
+  }
+
+  @Test
+  public void shouldUpdateLineItems() {
+    ShipmentDraftLineItemDataBuilder forUpdateItemBuilder = new ShipmentDraftLineItemDataBuilder();
+    ShipmentDraftLineItem itemToUpdate = forUpdateItemBuilder.build();
+    ShipmentDraftLineItem itemUpdating = forUpdateItemBuilder
+        .withQuantityShipped(new Random().nextLong())
+        .build();
+    ShipmentDraft existingDraft = new ShipmentDraftDataBuilder()
+        .withLineItems(Lists.newArrayList(
+            itemToUpdate,
+            new ShipmentDraftLineItemDataBuilder().build()))
+        .build();
+    ShipmentDraftLineItem newItem = new ShipmentDraftLineItemDataBuilder().build();
+    ShipmentDraft newDraft = new ShipmentDraftDataBuilder()
+        .withLineItems(Lists.newArrayList(
+            itemUpdating,
+            newItem))
+        .build();
+
+    existingDraft.updateFrom(newDraft);
+
+    List<ShipmentDraftLineItem> updatedItems =
+        (List<ShipmentDraftLineItem>)ReflectionTestUtils.getField(existingDraft, "lineItems");
+    //First line item reference should not change
+    assertTrue(itemToUpdate == updatedItems.get(0));
+    assertTrue(reflectionEquals(itemToUpdate, updatedItems.get(0)));
+    assertTrue(newItem != updatedItems.get(1));
+    newItem.setId(null);
+    assertTrue(reflectionEquals(newItem, updatedItems.get(1)));
   }
 
   @Test

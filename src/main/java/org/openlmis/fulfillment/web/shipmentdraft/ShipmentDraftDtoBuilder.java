@@ -64,7 +64,7 @@ public class ShipmentDraftDtoBuilder {
     ShipmentDraftDto dto = new ShipmentDraftDto();
     dto.setServiceUrl(serviceUrl);
     draft.export(dto);
-    dto.setLineItems(exportToDtos(draft.getLineItems()));
+    dto.setLineItems(exportToDtos(draft.viewLineItems()));
 
     return dto;
   }

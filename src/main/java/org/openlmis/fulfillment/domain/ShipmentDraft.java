@@ -24,6 +24,7 @@ import org.openlmis.fulfillment.web.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
@@ -61,7 +62,10 @@ public class ShipmentDraft extends BaseEntity {
   // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentDraft() {}
 
-  public List<ShipmentDraftLineItem> getLineItems() {
+  /**
+   * Gets a view of line items.
+   */
+  public List<ShipmentDraftLineItem> viewLineItems() {
     return Collections.unmodifiableList(
         lineItems.stream().map(ShipmentDraftLineItem::copy).collect(Collectors.toList()));
   }
@@ -74,9 +78,7 @@ public class ShipmentDraft extends BaseEntity {
    */
   @NotNull
   public static ShipmentDraft newInstance(@NotNull Importer importer) {
-    if (importer.getLineItems() == null || importer.getLineItems().isEmpty()) {
-      throw new ValidationException(MessageKeys.SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED);
-    }
+    validateLineItems(importer.getLineItems());
     List<ShipmentDraftLineItem> items = new ArrayList<>(importer.getLineItems().size());
     importer.getLineItems().stream()
         .map(ShipmentDraftLineItem::newInstance)
@@ -99,7 +101,38 @@ public class ShipmentDraft extends BaseEntity {
   public void updateFrom(@NotNull ShipmentDraft newDraft) {
     order = newDraft.order;
     notes = newDraft.notes;
-    lineItems = newDraft.lineItems;
+
+    updateLineItems(newDraft);
+  }
+
+  private void updateLineItems(ShipmentDraft newDraft) {
+    List<ShipmentDraftLineItem> newLineItems = newDraft.viewLineItems();
+    validateLineItems(newLineItems);
+
+    List<ShipmentDraftLineItem> updatedList = new ArrayList<>();
+    for (ShipmentDraftLineItem newItem : newLineItems) {
+      Optional<ShipmentDraftLineItem> existingItem = this.lineItems.stream()
+          .filter(l -> l.getId().equals(newItem.getId()))
+          .findFirst();
+
+      if (existingItem.isPresent()) {
+        ShipmentDraftLineItem existing = existingItem.get();
+        existing.updateFrom(newItem);
+        updatedList.add(existing);
+      } else {
+        newItem.setId(null);
+        updatedList.add(newItem);
+      }
+    }
+
+    this.lineItems.clear();
+    this.lineItems.addAll(updatedList);
+  }
+
+  private static void validateLineItems(List<?> lineItems) {
+    if (lineItems == null || lineItems.isEmpty()) {
+      throw new ValidationException(MessageKeys.SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED);
+    }
   }
 
   public interface Exporter {
