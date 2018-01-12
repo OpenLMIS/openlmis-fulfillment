@@ -17,17 +17,20 @@ package org.openlmis.fulfillment.domain;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
@@ -78,6 +81,10 @@ public class Shipment extends BaseEntity {
   public List<ShipmentLineItem> getLineItems() {
     return Collections.unmodifiableList(
         lineItems.stream().map(ShipmentLineItem::copy).collect(Collectors.toList()));
+  }
+
+  public UUID getCreatorId() {
+    return shipDetails.getUserId();
   }
 
   /**

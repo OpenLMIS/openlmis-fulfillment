@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
@@ -45,6 +44,7 @@ import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
@@ -53,10 +53,15 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -87,6 +92,12 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private PermissionService permissionService;
+
+  @MockBean
+  private StockEventStockManagementService stockEventService;
+
+  @MockBean
+  private StockEventBuilder stockEventBuilder;
 
   @Mock
   private Order order;
@@ -167,6 +178,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertEquals(shipmentDtoExpected, extracted);
     verify(shipmentRepository).save(captor.capture());
+    verify(stockEventBuilder).fromShipment(any(Shipment.class));
+    verify(stockEventService).submit(any(StockEventDto.class));
     assertTrue(reflectionEquals(shipment, captor.getValue(), singletonList("id")));
     assertNull(captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
@@ -187,6 +200,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED));
 
     verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
+    verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
@@ -206,6 +221,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
 
     verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
+    verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 

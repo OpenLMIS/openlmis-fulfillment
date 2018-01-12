@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -32,7 +31,7 @@ import java.util.UUID;
 @ToString
 public class StockEventLineItemDto {
   private UUID orderableId;
+  private UUID lotId;
   private Integer quantity;
   private LocalDate occurredDate;
-  private List<StockEventAdjustmentDto> stockAdjustments;
 }

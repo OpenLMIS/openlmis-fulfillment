@@ -17,12 +17,17 @@ package org.openlmis.fulfillment.domain;
 
 import static org.openlmis.fulfillment.domain.BaseEntity.UUID_TYPE;
 
+import org.hibernate.annotations.Type;
+
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
-import org.hibernate.annotations.Type;
+
 import java.time.ZonedDateTime;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
@@ -33,6 +38,7 @@ import javax.persistence.Embeddable;
 public final class CreationDetails {
 
   @Type(type = UUID_TYPE)
+  @Getter(AccessLevel.PACKAGE)
   private final UUID userId;
 
   @Column(columnDefinition = "timestamp with time zone")
