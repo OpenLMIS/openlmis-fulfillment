@@ -37,8 +37,10 @@ import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.util.StockEventBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -67,6 +69,12 @@ public class ShipmentControllerTest {
 
   @Mock
   private UserDto userDto;
+
+  @Mock
+  private StockEventStockManagementService stockEventService;
+
+  @Mock
+  private StockEventBuilder stockEventBuilder;
 
   @Mock
   private OrderRepository orderRepository;
