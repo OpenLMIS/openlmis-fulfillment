@@ -1,11 +1,9 @@
 7.0.0 / WIP
 ===========
 
-Improvements added in a backwards-compatible manner:
+Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order
 * [OLMIS-3608](https://openlmis.atlassian.net/browse/OLMIS-3608): Added possibility to extend last updater object in Order
-
-Bug fixes and improvements (backwards-compatible):
 * [OLMIS-3135](https://openlmis.atlassian.net/browse/OLMIS-3135): Handle API Key requests.
   * For now all requests are blocked.
 
@@ -14,6 +12,7 @@ Contract breaking changes:
 
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
+* [OLMIS-1611](https://openlmis.atlassian.net/browse/OLMIS-1611): Send stock event when shipment is finalized
 
 
 6.1.0 / 2017-11-09
