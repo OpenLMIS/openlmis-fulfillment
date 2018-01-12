@@ -15,21 +15,23 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import java.util.UUID;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class StockEventAdjustmentDto {
-  private UUID reasonId;
-  private Integer quantity;
+public class StockEventAdjustmentDtoTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(StockEventAdjustmentDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    StockEventAdjustmentDto shipmentDraftDto = new StockEventAdjustmentDtoDataBuilder().build();
+    ToStringTestUtils.verify(StockEventAdjustmentDto.class, shipmentDraftDto);
+  }
 }

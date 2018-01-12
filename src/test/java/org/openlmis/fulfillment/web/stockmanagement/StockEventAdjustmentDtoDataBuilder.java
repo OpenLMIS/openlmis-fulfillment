@@ -15,21 +15,29 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 import java.util.UUID;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class StockEventAdjustmentDto {
-  private UUID reasonId;
-  private Integer quantity;
+public class StockEventAdjustmentDtoDataBuilder {
+
+  private UUID reasonId = UUID.randomUUID();
+  private Integer quantity = 10;
+
+  public StockEventAdjustmentDtoDataBuilder withReasonId(UUID reasonId) {
+    this.reasonId = reasonId;
+    return this;
+  }
+
+  public StockEventAdjustmentDtoDataBuilder withQuantity(Integer integer) {
+    this.quantity = integer;
+    return this;
+  }
+
+  /**
+   * Builds instance of {@link StockEventDto}.
+   */
+  public StockEventAdjustmentDto build() {
+    return new StockEventAdjustmentDto(this.reasonId, this.quantity);
+  }
 }

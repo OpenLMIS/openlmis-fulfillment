@@ -16,20 +16,21 @@
 package org.openlmis.fulfillment.web.stockmanagement;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @ToString
-public class StockEventLineItemDto {
+@EqualsAndHashCode
+public final class StockEventLineItemDto {
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;

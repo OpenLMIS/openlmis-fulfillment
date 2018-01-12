@@ -15,21 +15,43 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class StockEventAdjustmentDto {
-  private UUID reasonId;
-  private Integer quantity;
+public class StockEventDtoDataBuilder {
+
+  private UUID programId = UUID.randomUUID();
+  private UUID facilityId = UUID.randomUUID();
+  private List<StockEventLineItemDto> lineItems = new ArrayList<>();
+  private UUID userId = UUID.randomUUID();
+
+  public StockEventDtoDataBuilder withProgramId(UUID programId) {
+    this.programId = programId;
+    return this;
+  }
+
+  public StockEventDtoDataBuilder withFacilityId(UUID facilityId) {
+    this.facilityId = facilityId;
+    return this;
+  }
+
+  public StockEventDtoDataBuilder withLineItems(List<StockEventLineItemDto> lineItems) {
+    this.lineItems = lineItems;
+    return this;
+  }
+
+  public StockEventDtoDataBuilder withUserId(UUID userId) {
+    this.userId = userId;
+    return this;
+  }
+
+  /**
+   * Builds instance of {@link StockEventDto}.
+   */
+  public StockEventDto build() {
+    return new StockEventDto(this.programId, this.facilityId, this.lineItems, this.userId);
+  }
 }

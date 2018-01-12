@@ -13,23 +13,16 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web.stockmanagement;
+package org.openlmis.fulfillment.web.util;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import java.util.UUID;
+import org.junit.Test;
+import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class StockEventAdjustmentDto {
-  private UUID reasonId;
-  private Integer quantity;
+public class LocalizedMessageDtoTest {
+
+  @Test
+  public void shouldImplementToString() {
+    LocalizedMessageDto localizedMessageDto = new LocalizedMessageDto();
+    ToStringTestUtils.verify(LocalizedMessageDto.class, localizedMessageDto);
+  }
 }
