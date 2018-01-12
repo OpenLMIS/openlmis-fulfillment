@@ -15,11 +15,13 @@
 
 package org.openlmis.fulfillment.util;
 
+import org.openlmis.fulfillment.service.FulfillmentException;
+
 /**
  * Signals user being unauthorized in external api.
  */
-public class AuthenticationException extends RuntimeException {
-  public AuthenticationException(String message) {
-    super(message);
+public class AuthenticationException extends FulfillmentException {
+  public AuthenticationException(String messageKey, String... params) {
+    super(messageKey, params);
   }
 }

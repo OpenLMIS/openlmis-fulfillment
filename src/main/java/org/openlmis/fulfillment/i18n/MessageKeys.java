@@ -24,6 +24,7 @@ public abstract class MessageKeys {
   private static final String SERVICE_ERROR_PREFIX = join(SERVICE_PREFIX, "error");
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
   private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
+  public static final String ERROR_USER_NOT_FOUND = join(SERVICE_PREFIX, "user", "notFound");
 
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX

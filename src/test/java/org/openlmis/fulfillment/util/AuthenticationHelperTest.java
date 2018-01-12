@@ -37,6 +37,7 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthenticationHelperTest {
@@ -52,9 +53,11 @@ public class AuthenticationHelperTest {
 
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
 
+  private UUID userId = UUID.randomUUID();
+
   @Before
   public void setUp() {
-    when(authentication.getPrincipal()).thenReturn("username");
+    when(authentication.getPrincipal()).thenReturn(userId);
 
     SecurityContext securityContext = mock(SecurityContext.class);
     when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -67,7 +70,7 @@ public class AuthenticationHelperTest {
     // given
     UserDto userMock = mock(UserDto.class);
     when(authentication.isClientOnly()).thenReturn(false);
-    when(userReferenceDataService.findUser("username")).thenReturn(userMock);
+    when(userReferenceDataService.findOne(userId)).thenReturn(userMock);
 
     // when
     UserDto user = authenticationHelper.getCurrentUser();
@@ -80,7 +83,7 @@ public class AuthenticationHelperTest {
   public void shouldThrowExceptionIfUserDoesNotExist() {
     // given
     when(authentication.isClientOnly()).thenReturn(false);
-    when(userReferenceDataService.findUser(any(String.class))).thenReturn(null);
+    when(userReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
 
     // when
     authenticationHelper.getCurrentUser();
@@ -90,7 +93,7 @@ public class AuthenticationHelperTest {
   public void shouldNotThrowExceptionIfAuthenticationIsClientOnly() {
     // given
     when(authentication.isClientOnly()).thenReturn(true);
-    when(userReferenceDataService.findUser(any(String.class))).thenReturn(null);
+    when(userReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
 
     // when
     UserDto user = authenticationHelper.getCurrentUser();

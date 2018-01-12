@@ -16,6 +16,8 @@
 package org.openlmis.fulfillment.util;
 
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
+
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.RightReferenceDataService;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Component;
+import java.util.UUID;
 
 @Component
 public class AuthenticationHelper {
@@ -44,14 +47,14 @@ public class AuthenticationHelper {
   public UserDto getCurrentUser() {
     OAuth2Authentication authentication =
         (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-    String username = (String) authentication.getPrincipal();
+    UUID userId = (UUID) authentication.getPrincipal();
     UserDto user = null;
 
     if (!authentication.isClientOnly()) {
-      user = userReferenceDataService.findUser(username);
+      user = userReferenceDataService.findOne(userId);
 
       if (user == null) {
-        throw new AuthenticationException("User with name \"" + username + "\" not found.");
+        throw new AuthenticationException(ERROR_USER_NOT_FOUND, userId.toString());
       }
     }
 
