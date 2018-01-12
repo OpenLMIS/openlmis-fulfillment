@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -54,18 +53,13 @@ public class StockEventBuilder {
     profiler.setLogger(XLOGGER);
 
     LOGGER.debug("Building stock events for shipment: {}", shipment.getId());
-    UUID facilityId = shipment.getOrder().getSupplyingFacilityId();
-    UUID programId = shipment.getOrder().getProgramId();
 
     profiler.start("BUILD_STOCK_EVENT");
     LocalDate occurredDate = getOccurredDate(shipment);
-    StockEventDto stockEventDto = StockEventDto
-        .builder()
-        .facilityId(facilityId)
-        .programId(programId)
-        .userId(shipment.getCreatorId())
-        .lineItems(fromLineItems(shipment.getLineItems(), occurredDate))
-        .build();
+    StockEventDto stockEventDto = new StockEventDto(
+        shipment.getOrder().getProgramId(), shipment.getOrder().getSupplyingFacilityId(),
+        fromLineItems(shipment.getLineItems(), occurredDate), shipment.getCreatorId()
+    );
 
     profiler.stop().log();
     XLOGGER.exit(stockEventDto);
@@ -88,13 +82,10 @@ public class StockEventBuilder {
 
   private StockEventLineItemDto fromLineItem(ShipmentLineItem lineItem,
                                              LocalDate occurredDate) {
-    return StockEventLineItemDto
-        .builder()
-        .orderableId(lineItem.getOrderableId())
-        .lotId(lineItem.getLotId())
-        .quantity(lineItem.getQuantityShipped().intValue())
-        .occurredDate(occurredDate)
-        .build();
+    return new StockEventLineItemDto(
+        lineItem.getOrderableId(), lineItem.getLotId(),
+        lineItem.getQuantityShipped().intValue(), occurredDate
+    );
   }
 
 }
