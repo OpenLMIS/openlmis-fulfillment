@@ -131,14 +131,14 @@ public class ShipmentController extends BaseController {
     profiler.start("REMOVE_DRAFT_SHIPMENTS");
     findAndRemoveShipmentDraftsForOrder(order);
 
-    profiler.start("BUILD_SHIPMENT_DTO");
-    ShipmentDto dto = shipmentDtoBuilder.build(shipment);
-
     profiler.start("BUILD_STOCK_EVENT_FROM_SHIPMENT");
     StockEventDto stockEventDto = stockEventBuilder.fromShipment(shipment);
 
     profiler.start("SUBMIT_STOCK_EVENT");
     stockEventService.submit(stockEventDto);
+
+    profiler.start("BUILD_SHIPMENT_DTO");
+    ShipmentDto dto = shipmentDtoBuilder.build(shipment);
 
     profiler.stop().log();
     XLOGGER.exit(dto);
