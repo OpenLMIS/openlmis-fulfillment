@@ -35,7 +35,7 @@ public class StockEventAdjustmentDtoDataBuilder {
   }
 
   /**
-   * Builds instance of {@link StockEventDto}.
+   * Builds instance of {@link StockEventAdjustmentDto}.
    */
   public StockEventAdjustmentDto build() {
     return new StockEventAdjustmentDto(this.reasonId, this.quantity);
