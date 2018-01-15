@@ -163,6 +163,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateShipment() {
+    when(orderRepository.findOne(shipment.getOrder().getId())).thenReturn(shipment.getOrder());
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
 

@@ -118,13 +118,16 @@ public class ShipmentController extends BaseController {
 
     profiler.start("CREATE_DOMAIN_INSTANCE");
     setShipDetailsToDto(shipmentDto);
+
+    Order order = orderRepository.findOne(dtoOrder.getId());
+    shipmentDto.setOrder(order);
+
     Shipment shipment = Shipment.newInstance(shipmentDto);
 
     profiler.start("SAVE_SHIPMENT");
     shipment = shipmentRepository.save(shipment);
 
     profiler.start("UPDATE_ORDER");
-    Order order = orderRepository.findOne(dtoOrder.getId());
     order.setStatus(OrderStatus.SHIPPED);
     orderRepository.save(order);
 
