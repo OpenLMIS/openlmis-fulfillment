@@ -104,7 +104,7 @@ public class Shipment extends BaseEntity {
     }
 
     Shipment inventoryItem = new Shipment(
-        new Order(order.getId()),
+        order,
         importer.getShipDetails(),
         importer.getNotes(),
         items);
