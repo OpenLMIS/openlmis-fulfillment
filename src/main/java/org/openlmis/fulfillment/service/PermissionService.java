@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -30,6 +31,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
@@ -166,7 +168,7 @@ public class PermissionService {
   private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
     Order order = orderRepository.findOne(orderDto.getId());
     if (order == null) {
-      throw new MissingPermissionException(SHIPMENTS_EDIT);
+      throw new ValidationException(ERROR_ORDER_NOT_FOUND, orderDto.getId().toString());
     }
     checkPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId());
   }

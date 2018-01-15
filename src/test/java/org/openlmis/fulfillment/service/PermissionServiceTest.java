@@ -21,6 +21,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
@@ -53,6 +54,7 @@ import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
@@ -306,7 +308,9 @@ public class PermissionServiceTest {
   public void cannotManageShipmentWhenOrderIsNotFound() throws Exception {
     mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
     when(orderRepository.findOne(order.getId())).thenReturn(null);
-    expectException(SHIPMENTS_EDIT);
+    exception.expect(ValidationException.class);
+    exception.expect(hasProperty("params", arrayContaining(order.getId().toString())));
+    exception.expectMessage(ERROR_ORDER_NOT_FOUND);
 
     permissionService.canEditShipment(shipmentDto);
   }
