@@ -27,14 +27,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.service.BaseCommunicationService;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
 import org.openlmis.fulfillment.service.DataRetrievalException;
-import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
 import org.springframework.http.HttpEntity;
@@ -43,7 +42,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
@@ -104,8 +102,8 @@ public class StockEventStockManagementServiceTest extends BaseCommunicationServi
     assertThat(entityCaptor.getValue().getBody(), is(new StockEventDto()));
   }
 
-  @Test(expected = ValidationException.class)
-  public void shouldReturnValidationExceptionOnBadRequest() throws IOException {
+  @Test(expected = ExternalApiException.class)
+  public void shouldThrowExceptionOnBadRequest() throws IOException {
     when(objectMapper.readValue(anyString(), eq(LocalizedMessageDto.class)))
         .thenReturn(new LocalizedMessageDto());
     when(restTemplate.exchange(

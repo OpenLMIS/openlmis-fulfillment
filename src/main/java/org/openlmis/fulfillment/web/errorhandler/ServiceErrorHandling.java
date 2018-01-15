@@ -26,6 +26,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 import net.sf.jasperreports.engine.JRException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
+import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
@@ -33,6 +34,7 @@ import org.openlmis.fulfillment.service.ReportingException;
 import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ServerException;
+import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,7 +116,7 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   }
 
   /**
-   * Handles the {@link ServerException} that indicates programmatic error.
+   * Handles the {@link ServerException} that indicates server error.
    *
    * @param ex the exception that caused the issue
    * @return the error response
@@ -166,5 +168,15 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
         err.getMessage()
     );
   }
+
+  @ExceptionHandler(ExternalApiException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public LocalizedMessageDto handleExternalApiException(ExternalApiException ex) {
+    logger.error("An external api error occurred", ex);
+    return ex.getMessageLocalized();
+  }
+
+
 
 }

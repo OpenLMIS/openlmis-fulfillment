@@ -18,10 +18,9 @@ package org.openlmis.fulfillment.service.stockmanagement;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.web.ServerException;
-import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
-
 import java.io.IOException;
 import java.util.UUID;
 
@@ -71,7 +69,7 @@ public class StockEventStockManagementService
           LocalizedMessageDto localizedMessage =
               objectMapper.readValue(ex.getResponseBodyAsString(), LocalizedMessageDto.class);
 
-          throw new ValidationException(ex, localizedMessage.getMessageKey());
+          throw new ExternalApiException(ex, localizedMessage);
         } catch (IOException ex2) {
           throw new ServerException(ex2, MessageKeys.ERROR_IO, ex2.getMessage());
         }

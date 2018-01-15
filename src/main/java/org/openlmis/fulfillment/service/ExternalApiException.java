@@ -13,27 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web;
+package org.openlmis.fulfillment.service;
 
-import org.openlmis.fulfillment.util.Message;
 
-import lombok.Getter;
+import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
 
-/**
- * Exception for indicating that an internal server exception occurred. This should result
- * in a Internal Error API response
- */
-public class ServerException extends RuntimeException {
+public class ExternalApiException extends RuntimeException {
 
-  @Getter
-  private final Message errorMessage;
+  private final LocalizedMessageDto localizedMessage;
 
-  public ServerException(Throwable cause, String messageKey, Object... messageParameters) {
-    this(new Message(messageKey, messageParameters), cause);
-  }
-
-  public ServerException(Message message, Throwable cause) {
+  public ExternalApiException(Throwable cause,
+                              LocalizedMessageDto localizedMessage) {
     super(cause);
-    this.errorMessage = message;
+    this.localizedMessage = localizedMessage;
   }
+
+  @Override
+  public String getMessage() {
+    return localizedMessage.toString();
+  }
+
+  public LocalizedMessageDto getMessageLocalized() {
+    return localizedMessage;
+  }
+
 }
