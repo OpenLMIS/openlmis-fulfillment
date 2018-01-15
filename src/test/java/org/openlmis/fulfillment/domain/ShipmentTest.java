@@ -62,7 +62,7 @@ public class ShipmentTest {
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
             new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)));
 
-    Shipment actual = Shipment.newInstance(shipmentDto);
+    Shipment actual = Shipment.newInstance(shipmentDto, order.getId());
 
     assertThat(expected, new ReflectionEquals(actual));
   }
@@ -74,7 +74,7 @@ public class ShipmentTest {
     DummyShipmentDto shipmentDto =
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.emptyList());
 
-    Shipment.newInstance(shipmentDto);
+    Shipment.newInstance(shipmentDto, order.getId());
   }
 
   @Test

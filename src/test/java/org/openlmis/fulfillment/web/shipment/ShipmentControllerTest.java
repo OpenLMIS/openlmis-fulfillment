@@ -88,7 +88,7 @@ public class ShipmentControllerTest {
   private StockEventDto event = new StockEventDtoDataBuilder().build();
   private Order order = new OrderDataBuilder().build();
 
-  private Shipment shipment = Shipment.newInstance(shipmentDto);
+  private Shipment shipment = Shipment.newInstance(shipmentDto, order.getId());
 
   @Before
   public void setUp() {

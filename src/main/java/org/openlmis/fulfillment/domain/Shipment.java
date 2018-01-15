@@ -91,9 +91,10 @@ public class Shipment extends BaseEntity {
    * Creates new instance based on data from {@link Importer}
    *
    * @param importer instance of {@link Importer}
+   * @param orderId UUID of order {@link UUID}
    * @return new instance of Shipment.
    */
-  public static Shipment newInstance(Importer importer) {
+  public static Shipment newInstance(Importer importer, UUID orderId) {
     validateLineItems(importer.getLineItems());
     List<ShipmentLineItem> items = new ArrayList<>(importer.getLineItems().size());
     if (importer.getLineItems() != null) {
@@ -103,7 +104,7 @@ public class Shipment extends BaseEntity {
     }
 
     Shipment inventoryItem = new Shipment(
-        new Order(importer.getOrder().getId()),
+        new Order(orderId),
         importer.getShipDetails(),
         importer.getNotes(),
         items);
