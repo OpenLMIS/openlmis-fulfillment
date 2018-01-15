@@ -40,6 +40,8 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventDtoDataBuilder;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 
 import java.time.ZonedDateTime;
@@ -82,22 +84,26 @@ public class ShipmentControllerTest {
   @InjectMocks
   private ShipmentController shipmentController = new ShipmentController();
 
-  private ShipmentDto shipmentDto;
-  private Order order;
+  private ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
+  private StockEventDto event = new StockEventDtoDataBuilder().build();
+  private Order order = new OrderDataBuilder().build();
+
+  private Shipment shipment = Shipment.newInstance(shipmentDto);
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
     when(userDto.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
 
-    shipmentDto = new ShipmentDtoDataBuilder().build();
-    order = new OrderDataBuilder().build();
     when(shipmentRepository.save(any(Shipment.class)))
-        .thenReturn(Shipment.newInstance(shipmentDto));
+        .thenReturn(shipment);
     when(orderRepository.findOne(shipmentDto.getOrder().getId()))
         .thenReturn(order);
+    when(stockEventBuilder.fromShipment(any(Shipment.class)))
+        .thenReturn(event);
   }
 
   @Test
@@ -118,6 +124,14 @@ public class ShipmentControllerTest {
 
     verify(shipmentDraftRepository).findByOrder(order);
     verify(shipmentDraftRepository).delete(draft);
+  }
+
+  @Test
+  public void shouldSendStockEvent() {
+    shipmentController.createShipment(shipmentDto);
+
+    verify(stockEventBuilder).fromShipment(shipment);
+    verify(stockEventService).submit(event);
   }
 
 }
