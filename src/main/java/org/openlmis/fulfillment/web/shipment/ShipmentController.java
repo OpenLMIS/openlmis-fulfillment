@@ -121,7 +121,7 @@ public class ShipmentController extends BaseController {
 
     Order order = orderRepository.findOne(dtoOrder.getId());
 
-    Shipment shipment = Shipment.newInstance(shipmentDto, order.getId());
+    Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
     profiler.start("SAVE_SHIPMENT");
     shipment = shipmentRepository.save(shipment);
