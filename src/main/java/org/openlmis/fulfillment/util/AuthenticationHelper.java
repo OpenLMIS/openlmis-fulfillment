@@ -47,10 +47,10 @@ public class AuthenticationHelper {
   public UserDto getCurrentUser() {
     OAuth2Authentication authentication =
         (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-    UUID userId = (UUID) authentication.getPrincipal();
     UserDto user = null;
 
     if (!authentication.isClientOnly()) {
+      UUID userId = (UUID) authentication.getPrincipal();
       user = userReferenceDataService.findOne(userId);
 
       if (user == null) {
