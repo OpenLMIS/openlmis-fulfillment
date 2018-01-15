@@ -58,7 +58,7 @@ public class StockEventBuilder {
     LocalDate occurredDate = getOccurredDate(shipment);
     StockEventDto stockEventDto = new StockEventDto(
         shipment.getOrder().getProgramId(), shipment.getOrder().getSupplyingFacilityId(),
-        fromLineItems(shipment.getLineItems(), occurredDate), shipment.getCreatorId()
+        getLineItems(shipment, occurredDate), shipment.getCreatorId()
     );
 
     profiler.stop().log();
@@ -72,18 +72,19 @@ public class StockEventBuilder {
         .getEndDate();
   }
 
-  private List<StockEventLineItemDto> fromLineItems(List<ShipmentLineItem> lineItems,
-                                                    LocalDate occurredDate) {
-    return lineItems
+  private List<StockEventLineItemDto> getLineItems(Shipment shipment, LocalDate occurredDate) {
+    return shipment
+        .getLineItems()
         .stream()
-        .map(lineItem -> fromLineItem(lineItem, occurredDate))
+        .map(lineItem -> createLineItem(shipment, lineItem, occurredDate))
         .collect(Collectors.toList());
   }
 
-  private StockEventLineItemDto fromLineItem(ShipmentLineItem lineItem,
-                                             LocalDate occurredDate) {
+  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem,
+                                               LocalDate occurredDate) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(occurredDate);
+    dto.setDestinationId(shipment.getOrder().getReceivingFacilityId());
 
     lineItem.export(dto);
 

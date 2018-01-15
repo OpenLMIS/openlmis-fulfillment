@@ -15,6 +15,9 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
+import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
@@ -38,7 +41,9 @@ public final class StockEventLineItemDto implements ShipmentLineItem.Exporter {
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;
+  @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd")
   private LocalDate occurredDate;
+  private UUID destinationId;
 
   @Override
   @JsonIgnore

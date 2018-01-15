@@ -25,6 +25,7 @@ public class StockEventLineItemDtoDataBuilder {
 
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
+  private UUID destinationId = UUID.randomUUID();
   private Integer quantity = 10;
   private LocalDate occurredDate = LocalDate.now();
 
@@ -48,8 +49,7 @@ public class StockEventLineItemDtoDataBuilder {
    */
   public StockEventLineItemDto build() {
     return new StockEventLineItemDto(
-        this.orderableId, this.lotId,
-        this.quantity, this.occurredDate
+        this.orderableId, this.lotId, this.quantity, this.occurredDate, this.destinationId
     );
   }
 }

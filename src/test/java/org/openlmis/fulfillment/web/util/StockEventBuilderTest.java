@@ -90,5 +90,6 @@ public class StockEventBuilderTest {
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
     assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
     assertThat(eventLine.getOccurredDate(), is(PERIOD_END_DATE));
+    assertThat(eventLine.getDestinationId(), is(shipment.getOrder().getReceivingFacilityId()));
   }
 }
