@@ -19,7 +19,6 @@ import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.ToString;
 
 import java.util.UUID;
@@ -33,7 +32,6 @@ import javax.persistence.Table;
 @TypeName("ShipmentLineItem")
 @AllArgsConstructor
 @ToString
-@Getter
 public class ShipmentLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)

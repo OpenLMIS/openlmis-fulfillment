@@ -15,6 +15,10 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,9 +34,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public final class StockEventLineItemDto {
+public final class StockEventLineItemDto implements ShipmentLineItem.Exporter {
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;
   private LocalDate occurredDate;
+
+  @Override
+  @JsonIgnore
+  public void setId(UUID id) {
+    // nothing to do here
+  }
+
+  @Override
+  @JsonIgnore
+  public void setQuantityShipped(Long quantityShipped) {
+    quantity = Math.toIntExact(quantityShipped);
+  }
 }

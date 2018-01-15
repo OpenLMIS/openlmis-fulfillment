@@ -33,6 +33,7 @@ import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
 
@@ -82,9 +83,12 @@ public class StockEventBuilderTest {
   }
 
   private void assertEventLineItem(StockEventLineItemDto eventLine, ShipmentLineItem shipmentLine) {
-    assertThat(eventLine.getOrderableId(), is(shipmentLine.getOrderableId()));
-    assertThat(eventLine.getLotId(), is(shipmentLine.getLotId()));
-    assertThat(eventLine.getQuantity(), is(shipmentLine.getQuantityShipped().intValue()));
+    ShipmentLineItemDto dto = new ShipmentLineItemDto();
+    shipmentLine.export(dto);
+
+    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
+    assertThat(eventLine.getLotId(), is(dto.getLotId()));
+    assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
     assertThat(eventLine.getOccurredDate(), is(PERIOD_END_DATE));
   }
 }

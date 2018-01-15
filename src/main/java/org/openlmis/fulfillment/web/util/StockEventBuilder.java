@@ -82,10 +82,12 @@ public class StockEventBuilder {
 
   private StockEventLineItemDto fromLineItem(ShipmentLineItem lineItem,
                                              LocalDate occurredDate) {
-    return new StockEventLineItemDto(
-        lineItem.getOrderableId(), lineItem.getLotId(),
-        lineItem.getQuantityShipped().intValue(), occurredDate
-    );
+    StockEventLineItemDto dto = new StockEventLineItemDto();
+    dto.setOccurredDate(occurredDate);
+
+    lineItem.export(dto);
+
+    return dto;
   }
 
 }
