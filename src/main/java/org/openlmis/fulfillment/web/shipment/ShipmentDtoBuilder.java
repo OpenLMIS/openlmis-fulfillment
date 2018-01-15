@@ -20,13 +20,32 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ShipmentDtoBuilder {
 
   @Value("${service.url}")
   private String serviceUrl;
+
+  /**
+   * Create a new list of {@link ShipmentDto} based on data
+   * from {@link Shipment}.
+   *
+   * @param shipments collection used to create {@link ShipmentDto} list (can be {@code null})
+   * @return new list of {@link ShipmentDto}. Empty list if passed argument is {@code null}.
+   */
+  public List<ShipmentDto> build(Collection<Shipment> shipments) {
+    if (null == shipments) {
+      return Collections.emptyList();
+    }
+    return shipments.stream()
+        .map(this::export)
+        .collect(Collectors.toList());
+  }
 
   /**
    * Create a new instance of {@link ShipmentDto} based on data

@@ -123,6 +123,15 @@ public class PermissionService {
   /**
    * Checks if user has permission to view Shipments.
    *
+   * @param order an order associated with shipment
+   */
+  public void canViewShipment(@NotNull Order order) {
+    checkPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId());
+  }
+
+  /**
+   * Checks if user has permission to view Shipments.
+   *
    * @param shipmentDraft a shipment draft
    */
   public void canViewShipmentDraft(@NotNull ShipmentDraft shipmentDraft) {

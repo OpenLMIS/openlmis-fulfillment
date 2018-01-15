@@ -63,6 +63,7 @@ schemas:
   - shipmentDraftPage: !include schemas/shipmentDraftPage.json
 
   - shipment: !include schemas/shipment.json
+  - shipmentPage: !include schemas/shipmentPage.json
 
   - shipmentExample: |
       {
@@ -932,6 +933,32 @@ resourceTypes:
                   body:
                     application/json:
                       schema: shipment
+              400:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+              401:
+                  body:
+                    application/json:
+              403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+      get:
+          is: [ secured, paginated ]
+          description: Get shipments page.
+          queryParameters:
+              orderId:
+                  displayName: orderId
+                  description: order ID
+                  type: string
+                  required: true
+                  repeat: false
+          responses:
+              200:
+                  body:
+                    application/json:
+                      schema: shipmentPage
               400:
                   body:
                     application/json:

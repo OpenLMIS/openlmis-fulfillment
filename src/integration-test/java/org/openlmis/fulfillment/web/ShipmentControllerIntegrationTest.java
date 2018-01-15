@@ -23,12 +23,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
@@ -50,6 +52,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
@@ -58,15 +61,15 @@ import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/shipments";
@@ -109,6 +112,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private ShipmentDto shipmentDtoExpected;
   private UUID userId = UUID.randomUUID();
   private Shipment shipment;
+  private UUID orderId = UUID.randomUUID();
 
   @Before
   public void setUp() {
@@ -147,7 +151,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
             .withUserId(userId)
             .withDate(dateHelper.getCurrentDateTimeWithSystemZone())
             .build())
-        .withOrder(new Order(UUID.randomUUID()))
+        .withOrder(new Order(orderId))
         .withLineItems(singletonList(lineItem))
         .build();
   }
@@ -225,6 +229,88 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
     verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void shouldFindShipmentBasedOnOrder() {
+    when(orderRepository.findOne(orderId))
+        .thenReturn(shipment.getOrder());
+    when(shipmentRepository.findByOrder(eq(shipment.getOrder()), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(singletonList(shipment)));
+
+    PageImplRepresentation response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam("page", 2)
+        .queryParam("size", 10)
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam(ORDER_ID, orderId)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(PageImplRepresentation.class);
+
+    assertEquals(10, response.getSize());
+    assertEquals(2, response.getNumber());
+    assertEquals(1, response.getContent().size());
+    assertEquals(1, response.getNumberOfElements());
+    assertEquals(21, response.getTotalElements());
+    assertEquals(3, response.getTotalPages());
+    assertEquals(shipmentDtoExpected, getPageContent(response, ShipmentDto.class).get(0));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfOrderIsNotFoundWhenGetShipments() {
+    when(orderRepository.findOne(orderId)).thenReturn(null);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam(ORDER_ID, orderId)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_ORDER_NOT_FOUND));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfOrderIsNotGivenWhenGetShipments() {
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDER_REQUIRED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightsToGetShipments() {
+    when(orderRepository.findOne(orderId))
+        .thenReturn(shipment.getOrder());
+    doThrow(new MissingPermissionException("test"))
+        .when(permissionService).canViewShipment(shipment.getOrder());
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam(ORDER_ID, orderId)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+
+    verify(shipmentDraftRepository, never()).findByOrder(any(Order.class), any(Pageable.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

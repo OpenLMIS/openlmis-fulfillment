@@ -66,7 +66,6 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private static final String ID_RESOURCE_URL = RESOURCE_URL + "/{id}";
 
   private static final String PERMISSION_NAME = "test";
-  private static final String ORDER_ID = "orderId";
 
   @Value("${service.url}")
   private String serviceUrl;
