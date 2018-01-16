@@ -26,11 +26,10 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityTypeDto;
-import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.NodeDto;
 import org.openlmis.fulfillment.web.stockmanagement.NodeDtoDataBuilder;
@@ -40,13 +39,14 @@ import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDtoDat
 
 import lombok.Getter;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.UUID;
 
 @Getter
 class StockEventBuilderFixture {
-  private ProcessingPeriodDto period;
+  private static final ZonedDateTime CURRENT_DATE = ZonedDateTime.now();
+
   private FacilityTypeDto facilityType;
   private FacilityDto facility;
   private NodeDto node;
@@ -56,19 +56,16 @@ class StockEventBuilderFixture {
   private Shipment shipment;
   private Order order;
 
-  private PeriodReferenceDataService periodReferenceDataService;
   private FacilityReferenceDataService facilityReferenceDataService;
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
+  private DateHelper dateHelper;
 
-  StockEventBuilderFixture(PeriodReferenceDataService periods,
-                                  FacilityReferenceDataService facilities,
-                                  ValidDestinationsStockManagementService destinations) {
-    periodReferenceDataService = periods;
-    facilityReferenceDataService = facilities;
-    validDestinationsStockManagementService = destinations;
-
-    period = new ProcessingPeriodDto();
-    period.setEndDate(LocalDate.now().minusDays(1));
+  StockEventBuilderFixture(FacilityReferenceDataService facilities,
+                           ValidDestinationsStockManagementService destinations,
+                           DateHelper dateHelper) {
+    this.facilityReferenceDataService = facilities;
+    this.validDestinationsStockManagementService = destinations;
+    this.dateHelper = dateHelper;
 
     facilityType = new FacilityTypeDto();
     facilityType.setId(UUID.randomUUID());
@@ -96,15 +93,15 @@ class StockEventBuilderFixture {
   }
 
   void setUp() {
-    when(periodReferenceDataService.findOne(order.getProcessingPeriodId()))
-        .thenReturn(period);
-
     when(facilityReferenceDataService.findOne(order.getReceivingFacilityId()))
         .thenReturn(facility);
 
     when(validDestinationsStockManagementService
         .getValidDestinations(order.getProgramId(), facilityType.getId()))
         .thenReturn(Collections.singletonList(destination));
+
+    when(dateHelper.getCurrentDateTimeWithSystemZone())
+        .thenReturn(CURRENT_DATE);
   }
 
   void assertEventLineItem(StockEventLineItemDto eventLine, ShipmentLineItem shipmentLine) {
@@ -114,7 +111,7 @@ class StockEventBuilderFixture {
     assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
     assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
-    assertThat(eventLine.getOccurredDate(), is(period.getEndDate()));
+    assertThat(eventLine.getOccurredDate(), is(CURRENT_DATE.toLocalDate()));
     assertThat(eventLine.getDestinationId(), is(node.getId()));
   }
 }

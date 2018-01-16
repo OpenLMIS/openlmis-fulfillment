@@ -21,8 +21,8 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
@@ -34,7 +34,6 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -47,13 +46,13 @@ public class StockEventBuilder {
   private static final Logger LOGGER = LoggerFactory.getLogger(StockEventBuilder.class);
 
   @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Autowired
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   /**
    * Builds a physical inventory draft DTO from the given requisition.
@@ -69,10 +68,9 @@ public class StockEventBuilder {
     LOGGER.debug("Building stock events for shipment: {}", shipment.getId());
 
     profiler.start("BUILD_STOCK_EVENT");
-    LocalDate occurredDate = getOccurredDate(shipment);
     StockEventDto stockEventDto = new StockEventDto(
         shipment.getOrder().getProgramId(), shipment.getOrder().getSupplyingFacilityId(),
-        getLineItems(shipment, occurredDate), shipment.getCreatorId()
+        getLineItems(shipment), shipment.getCreatorId()
     );
 
     profiler.stop().log();
@@ -80,24 +78,17 @@ public class StockEventBuilder {
     return stockEventDto;
   }
 
-  private LocalDate getOccurredDate(Shipment shipment) {
-    return periodReferenceDataService
-        .findOne(shipment.getOrder().getProcessingPeriodId())
-        .getEndDate();
-  }
-
-  private List<StockEventLineItemDto> getLineItems(Shipment shipment, LocalDate occurredDate) {
+  private List<StockEventLineItemDto> getLineItems(Shipment shipment) {
     return shipment
         .getLineItems()
         .stream()
-        .map(lineItem -> createLineItem(shipment, lineItem, occurredDate))
+        .map(lineItem -> createLineItem(shipment, lineItem))
         .collect(Collectors.toList());
   }
 
-  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem,
-                                               LocalDate occurredDate) {
+  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
-    dto.setOccurredDate(occurredDate);
+    dto.setOccurredDate(dateHelper.getCurrentDateTimeWithSystemZone().toLocalDate());
     dto.setDestinationId(getDestinationId(shipment.getOrder()));
 
     lineItem.export(dto);

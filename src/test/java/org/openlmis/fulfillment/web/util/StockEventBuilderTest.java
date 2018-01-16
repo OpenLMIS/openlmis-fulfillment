@@ -26,8 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,13 +35,13 @@ import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 public class StockEventBuilderTest {
 
   @Mock
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
 
   @Mock
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
+
+  @Mock
+  private DateHelper dateHelper;
 
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
@@ -51,8 +51,7 @@ public class StockEventBuilderTest {
   @Before
   public void setUp() {
     fixture = new StockEventBuilderFixture(
-        periodReferenceDataService, facilityReferenceDataService,
-        validDestinationsStockManagementService
+        facilityReferenceDataService, validDestinationsStockManagementService, dateHelper
     );
     fixture.setUp();
   }
