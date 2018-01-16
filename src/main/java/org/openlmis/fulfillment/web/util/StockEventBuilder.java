@@ -88,7 +88,7 @@ public class StockEventBuilder {
 
   private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
-    dto.setOccurredDate(dateHelper.getCurrentDateTimeWithSystemZone().toLocalDate());
+    dto.setOccurredDate(dateHelper.getCurrentDate());
     dto.setDestinationId(getDestinationId(shipment.getOrder()));
 
     lineItem.export(dto);

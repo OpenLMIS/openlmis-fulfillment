@@ -39,13 +39,13 @@ import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDtoDat
 
 import lombok.Getter;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.UUID;
 
 @Getter
 class StockEventBuilderFixture {
-  private static final ZonedDateTime CURRENT_DATE = ZonedDateTime.now();
+  private static final LocalDate CURRENT_DATE = LocalDate.now();
 
   private FacilityTypeDto facilityType;
   private FacilityDto facility;
@@ -100,7 +100,7 @@ class StockEventBuilderFixture {
         .getValidDestinations(order.getProgramId(), facilityType.getId()))
         .thenReturn(Collections.singletonList(destination));
 
-    when(dateHelper.getCurrentDateTimeWithSystemZone())
+    when(dateHelper.getCurrentDate())
         .thenReturn(CURRENT_DATE);
   }
 
@@ -111,7 +111,7 @@ class StockEventBuilderFixture {
     assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
     assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
-    assertThat(eventLine.getOccurredDate(), is(CURRENT_DATE.toLocalDate()));
+    assertThat(eventLine.getOccurredDate(), is(CURRENT_DATE));
     assertThat(eventLine.getDestinationId(), is(node.getId()));
   }
 }
