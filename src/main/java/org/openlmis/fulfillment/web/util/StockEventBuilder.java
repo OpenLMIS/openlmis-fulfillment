@@ -16,11 +16,16 @@
 package org.openlmis.fulfillment.web.util;
 
 
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
+import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -30,7 +35,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +48,12 @@ public class StockEventBuilder {
 
   @Autowired
   private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ValidDestinationsStockManagementService validDestinationsStockManagementService;
 
   /**
    * Builds a physical inventory draft DTO from the given requisition.
@@ -84,11 +98,25 @@ public class StockEventBuilder {
                                                LocalDate occurredDate) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(occurredDate);
-    dto.setDestinationId(shipment.getOrder().getReceivingFacilityId());
+    dto.setDestinationId(getDestinationId(shipment.getOrder()));
 
     lineItem.export(dto);
 
     return dto;
+  }
+
+  private UUID getDestinationId(Order order) {
+    FacilityDto facility = facilityReferenceDataService.findOne(order.getReceivingFacilityId());
+    Collection<ValidSourceDestinationDto> destinations = validDestinationsStockManagementService
+        .getValidDestinations(order.getProgramId(), facility.getType().getId());
+
+    return destinations
+        .stream()
+        .filter(elem -> elem.getNode().isRefDataFacility())
+        .filter(elem -> Objects.equals(facility.getId(), elem.getNode().getReferenceId()))
+        .findFirst()
+        .map(elem -> elem.getNode().getId())
+        .orElse(null);
   }
 
 }

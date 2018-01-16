@@ -18,78 +18,55 @@ package org.openlmis.fulfillment.web.util;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
-import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
-import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
-import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
+import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
-import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
-
-import java.time.LocalDate;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class StockEventBuilderTest {
-  private static final LocalDate PERIOD_END_DATE = LocalDate.now().minusDays(1);
-
-  private ShipmentLineItemDataBuilder lineItemBuilder = new ShipmentLineItemDataBuilder();
-  private ShipmentDataBuilder shipmentBuilder = new ShipmentDataBuilder();
-
-  private ShipmentLineItem shipmentLineItemOne = lineItemBuilder.build();
-  private ShipmentLineItem shipmentLineItemTwo = lineItemBuilder.build();
-
-  private Shipment shipment = shipmentBuilder
-      .withLineItems(Lists.newArrayList(shipmentLineItemOne, shipmentLineItemTwo))
-      .build();
 
   @Mock
   private PeriodReferenceDataService periodReferenceDataService;
 
+  @Mock
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Mock
+  private ValidDestinationsStockManagementService validDestinationsStockManagementService;
+
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
 
+  private StockEventBuilderFixture fixture;
+
   @Before
   public void setUp() {
-    ProcessingPeriodDto period = new ProcessingPeriodDto();
-    period.setEndDate(PERIOD_END_DATE);
-
-    when(periodReferenceDataService.findOne(shipment.getOrder().getProcessingPeriodId()))
-        .thenReturn(period);
+    fixture = new StockEventBuilderFixture(
+        periodReferenceDataService, facilityReferenceDataService,
+        validDestinationsStockManagementService
+    );
+    fixture.setUp();
   }
 
   @Test
   public void shouldCreateEventFromShipment() {
-    StockEventDto event = stockEventBuilder.fromShipment(shipment);
+    StockEventDto event = stockEventBuilder.fromShipment(fixture.getShipment());
 
-    assertThat(event.getFacilityId(), is(shipment.getOrder().getSupplyingFacilityId()));
-    assertThat(event.getProgramId(), is(shipment.getOrder().getProgramId()));
-    assertThat(event.getUserId(), is(shipment.getCreatorId()));
+    assertThat(event.getFacilityId(), is(fixture.getOrder().getSupplyingFacilityId()));
+    assertThat(event.getProgramId(), is(fixture.getOrder().getProgramId()));
+    assertThat(event.getUserId(), is(fixture.getShipment().getCreatorId()));
 
     assertThat(event.getLineItems(), hasSize(2));
-    assertEventLineItem(event.getLineItems().get(0), shipmentLineItemOne);
-    assertEventLineItem(event.getLineItems().get(1), shipmentLineItemTwo);
-  }
-
-  private void assertEventLineItem(StockEventLineItemDto eventLine, ShipmentLineItem shipmentLine) {
-    ShipmentLineItemDto dto = new ShipmentLineItemDto();
-    shipmentLine.export(dto);
-
-    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
-    assertThat(eventLine.getLotId(), is(dto.getLotId()));
-    assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
-    assertThat(eventLine.getOccurredDate(), is(PERIOD_END_DATE));
-    assertThat(eventLine.getDestinationId(), is(shipment.getOrder().getReceivingFacilityId()));
+    fixture.assertEventLineItem(event.getLineItems().get(0), fixture.getShipmentLineItemOne());
+    fixture.assertEventLineItem(event.getLineItems().get(1), fixture.getShipmentLineItemTwo());
   }
 }

@@ -31,7 +31,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
+
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -59,6 +64,34 @@ public abstract class BaseCommunicationService<T> {
 
   public void setRestTemplate(RestOperations template) {
     this.restTemplate = template;
+  }
+
+  /**
+   * Return all reference data T objects.
+   *
+   * @param resourceUrl Endpoint url.
+   * @param parameters  Map of query parameters.
+   * @return all reference data T objects.
+   */
+  protected Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+    return findAllWithMethod(resourceUrl, parameters, null, HttpMethod.GET);
+  }
+
+  protected Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
+                                          Map<String, Object> payload, HttpMethod method) {
+    String url = getServiceUrl() + getUrl() + resourceUrl;
+
+    Map<String, Object> params = new HashMap<>();
+    params.putAll(uriParameters);
+
+    try {
+      ResponseEntity<T[]> responseEntity = restTemplate.exchange(buildUri(url, params),
+          method, createEntity(payload), getArrayResultClass());
+
+      return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
+    } catch (HttpStatusCodeException ex) {
+      throw buildDataRetrievalException(ex);
+    }
   }
 
   /**

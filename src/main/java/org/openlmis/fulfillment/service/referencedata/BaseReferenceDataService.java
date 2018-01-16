@@ -24,8 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,17 +60,6 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   }
 
   /**
-   * Return all reference data T objects.
-   *
-   * @param resourceUrl Endpoint url.
-   * @param parameters  Map of query parameters.
-   * @return all reference data T objects.
-   */
-  Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
-    return findAllWithMethod(resourceUrl, parameters, null, HttpMethod.GET);
-  }
-
-  /**
    * Return all reference data T objects that need to be retrieved with POST request.
    *
    * @param resourceUrl   Endpoint url.
@@ -83,23 +70,6 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
   Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
                                    Map<String, Object> payload) {
     return findAllWithMethod(resourceUrl, uriParameters, payload, HttpMethod.POST);
-  }
-
-  private Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
-                                          Map<String, Object> payload, HttpMethod method) {
-    String url = getServiceUrl() + getUrl() + resourceUrl;
-
-    Map<String, Object> params = new HashMap<>();
-    params.putAll(uriParameters);
-
-    try {
-      ResponseEntity<T[]> responseEntity = restTemplate.exchange(buildUri(url, params),
-              method, createEntity(payload), getArrayResultClass());
-
-      return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
-    } catch (HttpStatusCodeException ex) {
-      throw buildDataRetrievalException(ex);
-    }
   }
 
   <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
