@@ -19,9 +19,7 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 public enum OrderStatus {
   ORDERED,
-  IN_TRANSIT,
-  PICKING,
-  PICKED,
+  FULFILLING,
   SHIPPED,
   RECEIVED,
   TRANSFER_FAILED,

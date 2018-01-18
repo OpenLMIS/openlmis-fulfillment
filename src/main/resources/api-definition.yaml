@@ -334,9 +334,7 @@ resourceTypes:
                           repeat: true
                           enum:
                               - ORDERED
-                              - IN_TRANSIT
-                              - PICKING
-                              - PICKED
+                              - FULFILLING
                               - SHIPPED
                               - RECEIVED
                               - TRANSFER_FAILED

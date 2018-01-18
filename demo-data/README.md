@@ -25,7 +25,7 @@ fulfillment.orders.json and fulfillment.order_line_items.json.
   * requesting facility: Balaka District Hospital
   * receiving facility: Balaka District Hospital
   * supplying facility: HC01/Comfort Health Clinic
-  * status: SHIPPED
+  * status: IN_ROUTE
 3. ORDER-00000000-0000-0000-0000-000000000008R
   * program: Family Planning
   * period: Feb2016
@@ -33,7 +33,7 @@ fulfillment.orders.json and fulfillment.order_line_items.json.
   * requesting facility: FAC003 (inactive facility)
   * receiving facility: FAC003 (inactive facility)
   * supplying facility: HC01/Comfort Health Clinic
-  * status: PICKING
+  * status: READY_TO_PACK
 4. ORDER-00000000-0000-0000-0000-000000000009R
   * program: Essential Meds
   * period: Q2
@@ -41,7 +41,7 @@ fulfillment.orders.json and fulfillment.order_line_items.json.
   * requesting facility: Balaka District Hospital
   * receiving facility: Balaka District Hospital
   * supplying facility: HC01/Comfort Health Clinic
-  * status: ORDERED
+  * status: IN_ROUTE
 
 The orders also contain line items and other fields not listed here (see the JSON files for the
 complete data).

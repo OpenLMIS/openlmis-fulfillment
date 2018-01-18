@@ -59,7 +59,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     order = new OrderDataBuilder()
         .withoutId()
-        .withPickingStatus()
+        .withFulfillingStatus()
         .withLineItems(orderLineItem)
         .build();
 
@@ -105,7 +105,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     //given
     Order anotherOrder = new OrderDataBuilder()
         .withoutId()
-        .withPickingStatus()
+        .withFulfillingStatus()
         .withEmergencyFlag()
         .build();
 

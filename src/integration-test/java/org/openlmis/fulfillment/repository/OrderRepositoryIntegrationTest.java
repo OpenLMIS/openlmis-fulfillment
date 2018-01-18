@@ -57,7 +57,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Override
   protected Order generateInstance() {
-    return generateInstance(OrderStatus.PICKING);
+    return generateInstance(OrderStatus.FULFILLING);
   }
 
   private Order generateInstance(OrderStatus status) {
@@ -65,11 +65,11 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   private Order generateInstance(UUID supplyingFacilityId) {
-    return generateInstance(OrderStatus.PICKING, supplyingFacilityId, UUID.randomUUID());
+    return generateInstance(OrderStatus.FULFILLING, supplyingFacilityId, UUID.randomUUID());
   }
 
   private Order generateInstance(UUID supplyingFacilityId, UUID requestingFacilityId) {
-    return generateInstance(OrderStatus.PICKING, supplyingFacilityId, requestingFacilityId);
+    return generateInstance(OrderStatus.FULFILLING, supplyingFacilityId, requestingFacilityId);
   }
 
   private Order generateInstance(OrderStatus status, UUID supplyingFacilityId,
@@ -102,9 +102,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   @Test
   public void shouldFindOrderByParameters() {
     Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
-    Order two = orderRepository.save(generateInstance(OrderStatus.IN_TRANSIT));
-    Order three = orderRepository.save(generateInstance(OrderStatus.PICKING));
-    Order four = orderRepository.save(generateInstance(OrderStatus.PICKED));
+    Order two = orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
+    Order three = orderRepository.save(generateInstance(OrderStatus.FULFILLING));
+    Order four = orderRepository.save(generateInstance(OrderStatus.TRANSFER_FAILED));
     Order five = orderRepository.save(generateInstance(OrderStatus.SHIPPED));
 
     List<Order> list = orderRepository.searchOrders(null, null, null, null, null);
