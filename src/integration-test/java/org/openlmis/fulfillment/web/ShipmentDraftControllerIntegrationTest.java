@@ -37,7 +37,9 @@ import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
@@ -137,6 +139,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenReturn(shipmentDraft);
 
+    Order order = new OrderDataBuilder().build();
+    when(orderRepository.findOne(any())).thenReturn(order);
+
     ShipmentDraftDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -147,8 +152,11 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(201)
         .extract().as(ShipmentDraftDto.class);
 
+    order.setStatus(OrderStatus.FULFILLING);
+
     assertEquals(shipmentDraftDtoExpected, extracted);
     verify(shipmentDraftRepository).save(captor.capture());
+    verify(orderRepository).save(order);
     assertTrue(reflectionEquals(shipmentDraft, captor.getValue(), singletonList("id")));
     assertNull(captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -426,6 +434,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   public void shouldDeleteShipmentDraft() {
     when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(shipmentDraft);
 
+    Order order = new OrderDataBuilder().build();
+    when(orderRepository.findOne(any())).thenReturn(order);
+
     restAssured.given()
         .pathParam(ID, draftIdFromUser)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -435,7 +446,10 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .then()
         .statusCode(204);
 
+    order.setStatus(OrderStatus.ORDERED);
+
     verify(shipmentDraftRepository).delete(draftIdFromUser);
+    verify(orderRepository).save(order);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

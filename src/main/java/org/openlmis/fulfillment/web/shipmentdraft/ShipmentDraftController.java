@@ -24,6 +24,7 @@ import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftController.RESOURCE_PATH;
 
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
@@ -101,8 +102,16 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("CREATE_DOMAIN_INSTANCE");
     ShipmentDraft draft = ShipmentDraft.newInstance(draftDto);
 
-    profiler.start("SAVE_AND_CREATE_DTO");
+    profiler.start("SAVE_SHIPMENT_DTO");
     draft = repository.save(draft);
+
+    Order order = orderRepository.findOne(draftDto.getOrder().getId());
+
+    profiler.start("UPDATE_ORDER");
+    order.setStatus(OrderStatus.FULFILLING);
+    orderRepository.save(order);
+
+    profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDraftDto dto = draftDtoBuilder.build(draft);
 
     profiler.stop().log();
@@ -243,6 +252,12 @@ public class ShipmentDraftController extends BaseController {
 
     profiler.start("DELETE");
     repository.delete(id);
+
+    Order order = orderRepository.findOne(shipment.getOrder().getId());
+
+    profiler.start("UPDATE_ORDER");
+    order.setStatus(OrderStatus.ORDERED);
+    orderRepository.save(order);
 
     profiler.stop().log();
     XLOGGER.exit();
