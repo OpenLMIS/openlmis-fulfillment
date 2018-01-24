@@ -272,10 +272,13 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("DELETE");
     repository.delete(id);
 
+    UserDto currentUser = authenticationHelper.getCurrentUser();
     Order order = orderRepository.findOne(shipment.getOrder().getId());
 
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.ORDERED);
+    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
+        dateHelper.getCurrentDateTimeWithSystemZone()));
     orderRepository.save(order);
 
     profiler.stop().log();

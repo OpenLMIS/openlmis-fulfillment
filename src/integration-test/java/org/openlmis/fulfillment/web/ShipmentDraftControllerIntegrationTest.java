@@ -467,6 +467,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   public void shouldDeleteShipmentDraft() {
     when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(shipmentDraft);
 
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+
     Order order = new OrderDataBuilder().build();
     when(orderRepository.findOne(any())).thenReturn(order);
 
@@ -480,6 +483,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(204);
 
     order.setStatus(OrderStatus.ORDERED);
+    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault())));
 
     verify(shipmentDraftRepository).delete(draftIdFromUser);
     verify(orderRepository).save(order);
