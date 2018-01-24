@@ -40,6 +40,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDtoDataBuilder;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
@@ -86,7 +87,7 @@ public class ShipmentControllerTest {
 
   private ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
   private StockEventDto event = new StockEventDtoDataBuilder().build();
-  private Order order = new OrderDataBuilder().build();
+  private Order order = new OrderDataBuilder().withOrderedStatus().build();
 
   private Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
@@ -134,4 +135,9 @@ public class ShipmentControllerTest {
     verify(stockEventService).submit(event);
   }
 
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionIfOrderHasInvalidStatus() {
+    order.setStatus(OrderStatus.IN_ROUTE);
+    shipmentController.createShipment(shipmentDto);
+  }
 }

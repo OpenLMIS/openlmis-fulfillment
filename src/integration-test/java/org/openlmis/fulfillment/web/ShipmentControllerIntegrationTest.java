@@ -38,6 +38,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
@@ -126,6 +127,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     when(shipmentRepository.save(any(Shipment.class))).thenAnswer(new SaveAnswer<>());
     when(orderRepository.findOne(shipmentDtoExpected.getOrder().getId())).thenReturn(order);
     when(orderRepository.save(any(Order.class))).thenAnswer(new SaveAnswer<>());
+
+    when(order.canBeShipped()).thenReturn(true);
   }
 
   private void generateShipment() {
@@ -167,6 +170,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateShipment() {
+    shipment.getOrder().setStatus(OrderStatus.ORDERED);
     when(orderRepository.findOne(shipment.getOrder().getId())).thenReturn(shipment.getOrder());
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
@@ -209,6 +213,29 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
+
+  @Test
+  public void shouldReturnBadRequestIfShipmentOrderHasInvalidStatus() {
+    when(order.canBeShipped()).thenReturn(false);
+    when(order.getStatus()).thenReturn(OrderStatus.IN_ROUTE);
+
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDER_STATUS_INVALID));
+
+    verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
+    verify(stockEventService, never()).submit(any(StockEventDto.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
+  }
+
 
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToEditShipments() {

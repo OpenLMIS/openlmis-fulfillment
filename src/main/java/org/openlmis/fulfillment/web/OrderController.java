@@ -353,6 +353,8 @@ public class OrderController extends BaseController {
 
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
+    orderDto.setId(null);
+
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
 

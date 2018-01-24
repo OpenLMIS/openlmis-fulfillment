@@ -26,7 +26,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -132,7 +131,6 @@ public class OrderService {
     String orderNumber = orderNumberGenerator.generate(order);
 
     order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
-    order.setId(null);
     Order newOrder = save(order);
 
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
@@ -252,7 +250,7 @@ public class OrderService {
           .filter(p -> p.getCode().equals(program.getCode()))
           .collect(Collectors.toList())
           .get(0).isSupportLocallyFulfilled()) {
-        order.setStatus(OrderStatus.ORDERED);
+        order.prepareToLocalFulfill();
       } else {
         TransferProperties properties = transferPropertiesRepository
             .findFirstByFacilityId(order.getSupplyingFacilityId());

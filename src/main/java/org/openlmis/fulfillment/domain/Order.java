@@ -203,6 +203,18 @@ public class Order extends BaseEntity {
     forEachStatusChange(change -> change.setOrder(this));
   }
 
+  public boolean isOrdered() {
+    return OrderStatus.ORDERED.equals(status);
+  }
+
+  public void prepareToLocalFulfill() {
+    status = OrderStatus.ORDERED;
+  }
+
+  public boolean canBeShipped() {
+    return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
+  }
+
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));

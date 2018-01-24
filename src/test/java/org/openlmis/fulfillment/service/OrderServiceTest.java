@@ -174,6 +174,7 @@ public class OrderServiceTest {
   @Test
   public void shouldCreateRegularOrder() throws Exception {
     OrderDto dto = OrderDto.newInstance(order, exporter);
+    dto.setId(null);
 
     Order created = orderService.createOrder(dto, userDto.getId());
 
@@ -207,6 +208,7 @@ public class OrderServiceTest {
     facility.setSupportedPrograms(Collections.singletonList(program));
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
+    dto.setId(null);
 
     order.setStatus(OrderStatus.ORDERED);
 

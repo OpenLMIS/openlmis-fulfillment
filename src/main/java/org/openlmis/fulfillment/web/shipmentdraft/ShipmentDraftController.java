@@ -114,7 +114,7 @@ public class ShipmentDraftController extends BaseController {
     ShipmentDraft draft = ShipmentDraft.newInstance(draftDto);
 
     Order order = orderRepository.findOne(draftDto.getOrder().getId());
-    if (!order.getStatus().equals(OrderStatus.ORDERED)) {
+    if (!order.isOrdered()) {
       throw new ValidationException(CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS,
           order.getStatus().toString());
     }

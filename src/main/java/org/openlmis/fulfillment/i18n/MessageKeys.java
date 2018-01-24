@@ -25,6 +25,7 @@ public abstract class MessageKeys {
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
   private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
   private static final String REQUIRED = "required";
+  private static final String ORDER = "order";
 
   public static final String ERROR_USER_NOT_FOUND = join(SERVICE_PREFIX, "user", "notFound");
 
@@ -117,21 +118,23 @@ public abstract class MessageKeys {
   public static final String SHIPMENT_LINE_ITEMS_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT, "lineItems", REQUIRED);
   public static final String SHIPMENT_ORDER_DUPLICATE =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, "order", "duplicate");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, ORDER, "duplicate");
   public static final String SHIPMENT_ORDER_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderId", REQUIRED);
+  public static final String SHIPMENT_ORDER_STATUS_INVALID =
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, ORDER, "status", "invalid");
 
   private static final String SHIPMENT_DRAFT = "shipmentDraft";
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", REQUIRED);
   public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "order", "notFound");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, "notFound");
   public static final String SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "lineItems", REQUIRED);
   public static final String SHIPMENT_DRAFT_ID_MISMATCH =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
   public static final String SHIPMENT_DRAT_ORDER_DUPLICATE =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "order", "duplicate");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, "duplicate");
   public static final String CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "create", "withWrongStatus");
 

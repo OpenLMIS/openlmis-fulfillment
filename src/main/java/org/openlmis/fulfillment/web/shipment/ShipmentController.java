@@ -19,6 +19,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_REQUIRED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_STATUS_INVALID;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipment.ShipmentController.RESOURCE_PATH;
 
@@ -126,6 +127,10 @@ public class ShipmentController extends BaseController {
     setShipDetailsToDto(shipmentDto);
 
     Order order = orderRepository.findOne(dtoOrder.getId());
+
+    if (!order.canBeShipped()) {
+      throw new ValidationException(SHIPMENT_ORDER_STATUS_INVALID, order.getStatus().toString());
+    }
 
     Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
