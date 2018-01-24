@@ -165,8 +165,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .extract().as(ShipmentDraftDto.class);
 
     order.setStatus(OrderStatus.FULFILLING);
-    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
-        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault())));
+    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID, modifiedDate));
 
     assertEquals(shipmentDraftDtoExpected, extracted);
     verify(shipmentDraftRepository).save(captor.capture());
@@ -483,8 +482,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(204);
 
     order.setStatus(OrderStatus.ORDERED);
-    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
-        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault())));
+    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID, modifiedDate));
 
     verify(shipmentDraftRepository).delete(draftIdFromUser);
     verify(orderRepository).save(order);
