@@ -9,6 +9,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3778](https://openlmis.atlassian.net/browse/OLMIS-3778): Fixed service checks the rights of a wrong user
 * [OLMIS-3955](https://openlmis.atlassian.net/browse/OLMIS-3955): Renamed PICKING order status to FULFILLING. Removed PICKED and IN_TRANSIT.
 * [OLMIS-3954](https://openlmis.atlassian.net/browse/OLMIS-3954): Updated order status to FULFILLING when creating shipment draft and ORDERED when deleting.
+* [OLMIS-3952](https://openlmis.atlassian.net/browse/OLMIS-3952): Created order status is set to ORDERED based on supplying facility program fulfilling setting.
 
 Contract breaking changes:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
