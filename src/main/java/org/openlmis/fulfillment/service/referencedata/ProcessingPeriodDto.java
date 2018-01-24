@@ -15,18 +15,20 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.openlmis.fulfillment.web.util.BaseDto;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProcessingPeriodDto {
-  private UUID id;
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class ProcessingPeriodDto extends BaseDto {
   private ProcessingScheduleDto processingSchedule;
   private String name;
   private String description;

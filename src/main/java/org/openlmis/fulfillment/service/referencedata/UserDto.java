@@ -15,19 +15,22 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-
+import org.openlmis.fulfillment.web.util.BaseDto;
 import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserDto {
-  private UUID id;
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class UserDto extends BaseDto {
   private String username;
   private String firstName;
   private String lastName;

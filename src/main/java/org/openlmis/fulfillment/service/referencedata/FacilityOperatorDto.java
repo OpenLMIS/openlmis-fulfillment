@@ -15,13 +15,19 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.openlmis.fulfillment.web.util.BaseDto;
 
-import java.util.UUID;
-
-@Data
-public class FacilityOperatorDto {
-  private UUID id;
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class FacilityOperatorDto extends BaseDto {
   private String code;
   private String name;
 }
