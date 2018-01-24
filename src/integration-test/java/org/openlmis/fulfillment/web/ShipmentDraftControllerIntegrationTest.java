@@ -32,22 +32,27 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDto;
@@ -80,6 +85,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @MockBean
   private OrderRepository orderRepository;
+
+  @Mock
+  private DateHelper dateHelper;
 
   @Captor
   private ArgumentCaptor<ShipmentDraft> captor;
@@ -139,6 +147,9 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenReturn(shipmentDraft);
 
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+
     Order order = new OrderDataBuilder().withOrderedStatus().build();
     when(orderRepository.findOne(any())).thenReturn(order);
 
@@ -153,6 +164,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .extract().as(ShipmentDraftDto.class);
 
     order.setStatus(OrderStatus.FULFILLING);
+    order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault())));
 
     assertEquals(shipmentDraftDtoExpected, extracted);
     verify(shipmentDraftRepository).save(captor.capture());
@@ -163,7 +176,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   }
 
   @Test
-  public void shouldReturnBadRequestIfOrderStatusIsNot() {
+  public void shouldReturnBadRequestIfOrderStatusIsNotOrdered() {
     Order order = new OrderDataBuilder().withFulfillingStatus().build();
     when(orderRepository.findOne(any())).thenReturn(order);
 

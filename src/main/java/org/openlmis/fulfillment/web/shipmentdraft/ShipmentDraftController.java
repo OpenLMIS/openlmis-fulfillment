@@ -27,9 +27,13 @@ import static org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftController
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.BaseController;
 import org.openlmis.fulfillment.web.NotFoundException;
@@ -79,6 +83,12 @@ public class ShipmentDraftController extends BaseController {
   @Autowired
   private PermissionService permissionService;
 
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
+  @Autowired
+  private DateHelper dateHelper;
+
   /**
    * Allows creating new shipment. If the id is specified, it will be ignored.
    *
@@ -112,8 +122,12 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("SAVE_SHIPMENT_DTO");
     draft = repository.save(draft);
 
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.FULFILLING);
+    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
+        dateHelper.getCurrentDateTimeWithSystemZone()));
     orderRepository.save(order);
 
     profiler.start("BUILD_SHIPMENT_DTO");
