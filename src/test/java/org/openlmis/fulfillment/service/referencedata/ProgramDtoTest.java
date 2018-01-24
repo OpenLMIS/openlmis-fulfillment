@@ -17,56 +17,16 @@ package org.openlmis.fulfillment.service.referencedata;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-public class UserDtoTest {
-
-  private UserDto userDto = new UserDto();
-
-  @Before
-  public void setUp() {
-    userDto.setUsername("jdoe");
-  }
-
-  @Test
-  public void shouldPrintNameAsFirstAndLastName() {
-    userDto.setFirstName("John");
-    userDto.setLastName("Doe");
-
-    assertEquals("John Doe", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsOnlyFirstName() {
-    userDto.setFirstName("John");
-
-    assertEquals("John", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsOnlyLastName() {
-    userDto.setLastName("Doe");
-
-    assertEquals("Doe", userDto.printName());
-  }
-
-  @Test
-  public void shouldPrintNameAsUsername() {
-    assertEquals("jdoe", userDto.printName());
-  }
+public class ProgramDtoTest {
 
   @Test
   public void equalsContract() throws Exception {
-    EqualsVerifier.forClass(UserDto.class)
+    EqualsVerifier.forClass(ProgramDto.class)
         .withRedefinedSuperclass()
-        .withPrefabValues(RoleAssignmentDto.class,
-            new RoleAssignmentDto(),
-            new RoleAssignmentDto())
-        .suppress(Warning.STRICT_INHERITANCE) // suppress class not final
         .suppress(Warning.NONFINAL_FIELDS)
+        .suppress(Warning.STRICT_INHERITANCE) // suppress class not final
         .verify();
   }
 }
