@@ -129,7 +129,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     when(orderRepository.findOne(shipmentDtoExpected.getOrder().getId())).thenReturn(order);
     when(orderRepository.save(any(Order.class))).thenAnswer(new SaveAnswer<>());
 
-    when(order.canBeShipped()).thenReturn(true);
+    when(order.canBeFulfilled()).thenReturn(true);
   }
 
   private void generateShipment() {
@@ -223,7 +223,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnBadRequestIfShipmentOrderHasInvalidStatus() {
-    when(order.canBeShipped()).thenReturn(false);
+    when(order.canBeFulfilled()).thenReturn(false);
     when(order.getStatus()).thenReturn(OrderStatus.IN_ROUTE);
 
 

@@ -211,7 +211,7 @@ public class Order extends BaseEntity {
     status = OrderStatus.ORDERED;
   }
 
-  public boolean canBeShipped() {
+  public boolean canBeFulfilled() {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
   }
 

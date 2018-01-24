@@ -129,7 +129,7 @@ public class ShipmentController extends BaseController {
 
     Order order = orderRepository.findOne(dtoOrder.getId());
 
-    if (!order.canBeShipped()) {
+    if (!order.canBeFulfilled()) {
       throw new ValidationException(SHIPMENT_ORDER_STATUS_INVALID, order.getStatus().toString());
     }
 

@@ -43,24 +43,24 @@ public class OrderTest {
   @Test
   public void shouldCheckIfOrderCanBeShipped() {
     Order order = new OrderDataBuilder().withOrderedStatus().build();
-    assertTrue(order.canBeShipped());
+    assertTrue(order.canBeFulfilled());
 
     order = new OrderDataBuilder().withFulfillingStatus().build();
-    assertTrue(order.canBeShipped());
+    assertTrue(order.canBeFulfilled());
 
     order.setStatus(OrderStatus.IN_ROUTE);
-    assertFalse(order.canBeShipped());
+    assertFalse(order.canBeFulfilled());
 
     order.setStatus(OrderStatus.TRANSFER_FAILED);
-    assertFalse(order.canBeShipped());
+    assertFalse(order.canBeFulfilled());
 
     order.setStatus(OrderStatus.READY_TO_PACK);
-    assertFalse(order.canBeShipped());
+    assertFalse(order.canBeFulfilled());
 
     order.setStatus(OrderStatus.RECEIVED);
-    assertFalse(order.canBeShipped());
+    assertFalse(order.canBeFulfilled());
 
     order.setStatus(OrderStatus.SHIPPED);
-    assertFalse(order.canBeShipped());
+    assertFalse(order.canBeFulfilled());
   }
 }
