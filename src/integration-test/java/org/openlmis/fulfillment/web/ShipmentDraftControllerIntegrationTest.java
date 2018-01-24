@@ -139,7 +139,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenReturn(shipmentDraft);
 
-    Order order = new OrderDataBuilder().build();
+    Order order = new OrderDataBuilder().withOrderedStatus().build();
     when(orderRepository.findOne(any())).thenReturn(order);
 
     ShipmentDraftDto extracted = restAssured.given()
@@ -160,6 +160,26 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     assertTrue(reflectionEquals(shipmentDraft, captor.getValue(), singletonList("id")));
     assertNull(captor.getValue().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfOrderStatusIsNot() {
+    Order order = new OrderDataBuilder().withFulfillingStatus().build();
+    when(orderRepository.findOne(any())).thenReturn(order);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(shipmentDraftDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY,
+            equalTo(MessageKeys.CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS));
+
+    verify(shipmentDraftRepository, never()).save(any(ShipmentDraft.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
   @Test

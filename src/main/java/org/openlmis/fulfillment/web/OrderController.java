@@ -20,13 +20,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALI
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.domain.UpdateDetails;
-import org.openlmis.fulfillment.extension.ExtensionManager;
-import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
@@ -40,11 +34,8 @@ import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.TemplateService;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
-import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -116,18 +107,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private OrderSecurityService orderSecurityService;
-
-  @Autowired
-  private ExtensionManager extensionManager;
-
-  @Autowired
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private DateHelper dateHelper;
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -377,33 +356,12 @@ public class OrderController extends BaseController {
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
 
-    Order order = Order.newInstance(orderDto,
-        new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
-
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to create order");
-      permissionService.canEditOrder(order);
+      permissionService.canEditOrder(orderDto);
     }
 
     LOGGER.debug("Creating new order");
-
-    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.findAll().iterator().next();
-
-    OrderNumberGenerator orderNumberGenerator = extensionManager.getExtension(
-        OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class);
-
-    String orderNumber = orderNumberGenerator.generate(order);
-
-    order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
-    order.setId(null);
-    Order newOrder = orderService.save(order);
-
-    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
-    proofOfDeliveryRepository.save(proofOfDelivery);
-
-    LOGGER.debug("Created new order with id: {}", order.getId());
-    return newOrder;
+    return orderService.createOrder(orderDto, userId);
   }
 }

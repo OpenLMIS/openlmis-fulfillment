@@ -44,6 +44,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -64,7 +65,13 @@ import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
+import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
@@ -80,6 +87,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -114,15 +122,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final UUID PROGRAM_ID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
   private static final UUID PERIOD_ID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
 
-  private UUID facility = UUID.randomUUID();
-  private UUID facility1 = UUID.randomUUID();
-  private UUID facility2 = UUID.randomUUID();
-  private UUID program1 = UUID.randomUUID();
-  private UUID program2 = UUID.randomUUID();
-  private UUID period1 = UUID.randomUUID();
-  private UUID period2 = UUID.randomUUID();
-  private UUID product1 = UUID.randomUUID();
-  private UUID product2 = UUID.randomUUID();
+  private UUID facilityId = UUID.randomUUID();
+  private UUID facility1Id = UUID.randomUUID();
+  private UUID facility2Id = UUID.randomUUID();
+  private UUID program1Id = UUID.randomUUID();
+  private UUID program2Id = UUID.randomUUID();
+  private UUID period1Id = UUID.randomUUID();
+  private UUID period2Id = UUID.randomUUID();
+  private UUID product1Id = UUID.randomUUID();
+  private UUID product2Id = UUID.randomUUID();
 
   @MockBean
   private OrderRepository orderRepository;
@@ -132,6 +140,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderFtpSender orderFtpSender;
+
+  @MockBean
+  private FacilityReferenceDataService facilityService;
+
+  @MockBean
+  private ProgramReferenceDataService programService;
 
   @MockBean
   private NotificationService notificationService;
@@ -148,12 +162,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Mock
   private ProofOfDelivery proofOfDelivery;
 
-  private Order firstOrder = new Order();
-  private Order secondOrder = new Order();
-  private Order thirdOrder = new Order();
+  private Order firstOrder;
+  private Order secondOrder;
+  private Order thirdOrder;
 
   private BasicOrderDto firstOrderDto;
   private BasicOrderDto secondOrderDto;
+
+  private ProgramDto program1;
+  private ProgramDto program2;
+  private FacilityDto facility;
+  private FacilityDto facility1;
+  private FacilityDto facility2;
 
   @Before
   public void setUp() {
@@ -162,21 +182,44 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
         ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
+    program1 = new ProgramDataBuilder().withId(program1Id).build();
+    program2 = new ProgramDataBuilder().withId(program2Id).build();
+
+    facility = new FacilityDataBuilder()
+        .withId(facilityId)
+        .withSupportedPrograms(Arrays.asList(program1, program2))
+        .build();
+    facility1 = new FacilityDataBuilder()
+        .withId(facility1Id)
+        .withSupportedPrograms(Arrays.asList(program1, program2))
+        .build();
+    facility2 = new FacilityDataBuilder()
+        .withId(facility2Id)
+        .withSupportedPrograms(Arrays.asList(program1, program2))
+        .build();
+
+    when(programService.findOne(eq(program1Id))).thenReturn(program1);
+    when(programService.findOne(eq(program2Id))).thenReturn(program2);
+
+    when(facilityService.findOne(eq(facilityId))).thenReturn(facility);
+    when(facilityService.findOne(eq(facility1Id))).thenReturn(facility1);
+    when(facilityService.findOne(eq(facility2Id))).thenReturn(facility2);
+
     firstOrder = createOrder(
-        period1, UUID.randomUUID(), facility, facility, new BigDecimal("1.29"),
-        createOrderLineItem(product1, 35L, 50L)
+        period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
+        createOrderLineItem(product1Id, 35L, 50L)
     );
 
     secondOrder = createOrder(
-        period1, program1, facility2, facility1, new BigDecimal(100),
-        createOrderLineItem(product1, 35L, 50L),
-        createOrderLineItem(product2, 10L, 15L)
+        period1Id, program1Id, facility2Id, facility1Id, new BigDecimal(100),
+        createOrderLineItem(product1Id, 35L, 50L),
+        createOrderLineItem(product2Id, 10L, 15L)
     );
 
     thirdOrder = createOrder(
-        period2, program2, facility2, facility1, new BigDecimal(200),
-        createOrderLineItem(product1, 50L, 50L),
-        createOrderLineItem(product2, 5L, 10L)
+        period2Id, program2Id, facility2Id, facility1Id, new BigDecimal(200),
+        createOrderLineItem(product1Id, 50L, 50L),
+        createOrderLineItem(product2Id, 5L, 10L)
     );
 
     firstOrder.setExternalId(secondOrder.getExternalId());
@@ -207,18 +250,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         });
   }
 
-  private Order createOrder(UUID processingPeriod, UUID program, UUID facility,
-                            UUID supplyingFacility, BigDecimal cost,
+  private Order createOrder(UUID processingPeriodId, UUID program, UUID facilityId,
+                            UUID supplyingFacilityId, BigDecimal cost,
                             OrderLineItem... lineItems) {
     Order order = new OrderDataBuilder()
-        .withProcessingPeriodId(processingPeriod)
+        .withProcessingPeriodId(processingPeriodId)
         .withQuotedCost(cost)
         .withProgramId(program)
         .withCreatedById(INITIAL_USER_ID)
-        .withFacilityId(facility)
-        .withRequestingFacilityId(facility)
-        .withReceivingFacilityId(facility)
-        .withSupplyingFacilityId(supplyingFacility)
+        .withFacilityId(facilityId)
+        .withRequestingFacilityId(facilityId)
+        .withReceivingFacilityId(facilityId)
+        .withSupplyingFacilityId(supplyingFacilityId)
         .withLineItems(lineItems)
         .withUpdateDetails(new UpdateDetailsDataBuilder()
             .withUpdaterId(UUID.randomUUID())
@@ -289,8 +332,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacility() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), null, null, null, null
     )).willReturn(Lists.newArrayList(firstOrder));
@@ -318,9 +359,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         null, null, null
@@ -353,10 +391,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
-
     given(orderRepository.searchOrders(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), null, null
@@ -393,9 +427,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatus() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
 
     given(orderRepository.searchOrders(
@@ -490,9 +521,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatusAndPeriod() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
     firstOrder.setProcessingPeriodId(PERIOD_ID);
 
@@ -542,9 +570,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindOrdersByPeriodStartDate() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
     firstOrder.setProcessingPeriodId(PERIOD_ID);
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
@@ -596,9 +621,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindOrdersByPeriodEndDate() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
     firstOrder.setProcessingPeriodId(PERIOD_ID);
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
@@ -650,9 +672,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindOrdersByAllParameters() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setRequestingFacilityId(UUID.fromString(FACILITY_ID));
-    firstOrder.setProgramId(PROGRAM_ID);
     firstOrder.setStatus(READY_TO_PACK);
     firstOrder.setProcessingPeriodId(PERIOD_ID);
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
@@ -723,7 +742,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     firstOrderDto = BasicOrderDto.newInstance(firstOrder, exporter);
     firstOrderDto.setStatusChanges(sampleStatusChanges());
 
@@ -852,7 +870,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .willThrow(new DataIntegrityViolationException("This exception is required by IT"));
 
     firstOrder.getOrderLineItems().clear();
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
 
     given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
     firstOrder.setOrderLineItems(null);
@@ -920,9 +937,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     String orderDate = secondOrder.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     for (OrderLineItem lineItem : secondOrder.getOrderLineItems()) {
-      String string = secondOrder.getOrderCode()
-          + ",facilityCode,Product Code,Product Name," + lineItem.getOrderedQuantity()
-          + ",01/17," + orderDate;
+      String string = StringUtils.joinWith(",", secondOrder.getOrderCode(), facility2.getCode(),
+          "Product Code", "Product Name", lineItem.getOrderedQuantity(), "01/17", orderDate);
       assertThat(csvContent, containsString(string));
     }
   }
@@ -1037,7 +1053,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRemoveOrdersFromSearchResultWhenUserHasNoRightsForFacility() {
-    firstOrder.setSupplyingFacilityId(UUID.fromString(FACILITY_ID));
     secondOrder.setSupplyingFacilityId(UUID.randomUUID());
     thirdOrder.setSupplyingFacilityId(secondOrder.getSupplyingFacilityId());
 
@@ -1064,7 +1079,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldReturnAvailableRequestingFacilities() {
     given(orderRepository.getRequestingFacilities(null))
-        .willReturn(Lists.newArrayList(facility, facility2));
+        .willReturn(Lists.newArrayList(facilityId, facility2Id));
 
     UUID[] response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1076,22 +1091,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .as(UUID[].class);
 
     assertThat(response.length, is(equalTo(2)));
-    assertThat(response[0], equalTo(facility));
-    assertThat(response[1], equalTo(facility2));
+    assertThat(response[0], equalTo(facilityId));
+    assertThat(response[1], equalTo(facility2Id));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldReturnAvailableRequestingFacilitiesForGivenSupplyingFacility() {
-    given(orderRepository.getRequestingFacilities(facility))
-        .willReturn(Lists.newArrayList(facility));
-    given(orderRepository.getRequestingFacilities(facility1))
-        .willReturn(Lists.newArrayList(facility2));
+    given(orderRepository.getRequestingFacilities(facilityId))
+        .willReturn(Lists.newArrayList(facilityId));
+    given(orderRepository.getRequestingFacilities(facility1Id))
+        .willReturn(Lists.newArrayList(facility2Id));
 
     UUID[] response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
-        .queryParam("supplyingFacility", facility1)
+        .queryParam("supplyingFacility", facility1Id)
         .when()
         .get(REQUESTING_FACILITIES_URL)
         .then()
@@ -1099,7 +1114,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .as(UUID[].class);
 
     assertThat(response.length, is(equalTo(1)));
-    assertThat(response[0], equalTo(facility2));
+    assertThat(response[0], equalTo(facility2Id));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

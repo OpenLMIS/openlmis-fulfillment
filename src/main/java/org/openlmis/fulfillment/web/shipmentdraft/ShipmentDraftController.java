@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web.shipmentdraft;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ID_MISMATCH;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAFT_ORDER_REQUIRED;
@@ -102,10 +103,14 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("CREATE_DOMAIN_INSTANCE");
     ShipmentDraft draft = ShipmentDraft.newInstance(draftDto);
 
+    Order order = orderRepository.findOne(draftDto.getOrder().getId());
+    if (!order.getStatus().equals(OrderStatus.ORDERED)) {
+      throw new ValidationException(CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS,
+          order.getStatus().toString());
+    }
+
     profiler.start("SAVE_SHIPMENT_DTO");
     draft = repository.save(draft);
-
-    Order order = orderRepository.findOne(draftDto.getOrder().getId());
 
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.FULFILLING);

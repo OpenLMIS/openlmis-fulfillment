@@ -35,6 +35,7 @@ import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -109,6 +110,10 @@ public class PermissionService {
 
   public void canEditOrder(Order order) {
     checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
+  }
+
+  public void canEditOrder(OrderDto order) {
+    checkPermission(ORDERS_EDIT, order.getSupplyingFacility().getId());
   }
 
   /**

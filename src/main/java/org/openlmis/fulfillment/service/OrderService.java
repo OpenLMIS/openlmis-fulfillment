@@ -25,16 +25,31 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_
 
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.i18n.MessageService;
+import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,6 +66,8 @@ public class OrderService {
 
   static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
       "productName", "productCode", "orderedQuantity", "filledQuantity"};
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(OrderService.class);
 
   @Autowired
   private OrderRepository orderRepository;
@@ -74,10 +91,56 @@ public class OrderService {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
+
+  @Autowired
+  private ExtensionManager extensionManager;
+
+  @Autowired
+  private DateHelper dateHelper;
+
+  @Autowired
   protected MessageService messageService;
 
   @Value("${email.noreply}")
   private String from;
+
+  /**
+   * Creates an order.
+   *
+   * @param  orderDto object that order will be created from.
+   * @return          created Order.
+   */
+  public Order createOrder(OrderDto orderDto, UUID userId) {
+    Order order = Order.newInstance(orderDto,
+        new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
+
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
+
+    OrderNumberGenerator orderNumberGenerator = extensionManager.getExtension(
+        OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class);
+
+    String orderNumber = orderNumberGenerator.generate(order);
+
+    order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
+    order.setId(null);
+    Order newOrder = save(order);
+
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
+    proofOfDeliveryRepository.save(proofOfDelivery);
+
+    XLOGGER.debug("Created new order with id: {}", order.getId());
+    return newOrder;
+  }
 
   /**
    * Finds orders matching all of provided parameters.
@@ -180,17 +243,29 @@ public class OrderService {
     // Is the order associated with a supply line?
     if (null != order.getSupplyingFacilityId()) {
       // Is the supplying facility have the FTP configuration?
-      TransferProperties properties = transferPropertiesRepository
-          .findFirstByFacilityId(order.getSupplyingFacilityId());
 
-      if (null == properties) {
-        // Set order status as TRANSFER_FAILED
-        order.setStatus(TRANSFER_FAILED);
+      ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+      FacilityDto supplyingFacility = facilityReferenceDataService
+          .findOne(order.getSupplyingFacilityId());
+      if (supplyingFacility.getSupportedPrograms()
+          .stream()
+          .filter(p -> p.getCode().equals(program.getCode()))
+          .collect(Collectors.toList())
+          .get(0).isSupportLocallyFulfilled()) {
+        order.setStatus(OrderStatus.ORDERED);
       } else {
-        // Is the export-orders flag enabled on the supply line associated with the order
-        // yes -> Set order status as IN_ROUTE
-        // no  -> Set order status as READY_TO_PACK
-        order.setStatus(properties instanceof FtpTransferProperties ? IN_ROUTE : READY_TO_PACK);
+        TransferProperties properties = transferPropertiesRepository
+            .findFirstByFacilityId(order.getSupplyingFacilityId());
+
+        if (null == properties) {
+          // Set order status as TRANSFER_FAILED
+          order.setStatus(TRANSFER_FAILED);
+        } else {
+          // Is the export-orders flag enabled on the supply line associated with the order
+          // yes -> Set order status as IN_ROUTE
+          // no  -> Set order status as READY_TO_PACK
+          order.setStatus(properties instanceof FtpTransferProperties ? IN_ROUTE : READY_TO_PACK);
+        }
       }
     } else {
       // Set order status as TRANSFER_FAILED

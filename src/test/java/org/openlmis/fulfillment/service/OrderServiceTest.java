@@ -43,6 +43,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.StatusChangeDataBuilder;
+import org.openlmis.fulfillment.domain.Base36EncodedOrderNumberGenerator;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -51,6 +52,8 @@ import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.StatusChange;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -59,12 +62,23 @@ import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
+import org.openlmis.fulfillment.testutils.ProcessingPeriodDataBuilder;
+import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
+import org.openlmis.fulfillment.testutils.UserDataBuilder;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
@@ -80,6 +94,9 @@ import java.util.UUID;
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
 
+  private static final String FROM_EMAIL = "noreply@openlmis.org";
+  private static final String SUBJECT = "New order";
+
   @Mock
   private OrderRepository orderRepository;
 
@@ -91,6 +108,12 @@ public class OrderServiceTest {
 
   @Mock
   private ProgramReferenceDataService programReferenceDataService;
+
+  @Mock
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Mock
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -111,10 +134,16 @@ public class OrderServiceTest {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Mock
-  private ProgramDto program;
+  private MessageService messageService;
 
   @Mock
-  private MessageService messageService;
+  private DateHelper dateHelper;
+
+  @Mock
+  private ExtensionManager extensionManager;
+
+  @InjectMocks
+  private ExporterBuilder exporter;
 
   @InjectMocks
   private OrderService orderService;
@@ -122,40 +151,93 @@ public class OrderServiceTest {
   @Captor
   private ArgumentCaptor<NotificationRequest> notificationCaptor;
 
+  @Captor
+  private ArgumentCaptor<Order> orderCaptor;
+
+  private ProgramDto program;
+  private FacilityDto facility;
+  private ProcessingPeriodDto period;
+  private OrderableDto orderable;
+  private OrderNumberConfiguration orderNumberConfiguration;
+  private Order order;
+  private ProofOfDelivery pod;
+  private UserDto userDto;
+  private FtpTransferProperties properties;
+
   @Before
   public void setUp() {
-    ReflectionTestUtils.setField(orderService, "from", "noreply@openlmis.org");
-    generateMocks();
+    ReflectionTestUtils.setField(orderService, "from", FROM_EMAIL);
+    generateTestData();
+    mockResponses();
+  }
+
+  @Test
+  public void shouldCreateRegularOrder() throws Exception {
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    Order created = orderService.createOrder(dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(created, order);
+
+    verify(orderRepository).save(orderCaptor.capture());
+    verify(orderStorage).store(any(Order.class));
+    verify(orderSender).send(any(Order.class));
+    verify(orderStorage).delete(any(Order.class));
+
+    assertEquals(OrderStatus.IN_ROUTE, orderCaptor.getValue().getStatus());
+
+    verify(notificationService).send(notificationCaptor.capture());
+
+    NotificationRequest notification = notificationCaptor.getValue();
+    assertThat(notification, is(notNullValue()));
+
+    assertThat(notification.getFrom(), is(FROM_EMAIL));
+    assertThat(notification.getTo(), is("user@openlmis.org"));
+    assertThat(notification.getSubject(), is(SUBJECT));
+    assertThat(notification.getContent(),
+        is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
+
+    verify(proofOfDeliveryRepository).save(pod);
+  }
+
+  @Test
+  public void shouldCreateOrderForFulfill() throws Exception {
+    program.setSupportLocallyFulfilled(true);
+    facility.setSupportedPrograms(Collections.singletonList(program));
+
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    order.setStatus(OrderStatus.ORDERED);
+
+    Order created = orderService.createOrder(dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(created, order);
+
+    verify(orderRepository).save(orderCaptor.capture());
+    verify(orderStorage).store(any(Order.class));
+    verify(orderSender).send(any(Order.class));
+    verify(orderStorage).delete(any(Order.class));
+
+    assertEquals(OrderStatus.ORDERED, orderCaptor.getValue().getStatus());
+
+    verify(notificationService).send(notificationCaptor.capture());
+
+    NotificationRequest notification = notificationCaptor.getValue();
+    assertThat(notification, is(notNullValue()));
+
+    assertThat(notification.getFrom(), is(FROM_EMAIL));
+    assertThat(notification.getTo(), is("user@openlmis.org"));
+    assertThat(notification.getSubject(), is(SUBJECT));
+    assertThat(notification.getContent(),
+        is("Create an order: " + order.getId() + " with status: ORDERED"));
+
+    verify(proofOfDeliveryRepository).save(pod);
   }
 
   @Test
   public void shouldSaveOrder() throws Exception {
-    // given
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration("prefix", true, true, true);
-    when(orderNumberConfigurationRepository.findAll())
-        .thenReturn(Collections.singletonList(orderNumberConfiguration));
-
-    OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
-        .withOrderedQuantity(100L)
-        .build();
-
-    StatusChange statusChange = new StatusChangeDataBuilder().build();
-
-    Order order = new OrderDataBuilder()
-        .withQuotedCost(BigDecimal.ZERO)
-        .withProgramId(program.getId())
-        .withCreatedById(UUID.randomUUID())
-        .withEmergencyFlag()
-        .withStatus(OrderStatus.ORDERED)
-        .withStatusChanges(statusChange)
-        .withSupplyingFacilityId(UUID.randomUUID())
-        .withLineItems(orderLineItem)
-        .build();
-
-    // when
-    when(orderRepository.save(any(Order.class))).thenReturn(order);
-    when(orderSender.send(order)).thenReturn(true);
     Order created = orderService.save(order);
 
     // then
@@ -173,43 +255,21 @@ public class OrderServiceTest {
     NotificationRequest notification = notificationCaptor.getValue();
     assertThat(notification, is(notNullValue()));
 
-    assertThat(notification.getFrom(), is("noreply@openlmis.org"));
+    assertThat(notification.getFrom(), is(FROM_EMAIL));
     assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), is("New order"));
+    assertThat(notification.getSubject(), is(SUBJECT));
     assertThat(notification.getContent(),
         is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
   }
 
   @Test
   public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
-    // given
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration("prefix", true, true, true);
-    when(orderNumberConfigurationRepository.findAll())
-        .thenReturn(Collections.singletonList(orderNumberConfiguration));
-
-    Order order = new Order();
-    order.setExternalId(UUID.randomUUID());
-    order.setEmergency(true);
-    order.setProgramId(program.getId());
-    order.setStatus(OrderStatus.ORDERED);
-    order.setQuotedCost(BigDecimal.ZERO);
-    order.setSupplyingFacilityId(UUID.randomUUID());
-
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setOrderedQuantity(1000L);
-
-    order.setOrderLineItems(Lists.newArrayList(orderLineItem));
-    order.setCreatedById(UUID.randomUUID());
-
     StatusChange statusChange = new StatusChange();
     statusChange.setStatus(ExternalStatus.APPROVED);
     statusChange.setCreatedDate(ZonedDateTime.now());
     statusChange.setAuthorId(UUID.randomUUID());
     order.setStatusChanges(Lists.newArrayList(statusChange));
 
-    // when
-    when(orderRepository.save(any(Order.class))).thenReturn(order);
     when(orderSender.send(order)).thenReturn(false);
     Order created = orderService.save(order);
 
@@ -253,25 +313,14 @@ public class OrderServiceTest {
 
   @Test
   public void shouldDeleteOrderIfNotUsed() {
-    //given
-    Order order = generateOrder();
     when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(null);
-
-    //when
     orderService.delete(order);
-
-    //then
     verify(orderRepository).delete(order);
   }
 
   @Test(expected = ValidationException.class)
   public void shouldThrowExceptionWhenAttemptingToDeleteOrderInUse() {
-    //given
-    Order order = generateOrder();
-    ProofOfDelivery pod = new ProofOfDelivery();
     when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(pod);
-
-    //when
     orderService.delete(order);
   }
 
@@ -322,21 +371,65 @@ public class OrderServiceTest {
     assertEquals(expectedStatusChange.getAuthorId(), actualStatusChange.getAuthorId());
   }
 
-  private void generateMocks() {
-    ProgramDto programDto = new ProgramDto();
-    programDto.setCode("programCode");
-    when(programReferenceDataService.findOne(any())).thenReturn(programDto);
+  private void generateTestData() {
+    program = new ProgramDataBuilder().build();
+    facility = new FacilityDataBuilder()
+        .withSupportedPrograms(Collections.singletonList(program))
+        .build();
+    period = new ProcessingPeriodDataBuilder().build();
 
-    FacilityDto facilityDto = new FacilityDto();
-    facilityDto.setCode("FacilityCode");
-    when(facilityReferenceDataService.findOne(any())).thenReturn(facilityDto);
+    orderNumberConfiguration = new OrderNumberConfiguration("prefix", true, true, true);
 
-    UserDto userDto = new UserDto();
-    userDto.setEmail("user@openlmis.org");
+    userDto = new UserDataBuilder().build();
+
+    orderable = new OrderableDataBuilder().build();
+    OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
+        .withOrderedQuantity(100L)
+        .withOrderableId(orderable.getId())
+        .build();
+    StatusChange statusChange = new StatusChangeDataBuilder().build();
+    order = new OrderDataBuilder()
+        .withQuotedCost(BigDecimal.ZERO)
+        .withProgramId(program.getId())
+        .withCreatedById(userDto.getId())
+        .withEmergencyFlag()
+        .withStatus(OrderStatus.IN_ROUTE)
+        .withStatusChanges(statusChange)
+        .withSupplyingFacilityId(facility.getId())
+        .withProcessingPeriodId(period.getId())
+        .withLineItems(orderLineItem)
+        .build();
+
+    pod = new ProofOfDelivery(order);
+
+    userDto = new UserDataBuilder().build();
+
+    properties = new FtpTransferProperties();
+  }
+
+  private void mockResponses() {
+    when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
+    when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
+    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+    when(orderableReferenceDataService.findByIds(any()))
+        .thenReturn(Collections.singletonList(orderable));
+
     when(userReferenceDataService.findOne(any())).thenReturn(userDto);
 
-    FtpTransferProperties properties = new FtpTransferProperties();
+    when(orderNumberConfigurationRepository.findAll())
+        .thenReturn(Collections.singletonList(orderNumberConfiguration));
+
+    when(extensionManager.getExtension(OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class))
+        .thenReturn(new Base36EncodedOrderNumberGenerator());
+
     when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
+
+    when(orderRepository.save(any(Order.class))).thenReturn(order);
+    when(orderSender.send(order)).thenReturn(true);
+
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
+
+    when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(pod);
 
     mockMessages();
   }
@@ -344,7 +437,7 @@ public class OrderServiceTest {
   private void mockMessages() {
     Message orderCreationSubject = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
     Message.LocalizedMessage localizedMessage =
-        orderCreationSubject.new LocalizedMessage("New order");
+        orderCreationSubject.new LocalizedMessage(SUBJECT);
     when(messageService.localize(orderCreationSubject))
         .thenReturn(localizedMessage);
     Message orderCreationBody = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);

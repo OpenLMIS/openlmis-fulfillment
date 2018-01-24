@@ -15,15 +15,13 @@
 
 package org.openlmis.fulfillment.web;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +52,9 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrderControllerTest {
@@ -111,6 +112,7 @@ public class OrderControllerTest {
 
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
   private OrderDto orderDto = new OrderDto();
+  private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
 
   @Before
   public void setUp() {
@@ -123,13 +125,13 @@ public class OrderControllerTest {
         new OrderNumberConfiguration("prefix", false, false, false);
 
     UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
-        .withUpdaterId(UUID.fromString("35316636-6264-6331-2d34-3933322d3462"))
+        .withUpdaterId(lastUpdaterId)
         .withUpdatedDate(ZonedDateTime.now())
         .build();
 
     Order order = new OrderDataBuilder().withUpdateDetails(updateDetails).build();
 
-    when(orderService.save(any())).thenReturn(order);
+    when(orderService.createOrder(orderDto, lastUpdaterId)).thenReturn(order);
     when(programReferenceDataService.findOne(any())).thenReturn(programDto);
     when(authentication.isClientOnly()).thenReturn(true);
     when(orderNumberConfigurationRepository.findAll()).thenReturn(Lists.newArrayList(
@@ -138,7 +140,7 @@ public class OrderControllerTest {
     when(orderNumberGenerator.generate(any())).thenReturn(ORDER_NUMBER);
     when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
 
-    orderDto.setUpdaterId(UUID.fromString("35316636-6264-6331-2d34-3933322d3462"));
+    orderDto.setUpdaterId(lastUpdaterId);
 
     ReflectionTestUtils.setField(exporterBuilder, "serviceUrl", SERVICE_URL);
     ReflectionTestUtils.setField(exporterBuilder, "facilities", facilities);
@@ -152,9 +154,8 @@ public class OrderControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
     doCallRealMethod().when(exporterBuilder).export(any(Order.class), any());
 
-    OrderDto savedOrder = orderController.createOrder(orderDto, authentication);
+    orderController.createOrder(orderDto, authentication);
 
-    assertEquals(savedOrder.getLastUpdater().getId(), orderDto.getLastUpdater().getId());
+    verify(orderService).createOrder(eq(orderDto), eq(lastUpdaterId));
   }
-
 }
