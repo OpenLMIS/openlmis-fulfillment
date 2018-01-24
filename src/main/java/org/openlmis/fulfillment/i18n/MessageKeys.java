@@ -26,8 +26,9 @@ public abstract class MessageKeys {
   private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
   private static final String REQUIRED = "required";
   private static final String ORDER = "order";
+  private static final String NOT_FOUND = "notFound";
 
-  public static final String ERROR_USER_NOT_FOUND = join(SERVICE_PREFIX, "user", "notFound");
+  public static final String ERROR_USER_NOT_FOUND = join(SERVICE_PREFIX, "user", NOT_FOUND);
 
   public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
   public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
@@ -112,7 +113,7 @@ public abstract class MessageKeys {
 
   private static final String SHIPMENT = "shipment";
   public static final String SHIPMENT_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, "notFound");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT, NOT_FOUND);
   public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderless", "notSupported");
   public static final String SHIPMENT_LINE_ITEMS_REQUIRED =
@@ -128,7 +129,7 @@ public abstract class MessageKeys {
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", REQUIRED);
   public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, "notFound");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, NOT_FOUND);
   public static final String SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "lineItems", REQUIRED);
   public static final String SHIPMENT_DRAFT_ID_MISMATCH =
