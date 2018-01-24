@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ProcessingScheduleDto extends BaseDto {
+public final class ProcessingScheduleDto extends BaseDto {
   private String code;
   private String description;
   private ZonedDateTime modifiedDate;

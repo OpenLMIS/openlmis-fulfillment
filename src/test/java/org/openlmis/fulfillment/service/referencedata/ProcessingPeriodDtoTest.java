@@ -15,23 +15,18 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.fulfillment.web.util.BaseDto;
-import java.time.LocalDate;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class ProcessingPeriodDto extends BaseDto {
-  private ProcessingScheduleDto processingSchedule;
-  private String name;
-  private String description;
-  private LocalDate startDate;
-  private LocalDate endDate;
+public class ProcessingPeriodDtoTest {
+
+  @Test
+  public void equalsContract() throws Exception {
+    EqualsVerifier.forClass(ProcessingPeriodDto.class)
+        .withRedefinedSuperclass()
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
+
 }

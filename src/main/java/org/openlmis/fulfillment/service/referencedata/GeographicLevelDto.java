@@ -27,7 +27,7 @@ import org.openlmis.fulfillment.web.util.BaseDto;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class GeographicLevelDto extends BaseDto {
+public final class GeographicLevelDto extends BaseDto {
   private String code;
   private String name;
   private Integer levelNumber;

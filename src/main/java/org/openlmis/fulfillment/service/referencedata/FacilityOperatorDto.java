@@ -27,7 +27,7 @@ import org.openlmis.fulfillment.web.util.BaseDto;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class FacilityOperatorDto extends BaseDto {
+public final class FacilityOperatorDto extends BaseDto {
   private String code;
   private String name;
 }
