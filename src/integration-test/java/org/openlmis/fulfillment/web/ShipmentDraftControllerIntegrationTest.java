@@ -97,6 +97,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   private ShipmentDraft shipmentDraft;
   private UUID draftIdFromUser = UUID.randomUUID();
   private UUID orderId = UUID.randomUUID();
+  private ZonedDateTime modifiedDate =
+      ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault());
 
   @Before
   public void setUp() {
@@ -147,8 +149,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenReturn(shipmentDraft);
 
-    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
-        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(modifiedDate);
 
     Order order = new OrderDataBuilder().withOrderedStatus().build();
     when(orderRepository.findOne(any())).thenReturn(order);
@@ -467,8 +468,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   public void shouldDeleteShipmentDraft() {
     when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(shipmentDraft);
 
-    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
-        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(modifiedDate);
 
     Order order = new OrderDataBuilder().build();
     when(orderRepository.findOne(any())).thenReturn(order);

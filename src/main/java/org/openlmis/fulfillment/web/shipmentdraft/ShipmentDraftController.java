@@ -122,12 +122,9 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("SAVE_SHIPMENT_DTO");
     draft = repository.save(draft);
 
-    UserDto currentUser = authenticationHelper.getCurrentUser();
-
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.FULFILLING);
-    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
-        dateHelper.getCurrentDateTimeWithSystemZone()));
+    updateOrderDetails(order);
     orderRepository.save(order);
 
     profiler.start("BUILD_SHIPMENT_DTO");
@@ -272,13 +269,11 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("DELETE");
     repository.delete(id);
 
-    UserDto currentUser = authenticationHelper.getCurrentUser();
     Order order = orderRepository.findOne(shipment.getOrder().getId());
 
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.ORDERED);
-    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
-        dateHelper.getCurrentDateTimeWithSystemZone()));
+    updateOrderDetails(order);
     orderRepository.save(order);
 
     profiler.stop().log();
@@ -305,5 +300,11 @@ public class ShipmentDraftController extends BaseController {
     if (dtoOrder == null || dtoOrder.getId() == null) {
       throw new ValidationException(SHIPMENT_ORDERLESS_NOT_SUPPORTED);
     }
+  }
+
+  private void updateOrderDetails(Order order) {
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
+        dateHelper.getCurrentDateTimeWithSystemZone()));
   }
 }
