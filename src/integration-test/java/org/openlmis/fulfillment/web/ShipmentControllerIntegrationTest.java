@@ -41,6 +41,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
@@ -170,7 +171,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateShipment() {
-    shipment.getOrder().setStatus(OrderStatus.ORDERED);
+    Order shipmentOrder = shipment.getOrder();
+    shipmentOrder.setStatus(OrderStatus.ORDERED);
     when(orderRepository.findOne(shipment.getOrder().getId())).thenReturn(shipment.getOrder());
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
@@ -185,7 +187,12 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(201)
         .extract().as(ShipmentDto.class);
 
+    shipmentOrder.setStatus(OrderStatus.SHIPPED);
+    shipmentOrder.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID,
+        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault())));
+
     assertEquals(shipmentDtoExpected, extracted);
+    verify(orderRepository).save(shipmentOrder);
     verify(shipmentRepository).save(captor.capture());
     verify(stockEventBuilder).fromShipment(any(Shipment.class));
     verify(stockEventService).submit(any(StockEventDto.class));

@@ -28,6 +28,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
@@ -139,6 +140,8 @@ public class ShipmentController extends BaseController {
 
     profiler.start("UPDATE_ORDER");
     order.setStatus(OrderStatus.SHIPPED);
+    order.setUpdateDetails(new UpdateDetails(authenticationHelper.getCurrentUser().getId(),
+        dateHelper.getCurrentDateTimeWithSystemZone()));
     orderRepository.save(order);
 
     profiler.start("REMOVE_DRAFT_SHIPMENTS");
