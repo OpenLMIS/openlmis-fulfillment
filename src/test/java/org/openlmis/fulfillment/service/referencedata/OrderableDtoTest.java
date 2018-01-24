@@ -18,7 +18,6 @@ package org.openlmis.fulfillment.service.referencedata;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 
 public class OrderableDtoTest {
 
