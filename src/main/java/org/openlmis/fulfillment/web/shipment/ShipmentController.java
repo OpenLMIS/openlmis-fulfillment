@@ -139,8 +139,8 @@ public class ShipmentController extends BaseController {
     shipment = shipmentRepository.save(shipment);
 
     profiler.start("UPDATE_ORDER");
-    order.setStatus(OrderStatus.SHIPPED);
-    order.setUpdateDetails(new UpdateDetails(authenticationHelper.getCurrentUser().getId(),
+    order.updateStatus(OrderStatus.SHIPPED, new UpdateDetails(
+        authenticationHelper.getCurrentUser().getId(),
         dateHelper.getCurrentDateTimeWithSystemZone()));
     orderRepository.save(order);
 

@@ -123,8 +123,7 @@ public class ShipmentDraftController extends BaseController {
     draft = repository.save(draft);
 
     profiler.start("UPDATE_ORDER");
-    order.setStatus(OrderStatus.FULFILLING);
-    updateOrderDetails(order);
+    updateOrderStatus(order, OrderStatus.FULFILLING);
     orderRepository.save(order);
 
     profiler.start("BUILD_SHIPMENT_DTO");
@@ -272,8 +271,7 @@ public class ShipmentDraftController extends BaseController {
     Order order = orderRepository.findOne(shipment.getOrder().getId());
 
     profiler.start("UPDATE_ORDER");
-    order.setStatus(OrderStatus.ORDERED);
-    updateOrderDetails(order);
+    updateOrderStatus(order, OrderStatus.ORDERED);
     orderRepository.save(order);
 
     profiler.stop().log();
@@ -302,9 +300,9 @@ public class ShipmentDraftController extends BaseController {
     }
   }
 
-  private void updateOrderDetails(Order order) {
+  private void updateOrderStatus(Order order, OrderStatus status) {
     UserDto currentUser = authenticationHelper.getCurrentUser();
-    order.setUpdateDetails(new UpdateDetails(currentUser.getId(),
+    order.updateStatus(status, new UpdateDetails(currentUser.getId(),
         dateHelper.getCurrentDateTimeWithSystemZone()));
   }
 }

@@ -215,6 +215,11 @@ public class Order extends BaseEntity {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
   }
 
+  public void updateStatus(OrderStatus status, UpdateDetails updateDetails) {
+    this.status = status;
+    this.updateDetails = updateDetails;
+  }
+
   public void forEachLine(Consumer<OrderLineItem> consumer) {
     Optional.ofNullable(orderLineItems)
         .ifPresent(list -> list.forEach(consumer));
