@@ -137,7 +137,7 @@ public abstract class MessageKeys {
   public static final String SHIPMENT_DRAT_ORDER_DUPLICATE =
       join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, "duplicate");
   public static final String CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "create", "withWrongStatus");
+      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "create", "orderWithWrongStatus");
 
   protected static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
