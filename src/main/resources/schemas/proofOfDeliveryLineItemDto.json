@@ -21,6 +21,10 @@
       "type": "integer",
       "title": "quantityAccepted"
     },
+    "useVvm": {
+      "type": "boolean",
+      "title": "useVvm"
+    },
     "vvmStatus": {
       "type": "string",
       "title": "vvmStatus"

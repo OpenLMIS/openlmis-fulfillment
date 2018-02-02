@@ -18,7 +18,9 @@ package org.openlmis.fulfillment.domain;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.util.UUID;
@@ -36,12 +38,15 @@ public class ShipmentLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
   @Column(nullable = false)
+  @Getter(AccessLevel.PACKAGE)
   private UUID orderableId;
 
   @Type(type = UUID_TYPE)
+  @Getter(AccessLevel.PACKAGE)
   private UUID lotId;
 
   @Column(nullable = false)
+  @Getter(AccessLevel.PACKAGE)
   private Long quantityShipped;
 
   // Constructor needed by framework. Use all args constructor to create new instance.

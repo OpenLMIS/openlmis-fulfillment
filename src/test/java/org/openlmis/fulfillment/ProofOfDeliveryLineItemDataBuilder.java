@@ -18,6 +18,7 @@ package org.openlmis.fulfillment;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
 
 import java.util.UUID;
 
@@ -26,7 +27,8 @@ public class ProofOfDeliveryLineItemDataBuilder {
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Integer quantityAccepted = RandomUtils.nextInt(1, 10);
-  private String vvmStatus = "STAGE-1";
+  private boolean useVvm = true;
+  private VvmStatus vvmStatus = VvmStatus.STAGE_1;
   private Integer quantityRejected = RandomUtils.nextInt(1, 5);
   private UUID rejectionReasonId = UUID.randomUUID();
   private String notes = RandomStringUtils.randomAlphanumeric(25);
@@ -36,9 +38,34 @@ public class ProofOfDeliveryLineItemDataBuilder {
    */
   public ProofOfDeliveryLineItem buildAsNew() {
     return new ProofOfDeliveryLineItem(
-        orderableId, lotId, quantityAccepted, vvmStatus,
+        orderableId, lotId, quantityAccepted, useVvm, vvmStatus,
         quantityRejected, rejectionReasonId, notes
     );
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withIncorrectQuantityAccepted() {
+    quantityAccepted =  RandomUtils.nextInt(1, 10) * -1;
+    return this;
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withIncorrectQuantityRejected() {
+    quantityRejected =  RandomUtils.nextInt(1, 5) * -1;
+    return this;
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withoutVvmStatus() {
+    vvmStatus = null;
+    return this;
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withVvmStatus(VvmStatus vvmStatus) {
+    this.vvmStatus = vvmStatus;
+    return this;
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withoutReason() {
+    rejectionReasonId = null;
+    return this;
   }
 
   /**

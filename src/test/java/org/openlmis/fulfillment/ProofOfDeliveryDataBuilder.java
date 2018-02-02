@@ -51,6 +51,21 @@ public class ProofOfDeliveryDataBuilder {
     );
   }
 
+  public ProofOfDeliveryDataBuilder withoutDeliveredBy() {
+    deliveredBy = null;
+    return this;
+  }
+
+  public ProofOfDeliveryDataBuilder withoutReceivedBy() {
+    receivedBy = null;
+    return this;
+  }
+
+  public ProofOfDeliveryDataBuilder withoutReceivedDate() {
+    receivedDate = null;
+    return this;
+  }
+
   /**
    * Builds new instance of {@link ProofOfDeliveryLineItem}.
    */
@@ -59,14 +74,6 @@ public class ProofOfDeliveryDataBuilder {
     pod.setId(id);
 
     return pod;
-  }
-
-  /**
-   * Builds new instance of {@link ProofOfDeliveryLineItem} with invalid values.
-   */
-  public ProofOfDelivery buildAsInvalid() {
-    deliveredBy = null;
-    return build();
   }
 
   /**

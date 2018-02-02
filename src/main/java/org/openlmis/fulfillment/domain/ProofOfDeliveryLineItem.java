@@ -15,16 +15,25 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITIES;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
+
 import org.hibernate.annotations.Type;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.web.ValidationException;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 @Entity
@@ -35,15 +44,23 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
   @Column(nullable = false)
+  @Getter(AccessLevel.PACKAGE)
   private UUID orderableId;
 
   @Type(type = UUID_TYPE)
+  @Getter(AccessLevel.PACKAGE)
   private UUID lotId;
 
+  @Getter(AccessLevel.PACKAGE)
   private Integer quantityAccepted;
 
-  private String vvmStatus;
+  @Column(nullable = false)
+  private Boolean useVvm;
 
+  @Enumerated(EnumType.STRING)
+  private VvmStatus vvmStatus;
+
+  @Getter(AccessLevel.PACKAGE)
   private Integer quantityRejected;
 
   private UUID rejectionReasonId;
@@ -64,6 +81,25 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     this.notes = proofOfDeliveryLineItem.notes;
   }
 
+  void validate(Long quantityShipped) {
+    Validations.throwIfLessThanZeroOrNull(quantityAccepted, "quantityAccepted");
+    Validations.throwIfLessThanZeroOrNull(quantityRejected, "quantityRejected");
+
+    if (quantityAccepted > 0
+        && useVvm
+        && (null == vvmStatus || vvmStatus.isGreaterThan(2))) {
+      throw new ValidationException(ERROR_INCORRECT_VVM_STATUS);
+    }
+
+    if (quantityRejected > 0 && null == rejectionReasonId) {
+      throw new ValidationException(ERROR_MISSING_REASON);
+    }
+
+    if (quantityAccepted + quantityRejected != Math.toIntExact(quantityShipped)) {
+      throw new ValidationException(ERROR_INCORRECT_QUANTITIES);
+    }
+  }
+
   /**
    * Create new instance of ProofOfDeliveryLineItem based on given
    * {@link ProofOfDeliveryLineItem.Importer}
@@ -73,8 +109,8 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   static ProofOfDeliveryLineItem newInstance(Importer importer) {
     ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
         importer.getOrderableId(), importer.getLotId(), importer.getQuantityAccepted(),
-        importer.getVvmStatus(), importer.getQuantityRejected(), importer.getRejectionReasonId(),
-        importer.getNotes()
+        importer.getUseVvm(), importer.getVvmStatus(), importer.getQuantityRejected(),
+        importer.getRejectionReasonId(), importer.getNotes()
     );
     lineItem.setId(importer.getId());
 
@@ -91,6 +127,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     exporter.setOrderableId(orderableId);
     exporter.setLotId(lotId);
     exporter.setQuantityAccepted(quantityAccepted);
+    exporter.setUseVvm(useVvm);
     exporter.setVvmStatus(vvmStatus);
     exporter.setQuantityRejected(quantityRejected);
     exporter.setRejectionReasonId(rejectionReasonId);
@@ -106,7 +143,9 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
     Integer getQuantityAccepted();
 
-    String getVvmStatus();
+    Boolean getUseVvm();
+
+    VvmStatus getVvmStatus();
 
     Integer getQuantityRejected();
 
@@ -125,7 +164,9 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
     void setQuantityAccepted(Integer quantityAccepted);
 
-    void setVvmStatus(String vvmStatus);
+    void setUseVvm(Boolean useVvm);
+
+    void setVvmStatus(VvmStatus vvmStatus);
 
     void setQuantityRejected(Integer quantityRejected);
 

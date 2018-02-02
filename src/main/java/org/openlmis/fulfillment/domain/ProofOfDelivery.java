@@ -87,8 +87,24 @@ public class ProofOfDelivery extends BaseEntity {
     updateLines(proofOfDelivery.lineItems);
   }
 
+  /**
+   * Try to confirm this Proof of delivery.
+   */
   public void confirm() {
-    // TODO: add validation here
+    Validations.throwIfBlank(deliveredBy, "deliveredBy");
+    Validations.throwIfBlank(receivedBy, "receivedBy");
+    Validations.throwIfNull(receivedDate, "receivedDate");
+
+    for (ProofOfDeliveryLineItem lineItem : lineItems) {
+      shipment
+          .getLineItems()
+          .stream()
+          .filter(shipped -> shipped.getOrderableId().equals(lineItem.getOrderableId())
+              && shipped.getLotId().equals(lineItem.getLotId()))
+          .findFirst()
+          .ifPresent(shipped -> lineItem.validate(shipped.getQuantityShipped()));
+    }
+
     status = ProofOfDeliveryStatus.CONFIRMED;
   }
 

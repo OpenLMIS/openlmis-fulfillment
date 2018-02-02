@@ -22,6 +22,7 @@ import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -57,7 +58,11 @@ public final class ProofOfDeliveryLineItemDto
 
   @Getter
   @Setter
-  private String vvmStatus;
+  private Boolean useVvm;
+
+  @Getter
+  @Setter
+  private VvmStatus vvmStatus;
 
   @Getter
   @Setter

@@ -96,6 +96,12 @@ public abstract class MessageKeys {
       ERROR_PREFIX + ".proofOdDelivery.validation";
   public static final String ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED = ERROR_PREFIX
       + ".proofOfDelivery.cannotUpdateSubmitted";
+  public static final String ERROR_INCORRECT_VVM_STATUS =
+      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "vvmStatus", "incorrectValue");
+  public static final String ERROR_MISSING_REASON =
+      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "reason", "missing");
+  public static final String ERROR_INCORRECT_QUANTITIES =
+      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "acceptedRejected", "incorrectValues");
 
   public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
       VALIDATION_ERROR + ".mustContainValue";
