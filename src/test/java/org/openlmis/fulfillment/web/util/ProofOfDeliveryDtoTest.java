@@ -13,14 +13,35 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.web.util;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+
+import org.junit.Test;
+import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-import java.util.UUID;
+public class ProofOfDeliveryDtoTest {
 
-public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(ProofOfDeliveryDto.class)
+        .withRedefinedSuperclass()
+        .suppress(Warning.NONFINAL_FIELDS)
+        .withIgnoredFields("serviceUrl")
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    ProofOfDelivery domain = new ProofOfDeliveryDataBuilder().build();
+    ProofOfDeliveryDto dto = new ProofOfDeliveryDto();
+    domain.export(dto);
+
+    ToStringTestUtils.verify(ProofOfDeliveryDto.class, dto);
+  }
 
 }
-

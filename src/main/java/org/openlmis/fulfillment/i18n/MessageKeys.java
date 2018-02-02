@@ -85,6 +85,9 @@ public abstract class MessageKeys {
   public static final String ERROR_TRANSFER_PROPERTIES_INCORRECT = ERROR_PREFIX
       + ".transfer-properties.incorrect";
 
+  private static final String PROOF_OF_DELIVERY = "proofOfDelivery";
+  public static final String PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED =
+      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "lineItems", REQUIRED);
   public static final String ERROR_PROOF_OF_DELIVERY_NOT_FOUND =
       ERROR_PREFIX + ".proofOfDelivery.notFound";
   public static final String ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED =

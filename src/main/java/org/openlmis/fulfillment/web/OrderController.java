@@ -22,7 +22,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
@@ -40,7 +39,6 @@ import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderPeriodFilter;
-import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +58,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -68,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -95,9 +95,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ExporterBuilder exporter;
-
-  @Autowired
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
   private JasperReportsViewService jasperReportsViewService;
@@ -327,28 +324,6 @@ public class OrderController extends BaseController {
 
     orderService.save(order);
     return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
-  }
-
-  /**
-   * Gets proof of deliveries related with the given order.
-   *
-   * @param id UUID of order
-   */
-  @RequestMapping(value = "/orders/{id}/proofOfDeliveries", method = RequestMethod.GET)
-  @ResponseBody
-  public ProofOfDeliveryDto getProofOfDeliveries(@PathVariable("id") UUID id) {
-    Order order = orderRepository.findOne(id);
-
-    if (null == order) {
-      throw new OrderNotFoundException(id);
-    }
-
-    permissionService.canViewOrder(order);
-
-    return ProofOfDeliveryDto.newInstance(
-        proofOfDeliveryRepository.findByOrderId(id),
-        exporter
-    );
   }
 
   private Order createSingleOrder(OrderDto orderDto,

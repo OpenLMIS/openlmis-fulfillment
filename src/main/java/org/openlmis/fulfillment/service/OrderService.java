@@ -19,14 +19,12 @@ import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_IN_USE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
@@ -34,7 +32,6 @@ import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -44,7 +41,6 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
 import org.slf4j.ext.XLogger;
@@ -52,6 +48,7 @@ import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -85,9 +82,6 @@ public class OrderService {
 
   @Autowired
   private OrderSender orderSender;
-
-  @Autowired
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -133,9 +127,6 @@ public class OrderService {
     order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
     Order newOrder = save(order);
 
-    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(newOrder);
-    proofOfDeliveryRepository.save(proofOfDelivery);
-
     XLOGGER.debug("Created new order with id: {}", order.getId());
     return newOrder;
   }
@@ -151,20 +142,6 @@ public class OrderService {
         params.getSupplyingFacility(), params.getRequestingFacility(), params.getProgram(),
         params.getProcessingPeriod(), params.getStatusAsEnum()
     );
-  }
-
-  /**
-   * Safe delete of an order. If the order is linked to an existing proof of delivery, a
-   * {@link ValidationException} signals that it cannot be removed.
-   *
-   * @param order the order to remove
-   */
-  public void delete(Order order) {
-    if (null != proofOfDeliveryRepository.findByOrderId(order.getId())) {
-      throw new ValidationException(ERROR_ORDER_IN_USE, order.getId().toString());
-    } else {
-      orderRepository.delete(order);
-    }
   }
 
   /**

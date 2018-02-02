@@ -31,6 +31,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,14 +51,12 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -77,10 +76,10 @@ import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -131,9 +130,6 @@ public class OrderServiceTest {
   private OrderSender orderSender;
 
   @Mock
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @Mock
   private MessageService messageService;
 
   @Mock
@@ -160,7 +156,6 @@ public class OrderServiceTest {
   private OrderableDto orderable;
   private OrderNumberConfiguration orderNumberConfiguration;
   private Order order;
-  private ProofOfDelivery pod;
   private UserDto userDto;
   private FtpTransferProperties properties;
 
@@ -198,8 +193,6 @@ public class OrderServiceTest {
     assertThat(notification.getSubject(), is(SUBJECT));
     assertThat(notification.getContent(),
         is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
-
-    verify(proofOfDeliveryRepository).save(pod);
   }
 
   @Test
@@ -234,8 +227,6 @@ public class OrderServiceTest {
     assertThat(notification.getSubject(), is(SUBJECT));
     assertThat(notification.getContent(),
         is("Create an order: " + order.getId() + " with status: ORDERED"));
-
-    verify(proofOfDeliveryRepository).save(pod);
   }
 
   @Test
@@ -311,19 +302,6 @@ public class OrderServiceTest {
 
     verify(orderRepository, atLeastOnce())
         .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
-  }
-
-  @Test
-  public void shouldDeleteOrderIfNotUsed() {
-    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(null);
-    orderService.delete(order);
-    verify(orderRepository).delete(order);
-  }
-
-  @Test(expected = ValidationException.class)
-  public void shouldThrowExceptionWhenAttemptingToDeleteOrderInUse() {
-    when(proofOfDeliveryRepository.findByOrderId(order.getId())).thenReturn(pod);
-    orderService.delete(order);
   }
 
   private Order generateOrder() {
@@ -402,8 +380,6 @@ public class OrderServiceTest {
         .withLineItems(orderLineItem)
         .build();
 
-    pod = new ProofOfDelivery(order);
-
     userDto = new UserDataBuilder().build();
 
     properties = new FtpTransferProperties();
@@ -430,8 +406,6 @@ public class OrderServiceTest {
     when(orderSender.send(order)).thenReturn(true);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
-
-    when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(pod);
 
     mockMessages();
   }

@@ -16,24 +16,28 @@
 package org.openlmis.fulfillment.domain;
 
 
-import org.openlmis.fulfillment.web.util.OrderDto;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
+import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.web.ValidationException;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -42,56 +46,34 @@ import javax.persistence.Table;
 
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Table(name = "proof_of_deliveries")
 public class ProofOfDelivery extends BaseEntity {
-  public static final String DELIVERED_BY = "deliveredBy";
-  public static final String RECEIVED_BY = "receivedBy";
-  public static final String RECEIVED_DATE = "receivedDate";
-  public static final String PROOF_OF_DELIVERY_LINE_ITEMS = "proofOfDeliveryLineItems";
 
   @OneToOne
-  @JoinColumn(name = "orderId", nullable = false)
+  @JoinColumn(name = "shipmentId", nullable = false)
   @Getter
-  @Setter
-  private Order order;
+  private Shipment shipment;
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private ProofOfDeliveryStatus status;
 
   @OneToMany(
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
-  @Getter
-  @Setter
-  private List<ProofOfDeliveryLineItem> proofOfDeliveryLineItems;
+  private List<ProofOfDeliveryLineItem> lineItems;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
-  @Getter
-  @Setter
-  private String deliveredBy;
-
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
-  @Getter
-  @Setter
   private String receivedBy;
 
-  @Getter
-  @Setter
-  private LocalDate receivedDate;
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  private String deliveredBy;
 
-  /**
-   * Creates a new instance of Proof Of Delivery based on the passed order.
-   *
-   * @param order instance that would be used to create new Proof Of Delivery.
-   */
-  public ProofOfDelivery(Order order) {
-    this.order = order;
-    this.proofOfDeliveryLineItems = order
-        .getOrderLineItems()
-        .stream()
-        .map(line -> new ProofOfDeliveryLineItem(null, null, null, null, null, null, null))
-        .collect(Collectors.toList());
-  }
+  private LocalDate receivedDate;
 
   /**
    * Copy values of attributes into new or updated ProofOfDelivery.
@@ -99,17 +81,19 @@ public class ProofOfDelivery extends BaseEntity {
    * @param proofOfDelivery ProofOfDelivery with new values.
    */
   public void updateFrom(ProofOfDelivery proofOfDelivery) {
-    this.deliveredBy = proofOfDelivery.getDeliveredBy();
-    this.receivedBy = proofOfDelivery.getReceivedBy();
-    this.receivedDate = proofOfDelivery.getReceivedDate();
-
-    updateLines(proofOfDelivery.getProofOfDeliveryLineItems());
-
+    this.receivedBy = proofOfDelivery.receivedBy;
+    this.deliveredBy = proofOfDelivery.deliveredBy;
+    this.receivedDate = proofOfDelivery.receivedDate;
+    updateLines(proofOfDelivery.lineItems);
   }
 
-  public void forEachLine(Consumer<ProofOfDeliveryLineItem> consumer) {
-    Optional.ofNullable(proofOfDeliveryLineItems)
-        .ifPresent(list -> list.forEach(consumer));
+  public void confirm() {
+    // TODO: add validation here
+    status = ProofOfDeliveryStatus.CONFIRMED;
+  }
+
+  public boolean isConfirmed() {
+    return status == ProofOfDeliveryStatus.CONFIRMED;
   }
 
   private void updateLines(Collection<ProofOfDeliveryLineItem> newLineItems) {
@@ -117,12 +101,12 @@ public class ProofOfDelivery extends BaseEntity {
       return;
     }
 
-    if (null == proofOfDeliveryLineItems) {
-      proofOfDeliveryLineItems = new ArrayList<>();
+    if (null == lineItems) {
+      lineItems = new ArrayList<>();
     }
 
     for (ProofOfDeliveryLineItem item : newLineItems) {
-      proofOfDeliveryLineItems
+      lineItems
           .stream()
           .filter(l -> l.getId().equals(item.getId()))
           .findFirst()
@@ -138,21 +122,31 @@ public class ProofOfDelivery extends BaseEntity {
    * @return instance of ProofOfDelivery.
    */
   public static ProofOfDelivery newInstance(Importer importer) {
-    ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
-    Order order = Order.newInstance(importer.getOrder());
-    proofOfDelivery.setOrder(order);
-    proofOfDelivery.setDeliveredBy(importer.getDeliveredBy());
-    proofOfDelivery.setReceivedBy(importer.getReceivedBy());
-    proofOfDelivery.setReceivedDate(importer.getReceivedDate());
+    validateLineItems(importer.getLineItems());
 
-    if (importer.getProofOfDeliveryLineItems() != null) {
-      proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
-      importer.getProofOfDeliveryLineItems().forEach(
-          podli -> proofOfDelivery.getProofOfDeliveryLineItems().add(
-              ProofOfDeliveryLineItem.newInstance(podli)));
-    }
+    List<ProofOfDeliveryLineItem> items = importer
+        .getLineItems()
+        .stream()
+        .map(ProofOfDeliveryLineItem::newInstance)
+        .collect(Collectors.toList());
+
+    Shipment shipment = new Shipment(null, null, null, null);
+    shipment.setId(importer.getShipment().getId());
+
+    ProofOfDelivery proofOfDelivery = new ProofOfDelivery(
+        shipment, importer.getStatus(), items,
+        importer.getReceivedBy(), importer.getDeliveredBy(),
+        importer.getReceivedDate()
+    );
+    proofOfDelivery.setId(importer.getId());
 
     return proofOfDelivery;
+  }
+
+  private static void validateLineItems(List<?> lineItems) {
+    if (isEmpty(lineItems)) {
+      throw new ValidationException(MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
+    }
   }
 
   /**
@@ -162,17 +156,26 @@ public class ProofOfDelivery extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setId(id);
-    exporter.setDeliveredBy(deliveredBy);
+    exporter.setShipment(shipment);
+    exporter.setStatus(status);
+    exporter.setLineItems(lineItems);
     exporter.setReceivedBy(receivedBy);
+    exporter.setDeliveredBy(deliveredBy);
     exporter.setReceivedDate(receivedDate);
   }
 
   public interface Exporter {
     void setId(UUID id);
 
-    void setDeliveredBy(String deliveredBy);
+    void setShipment(Shipment shipment);
+
+    void setStatus(ProofOfDeliveryStatus status);
+
+    void setLineItems(List<ProofOfDeliveryLineItem> lineItems);
 
     void setReceivedBy(String receivedBy);
+
+    void setDeliveredBy(String deliveredBy);
 
     void setReceivedDate(LocalDate receivedDate);
 
@@ -181,13 +184,15 @@ public class ProofOfDelivery extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    OrderDto getOrder();
+    Identifiable getShipment();
 
-    List<ProofOfDeliveryLineItem.Importer> getProofOfDeliveryLineItems();
+    ProofOfDeliveryStatus getStatus();
 
-    String getDeliveredBy();
+    List<ProofOfDeliveryLineItem.Importer> getLineItems();
 
     String getReceivedBy();
+
+    String getDeliveredBy();
 
     LocalDate getReceivedDate();
 

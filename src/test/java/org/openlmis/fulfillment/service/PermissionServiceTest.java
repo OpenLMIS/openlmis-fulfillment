@@ -33,7 +33,6 @@ import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
-import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,15 +42,16 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
-import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -62,6 +62,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -79,6 +80,9 @@ public class PermissionServiceTest {
 
   @Mock
   private OrderRepository orderRepository;
+
+  @Mock
+  private ShipmentRepository shipmentRepository;
 
   @InjectMocks
   private PermissionService permissionService;
@@ -107,7 +111,6 @@ public class PermissionServiceTest {
   @Mock
   private RightDto systemSettingsManageRight;
 
-  private UUID userId = UUID.randomUUID();
   private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
   private UUID fulfillmentManagePodRightId = UUID.randomUUID();
   private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
@@ -115,16 +118,20 @@ public class PermissionServiceTest {
   private UUID shipmentsViewRightId = UUID.randomUUID();
   private UUID shipmentsEditRightId = UUID.randomUUID();
   private UUID systemSettingsManageRightId = UUID.randomUUID();
-  private UUID programId = UUID.randomUUID();
-  private UUID facilityId = UUID.randomUUID();
-  private Order order;
+
+  private UUID userId;
+  private UUID facilityId;
+
   private ProofOfDelivery proofOfDelivery;
+  private Shipment shipment;
+  private Order order;
+
+  private ShipmentDto shipmentDto;
+
   private SecurityContext securityContext;
   private OAuth2Authentication userClient;
   private OAuth2Authentication trustedClient;
   private OAuth2Authentication apiKeyClient;
-  private ShipmentDto shipmentDto;
-  private Shipment shipment;
 
   @Before
   public void setUp() {
@@ -135,15 +142,19 @@ public class PermissionServiceTest {
     userClient = new OAuth2AuthenticationDataBuilder().buildUserAuthentication();
     apiKeyClient = new OAuth2AuthenticationDataBuilder().buildApiKeyAuthentication();
 
-    order = createOrder();
-    proofOfDelivery = new ProofOfDelivery(order);
+    proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
+    shipment = proofOfDelivery.getShipment();
+    order = shipment.getOrder();
 
-    shipment = new ShipmentDataBuilder().withOrder(order).build();
+    userId = order.getCreatedById();
+    facilityId = order.getSupplyingFacilityId();
+
     shipmentDto = new ShipmentDtoDataBuilder()
         .withOrder(new ObjectReferenceDto(order.getId()))
         .build();
 
     when(orderRepository.findOne(order.getId())).thenReturn(order);
+    when(shipmentRepository.findOne(shipment.getId())).thenReturn(shipment);
     when(user.getId()).thenReturn(userId);
 
     mockRight(fulfillmentTransferOrderRight, fulfillmentTransferOrderRightId, ORDERS_TRANSFER);
@@ -330,16 +341,6 @@ public class PermissionServiceTest {
     expectException(SHIPMENTS_VIEW);
 
     permissionService.canViewShipment(shipment);
-  }
-
-  private Order createOrder() {
-    Order order = new Order();
-    order.setCreatedById(userId);
-    order.setProgramId(programId);
-    order.setSupplyingFacilityId(facilityId);
-    order.setOrderLineItems(Lists.newArrayList());
-    order.setId(UUID.randomUUID());
-    return order;
   }
 
   private void mockRight(RightDto right, UUID rightId, String rightName) {

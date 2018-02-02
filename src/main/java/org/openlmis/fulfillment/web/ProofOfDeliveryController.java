@@ -19,25 +19,18 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
 
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
-import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.ReportUtils;
-import org.openlmis.fulfillment.web.validator.ProofOfDeliveryValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +49,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+// TODO: add controller IT
 @Controller
 @Transactional
 public class ProofOfDeliveryController extends BaseController {
@@ -73,16 +67,10 @@ public class ProofOfDeliveryController extends BaseController {
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Autowired
-  private OrderRepository orderRepository;
-
-  @Autowired
-  private ExporterBuilder exporter;
-
-  @Autowired
-  private ProofOfDeliveryValidator validator;
-
-  @Autowired
   private PermissionService permissionService;
+
+  @Autowired
+  private ProofOfDeliveryDtoBuilder dtoBuilder;
 
   /**
    * Get all proofOfDeliveries.
@@ -91,18 +79,15 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.GET)
   @ResponseBody
-  public ResponseEntity<Collection<ProofOfDeliveryDto>> getAllProofOfDeliveries(
+  public Collection<ProofOfDeliveryDto> getAllProofOfDeliveries(
       OAuth2Authentication authentication) {
-    Iterable<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
+    List<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
 
     for (ProofOfDelivery proofOfDelivery : proofOfDeliveries) {
       canManagePod(authentication, proofOfDelivery.getId());
     }
 
-    return new ResponseEntity<>(
-        ProofOfDeliveryDto.newInstance(proofOfDeliveries, exporter),
-        HttpStatus.OK
-    );
+    return dtoBuilder.build(proofOfDeliveries);
   }
 
   /**
@@ -113,15 +98,13 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
-  public ResponseEntity updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
-                                              @RequestBody ProofOfDeliveryDto dto,
-                                              OAuth2Authentication authentication) {
+  public ProofOfDeliveryDto updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
+                                                  @RequestBody ProofOfDeliveryDto dto,
+                                                  OAuth2Authentication authentication) {
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
-    ProofOfDelivery proofOfDeliveryToUpdate =
-        proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+    ProofOfDelivery proofOfDeliveryToUpdate = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
     if (proofOfDeliveryToUpdate == null) {
-      proofOfDeliveryToUpdate = new ProofOfDelivery();
-      proofOfDeliveryToUpdate.setOrder(proofOfDelivery.getOrder());
+      proofOfDeliveryToUpdate = proofOfDelivery;
 
       if (!authentication.isClientOnly()) {
         permissionService.canManagePod(proofOfDeliveryToUpdate);
@@ -129,11 +112,10 @@ public class ProofOfDeliveryController extends BaseController {
       LOGGER.debug("Creating new proofOfDelivery");
     } else {
       canManagePod(authentication, proofOfDeliveryId);
-      LOGGER.debug("Updating proofOfDelivery with id: " + proofOfDeliveryId);
+      LOGGER.debug("Updating proofOfDelivery with id: {}", proofOfDeliveryId);
     }
 
-    OrderStatus status = proofOfDeliveryToUpdate.getOrder().getStatus();
-    if (status.equals(OrderStatus.RECEIVED)) {
+    if (proofOfDeliveryToUpdate.isConfirmed()) {
       throw new ValidationException(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED);
     }
 
@@ -141,10 +123,7 @@ public class ProofOfDeliveryController extends BaseController {
     proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
 
     LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
-    return new ResponseEntity<>(
-        ProofOfDeliveryDto.newInstance(proofOfDeliveryToUpdate, exporter),
-        HttpStatus.OK
-    );
+    return dtoBuilder.build(proofOfDeliveryToUpdate);
   }
 
   /**
@@ -154,19 +133,17 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ProofOfDelivery.
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.GET)
-  public ResponseEntity<ProofOfDeliveryDto> getProofOfDelivery(
-      @PathVariable("id") UUID id,
-      OAuth2Authentication authentication) {
+  @ResponseBody
+  public ProofOfDeliveryDto getProofOfDelivery(@PathVariable("id") UUID id,
+                                               OAuth2Authentication authentication) {
     ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
-    if (proofOfDelivery == null) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    } else {
-      canManagePod(authentication, id);
-      return new ResponseEntity<>(
-          ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter),
-          HttpStatus.OK
-      );
+
+    if (null == proofOfDelivery) {
+      throw new ProofOfDeliveryNotFoundException(id);
     }
+
+    canManagePod(authentication, id);
+    return dtoBuilder.build(proofOfDelivery);
   }
 
   /**
@@ -204,7 +181,7 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}/submit", method = RequestMethod.POST)
   @ResponseBody
-  public ResponseEntity submit(@PathVariable("id") UUID id,
+  public ProofOfDeliveryDto submit(@PathVariable("id") UUID id,
                                OAuth2Authentication authentication) {
     ProofOfDelivery pod = proofOfDeliveryRepository.findOne(id);
 
@@ -213,22 +190,15 @@ public class ProofOfDeliveryController extends BaseController {
     }
 
     canManagePod(authentication, id);
-    List<Message.LocalizedMessage> errors = validator.validate(pod);
 
-    if (!errors.isEmpty()) {
-      return ResponseEntity.badRequest().body(errors);
-    }
-
-    Order order = pod.getOrder();
-
-    if (OrderStatus.RECEIVED == order.getStatus()) {
+    if (pod.isConfirmed()) {
       throw new ValidationException(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED);
     }
 
-    order.setStatus(OrderStatus.RECEIVED);
-    orderRepository.save(order);
+    pod.confirm();
+    proofOfDeliveryRepository.save(pod);
 
-    return ResponseEntity.ok(ProofOfDeliveryDto.newInstance(pod, exporter));
+    return dtoBuilder.build(pod);
   }
 
   private void canManagePod(OAuth2Authentication authentication, UUID id) {

@@ -43,7 +43,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,10 +56,8 @@ import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
@@ -77,11 +75,13 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
-import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -104,7 +104,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String PRINT_URL = ID_URL + "/print";
-  private static final String POD_URL = ID_URL + "/proofOfDeliveries";
 
   private static final String REQUESTING_FACILITY = "requestingFacility";
   private static final String SUPPLYING_FACILITY = "supplyingFacility";
@@ -119,7 +118,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String EXPAND = "expand";
   private static final String LAST_UPDATER = "lastUpdater";
 
-  private static final UUID PROGRAM_ID = UUID.fromString("5c5a6f68-8658-11e6-ae22-56b6b6499611");
   private static final UUID PERIOD_ID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
 
   private UUID facilityId = UUID.randomUUID();
@@ -151,16 +149,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private NotificationService notificationService;
 
   @MockBean
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @MockBean
   private ObjReferenceExpander objReferenceExpander;
 
   @Mock
   private DateHelper dateHelper;
-
-  @Mock
-  private ProofOfDelivery proofOfDelivery;
 
   private Order firstOrder;
   private Order secondOrder;
@@ -1186,62 +1178,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetPodForTheGivenOrder() {
-    given(proofOfDelivery.getOrder()).willReturn(firstOrder);
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
-    given(proofOfDeliveryRepository.findByOrderId(firstOrder.getId()))
-        .willReturn(proofOfDelivery);
-
-    ProofOfDeliveryDto response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .get(POD_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(ProofOfDeliveryDto.class);
-
-    assertThat(response.getId(), is(equalTo(proofOfDelivery.getId())));
-  }
-
-  @Test
-  public void shouldRejectGetPodRequestIfUserHasNoRight() {
-    denyUserAllRights();
-
-    String response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .get(POD_URL)
-        .then()
-        .statusCode(403)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnNotFoundErrorIfOrderCannotBeFound() {
-    given(orderRepository.findOne(any(UUID.class))).willReturn(null);
-
-    String response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .pathParam("id", firstOrder.getId().toString())
-        .contentType(APPLICATION_JSON_VALUE)
-        .when()
-        .get(POD_URL)
-        .then()
-        .statusCode(404)
-        .extract().path(MESSAGE_KEY);
-
-    assertThat(response, is(equalTo(ERROR_ORDER_NOT_FOUND)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -15,77 +15,93 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static org.openlmis.fulfillment.service.ResourceNames.SHIPMENTS;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
+import org.openlmis.fulfillment.domain.Shipment;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-public class ProofOfDeliveryDto implements ProofOfDelivery.Exporter, ProofOfDelivery.Importer {
-  private UUID id;
-  private OrderDto order;
-  private List<ProofOfDeliveryLineItemDto> proofOfDeliveryLineItems;
-  private String deliveredBy;
+@EqualsAndHashCode(callSuper = true, exclude = {"serviceUrl"})
+public final class ProofOfDeliveryDto
+    extends BaseDto
+    implements ProofOfDelivery.Exporter, ProofOfDelivery.Importer {
+
+  @Setter
+  private String serviceUrl;
+
+  @Getter
+  private ObjectReferenceDto shipment;
+
+  @Getter
+  @Setter
+  private ProofOfDeliveryStatus status;
+
+  private List<ProofOfDeliveryLineItemDto> lineItems;
+
+  @Getter
+  @Setter
   private String receivedBy;
+
+  @Getter
+  @Setter
+  private String deliveredBy;
+
+  @Getter
+  @Setter
   private LocalDate receivedDate;
 
+  @JsonProperty
+  public void setShipment(ObjectReferenceDto shipment) {
+    this.shipment = shipment;
+  }
+
   @Override
-  public List<ProofOfDeliveryLineItem.Importer> getProofOfDeliveryLineItems() {
-    return new ArrayList<>(
-        Optional.ofNullable(proofOfDeliveryLineItems).orElse(Collections.emptyList())
-    );
-  }
-
-  /**
-   * Create new list of ProofOfDeliveryDto based on given list of {@link ProofOfDelivery}
-   * @param proofOfDeliveries instance of ProofOfDelivery
-   * @return new instance ProofOfDeliveryDto.
-   */
-  public static Collection<ProofOfDeliveryDto> newInstance(
-      Iterable<ProofOfDelivery> proofOfDeliveries, ExporterBuilder exporter) {
-
-    Collection<ProofOfDeliveryDto> proofOfDeliveryDtos = new ArrayList<>();
-    proofOfDeliveries.forEach(pod -> proofOfDeliveryDtos.add(newInstance(pod, exporter)));
-    return proofOfDeliveryDtos;
-  }
-
-  /**
-   * Create new instance of ProofOfDeliveryDto based on given {@link ProofOfDelivery}
-   * @param proofOfDelivery instance of ProofOfDelivery
-   * @return new instance od ProofOfDeliveryDto.
-   */
-  public static ProofOfDeliveryDto newInstance(ProofOfDelivery proofOfDelivery,
-                                               ExporterBuilder exporter) {
-    ProofOfDeliveryDto proofOfDeliveryDto = new ProofOfDeliveryDto();
-    proofOfDelivery.export(proofOfDeliveryDto);
-
-    proofOfDeliveryDto.setOrder(OrderDto.newInstance(proofOfDelivery.getOrder(), exporter));
-
-    if (proofOfDelivery.getProofOfDeliveryLineItems() != null) {
-      proofOfDeliveryDto.setProofOfDeliveryLineItems(proofOfDelivery
-          .getProofOfDeliveryLineItems()
-          .stream()
-          .map(ProofOfDeliveryLineItemDto::newInstance)
-          .collect(Collectors.toList()));
+  @JsonIgnore
+  public void setShipment(Shipment shipment) {
+    if (null != shipment) {
+      this.shipment = ObjectReferenceDto.create(shipment.getId(), serviceUrl, SHIPMENTS);
     }
+  }
 
-    return proofOfDeliveryDto;
+  @Override
+  public void setLineItems(List<ProofOfDeliveryLineItem> lineItems) {
+    this.lineItems = lineItems
+        .stream()
+        .map(this::createLine)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<ProofOfDeliveryLineItem.Importer> getLineItems() {
+    return null == lineItems ? null : new ArrayList<>(lineItems);
+  }
+
+  private ProofOfDeliveryLineItemDto createLine(ProofOfDeliveryLineItem line) {
+    ProofOfDeliveryLineItemDto lineDto = new ProofOfDeliveryLineItemDto();
+    lineDto.setServiceUrl(serviceUrl);
+
+    line.export(lineDto);
+
+    return lineDto;
   }
 }

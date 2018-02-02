@@ -19,6 +19,7 @@ package org.openlmis.fulfillment.service;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -26,6 +27,7 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
@@ -67,6 +69,9 @@ public class PermissionService {
   @Autowired
   private OrderRepository orderRepository;
 
+  @Autowired
+  private ShipmentRepository shipmentRepository;
+
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
 
@@ -92,8 +97,18 @@ public class PermissionService {
     canManagePod(proofOfDelivery);
   }
 
+  /**
+   * Checks if user has permission to manage POD.
+   */
   public void canManagePod(ProofOfDelivery proofOfDelivery) {
-    checkPermission(PODS_MANAGE, proofOfDelivery.getOrder().getSupplyingFacilityId());
+    UUID shipmentId = proofOfDelivery.getShipment().getId();
+    Shipment shipment = shipmentRepository.findOne(shipmentId);
+
+    if (null == shipment) {
+      throw new ValidationException(SHIPMENT_NOT_FOUND, shipmentId.toString());
+    }
+
+    checkPermission(PODS_MANAGE, shipment.getOrder().getSupplyingFacilityId());
   }
 
   public void canManageSystemSettings() {
