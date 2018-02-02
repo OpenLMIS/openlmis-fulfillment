@@ -7,48 +7,39 @@
       "type": "string",
       "title": "id"
     },
-    "quantityShipped": {
-      "type": "integer",
-      "title": "quantityShipped"
+    "orderable": {
+      "type": ["object"],
+      "$ref": "referenceObjectDto.json",
+      "title": "orderable"
     },
-    "quantityReceived": {
-      "type": "integer",
-      "title": "quantityReceived"
+    "lot": {
+      "type": ["object", "null"],
+      "$ref": "referenceObjectDto.json",
+      "title": "lot"
     },
-    "quantityReturned": {
+    "quantityAccepted": {
       "type": "integer",
-      "title": "quantityReturned"
+      "title": "quantityAccepted"
     },
-    "replacedProductCode": {
+    "vvmStatus": {
       "type": "string",
-      "title": "replacedProductCode"
+      "title": "vvmStatus"
+    },
+    "quantityRejected": {
+      "type": "integer",
+      "title": "quantityRejected"
+    },
+    "rejectionReasonId": {
+      "type": "string",
+      "title": "rejectionReasonId"
     },
     "notes": {
       "type": "string",
       "title": "notes"
     }
   },
-  "oneOf": [
-    {
-      "properties": {
-        "orderLineItem": {
-          "type": ["string", "null"],
-          "title": "orderLineItem"
-        }
-      }
-    },
-    {
-      "properties": {
-        "orderLineItem": {
-          "type": "object",
-          "$ref": "orderLineItemDto.json",
-          "title": "orderLineItem"
-        }
-      }
-    }
-  ],
   "required": [
     "id",
-    "orderLineItem"
+    "orderable"
   ]
 }

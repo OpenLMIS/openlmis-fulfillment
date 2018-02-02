@@ -36,9 +36,5 @@ public class ProofOfDeliveryTest {
     assertThat(pod, is(notNullValue()));
     assertThat(pod.getOrder(), is(order));
     assertThat(pod.getProofOfDeliveryLineItems(), hasSize(1));
-    assertThat(
-        pod.getProofOfDeliveryLineItems().get(0).getOrderLineItem(),
-        is(order.getOrderLineItems().get(0))
-    );
   }
 }

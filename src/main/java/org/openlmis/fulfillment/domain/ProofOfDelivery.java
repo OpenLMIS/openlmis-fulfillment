@@ -16,8 +16,6 @@
 package org.openlmis.fulfillment.domain;
 
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.openlmis.fulfillment.web.util.OrderDto;
 
 import lombok.Getter;
@@ -40,8 +38,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 
@@ -61,11 +57,10 @@ public class ProofOfDelivery extends BaseEntity {
   private Order order;
 
   @OneToMany(
-      mappedBy = "proofOfDelivery",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
-  @Fetch(FetchMode.SELECT)
+  @JoinColumn(name = "proofOfDeliveryId", nullable = false)
   @Getter
   @Setter
   private List<ProofOfDeliveryLineItem> proofOfDeliveryLineItems;
@@ -94,18 +89,8 @@ public class ProofOfDelivery extends BaseEntity {
     this.proofOfDeliveryLineItems = order
         .getOrderLineItems()
         .stream()
-        .map(line -> new ProofOfDeliveryLineItem(this, line))
+        .map(line -> new ProofOfDeliveryLineItem(null, null, null, null, null, null, null))
         .collect(Collectors.toList());
-  }
-
-  @PrePersist
-  private void prePersist() {
-    forEachLine(line -> line.setProofOfDelivery(this));
-  }
-
-  @PreUpdate
-  private void preUpdate() {
-    forEachLine(line -> line.setProofOfDelivery(this));
   }
 
   /**
@@ -137,15 +122,12 @@ public class ProofOfDelivery extends BaseEntity {
     }
 
     for (ProofOfDeliveryLineItem item : newLineItems) {
-      ProofOfDeliveryLineItem existing = proofOfDeliveryLineItems
+      proofOfDeliveryLineItems
           .stream()
           .filter(l -> l.getId().equals(item.getId()))
-          .findFirst().orElse(null);
+          .findFirst()
+          .ifPresent(existing -> existing.updateFrom(item));
 
-      if (null != existing) {
-        existing.setProofOfDelivery(this);
-        existing.updateFrom(item);
-      }
     }
   }
 

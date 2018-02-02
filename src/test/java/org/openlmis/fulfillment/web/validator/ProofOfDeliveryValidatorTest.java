@@ -24,11 +24,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.DELIVERED_BY;
-import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_LINE_ITEMS;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
-import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
 
 import com.google.common.collect.Lists;
@@ -57,8 +54,6 @@ import java.util.Locale;
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryValidatorTest {
   private static final String MUST_CONTAIN_A_VALUE = "must contain a value";
-  private static final String MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO =
-      "must contain a value that is greater than or equal to zero";
 
   private static final String MESSAGE_KEY = "messageKey";
   private static final String MESSAGE = "message";
@@ -83,9 +78,6 @@ public class ProofOfDeliveryValidatorTest {
   public void setUp() throws Exception {
     FieldUtils.writeField(messageService, "messageSource", messageSource, true);
 
-    line = new ProofOfDeliveryLineItem();
-    line.setQuantityReceived(10L);
-
     pod = new ProofOfDelivery();
     pod.setDeliveredBy("Deliver guy");
     pod.setReceivedBy("Receiver");
@@ -95,16 +87,6 @@ public class ProofOfDeliveryValidatorTest {
     mockMessageSource(VALIDATION_ERROR_MUST_CONTAIN_VALUE, DELIVERED_BY, MUST_CONTAIN_A_VALUE);
     mockMessageSource(VALIDATION_ERROR_MUST_CONTAIN_VALUE, RECEIVED_BY, MUST_CONTAIN_A_VALUE);
     mockMessageSource(VALIDATION_ERROR_MUST_CONTAIN_VALUE, RECEIVED_DATE, MUST_CONTAIN_A_VALUE);
-    mockMessageSource(
-        VALIDATION_ERROR_MUST_CONTAIN_VALUE,
-        PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED,
-        MUST_CONTAIN_A_VALUE
-    );
-    mockMessageSource(
-        VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO,
-        PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED,
-        MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO
-    );
   }
 
   @Test
@@ -149,27 +131,6 @@ public class ProofOfDeliveryValidatorTest {
 
     List<Message.LocalizedMessage> errors = validator.validate(pod);
     assertErrors(errors, VALIDATION_ERROR_MUST_CONTAIN_VALUE, RECEIVED_DATE, MUST_CONTAIN_A_VALUE);
-  }
-
-  @Test
-  public void shouldRejectIfQuantityReceivedIsNull() throws Exception {
-    line.setQuantityReceived(null);
-
-    List<Message.LocalizedMessage> errors = validator.validate(pod);
-    assertErrors(errors, VALIDATION_ERROR_MUST_CONTAIN_VALUE,
-        PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED, MUST_CONTAIN_A_VALUE
-    );
-  }
-
-  @Test
-  public void shouldRejectIfQuantityReceivedIsLessThanZero() throws Exception {
-    line.setQuantityReceived(-5L);
-
-    List<Message.LocalizedMessage> errors = validator.validate(pod);
-    assertErrors(errors, VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO,
-        PROOF_OF_DELIVERY_LINE_ITEMS + '.' + QUANTITY_RECEIVED,
-        MUST_CONTAIN_A_VALUE_THAT_IS_GREATER_THAN_OR_EQUAL_TO_ZERO
-    );
   }
 
   @Test

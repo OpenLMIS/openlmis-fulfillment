@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
+import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -79,13 +80,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     assertNotNull(instance);
 
     // add line
-    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItem();
-    line.setOrderLineItem(orderLineItem);
-    line.setQuantityShipped(100L);
-    line.setQuantityReturned(100L);
-    line.setQuantityReceived(100L);
-    line.setReplacedProductCode("replaced product code");
-    line.setNotes("Notes");
+    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItemDataBuilder()
+        .buildAsNew();
 
     instance.setProofOfDeliveryLineItems(Lists.newArrayList(line));
 

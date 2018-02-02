@@ -38,11 +38,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
+import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -94,7 +94,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDelivery();
   private ProofOfDeliveryDto proofOfDeliveryDto = new ProofOfDeliveryDto();
-  private ProofOfDeliveryLineItem proofOfDeliveryLineItem = new ProofOfDeliveryLineItem();
   private UUID proofOfDeliveryId = UUID.randomUUID();
 
   /**
@@ -150,21 +149,15 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(orderRepository.findOne(order.getId())).willReturn(order);
     given(orderRepository.exists(order.getId())).willReturn(true);
 
-    proofOfDeliveryLineItem.setId(UUID.randomUUID());
-    proofOfDeliveryLineItem.setOrderLineItem(orderLineItem);
-    proofOfDeliveryLineItem.setQuantityShipped(100L);
-    proofOfDeliveryLineItem.setQuantityReturned(100L);
-    proofOfDeliveryLineItem.setQuantityReceived(100L);
-    proofOfDeliveryLineItem.setReplacedProductCode("replaced product code");
-    proofOfDeliveryLineItem.setNotes("Notes");
-
     proofOfDelivery.setId(UUID.randomUUID());
     proofOfDelivery.setOrder(order);
     proofOfDelivery.setDeliveredBy("delivered by");
     proofOfDelivery.setReceivedBy("received by");
     proofOfDelivery.setReceivedDate(LocalDate.now());
     proofOfDelivery.setProofOfDeliveryLineItems(new ArrayList<>());
-    proofOfDelivery.getProofOfDeliveryLineItems().add(proofOfDeliveryLineItem);
+    proofOfDelivery
+        .getProofOfDeliveryLineItems()
+        .add(new ProofOfDeliveryLineItemDataBuilder().build());
 
     proofOfDeliveryDto = ProofOfDeliveryDto.newInstance(proofOfDelivery, exporter);
 

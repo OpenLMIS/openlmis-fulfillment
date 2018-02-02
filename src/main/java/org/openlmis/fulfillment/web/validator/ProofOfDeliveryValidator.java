@@ -16,18 +16,16 @@
 package org.openlmis.fulfillment.web.validator;
 
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.DELIVERED_BY;
-import static org.openlmis.fulfillment.domain.ProofOfDelivery.PROOF_OF_DELIVERY_LINE_ITEMS;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_BY;
 import static org.openlmis.fulfillment.domain.ProofOfDelivery.RECEIVED_DATE;
-import static org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem.QUANTITY_RECEIVED;
 
 import com.google.common.collect.Lists;
+
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.util.Message;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class ProofOfDeliveryValidator extends BaseValidator {
@@ -44,18 +42,7 @@ public class ProofOfDeliveryValidator extends BaseValidator {
     rejectIfBlank(errors, target.getReceivedBy(), RECEIVED_BY);
     rejectIfNull(errors, target.getReceivedDate(), RECEIVED_DATE);
 
-    Optional.ofNullable(target.getProofOfDeliveryLineItems())
-        .ifPresent(list -> list.forEach(line -> validateLine(line, errors)));
-
     return errors;
-  }
-
-  private void validateLine(ProofOfDeliveryLineItem line, List<Message.LocalizedMessage> errors) {
-    rejectIfLessThanZero(errors, line.getQuantityReceived(), getLineField(QUANTITY_RECEIVED));
-  }
-
-  private String getLineField(String field) {
-    return PROOF_OF_DELIVERY_LINE_ITEMS + '.' + field;
   }
 
 }

@@ -16,50 +16,100 @@
 package org.openlmis.fulfillment.web.util;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
+import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.service.ExporterBuilder;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.UUID;
 
-@AllArgsConstructor
+@ToString
 @NoArgsConstructor
-@Data
-public class ProofOfDeliveryLineItemDto implements ProofOfDeliveryLineItem.Importer,
-    ProofOfDeliveryLineItem.Exporter {
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true, exclude = {"serviceUrl"})
+public final class ProofOfDeliveryLineItemDto
+    extends BaseDto
+    implements ProofOfDeliveryLineItem.Importer, ProofOfDeliveryLineItem.Exporter {
 
-  private UUID id;
-  private OrderLineItemDto orderLineItem;
-  private Long packsToShip;
-  private Long quantityShipped;
-  private Long quantityReceived;
-  private Long quantityReturned;
-  private String replacedProductCode;
+  @Setter
+  private String serviceUrl;
+
+  @Getter
+  @Setter
+  private ObjectReferenceDto orderable;
+
+  @Getter
+  @Setter
+  private ObjectReferenceDto lot;
+
+  @Getter
+  @Setter
+  private Integer quantityAccepted;
+
+  @Getter
+  @Setter
+  private String vvmStatus;
+
+  @Getter
+  @Setter
+  private Integer quantityRejected;
+
+  @Getter
+  @Setter
+  private UUID rejectionReasonId;
+
+  @Getter
+  @Setter
   private String notes;
 
   /**
    * Create new instance of ProofOfDeliveryLineItemDto based of given
    * {@link ProofOfDeliveryLineItem}
-   * @param proofOfDeliveryLineItem instance of {@link ProofOfDeliveryLineItem}
+   *
+   * @param lineItem instance of {@link ProofOfDeliveryLineItem}
    * @return new instance of ProofOfDeliveryLineItemDto.
    */
-  public static ProofOfDeliveryLineItemDto newInstance(
-          ProofOfDeliveryLineItem proofOfDeliveryLineItem, ExporterBuilder exporter,
-          List<OrderableDto> orderables) {
-
-    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
-    exporter.export(proofOfDeliveryLineItem.getOrderLineItem(), orderLineItemDto, orderables);
-
+  public static ProofOfDeliveryLineItemDto newInstance(ProofOfDeliveryLineItem lineItem) {
     ProofOfDeliveryLineItemDto proofOfDeliveryLineItemDto = new ProofOfDeliveryLineItemDto();
-    proofOfDeliveryLineItem.export(proofOfDeliveryLineItemDto);
-
-    proofOfDeliveryLineItemDto.setOrderLineItem(orderLineItemDto);
+    lineItem.export(proofOfDeliveryLineItemDto);
 
     return proofOfDeliveryLineItemDto;
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getOrderableId() {
+    return null == orderable ? null : orderable.getId();
+  }
+
+  @Override
+  @JsonIgnore
+  public void setOrderableId(UUID orderableId) {
+    if (null != orderableId) {
+      this.orderable = ObjectReferenceDto.create(orderableId, serviceUrl, ORDERABLES);
+    }
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getLotId() {
+    return null == lot ? null : lot.getId();
+  }
+
+  @Override
+  @JsonIgnore
+  public void setLotId(UUID lotId) {
+    if (null != lotId) {
+      this.lot = ObjectReferenceDto.create(lotId, serviceUrl, LOTS);
+    }
   }
 }
