@@ -13,6 +13,12 @@ Bug fixes and improvements added in a backwards-compatible manner:
 
 Contract breaking changes:
 * [OLMIS-3613](https://openlmis.atlassian.net/browse/OLMIS-3613): Removed approved quantity from Order Line Item
+* [OLMIS-3956](https://openlmis.atlassian.net/browse/OLMIS-3956): Modified Proof Of Delivery model
+  * Proof Of Delivery is related with shipment, not order
+  * Proof Of Delivery and related line items have new fields
+  * For external orders the service will create related shipment and Proof Of Delivery
+  * Database migration will handle a new structure for legacy data
+  * The submit endpoint has been merged with the update endpoint
 
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model

@@ -39,18 +39,6 @@ public class ProofOfDeliveryDataBuilder {
   private String deliveredBy = RandomStringUtils.randomAlphanumeric(5);
   private LocalDate receivedDate = LocalDate.now();
 
-  /**
-   * Builds new instance of {@link ProofOfDeliveryLineItem} without id.
-   */
-  public ProofOfDelivery buildAsNew() {
-    lineItems.forEach(line -> line.setId(null));
-
-    return new ProofOfDelivery(
-        shipment, status, lineItems,
-        receivedBy, deliveredBy, receivedDate
-    );
-  }
-
   public ProofOfDeliveryDataBuilder withoutDeliveredBy() {
     deliveredBy = null;
     return this;
@@ -70,10 +58,25 @@ public class ProofOfDeliveryDataBuilder {
    * Builds new instance of {@link ProofOfDeliveryLineItem}.
    */
   public ProofOfDelivery build() {
-    ProofOfDelivery pod = buildAsNew();
+    if (null == id) {
+      lineItems.forEach(line -> line.setId(null));
+    }
+
+    ProofOfDelivery pod = new ProofOfDelivery(
+        shipment, status, lineItems,
+        receivedBy, deliveredBy, receivedDate
+    );
     pod.setId(id);
 
     return pod;
+  }
+
+  /**
+   * Builds new instance of {@link ProofOfDeliveryLineItem} without id.
+   */
+  public ProofOfDelivery buildAsNew() {
+    id = null;
+    return build();
   }
 
   /**

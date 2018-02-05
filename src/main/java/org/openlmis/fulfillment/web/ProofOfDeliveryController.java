@@ -16,10 +16,10 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
@@ -49,7 +49,6 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-// TODO: add controller IT
 @Controller
 @Transactional
 public class ProofOfDeliveryController extends BaseController {
@@ -98,32 +97,35 @@ public class ProofOfDeliveryController extends BaseController {
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
+  @ResponseBody
   public ProofOfDeliveryDto updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
                                                   @RequestBody ProofOfDeliveryDto dto,
                                                   OAuth2Authentication authentication) {
-    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
-    ProofOfDelivery proofOfDeliveryToUpdate = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
-    if (proofOfDeliveryToUpdate == null) {
-      proofOfDeliveryToUpdate = proofOfDelivery;
+    ProofOfDelivery toUpdate = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
 
-      if (!authentication.isClientOnly()) {
-        permissionService.canManagePod(proofOfDeliveryToUpdate);
-      }
-      LOGGER.debug("Creating new proofOfDelivery");
-    } else {
-      canManagePod(authentication, proofOfDeliveryId);
-      LOGGER.debug("Updating proofOfDelivery with id: {}", proofOfDeliveryId);
+    if (null == toUpdate) {
+      throw new ProofOfDeliveryNotFoundException(proofOfDeliveryId);
     }
 
-    if (proofOfDeliveryToUpdate.isConfirmed()) {
+    canManagePod(authentication, proofOfDeliveryId);
+    LOGGER.debug("Updating proofOfDelivery with id: {}", proofOfDeliveryId);
+
+    if (toUpdate.isConfirmed()) {
       throw new ValidationException(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED);
     }
 
-    proofOfDeliveryToUpdate.updateFrom(proofOfDelivery);
-    proofOfDeliveryToUpdate = proofOfDeliveryRepository.save(proofOfDeliveryToUpdate);
+    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
+    // we always update resource
+    toUpdate.updateFrom(proofOfDelivery);
 
-    LOGGER.debug("Saved proofOfDelivery with id: " + proofOfDeliveryToUpdate.getId());
-    return dtoBuilder.build(proofOfDeliveryToUpdate);
+    if (dto.getStatus() == ProofOfDeliveryStatus.CONFIRMED) {
+      toUpdate.confirm();
+    }
+
+    toUpdate = proofOfDeliveryRepository.save(toUpdate);
+
+    LOGGER.debug("Saved proofOfDelivery with id: {}", proofOfDeliveryId);
+    return dtoBuilder.build(toUpdate);
   }
 
   /**
@@ -171,34 +173,6 @@ public class ProofOfDeliveryController extends BaseController {
         jasperReportsViewService.getJasperReportsView(podPrintTemplate, request);
 
     jasperView.render(params, request, response);
-  }
-
-  /**
-   * Submit a Proof of Delivery.
-   *
-   * @param id The UUID of the ProofOfDelivery to submit
-   * @return ProofOfDelivery.
-   */
-  @RequestMapping(value = "/proofOfDeliveries/{id}/submit", method = RequestMethod.POST)
-  @ResponseBody
-  public ProofOfDeliveryDto submit(@PathVariable("id") UUID id,
-                               OAuth2Authentication authentication) {
-    ProofOfDelivery pod = proofOfDeliveryRepository.findOne(id);
-
-    if (null == pod) {
-      throw new ProofOfDeliveryNotFoundException(id);
-    }
-
-    canManagePod(authentication, id);
-
-    if (pod.isConfirmed()) {
-      throw new ValidationException(ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED);
-    }
-
-    pod.confirm();
-    proofOfDeliveryRepository.save(pod);
-
-    return dtoBuilder.build(pod);
   }
 
   private void canManagePod(OAuth2Authentication authentication, UUID id) {
