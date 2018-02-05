@@ -31,19 +31,18 @@ public class ExtraDataConverter implements AttributeConverter<Map<String, String
 
   @Override
   @NotNull
-  public String convertToDatabaseColumn(@NotNull Map<String, String> extraData) {
+  public String convertToDatabaseColumn(Map<String, String> extraData) {
     try {
       return objectMapper.writeValueAsString(extraData);
     } catch (JsonProcessingException ex) {
-      return null;
+      throw new IllegalStateException(ex);
     }
   }
 
   @Override
-  @NotNull
-  public Map<String, String> convertToEntityAttribute(@NotNull String databaseDataAsJsonString) {
+  public Map<String, String> convertToEntityAttribute(String databaseDataAsJsonString) {
     try {
-      if (databaseDataAsJsonString == null || databaseDataAsJsonString.equalsIgnoreCase("null")) {
+      if (null == databaseDataAsJsonString || "null".equalsIgnoreCase(databaseDataAsJsonString)) {
         return null;
       } else {
         TypeReference<Map<String, String>> typeRef = new TypeReference<Map<String, String>>() {
@@ -51,7 +50,7 @@ public class ExtraDataConverter implements AttributeConverter<Map<String, String
         return objectMapper.readValue(databaseDataAsJsonString, typeRef);
       }
     } catch (IOException ex) {
-      return null;
+      throw new IllegalStateException(ex);
     }
   }
 }
