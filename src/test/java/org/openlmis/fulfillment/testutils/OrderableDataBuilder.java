@@ -18,7 +18,9 @@ package org.openlmis.fulfillment.testutils;
 import org.openlmis.fulfillment.service.referencedata.DispensableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramOrderableDto;
+
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,6 +36,7 @@ public class OrderableDataBuilder {
   private boolean roundToZero;
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
+  private Map<String, String> extraData;
 
   /**
    * Builder for {@link OrderableDto}.
@@ -49,6 +52,7 @@ public class OrderableDataBuilder {
     roundToZero = true;
     programs = new HashSet<>();
     dispensable = new DispensableDto();
+    extraData = null;
   }
 
   /**
@@ -56,7 +60,7 @@ public class OrderableDataBuilder {
    */
   public OrderableDto build() {
     OrderableDto orderable = new OrderableDto(productCode, fullProductName, netContent,
-        packRoundingThreshold, roundToZero, programs, dispensable);
+        packRoundingThreshold, roundToZero, programs, dispensable, extraData);
     orderable.setId(id);
     return orderable;
   }

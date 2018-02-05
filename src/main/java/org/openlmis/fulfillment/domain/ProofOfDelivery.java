@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -157,6 +158,27 @@ public class ProofOfDelivery extends BaseEntity {
     proofOfDelivery.setId(importer.getId());
 
     return proofOfDelivery;
+  }
+
+  /**
+   * Create instance of ProofOfDelivery based on given {@link Shipment} and information about
+   * using vvm status by orderables.
+   *
+   * @param shipment instance of {@link Shipment}
+   *                 @param useVvm map that contain information if orderable use vvm status.
+   * @return instance of ProofOfDelivery.
+   */
+  public static ProofOfDelivery newInstance(Shipment shipment, Map<UUID, Boolean> useVvm) {
+    List<ProofOfDeliveryLineItem> items = shipment
+        .getLineItems()
+        .stream()
+        .map(line -> new ProofOfDeliveryLineItem(line, useVvm.get(line.getOrderableId())))
+        .collect(Collectors.toList());
+
+    return new ProofOfDelivery(
+        shipment, ProofOfDeliveryStatus.INITIATED, items,
+        null, null, null
+    );
   }
 
   private static void validateLineItems(List<?> lineItems) {

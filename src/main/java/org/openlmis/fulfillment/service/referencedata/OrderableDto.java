@@ -15,12 +15,19 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static java.lang.Boolean.parseBoolean;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.openlmis.fulfillment.web.util.BaseDto;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.fulfillment.web.util.BaseDto;
+
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -29,6 +36,8 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class OrderableDto extends BaseDto {
+  private static final String USE_VVM = "useVVM";
+
   private String productCode;
   private String fullProductName;
   private long netContent;
@@ -36,4 +45,10 @@ public class OrderableDto extends BaseDto {
   private boolean roundToZero;
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
+  private Map<String, String> extraData;
+
+  @JsonIgnore
+  public boolean useVvm() {
+    return null != extraData && parseBoolean(extraData.get(USE_VVM));
+  }
 }

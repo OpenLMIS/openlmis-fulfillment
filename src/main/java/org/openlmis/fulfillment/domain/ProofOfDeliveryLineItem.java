@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITIES;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
@@ -67,6 +68,13 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String notes;
+
+  ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem, Boolean useVvm) {
+    this(
+        shipmentLineItem.getOrderableId(), shipmentLineItem.getLotId(), null, toBoolean(useVvm),
+        null, null, null, null
+    );
+  }
 
   /**
    * Copy values of attributes into new or updated ProofOfDeliveryLineItem.

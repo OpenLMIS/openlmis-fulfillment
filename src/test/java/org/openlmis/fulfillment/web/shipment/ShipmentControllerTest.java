@@ -36,6 +36,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
@@ -82,6 +83,9 @@ public class ShipmentControllerTest {
   @Mock
   private OrderRepository orderRepository;
 
+  @Mock
+  private ShipmentService shipmentService;
+
   @InjectMocks
   private ShipmentController shipmentController = new ShipmentController();
 
@@ -99,12 +103,12 @@ public class ShipmentControllerTest {
     when(userDto.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
 
-    when(shipmentRepository.save(any(Shipment.class)))
-        .thenReturn(shipment);
     when(orderRepository.findOne(shipmentDto.getOrder().getId()))
         .thenReturn(order);
     when(stockEventBuilder.fromShipment(any(Shipment.class)))
         .thenReturn(event);
+    when(shipmentService.save(any(Shipment.class)))
+        .thenReturn(shipment);
   }
 
   @Test

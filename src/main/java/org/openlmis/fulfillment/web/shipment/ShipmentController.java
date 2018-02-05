@@ -33,6 +33,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
@@ -61,6 +62,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -101,6 +103,9 @@ public class ShipmentController extends BaseController {
   @Autowired
   private StockEventBuilder stockEventBuilder;
 
+  @Autowired
+  private ShipmentService shipmentService;
+
   /**
    * Allows creating new shipment. If the id is specified, it will be ignored.
    *
@@ -136,7 +141,7 @@ public class ShipmentController extends BaseController {
     Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
     profiler.start("SAVE_SHIPMENT");
-    shipment = shipmentRepository.save(shipment);
+    shipment = shipmentService.save(shipment);
 
     profiler.start("UPDATE_ORDER");
     order.updateStatus(OrderStatus.SHIPPED, new UpdateDetails(

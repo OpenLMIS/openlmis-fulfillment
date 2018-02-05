@@ -38,7 +38,7 @@ public class ShipmentLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
   @Column(nullable = false)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private UUID orderableId;
 
   @Type(type = UUID_TYPE)
@@ -51,6 +51,10 @@ public class ShipmentLineItem extends BaseEntity {
 
   // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentLineItem() {}
+
+  ShipmentLineItem(OrderLineItem orderLineItem) {
+    this(orderLineItem.getOrderableId(), null, orderLineItem.getOrderedQuantity());
+  }
 
   /**
    * Creates new instance based on data from {@link Importer}
