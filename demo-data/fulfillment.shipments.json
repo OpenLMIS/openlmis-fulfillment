@@ -4,7 +4,7 @@
     "orderId": "35e5059a-fd92-4078-a448-b00402b3fb5b",
     "createdDate": "2016-04-30T16:45:22",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
-    "extraData": "{\"external\": true}",
+    "extraData": "{\"external\": true}::jsonb",
     "notes": "demo data"
   },
   {
@@ -12,7 +12,7 @@
     "orderId": "5edbb162-721d-4abb-adbf-09ab6130d8e6",
     "createdDate": "2016-06-13T12:22:20",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
-    "extraData": "{\"external\": true}",
+    "extraData": "{\"external\": true}::jsonb",
     "notes": "demo data"
   },
   {
@@ -20,7 +20,7 @@
     "orderId": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3",
     "createdDate": "2016-06-15T12:00:00",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
-    "extraData": "{\"external\": true}",
+    "extraData": "{\"external\": true}::jsonb",
     "notes": "demo data"
   },
   {
@@ -28,7 +28,7 @@
     "orderId": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2",
     "createdDate": "2016-06-21T17:17:17",
     "createdById": "a337ec45-31a0-4f2b-9b2e-a105c4b669bb",
-    "extraData": "{\"external\": true}",
+    "extraData": "{\"external\": true}::jsonb",
     "notes": "demo data"
   }
 ]
