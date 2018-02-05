@@ -3,7 +3,7 @@
     "id": "9a4c65f9-f834-44bb-9e75-2c18c9a2a9cf",
     "order": { "id": "35e5059a-fd92-4078-a448-b00402b3fb5b" },
     "orderableId": "d602d0c6-4052-456c-8ccd-61b4ad77bece",
-    "orderedQuantity": 50,
+    "orderedQuantity": 100,
     "filledQuantity": 100,
     "packsToShip": 0
   },
@@ -11,7 +11,7 @@
     "id": "7b1b735d-c29a-4486-8352-04d3034e0d77",
     "order": { "id": "35e5059a-fd92-4078-a448-b00402b3fb5b" },
     "orderableId": "23819693-0670-4c4b-b400-28e009b86b51",
-    "orderedQuantity": 0,
+    "orderedQuantity": 50,
     "filledQuantity": 50,
     "packsToShip": 0
   },
@@ -19,7 +19,7 @@
     "id": "5a38bb94-b206-4575-9555-883d4eecc5cc",
     "order": { "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6" },
     "orderableId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
-    "orderedQuantity": 0,
+    "orderedQuantity": 800,
     "filledQuantity": 800,
     "packsToShip": 0
   },
@@ -27,7 +27,7 @@
     "id": "657686c4-dbf7-4c1d-b491-1f650002fa39",
     "order": { "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6" },
     "orderableId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
-    "orderedQuantity": 0,
+    "orderedQuantity": 250,
     "filledQuantity": 250,
     "packsToShip": 0
   },
@@ -43,7 +43,7 @@
     "id": "0e30fa6e-dca8-4b43-aa78-bf5fc3a09ef3",
     "order": { "id": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3" },
     "orderableId": "23819693-0670-4c4b-b400-28e009b86b51",
-    "orderedQuantity": 0,
+    "orderedQuantity": 70,
     "filledQuantity": 70,
     "packsToShip": 0
   },
@@ -51,7 +51,7 @@
     "id": "241e50a9-14c3-4b04-b161-915aa20d49da",
     "order": { "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2" },
     "orderableId": "2400e410-b8dd-4954-b1c0-80d8a8e785fc",
-    "orderedQuantity": 0,
+    "orderedQuantity": 30,
     "filledQuantity": 30,
     "packsToShip": 0
   },
@@ -59,7 +59,7 @@
     "id": "739a2eb5-705a-4d0a-a7e9-a01146e1441b",
     "order": { "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2" },
     "orderableId": "103396e1-f5e4-4754-bb7b-1c799097dfea",
-    "orderedQuantity": 0,
+    "orderedQuantity": 1200,
     "filledQuantity": 1200,
     "packsToShip": 0
   }
