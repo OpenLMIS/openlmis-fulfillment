@@ -15,9 +15,6 @@
 
 package org.openlmis.fulfillment.domain;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Embedded;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -41,8 +38,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -213,6 +213,15 @@ public class Order extends BaseEntity {
 
   public boolean canBeFulfilled() {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
+  }
+
+  /**
+   * Check if the given order is external.
+   */
+  public boolean isExternal() {
+    return status == OrderStatus.TRANSFER_FAILED
+        || status == OrderStatus.IN_ROUTE
+        || status == OrderStatus.READY_TO_PACK;
   }
 
   public void updateStatus(OrderStatus status, UpdateDetails updateDetails) {

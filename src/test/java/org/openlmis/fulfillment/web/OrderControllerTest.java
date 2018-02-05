@@ -34,6 +34,7 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
@@ -41,6 +42,7 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -52,6 +54,7 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -105,6 +108,9 @@ public class OrderControllerTest {
   private UserReferenceDataService users;
 
   @Mock
+  private ShipmentService shipmentService;
+
+  @Mock
   private ProgramDto programDto;
 
   private static final String ORDER_NUMBER = "orderNumber";
@@ -139,6 +145,9 @@ public class OrderControllerTest {
     when(extensionManager.getExtension(any(), any())).thenReturn(orderNumberGenerator);
     when(orderNumberGenerator.generate(any())).thenReturn(ORDER_NUMBER);
     when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
+
+    when(shipmentService.save(any(Shipment.class)))
+        .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
 
     orderDto.setUpdaterId(lastUpdaterId);
 

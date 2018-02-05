@@ -56,12 +56,14 @@ import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -151,6 +153,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private ObjReferenceExpander objReferenceExpander;
 
+  @MockBean
+  private ShipmentService shipmentService;
+
   @Mock
   private DateHelper dateHelper;
 
@@ -196,6 +201,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findOne(eq(facilityId))).thenReturn(facility);
     when(facilityService.findOne(eq(facility1Id))).thenReturn(facility1);
     when(facilityService.findOne(eq(facility2Id))).thenReturn(facility2);
+
+    when(shipmentService.save(any(Shipment.class)))
+        .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),

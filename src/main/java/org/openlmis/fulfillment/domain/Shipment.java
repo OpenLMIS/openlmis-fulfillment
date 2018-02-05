@@ -17,6 +17,8 @@ package org.openlmis.fulfillment.domain;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -118,6 +120,25 @@ public class Shipment extends BaseEntity {
     inventoryItem.setId(importer.getId());
 
     return inventoryItem;
+  }
+
+  /**
+   * Creates new instance based on data from {@link Order}
+   *
+   * @param order instance of order {@link Order}
+   * @return new instance of Shipment.
+   */
+  public static Shipment newInstance(Order order) {
+    List<ShipmentLineItem> items = order
+        .getOrderLineItems()
+        .stream()
+        .map(ShipmentLineItem::new)
+        .collect(Collectors.toList());
+
+    return new Shipment(
+        order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
+        null, items, ImmutableMap.of("external", "true")
+    );
   }
 
   private static void validateLineItems(List<?> lineItems) {

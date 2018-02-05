@@ -20,6 +20,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALI
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
@@ -32,6 +33,7 @@ import org.openlmis.fulfillment.service.OrderSecurityService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
@@ -110,6 +112,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ObjReferenceExpander objReferenceExpander;
+
+  @Autowired
+  private ShipmentService shipmentService;
 
   /**
    * Allows creating new orders.
@@ -339,6 +344,12 @@ public class OrderController extends BaseController {
     }
 
     LOGGER.debug("Creating new order");
-    return orderService.createOrder(orderDto, userId);
+    Order order = orderService.createOrder(orderDto, userId);
+
+    if (order.isExternal()) {
+      shipmentService.save(Shipment.newInstance(order));
+    }
+
+    return order;
   }
 }
