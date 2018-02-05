@@ -37,8 +37,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.Resource;
 
 /**
@@ -50,6 +53,7 @@ import javax.annotation.Resource;
 @Component
 @Profile("refresh-db")
 @Order(20)
+@Transactional
 public class AuditLogInitializer implements CommandLineRunner {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(AuditLogInitializer.class);
 
