@@ -1,30 +1,34 @@
 [
   {
     "id": "b204aa9e-5c95-4962-b418-571dbdf7796e",
-    "order": { "id": "35e5059a-fd92-4078-a448-b00402b3fb5b" },
+    "shipmentId": "cf07c382-5239-4bba-83fd-bc6d4240e9a6",
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-05-01"
+    "receivedDate": "2016-05-01",
+    "status": "CONFIRMED"
   },
   {
     "id": "f384f067-e9e8-4360-92f5-63d1e04d58a0",
-    "order": { "id": "5edbb162-721d-4abb-adbf-09ab6130d8e6" },
+    "shipmentId": "bbd01dae-d080-43d2-bbe9-7a9de83ee660",
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-14"
+    "receivedDate": "2016-06-14",
+    "status": "INITIATED"
   },
   {
     "id": "f02e1b11-87c8-4809-ae86-ebefa2867ca2",
-    "order": { "id": "90ddacf9-2280-4e8c-80f7-4e2e0251f8f3" },
+    "shipmentId": "d356fa76-9553-42a4-80b8-444f417949d4",
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-16"
+    "receivedDate": "2016-06-16",
+    "status": "INITIATED"
   },
   {
     "id": "b47d3586-2daa-4251-bd82-15b14e57bac2",
-    "order": { "id": "ec49baf1-fb6c-4bbc-ad5e-54fff70115a2" },
+    "shipmentId": "967e2c6b-749e-4467-9990-d087e272170d",
     "deliveredBy": "Delivery Guy",
     "receivedBy": "Receiver",
-    "receivedDate": "2016-06-22"
+    "receivedDate": "2016-06-22",
+    "status": "INITIATED"
   }
 ]
