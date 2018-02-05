@@ -23,6 +23,7 @@ Contract breaking changes:
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
 * [OLMIS-1611](https://openlmis.atlassian.net/browse/OLMIS-1611): Send stock event when shipment is finalized
+* [OLMIS-3881](https://openlmis.atlassian.net/browse/OLMIS-3881): Create Proof Of Delivery draft for finalized shipment
 
 
 6.1.0 / 2017-11-09
