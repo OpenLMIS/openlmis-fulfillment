@@ -146,7 +146,7 @@ public class ProofOfDelivery extends BaseEntity {
         .map(ProofOfDeliveryLineItem::newInstance)
         .collect(Collectors.toList());
 
-    Shipment shipment = new Shipment(null, null, null, null);
+    Shipment shipment = new Shipment(null, null, null, null, null);
     shipment.setId(importer.getShipment().getId());
 
     ProofOfDelivery proofOfDelivery = new ProofOfDelivery(

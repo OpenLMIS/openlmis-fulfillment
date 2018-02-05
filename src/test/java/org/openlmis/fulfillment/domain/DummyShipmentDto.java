@@ -19,7 +19,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -33,4 +35,5 @@ public class DummyShipmentDto implements Shipment.Importer, Shipment.Exporter {
   private CreationDetails shipDetails;
   private String notes;
   private List<ShipmentLineItem.Importer> lineItems;
+  private Map<String, String> extraData;
 }

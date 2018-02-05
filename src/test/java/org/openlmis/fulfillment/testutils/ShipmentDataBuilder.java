@@ -20,8 +20,10 @@ import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class ShipmentDataBuilder {
@@ -32,6 +34,7 @@ public class ShipmentDataBuilder {
   private String notes = "all shipped";
   private List<ShipmentLineItem> shipmentLineItems =
       Collections.singletonList(new ShipmentLineItemDataBuilder().build());
+  private Map<String, String> extraData = null;
 
   public ShipmentDataBuilder withOrder(Order order) {
     this.order = order;
@@ -72,7 +75,7 @@ public class ShipmentDataBuilder {
    * Builds instance of {@link Shipment}.
    */
   public Shipment build() {
-    Shipment shipment = new Shipment(order, shipDetails, notes, shipmentLineItems);
+    Shipment shipment = new Shipment(order, shipDetails, notes, shipmentLineItems, extraData);
     shipment.setId(id);
     return shipment;
   }

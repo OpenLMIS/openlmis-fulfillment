@@ -60,7 +60,7 @@ public class ShipmentTest {
     Shipment expected = createShipment();
     DummyShipmentDto shipmentDto =
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)));
+            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)), null);
 
     Shipment actual = Shipment.newInstance(shipmentDto, order);
 
@@ -72,7 +72,7 @@ public class ShipmentTest {
     expected.expect(ValidationException.class);
     expected.expectMessage(SHIPMENT_LINE_ITEMS_REQUIRED);
     DummyShipmentDto shipmentDto =
-        new DummyShipmentDto(id, order, shipDetails, notes, Collections.emptyList());
+        new DummyShipmentDto(id, order, shipDetails, notes, Collections.emptyList(), null);
 
     Shipment.newInstance(shipmentDto, order);
   }

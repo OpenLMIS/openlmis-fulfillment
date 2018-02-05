@@ -28,6 +28,7 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -72,6 +74,10 @@ public class Shipment extends BaseEntity {
   @JoinColumn(name = "shipmentid", nullable = false)
   private List<ShipmentLineItem> lineItems;
 
+  @Column(name = "extradata", columnDefinition = "jsonb")
+  @Convert(converter = ExtraDataConverter.class)
+  private Map<String, String> extraData;
+
   // Constructor needed by framework. Use all args constructor to create new instance.
   private Shipment() {}
 
@@ -107,7 +113,8 @@ public class Shipment extends BaseEntity {
         order,
         importer.getShipDetails(),
         importer.getNotes(),
-        items);
+        items,
+        importer.getExtraData());
     inventoryItem.setId(importer.getId());
 
     return inventoryItem;
@@ -127,6 +134,8 @@ public class Shipment extends BaseEntity {
     void setShipDetails(CreationDetails creationDetails);
 
     void setNotes(String notes);
+
+    void setExtraData(Map<String, String> extraData);
   }
 
   public interface Importer {
@@ -139,6 +148,8 @@ public class Shipment extends BaseEntity {
     String getNotes();
 
     List<ShipmentLineItem.Importer> getLineItems();
+
+    Map<String, String> getExtraData();
   }
 
   /**
@@ -150,6 +161,7 @@ public class Shipment extends BaseEntity {
     exporter.setOrder(order);
     exporter.setShipDetails(shipDetails);
     exporter.setNotes(notes);
+    exporter.setExtraData(extraData);
   }
 
 }
