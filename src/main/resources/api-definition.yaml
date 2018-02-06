@@ -33,11 +33,7 @@ schemas:
   - orderFileColumnDto: !include schemas/orderFileColumnDto.json
   - orderFileTemplateDto: !include schemas/orderFileTemplateDto.json
   - proofOfDeliveryDto: !include schemas/proofOfDeliveryDto.json
-  - proofOfDeliveryDtoArray: |
-        {
-            "type": "array",
-            "items": { "type": "object", "$ref": "schemas/proofOfDeliveryDto.json" }
-        }
+  - proofOfDeliveryPage: !include schemas/proofOfDeliveryPage.json
   - proofOfDeliveryLineItemDto: !include schemas/proofOfDeliveryLineItemDto.json
   - proofOfDeliveryLineItemDtoArray: |
         {
@@ -446,13 +442,20 @@ resourceTypes:
   /proofOfDeliveries:
       displayName: Proof Of Delivery
       get:
-          is: [ secured ]
-          description: Get all proofOfDeliveries.
+          is: [ secured, paginated ]
+          description: Get proofs of delivery page.
+          queryParameters:
+              shipmentId:
+                  displayName: shipmentId
+                  description: shipment ID
+                  type: string
+                  required: false
+                  repeat: false
           responses:
               200:
                   body:
                     application/json:
-                      schema: proofOfDeliveryDtoArray
+                      schema: proofOfDeliveryPage
               404:
               403:
                   body:

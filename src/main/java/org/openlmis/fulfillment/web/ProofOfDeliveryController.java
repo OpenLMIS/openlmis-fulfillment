@@ -17,20 +17,26 @@ package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.ReportUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,10 +44,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,6 +77,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private ProofOfDeliveryDtoBuilder dtoBuilder;
 
+  @Autowired
+  private ShipmentRepository shipmentRepository;
+
   /**
    * Get all proofOfDeliveries.
    *
@@ -78,15 +87,31 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.GET)
   @ResponseBody
-  public Collection<ProofOfDeliveryDto> getAllProofOfDeliveries(
+  public Page<ProofOfDeliveryDto> getAllProofOfDeliveries(
+      @RequestParam(required = false) UUID shipmentId,
+      Pageable pageable,
       OAuth2Authentication authentication) {
-    List<ProofOfDelivery> proofOfDeliveries = proofOfDeliveryRepository.findAll();
 
-    for (ProofOfDelivery proofOfDelivery : proofOfDeliveries) {
+    Page<ProofOfDelivery> page;
+
+    if (null == shipmentId) {
+      page = proofOfDeliveryRepository.findAll(pageable);
+    } else {
+      Shipment shipment = shipmentRepository.findOne(shipmentId);
+
+      if (null == shipment) {
+        throw new ValidationException(SHIPMENT_NOT_FOUND, shipmentId.toString());
+      }
+
+      page = proofOfDeliveryRepository.findByShipment(shipment, pageable);
+    }
+
+    for (ProofOfDelivery proofOfDelivery : page.getContent()) {
       canManagePod(authentication, proofOfDelivery.getId());
     }
 
-    return dtoBuilder.build(proofOfDeliveries);
+    List<ProofOfDeliveryDto> dto = dtoBuilder.build(page.getContent());
+    return Pagination.getPage(dto, pageable, page.getTotalElements());
   }
 
   /**

@@ -15,17 +15,19 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
-
-import com.google.common.collect.Lists;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -43,9 +45,13 @@ import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -73,6 +79,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @MockBean
   private ShipmentRepository shipmentRepository;
 
+  @Value("${service.url}")
+  private String serviceUrl;
+
   private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
 
   @Before
@@ -81,7 +90,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(true);
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
         .willAnswer(new SaveAnswer<>());
-    given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
+    given(proofOfDeliveryRepository.findAll(any(Pageable.class)))
+        .willReturn(new PageImpl<>(singletonList(proofOfDelivery)));
+    given(proofOfDeliveryRepository
+        .findByShipment(eq(proofOfDelivery.getShipment()), any(Pageable.class)))
+        .willReturn(new PageImpl<>(singletonList(proofOfDelivery)));
 
     given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
         .willReturn(proofOfDelivery.getShipment());
@@ -89,7 +102,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetAllProofOfDeliveries() {
-    ProofOfDeliveryDto[] response = restAssured.given()
+    PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -97,10 +110,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(ProofOfDeliveryDto[].class);
+        .as(PageImplRepresentation.class);
 
-    Iterable<ProofOfDeliveryDto> proofOfDeliveries = Arrays.asList(response);
-    assertTrue(proofOfDeliveries.iterator().hasNext());
+    assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -120,6 +132,31 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .path(MESSAGE_KEY);
 
     assertThat(response, is(ERROR_PERMISSION_MISSING));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveryBasedOnShipment() {
+    PageImplRepresentation response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("shipmentId", proofOfDelivery.getShipment().getId())
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertEquals(2000, response.getSize()); // default size
+    assertEquals(0, response.getNumber());
+    assertEquals(1, response.getContent().size());
+    assertEquals(1, response.getNumberOfElements());
+    assertEquals(1, response.getTotalElements());
+    assertEquals(1, response.getTotalPages());
+
+    assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -394,6 +431,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private ProofOfDeliveryDto createDto() {
     ProofOfDeliveryDto dto = new ProofOfDeliveryDto();
+    dto.setServiceUrl(serviceUrl);
+
     proofOfDelivery.export(dto);
 
     return dto;

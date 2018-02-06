@@ -16,11 +16,16 @@
 package org.openlmis.fulfillment.repository;
 
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
 public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
+
+  Page<ProofOfDelivery> findByShipment(Shipment shipment, Pageable pageable);
 
 }
 
