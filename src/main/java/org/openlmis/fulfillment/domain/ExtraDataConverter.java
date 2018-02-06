@@ -26,8 +26,19 @@ import javax.persistence.AttributeConverter;
 import javax.validation.constraints.NotNull;
 
 public class ExtraDataConverter implements AttributeConverter<Map<String, String>, String> {
+  static final TypeReference<Map<String, String>> TYPE_REFERENCE =
+      new TypeReference<Map<String, String>>() {
+      };
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
+
+  public ExtraDataConverter() {
+    this(new ObjectMapper());
+  }
+
+  ExtraDataConverter(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   @Override
   @NotNull
@@ -40,15 +51,11 @@ public class ExtraDataConverter implements AttributeConverter<Map<String, String
   }
 
   @Override
-  public Map<String, String> convertToEntityAttribute(String databaseDataAsJsonString) {
+  public Map<String, String> convertToEntityAttribute(String extraDataAsJson) {
     try {
-      if (null == databaseDataAsJsonString || "null".equalsIgnoreCase(databaseDataAsJsonString)) {
-        return null;
-      } else {
-        TypeReference<Map<String, String>> typeRef = new TypeReference<Map<String, String>>() {
-        };
-        return objectMapper.readValue(databaseDataAsJsonString, typeRef);
-      }
+      return null != extraDataAsJson && !"null".equalsIgnoreCase(extraDataAsJson)
+          ? objectMapper.readValue(extraDataAsJson, TYPE_REFERENCE)
+          : null;
     } catch (IOException ex) {
       throw new IllegalStateException(ex);
     }
