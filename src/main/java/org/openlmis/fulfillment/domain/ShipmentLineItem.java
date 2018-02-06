@@ -42,7 +42,7 @@ public class ShipmentLineItem extends BaseEntity {
   private UUID orderableId;
 
   @Type(type = UUID_TYPE)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private UUID lotId;
 
   @Column(nullable = false)

@@ -16,10 +16,12 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
@@ -30,9 +32,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ProofOfDeliveryTest {
 
@@ -73,6 +80,42 @@ public class ProofOfDeliveryTest {
     ProofOfDelivery actual = ProofOfDelivery.newInstance(importer);
 
     assertThat(expected, new ReflectionEquals(actual));
+  }
+
+  @Test
+  public void shouldCreateInstanceBasedOnShipment() {
+    Shipment shipment = new ShipmentDataBuilder().build();
+
+    Map<UUID, Boolean> useVvm = shipment
+        .getLineItems()
+        .stream()
+        .map(ShipmentLineItem::getOrderableId)
+        .collect(Collectors.toMap(Function.identity(), key -> true));
+
+    ProofOfDelivery pod = ProofOfDelivery.newInstance(shipment, useVvm);
+
+    assertThat(pod.getShipment(), is(shipment));
+    assertThat(pod.getStatus(), is(ProofOfDeliveryStatus.INITIATED));
+    assertThat(pod.getDeliveredBy(), is(nullValue()));
+    assertThat(pod.getReceivedBy(), is(nullValue()));
+    assertThat(pod.getReceivedDate(), is(nullValue()));
+
+    for (ProofOfDeliveryLineItem line : pod.getLineItems()) {
+      assertThat(
+          shipment.getLineItems(),
+          hasItem(hasProperty("orderableId", is(line.getOrderableId())))
+      );
+      assertThat(
+          shipment.getLineItems(),
+          hasItem(hasProperty("lotId", is(line.getLotId())))
+      );
+      assertThat(line.getUseVvm(), is(true));
+      assertThat(line.getQuantityAccepted(), is(nullValue()));
+      assertThat(line.getVvmStatus(), is(nullValue()));
+      assertThat(line.getQuantityRejected(), is(nullValue()));
+      assertThat(line.getRejectionReasonId(), is(nullValue()));
+      assertThat(line.getNotes(), is(nullValue()));
+    }
   }
 
   @Test
