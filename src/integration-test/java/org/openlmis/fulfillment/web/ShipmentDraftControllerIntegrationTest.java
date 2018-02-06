@@ -225,7 +225,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .post(RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).save(any(ShipmentDraft.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -326,7 +326,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .put(ID_RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -378,7 +378,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .get(ID_RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -457,7 +457,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .get(RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).findByOrder(any(Order.class), any(Pageable.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -522,7 +522,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .delete(ID_RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).delete(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

@@ -15,14 +15,14 @@
 
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PROOF_OF_DELIVERY_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_NOT_FOUND;
 
 import java.util.UUID;
 
 public class ProofOfDeliveryNotFoundException extends NotFoundException {
 
   public ProofOfDeliveryNotFoundException(UUID id) {
-    super(ERROR_PROOF_OF_DELIVERY_NOT_FOUND, id.toString());
+    super(PROOF_OF_DELIVERY_NOT_FOUND, id.toString());
   }
 
 }

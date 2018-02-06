@@ -16,7 +16,7 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
@@ -324,7 +324,7 @@ public class OrderController extends BaseController {
     permissionService.canTransferOrder(order);
 
     if (TRANSFER_FAILED != order.getStatus()) {
-      throw new ValidationException(ERROR_ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED.toString());
+      throw new ValidationException(ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED.toString());
     }
 
     orderService.save(order);

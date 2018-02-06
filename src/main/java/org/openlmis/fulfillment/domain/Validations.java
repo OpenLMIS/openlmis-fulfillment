@@ -16,8 +16,8 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 
 import org.openlmis.fulfillment.web.ValidationException;
 
@@ -31,19 +31,19 @@ final class Validations {
     throwIfNull(value, field);
 
     if (isBlank(value)) {
-      throw new ValidationException(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field);
+      throw new ValidationException(MUST_CONTAIN_VALUE, field);
     }
   }
 
   static void throwIfNull(Object value, String field) {
     if (null == value) {
-      throw new ValidationException(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field);
+      throw new ValidationException(MUST_CONTAIN_VALUE, field);
     }
   }
 
   static void throwIfLessThanZero(Number value, String field) {
     if (value.doubleValue() < 0) {
-      throw new ValidationException(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field);
+      throw new ValidationException(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field);
     }
   }
 

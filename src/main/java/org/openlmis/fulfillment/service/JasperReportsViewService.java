@@ -18,7 +18,7 @@ package org.openlmis.fulfillment.service;
 import static java.io.File.createTempFile;
 import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CLASS_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.CLASS_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
 
@@ -143,7 +143,7 @@ public class JasperReportsViewService {
     } catch (IOException exp) {
       throw new JasperReportViewException(exp, ERROR_IO, exp.getMessage());
     } catch (ClassNotFoundException exp) {
-      throw new JasperReportViewException(exp, ERROR_CLASS_NOT_FOUND, JasperReport.class.getName());
+      throw new JasperReportViewException(exp, CLASS_NOT_FOUND, JasperReport.class.getName());
     }
   }
 }

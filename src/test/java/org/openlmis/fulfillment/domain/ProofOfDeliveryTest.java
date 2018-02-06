@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class ProofOfDeliveryTest {
   private void setException(String field) {
     exception.expect(allOf(
         instanceOf(ValidationException.class),
-        hasProperty("messageKey", is(VALIDATION_ERROR_MUST_CONTAIN_VALUE)),
+        hasProperty("messageKey", is(MUST_CONTAIN_VALUE)),
         hasProperty("params", hasItemInArray(field))
     ));
   }

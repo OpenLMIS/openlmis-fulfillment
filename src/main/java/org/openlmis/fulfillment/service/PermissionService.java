@@ -18,7 +18,7 @@ package org.openlmis.fulfillment.service;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.Order;
@@ -197,7 +197,7 @@ public class PermissionService {
   private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
     Order order = orderRepository.findOne(orderDto.getId());
     if (order == null) {
-      throw new ValidationException(ERROR_ORDER_NOT_FOUND, orderDto.getId().toString());
+      throw new ValidationException(ORDER_NOT_FOUND, orderDto.getId().toString());
     }
     checkPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId());
   }

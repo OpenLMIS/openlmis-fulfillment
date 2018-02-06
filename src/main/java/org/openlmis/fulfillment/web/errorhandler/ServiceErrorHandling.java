@@ -15,8 +15,7 @@
 
 package org.openlmis.fulfillment.web.errorhandler;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CONSTRAINT_VIOLATION;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DATA_INTEGRITY_VIOLATION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.DATA_INTEGRITY_VIOLATION;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAT_ORDER_DUPLICATE;
@@ -25,6 +24,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 
 import net.sf.jasperreports.engine.JRException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
@@ -90,12 +90,12 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
             new Message(messageKey)), HttpStatus.BAD_REQUEST);
       } else {
         return new ResponseEntity<>(logErrorAndRespond(CONSTRAINT_VIOLATION,
-            ERROR_CONSTRAINT_VIOLATION, ex.getMessage()), HttpStatus.BAD_REQUEST);
+            MessageKeys.CONSTRAINT_VIOLATION, ex.getMessage()), HttpStatus.BAD_REQUEST);
       }
     }
 
     return new ResponseEntity<>(logErrorAndRespond("Data integrity violation",
-        ERROR_DATA_INTEGRITY_VIOLATION, ex.getMessage()), CONFLICT);
+        DATA_INTEGRITY_VIOLATION, ex.getMessage()), CONFLICT);
   }
 
   /**

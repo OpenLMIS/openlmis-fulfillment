@@ -36,10 +36,10 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_RETRY_INVALID_STATUS;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
@@ -736,7 +736,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(400)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_ORDER_INVALID_STATUS)));
+    assertThat(response, is(equalTo(ORDER_INVALID_STATUS)));
   }
 
   @Test
@@ -1004,7 +1004,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(message, equalTo(ERROR_ORDER_NOT_FOUND));
+    assertThat(message, equalTo(ORDER_NOT_FOUND));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1024,7 +1024,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(message, equalTo(ERROR_ORDER_RETRY_INVALID_STATUS));
+    assertThat(message, equalTo(ORDER_RETRY_INVALID_STATUS));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1132,7 +1132,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(response, is(equalTo(PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1150,7 +1150,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(response, is(equalTo(PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1167,7 +1167,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(response, is(equalTo(PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -1185,7 +1185,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(equalTo(ERROR_PERMISSION_MISSING)));
+    assertThat(response, is(equalTo(PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -26,9 +26,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import net.sf.jasperreports.engine.JRException;
@@ -140,7 +140,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(response, is(ERROR_PERMISSION_MISSING));
+    assertThat(response, is(PERMISSION_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -227,7 +227,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path("messageKey");
 
-    assertThat(response, is(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED));
+    assertThat(response, is(PROOF_OF_DELIVERY_ALREADY_CONFIRMED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -247,7 +247,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .statusCode(403)
         .extract().path(MESSAGE_KEY);
 
-    assertThat(response, is(ERROR_PERMISSION_MISSING));
+    assertThat(response, is(PERMISSION_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -298,7 +298,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .path("messageKey");
 
     verifyZeroInteractions(orderRepository);
-    assertThat(response, is(VALIDATION_ERROR_MUST_CONTAIN_VALUE));
+    assertThat(response, is(MUST_CONTAIN_VALUE));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -351,7 +351,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(response, is(ERROR_PERMISSION_MISSING));
+    assertThat(response, is(PERMISSION_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -420,7 +420,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(response, is(ERROR_PERMISSION_MISSING));
+    assertThat(response, is(PERMISSION_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

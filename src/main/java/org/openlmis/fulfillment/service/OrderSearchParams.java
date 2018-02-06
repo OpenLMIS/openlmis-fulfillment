@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.service;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -82,7 +82,7 @@ public class OrderSearchParams {
       OrderStatus orderStatus = OrderStatus.fromString(status);
 
       if (null == orderStatus) {
-        throw new ValidationException(ERROR_ORDER_INVALID_STATUS, status);
+        throw new ValidationException(ORDER_INVALID_STATUS, status);
       }
 
       return orderStatus;

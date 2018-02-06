@@ -21,14 +21,14 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_CREATION;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_EXTRA_PROPERTIES;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_EMPTY;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INCORRECT_TYPE;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_INVALID;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_FILE_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_INCORRECT_TYPE;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_PARAMETER_MISSING;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_EXISTS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_EXTRA_PROPERTIES;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_FILE_EMPTY;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_FILE_INCORRECT_TYPE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_FILE_INVALID;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_FILE_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_PARAMETER_INCORRECT_TYPE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_PARAMETER_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_TEMPLATE_EXISTS;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -66,7 +66,7 @@ public class TemplateService {
    */
   public void validateFileAndInsertTemplate(Template template, MultipartFile file) {
     if (templateRepository.findByName(template.getName()) != null) {
-      throw new ReportingException(ERROR_REPORTING_TEMPLATE_EXISTS);
+      throw new ReportingException(REPORTING_TEMPLATE_EXISTS);
     }
     validateFileAndCreateParameters(template, file);
     saveWithParameters(template);
@@ -143,7 +143,7 @@ public class TemplateService {
       out.writeObject(report);
       template.setData(bos.toByteArray());
     } catch (JRException ex) {
-      throw new ReportingException(ex, ERROR_REPORTING_FILE_INVALID);
+      throw new ReportingException(ex, REPORTING_FILE_INVALID);
     } catch (IOException ex) {
       throw new ReportingException(ex, ERROR_IO, ex.getMessage());
     }
@@ -155,13 +155,13 @@ public class TemplateService {
   private void validateFileAndCreateParameters(Template template, MultipartFile file) {
 
     if (file == null) {
-      throw new ReportingException(ERROR_REPORTING_FILE_MISSING);
+      throw new ReportingException(REPORTING_FILE_MISSING);
     }
     if (!file.getOriginalFilename().endsWith(".jrxml")) {
-      throw new ReportingException(ERROR_REPORTING_FILE_INCORRECT_TYPE);
+      throw new ReportingException(REPORTING_FILE_INCORRECT_TYPE);
     }
     if (file.isEmpty()) {
-      throw new ReportingException(ERROR_REPORTING_FILE_EMPTY);
+      throw new ReportingException(REPORTING_FILE_EMPTY);
     }
 
     try {
@@ -178,12 +178,12 @@ public class TemplateService {
     String[] propertyNames = jrParameter.getPropertiesMap().getPropertyNames();
     //Check # of properties and that required ones are given.
     if (propertyNames.length > 2) {
-      throw new ReportingException(ERROR_REPORTING_EXTRA_PROPERTIES);
+      throw new ReportingException(REPORTING_EXTRA_PROPERTIES);
     }
     String displayName = jrParameter.getPropertiesMap().getProperty("displayName");
     if (isBlank(displayName)) {
       throw new ReportingException(
-          ERROR_REPORTING_PARAMETER_MISSING, "displayName");
+          REPORTING_PARAMETER_MISSING, "displayName");
     }
     //Look for sql for select and that data type is supported string.
     String dataType = jrParameter.getValueClassName();
@@ -191,7 +191,7 @@ public class TemplateService {
     //Sql selects need String data type.
     if (isNotBlank(selectSql) && !"java.lang.String".equals(dataType)) {
       throw new ReportingException(
-          ERROR_REPORTING_PARAMETER_INCORRECT_TYPE, "sql", "string");
+          REPORTING_PARAMETER_INCORRECT_TYPE, "sql", "string");
     }
     //Set parameters.
     TemplateParameter templateParameter = new TemplateParameter();

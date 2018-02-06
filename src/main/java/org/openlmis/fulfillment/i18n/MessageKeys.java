@@ -21,134 +21,155 @@ public abstract class MessageKeys {
   private static final String DELIMITER = ".";
 
   private static final String SERVICE_PREFIX = "fulfillment";
-  private static final String SERVICE_ERROR_PREFIX = join(SERVICE_PREFIX, "error");
-  private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
-  private static final String VALIDATION_ERROR = SERVICE_PREFIX + ".validationError";
-  private static final String REQUIRED = "required";
+  private static final String ERROR_PREFIX = join(SERVICE_PREFIX, "error");
+  private static final String VALIDATION_ERROR = join(SERVICE_PREFIX, "validationError");
+
+  private static final String AUTHENTICATION = "authentication";
+  private static final String USER = "user";
   private static final String ORDER = "order";
-  private static final String NOT_FOUND = "notFound";
-
-  public static final String ERROR_USER_NOT_FOUND = join(SERVICE_PREFIX, "user", NOT_FOUND);
-
-  public static final String ERROR_CLASS_NOT_FOUND = ERROR_PREFIX + ".class-not-found";
-  public static final String ERROR_DATA_INTEGRITY_VIOLATION = ERROR_PREFIX
-      + ".data-integrity-violation";
-  public static final String ERROR_CONSTRAINT_VIOLATION = ERROR_PREFIX
-      + ".constraintViolation";
-  public static final String ERROR_IO = ERROR_PREFIX + ".io";
-  public static final String ERROR_ENCODING =
-      join(SERVICE_ERROR_PREFIX, "encoding", "notSupported");
-
-  public static final String ERROR_JASPER = ERROR_PREFIX + ".jasper";
-  public static final String ERROR_JASPER_FILE_CREATION = ERROR_PREFIX + ".jasper.file-creation";
-  public static final String ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE = ERROR_JASPER
-      + ".reportCreation.with.message";
-
-  public static final String ERROR_PERMISSION_MISSING = ERROR_PREFIX + ".permission.missing";
-
-  public static final String ERROR_ORDER_NOT_FOUND = ERROR_PREFIX + ".order.not-found";
-  public static final String ERROR_ORDER_INCORRECT_STATUS = ERROR_PREFIX
-      + ".order.incorrectStatus";
-  public static final String ERROR_ORDER_INVALID_STATUS = ERROR_PREFIX + ".order.invalidStatus";
-  public static final String ERROR_ORDER_IN_USE = ERROR_PREFIX + ".order.orderInUse";
-
-  public static final String ERROR_ORDER_RETRY_INVALID_STATUS = ERROR_PREFIX
-      + ".order-retry.invalid-status";
-
-  public static final String ERROR_ORDER_FILE_TEMPLATE_CREATE = ERROR_PREFIX
-      + ".orderFileTemplate.create";
-
-  public static final String ERROR_REFERENCE_DATA_RETRIEVE = ERROR_PREFIX
-      + ".reference-data.retrieve";
-
-  public static final String ERROR_REPORTING_CREATION = ERROR_PREFIX + ".reporting.creation";
-  public static final String ERROR_REPORTING_EXTRA_PROPERTIES = ERROR_PREFIX
-      + ".reporting.extra-properties";
-  public static final String ERROR_REPORTING_FILE_EMPTY = ERROR_PREFIX + ".reporting.file.empty";
-  public static final String ERROR_REPORTING_FILE_INCORRECT_TYPE = ERROR_PREFIX
-      + ".reporting.file.incorrect-type";
-  public static final String ERROR_REPORTING_FILE_INVALID = ERROR_PREFIX
-      + ".reporting.file.invalid";
-  public static final String ERROR_REPORTING_FILE_MISSING = ERROR_PREFIX
-      + ".reporting.file.missing";
-  public static final String ERROR_REPORTING_PARAMETER_INCORRECT_TYPE = ERROR_PREFIX
-      + ".reporting.parameter.incorrect-type";
-  public static final String ERROR_REPORTING_PARAMETER_MISSING = ERROR_PREFIX
-      + ".reporting.parameter.missing";
-  public static final String ERROR_REPORTING_TEMPLATE_EXISTS = ERROR_PREFIX
-      + ".reporting.template.exists";
-  public static final String ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME = ERROR_PREFIX
-      + ".reporting.template.notFound.with.name";
-
-  public static final String ERROR_TRANSFER_PROPERTIES_DUPLICATE = ERROR_PREFIX
-      + ".transfer-properties.duplicate";
-  public static final String ERROR_TRANSFER_PROPERTIES_INCORRECT = ERROR_PREFIX
-      + ".transfer-properties.incorrect";
-
+  private static final String ORDER_RETRY = "orderRetry";
+  private static final String ORDER_FILE_TEMPLATE = "orderFileTemplate";
+  private static final String REFERENCE_DATA = "referenceData";
+  private static final String REPORTING = "reporting";
+  private static final String TRANSFER_PROPERTIES = "transferProperties";
   private static final String PROOF_OF_DELIVERY = "proofOfDelivery";
-  public static final String PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "lineItems", REQUIRED);
-  public static final String ERROR_PROOF_OF_DELIVERY_NOT_FOUND =
-      ERROR_PREFIX + ".proofOfDelivery.notFound";
-  public static final String ERROR_PROOF_OF_DELIVERY_ALREADY_SUBMITTED =
-      ERROR_PREFIX + ".proofOfDelivery.alreadySubmitted";
-  public static final String ERROR_PROOF_OD_DELIVERY_VALIDATION =
-      ERROR_PREFIX + ".proofOdDelivery.validation";
-  public static final String ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED = ERROR_PREFIX
-      + ".proofOfDelivery.cannotUpdateSubmitted";
-  public static final String ERROR_INCORRECT_VVM_STATUS =
-      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "vvmStatus", "incorrectValue");
-  public static final String ERROR_MISSING_REASON =
-      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "reason", "missing");
-  public static final String ERROR_INCORRECT_QUANTITIES =
-      join(SERVICE_ERROR_PREFIX, PROOF_OF_DELIVERY, "acceptedRejected", "incorrectValues");
+  private static final String SHIPMENT = "shipment";
+  private static final String SHIPMENT_DRAFT = "shipmentDraft";
 
-  public static final String VALIDATION_ERROR_MUST_CONTAIN_VALUE =
-      VALIDATION_ERROR + ".mustContainValue";
-  public static final String VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO =
-      VALIDATION_ERROR + ".mustBeGreaterThanOrEqualToZero";
+  private static final String CLASS = "class";
+  private static final String ENCODING = "encoding";
+  private static final String JASPER = "jasper";
+  private static final String PERMISSION = "permission";
+  private static final String FILE = "file";
+  private static final String PARAMETER = "parameter";
+  private static final String TEMPLATE = "template";
+  private static final String LINE_ITEMS = "lineItems";
+
+  private static final String REQUIRED = "required";
+  private static final String NOT_FOUND = "notFound";
+  private static final String NOT_SUPPORTED = "notSupported";
+  private static final String MISSING = "missing";
+  private static final String INVALID_STATUS = "invalidStatus";
+  private static final String CREATION = "creation";
+  private static final String EMPTY = "empty";
+  private static final String INVALID = "invalid";
+  private static final String INCORRECT_TYPE = "incorrectType";
+  private static final String EXISTS = "exists";
+  private static final String DUPLICATE = "duplicate";
+
+  public static final String USER_NOT_FOUND =
+      join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
+
+  public static final String CLASS_NOT_FOUND = join(ERROR_PREFIX, CLASS, NOT_FOUND);
+  public static final String DATA_INTEGRITY_VIOLATION =
+      join(ERROR_PREFIX, "dataIntegrityViolation");
+  public static final String CONSTRAINT_VIOLATION =
+      join(ERROR_PREFIX, "constraintViolation");
+  public static final String ERROR_IO = join(ERROR_PREFIX, "io");
+  public static final String ERROR_ENCODING =
+      join(ERROR_PREFIX, ENCODING, NOT_SUPPORTED);
+
+  public static final String ERROR_JASPER = join(ERROR_PREFIX, JASPER);
+  public static final String ERROR_JASPER_FILE_CREATION =
+      join(ERROR_JASPER, "fileCreation");
+  public static final String ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE =
+      join(ERROR_JASPER, "reportCreationWithMessage");
+
+  public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);
+
+  public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
+  public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);
+
+  public static final String ORDER_RETRY_INVALID_STATUS =
+      join(ERROR_PREFIX, ORDER_RETRY, INVALID_STATUS);
+
+  public static final String ERROR_ORDER_FILE_TEMPLATE_CREATION =
+      join(ERROR_PREFIX, ORDER_FILE_TEMPLATE, CREATION);
+
+  public static final String ERROR_REFERENCE_DATA_RETRIEVE =
+      join(ERROR_PREFIX, REFERENCE_DATA, "retrieve");
+
+  public static final String ERROR_REPORTING_CREATION = join(ERROR_PREFIX, REPORTING, CREATION);
+  public static final String REPORTING_EXTRA_PROPERTIES =
+      join(ERROR_PREFIX, REPORTING, "extraProperties");
+  public static final String REPORTING_FILE_EMPTY =
+      join(ERROR_PREFIX, REPORTING, FILE, EMPTY);
+  public static final String REPORTING_FILE_INCORRECT_TYPE =
+      join(ERROR_PREFIX, REPORTING, FILE, INCORRECT_TYPE);
+  public static final String REPORTING_FILE_INVALID =
+      join(ERROR_PREFIX, REPORTING, FILE, INVALID);
+  public static final String REPORTING_FILE_MISSING =
+      join(ERROR_PREFIX, REPORTING, FILE, MISSING);
+  public static final String REPORTING_PARAMETER_INCORRECT_TYPE =
+      join(ERROR_PREFIX, REPORTING, PARAMETER, INCORRECT_TYPE);
+  public static final String REPORTING_PARAMETER_MISSING =
+      join(ERROR_PREFIX, REPORTING, PARAMETER, MISSING);
+  public static final String REPORTING_TEMPLATE_EXISTS =
+      join(ERROR_PREFIX, REPORTING, TEMPLATE, EXISTS);
+  public static final String REPORTING_TEMPLATE_NOT_FOUND =
+      join(ERROR_PREFIX, REPORTING, TEMPLATE, NOT_FOUND);
+
+  public static final String TRANSFER_PROPERTIES_DUPLICATE =
+      join(ERROR_PREFIX, TRANSFER_PROPERTIES, DUPLICATE);
+  public static final String TRANSFER_PROPERTIES_INCORRECT =
+      join(ERROR_PREFIX, TRANSFER_PROPERTIES, "incorrect");
+
+  public static final String PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, LINE_ITEMS, REQUIRED);
+  public static final String PROOF_OF_DELIVERY_NOT_FOUND =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, NOT_FOUND);
+  public static final String PROOF_OF_DELIVERY_ALREADY_CONFIRMED =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, "alreadyConfirmed");
+  public static final String ERROR_INCORRECT_VVM_STATUS =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, "vvmStatus", "incorrectValue");
+  public static final String ERROR_MISSING_REASON =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, "reason", MISSING);
+  public static final String ERROR_INCORRECT_QUANTITIES =
+      join(ERROR_PREFIX, PROOF_OF_DELIVERY, "incorrectSumOfAcceptedAndRejected");
+
+  public static final String MUST_CONTAIN_VALUE =
+      join(VALIDATION_ERROR, "mustContainValue");
+  public static final String MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO =
+      join(VALIDATION_ERROR, "mustBeGreaterThanOrEqualToZero");
 
   public static final String FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT
       = "fulfillment.email.orderCreation.subject";
   public static final String FULFILLMENT_EMAIL_ORDER_CREATION_BODY
       = "fulfillment.email.orderCreation.body";
 
-  private static final String ERROR_DTO_EXPANSION = join(SERVICE_ERROR_PREFIX, "dtoExpansion");
+  private static final String ERROR_DTO_EXPANSION = join(ERROR_PREFIX, "dtoExpansion");
   public static final String ERROR_DTO_EXPANSION_CAST = join(ERROR_DTO_EXPANSION, "cast");
   public static final String ERROR_DTO_EXPANSION_HREF = join(ERROR_DTO_EXPANSION, "href");
-  public static final String ERROR_DTO_EXPANSION_ASSIGNMENT = join(ERROR_DTO_EXPANSION,
-      "assignment");
+  public static final String ERROR_DTO_EXPANSION_ASSIGNMENT =
+      join(ERROR_DTO_EXPANSION, "assignment");
 
-
-  private static final String SHIPMENT = "shipment";
   public static final String SHIPMENT_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, NOT_FOUND);
+      join(ERROR_PREFIX, SHIPMENT, NOT_FOUND);
   public static final String SHIPMENT_ORDERLESS_NOT_SUPPORTED =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderless", "notSupported");
+      join(ERROR_PREFIX, SHIPMENT, "orderless", NOT_SUPPORTED);
   public static final String SHIPMENT_LINE_ITEMS_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, "lineItems", REQUIRED);
+      join(ERROR_PREFIX, SHIPMENT, LINE_ITEMS, REQUIRED);
   public static final String SHIPMENT_ORDER_DUPLICATE =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, ORDER, "duplicate");
+      join(ERROR_PREFIX, SHIPMENT, ORDER, DUPLICATE);
   public static final String SHIPMENT_ORDER_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, "orderId", REQUIRED);
+      join(ERROR_PREFIX, SHIPMENT, "orderId", REQUIRED);
   public static final String SHIPMENT_ORDER_STATUS_INVALID =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT, ORDER, "status", "invalid");
+      join(ERROR_PREFIX, SHIPMENT, ORDER, "status", INVALID);
 
-  private static final String SHIPMENT_DRAFT = "shipmentDraft";
   public static final String SHIPMENT_DRAFT_ORDER_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", REQUIRED);
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", REQUIRED);
   public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, NOT_FOUND);
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, NOT_FOUND);
   public static final String SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "lineItems", REQUIRED);
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, LINE_ITEMS, REQUIRED);
   public static final String SHIPMENT_DRAFT_ID_MISMATCH =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
   public static final String SHIPMENT_DRAT_ORDER_DUPLICATE =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, "duplicate");
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, DUPLICATE);
   public static final String CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS =
-      join(SERVICE_ERROR_PREFIX, SHIPMENT_DRAFT, "create", "orderWithWrongStatus");
+      join(ERROR_PREFIX, SHIPMENT_DRAFT, "create", "orderWithWrongStatus");
 
-  protected static String join(String... params) {
+  private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
   }
 

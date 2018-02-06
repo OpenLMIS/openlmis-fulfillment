@@ -16,8 +16,8 @@
 package org.openlmis.fulfillment.web.validator;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.util.Message;
@@ -31,22 +31,22 @@ abstract class BaseValidator {
 
   void rejectIfNull(List<Message.LocalizedMessage> errors, Object value, String field) {
     if (null == value) {
-      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(MUST_CONTAIN_VALUE, field));
     }
   }
 
   void rejectIfLessThanZero(List<Message.LocalizedMessage> errors, Number value,
                             String field) {
     if (null == value) {
-      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(MUST_CONTAIN_VALUE, field));
     } else if (value.doubleValue() < 0) {
-      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field));
+      errors.add(getErrorMessage(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, field));
     }
   }
 
   void rejectIfBlank(List<Message.LocalizedMessage> errors, String value, String field) {
     if (isBlank(value)) {
-      errors.add(getErrorMessage(VALIDATION_ERROR_MUST_CONTAIN_VALUE, field));
+      errors.add(getErrorMessage(MUST_CONTAIN_VALUE, field));
     }
   }
 

@@ -257,7 +257,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .post(RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentRepository, never()).save(any(Shipment.class));
     verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
@@ -307,7 +307,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(400)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_ORDER_NOT_FOUND));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.ORDER_NOT_FOUND));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -341,7 +341,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     verify(shipmentDraftRepository, never()).findByOrder(any(Order.class), any(Pageable.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -394,7 +394,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(ID_RESOURCE_URL)
         .then()
         .statusCode(403)
-        .body(MESSAGE_KEY, equalTo(MessageKeys.ERROR_PERMISSION_MISSING));
+        .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }

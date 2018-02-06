@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.service.OrderSearchParams.builder;
 
 import com.google.common.collect.Sets;
@@ -62,7 +62,7 @@ public class OrderSearchParamsTest {
   @Test
   public void shouldThrowExceptionIfStatusIsIncorrect() throws Exception {
     exception.expect(ValidationException.class);
-    exception.expect(hasProperty("messageKey", equalTo(ERROR_ORDER_INVALID_STATUS)));
+    exception.expect(hasProperty("messageKey", equalTo(ORDER_INVALID_STATUS)));
 
     builder().status(Sets.newHashSet("ala has a cat")).build().getStatusAsEnum();
   }

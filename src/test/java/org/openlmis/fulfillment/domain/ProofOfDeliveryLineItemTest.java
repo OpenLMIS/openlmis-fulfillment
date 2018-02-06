@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITIES;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
-import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
+import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,14 +36,14 @@ public class ProofOfDeliveryLineItemTest {
   @Test
   public void shouldThrowExceptionIfQuantityAcceptedIsLessThanZero() {
     exception.expect(ValidationException.class);
-    exception.expectMessage(startsWith(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
+    exception.expectMessage(startsWith(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
     new ProofOfDeliveryLineItemDataBuilder().withIncorrectQuantityAccepted().build().validate(null);
   }
 
   @Test
   public void shouldThrowExceptionIfQuantityRejectedIsLessThanZero() {
     exception.expect(ValidationException.class);
-    exception.expectMessage(startsWith(VALIDATION_ERROR_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
+    exception.expectMessage(startsWith(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
     new ProofOfDeliveryLineItemDataBuilder().withIncorrectQuantityRejected().build().validate(null);
   }
 

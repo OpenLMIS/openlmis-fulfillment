@@ -21,8 +21,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -321,7 +321,7 @@ public class PermissionServiceTest {
     when(orderRepository.findOne(order.getId())).thenReturn(null);
     exception.expect(ValidationException.class);
     exception.expect(hasProperty("params", arrayContaining(order.getId().toString())));
-    exception.expectMessage(ERROR_ORDER_NOT_FOUND);
+    exception.expectMessage(ORDER_NOT_FOUND);
 
     permissionService.canEditShipment(shipmentDto);
   }
@@ -359,7 +359,7 @@ public class PermissionServiceTest {
   private void expectException(String rightName) {
     exception.expect(MissingPermissionException.class);
     exception.expect(hasProperty("params", arrayContaining(rightName)));
-    exception.expectMessage(ERROR_PERMISSION_MISSING);
+    exception.expectMessage(PERMISSION_MISSING);
   }
 
   private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId,

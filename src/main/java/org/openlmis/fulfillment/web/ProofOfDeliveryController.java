@@ -15,8 +15,8 @@
 
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_TEMPLATE_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.Order;
@@ -142,7 +142,7 @@ public class ProofOfDeliveryController extends BaseController {
     LOGGER.debug("Updating proofOfDelivery with id: {}", proofOfDeliveryId);
 
     if (toUpdate.isConfirmed()) {
-      throw new ValidationException(ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED);
+      throw new ValidationException(PROOF_OF_DELIVERY_ALREADY_CONFIRMED);
     }
 
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
@@ -197,7 +197,7 @@ public class ProofOfDeliveryController extends BaseController {
 
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
     if (podPrintTemplate == null) {
-      throw new ValidationException(ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME, PRINT_POD);
+      throw new ValidationException(REPORTING_TEMPLATE_NOT_FOUND, PRINT_POD);
     }
 
     Map<String, Object> params = ReportUtils.createParametersMap();

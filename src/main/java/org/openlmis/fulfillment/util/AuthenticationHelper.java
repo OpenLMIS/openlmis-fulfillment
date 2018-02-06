@@ -16,7 +16,7 @@
 package org.openlmis.fulfillment.util;
 
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.USER_NOT_FOUND;
 
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -54,7 +54,7 @@ public class AuthenticationHelper {
       user = userReferenceDataService.findOne(userId);
 
       if (user == null) {
-        throw new AuthenticationException(ERROR_USER_NOT_FOUND, userId.toString());
+        throw new AuthenticationException(USER_NOT_FOUND, userId.toString());
       }
     }
 

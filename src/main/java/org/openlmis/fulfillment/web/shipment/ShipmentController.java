@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_REQUIRED;
@@ -188,7 +188,7 @@ public class ShipmentController extends BaseController {
 
     Order order = orderRepository.findOne(orderId);
     if (order == null) {
-      throw new ValidationException(ERROR_ORDER_NOT_FOUND, orderId.toString());
+      throw new ValidationException(ORDER_NOT_FOUND, orderId.toString());
     }
 
     profiler.start("CHECK_RIGHTS");

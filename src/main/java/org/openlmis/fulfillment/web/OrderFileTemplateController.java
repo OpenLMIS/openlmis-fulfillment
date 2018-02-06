@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.web;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_FILE_TEMPLATE_CREATE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_FILE_TEMPLATE_CREATION;
 
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
@@ -79,7 +79,7 @@ public class OrderFileTemplateController extends BaseController {
 
     OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
     if (!template.getId().equals(orderFileTemplateDto.getId())) {
-      throw new ValidationException(ERROR_ORDER_FILE_TEMPLATE_CREATE);
+      throw new ValidationException(ERROR_ORDER_FILE_TEMPLATE_CREATION);
     }
 
     LOGGER.debug("Saving Order File Template");
