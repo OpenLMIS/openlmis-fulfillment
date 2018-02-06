@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_BECAUSE_IT_WAS_SUBMITTED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.VALIDATION_ERROR_MUST_CONTAIN_VALUE;
@@ -37,11 +39,15 @@ import net.sf.jasperreports.engine.JasperReport;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
@@ -78,6 +84,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @MockBean
   private ShipmentRepository shipmentRepository;
+
+  @MockBean
+  private OrderRepository orderRepository;
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -259,6 +268,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .as(ProofOfDeliveryDto.class);
 
+    ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+
+    verify(orderRepository).save(captor.capture());
+    assertThat(captor.getValue().getStatus(), is(OrderStatus.RECEIVED));
+
     assertThat(response.getStatus(), is(ProofOfDeliveryStatus.CONFIRMED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -283,6 +297,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path("messageKey");
 
+    verifyZeroInteractions(orderRepository);
     assertThat(response, is(VALIDATION_ERROR_MUST_CONTAIN_VALUE));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

@@ -19,10 +19,13 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_CANNOT_UPDATE_POD_
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REPORTING_TEMPLATE_NOT_FOUND_WITH_NAME;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
@@ -70,6 +73,9 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
 
   @Autowired
   private PermissionService permissionService;
@@ -145,6 +151,10 @@ public class ProofOfDeliveryController extends BaseController {
 
     if (dto.getStatus() == ProofOfDeliveryStatus.CONFIRMED) {
       toUpdate.confirm();
+      Order order = toUpdate.getShipment().getOrder();
+      order.setStatus(OrderStatus.RECEIVED);
+
+      orderRepository.save(order);
     }
 
     toUpdate = proofOfDeliveryRepository.save(toUpdate);
