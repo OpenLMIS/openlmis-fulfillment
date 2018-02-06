@@ -55,7 +55,7 @@ public class ProofOfDeliveryDataBuilder {
   }
 
   /**
-   * Builds new instance of {@link ProofOfDeliveryLineItem}.
+   * Builds new instance of {@link ProofOfDelivery}.
    */
   public ProofOfDelivery build() {
     if (null == id) {
@@ -72,7 +72,7 @@ public class ProofOfDeliveryDataBuilder {
   }
 
   /**
-   * Builds new instance of {@link ProofOfDeliveryLineItem} without id.
+   * Builds new instance of {@link ProofOfDelivery} without id.
    */
   public ProofOfDelivery buildAsNew() {
     id = null;
@@ -80,7 +80,7 @@ public class ProofOfDeliveryDataBuilder {
   }
 
   /**
-   * Builds new instance of {@link ProofOfDeliveryLineItem} with
+   * Builds new instance of {@link ProofOfDelivery} with
    * {@link ProofOfDeliveryStatus#CONFIRMED} status.
    */
   public ProofOfDelivery buildAsConfirmed() {
