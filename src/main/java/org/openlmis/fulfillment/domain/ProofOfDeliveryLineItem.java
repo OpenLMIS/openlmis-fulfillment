@@ -93,6 +93,21 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     this.notes = proofOfDeliveryLineItem.notes;
   }
 
+  /**
+   * Validate if this line item has correct values. The following validations will be done:
+   * <ul>
+   * <li><strong>quantityAccepted</strong> - must be zero or greater than zero</li>
+   * <li><strong>quantityRejected</strong> - must be zero or greater than zero</li>
+   * <li>if <strong>quantityAccepted</strong> is greater than zero and <strong>useVvm</strong> flag
+   * is set, the <strong>vvmStatus</strong> must be less or equal to two</li>
+   * <li>if <strong>quantityRejected</strong> is greater than zero, reason id must be provided</li>
+   * <li>sum of <strong>quantityAccepted</strong> and <strong>quantityRejected</strong> must be
+   * equals to <strong>quantityShipped</strong></li>
+   * </ul>
+   *
+   * @param quantityShipped this value should be from related shipment line item.
+   * @throws ValidationException if any validation does not match.
+   */
   void validate(Long quantityShipped) {
     Validations.throwIfLessThanZeroOrNull(quantityAccepted, "quantityAccepted");
     Validations.throwIfLessThanZeroOrNull(quantityRejected, "quantityRejected");
