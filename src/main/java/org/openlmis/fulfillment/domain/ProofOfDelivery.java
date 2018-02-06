@@ -59,6 +59,7 @@ public class ProofOfDelivery extends BaseEntity {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
+  @Getter(AccessLevel.PACKAGE)
   private ProofOfDeliveryStatus status;
 
   @OneToMany(
@@ -66,14 +67,18 @@ public class ProofOfDelivery extends BaseEntity {
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
+  @Getter(AccessLevel.PACKAGE)
   private List<ProofOfDeliveryLineItem> lineItems;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter(AccessLevel.PACKAGE)
   private String receivedBy;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter(AccessLevel.PACKAGE)
   private String deliveredBy;
 
+  @Getter(AccessLevel.PACKAGE)
   private LocalDate receivedDate;
 
   /**

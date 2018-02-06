@@ -56,17 +56,21 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   private Integer quantityAccepted;
 
   @Column(nullable = false)
+  @Getter(AccessLevel.PACKAGE)
   private Boolean useVvm;
 
   @Enumerated(EnumType.STRING)
+  @Getter(AccessLevel.PACKAGE)
   private VvmStatus vvmStatus;
 
   @Getter(AccessLevel.PACKAGE)
   private Integer quantityRejected;
 
+  @Getter(AccessLevel.PACKAGE)
   private UUID rejectionReasonId;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter(AccessLevel.PACKAGE)
   private String notes;
 
   ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem, Boolean useVvm) {

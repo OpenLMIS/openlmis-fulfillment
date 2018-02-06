@@ -20,14 +20,19 @@ import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
+
+import java.util.Collections;
 
 public class ProofOfDeliveryTest {
 
@@ -58,6 +63,42 @@ public class ProofOfDeliveryTest {
     pod.confirm();
 
     assertThat(pod.isConfirmed(), is(true));
+  }
+
+  @Test
+  public void shouldCreateInstanceBasedOnImporter() {
+    ProofOfDelivery expected = new ProofOfDeliveryDataBuilder().build();
+    ProofOfDelivery.Importer importer = new DummyProofOfDeliveryDto(expected);
+
+    ProofOfDelivery actual = ProofOfDelivery.newInstance(importer);
+
+    assertThat(expected, new ReflectionEquals(actual));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfLineItemsAreNotGiven() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
+
+    ProofOfDelivery.Importer importer =
+        new DummyProofOfDeliveryDto(null, null, null, Collections.emptyList(), null, null, null);
+
+    ProofOfDelivery.newInstance(importer);
+  }
+
+  @Test
+  public void shouldExportValues() {
+    DummyProofOfDeliveryDto exporter = new DummyProofOfDeliveryDto();
+
+    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
+    pod.export(exporter);
+
+    assertEquals(pod.getId(), exporter.getId());
+    assertEquals(pod.getShipment(), exporter.getShipment());
+    assertEquals(pod.getStatus(), exporter.getStatus());
+    assertEquals(pod.getReceivedBy(), exporter.getReceivedBy());
+    assertEquals(pod.getDeliveredBy(), exporter.getDeliveredBy());
+    assertEquals(pod.getReceivedDate(), exporter.getReceivedDate());
   }
 
   private void setException(String field) {
