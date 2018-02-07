@@ -52,7 +52,7 @@ public class ShipmentLineItem extends BaseEntity {
   // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentLineItem() {}
 
-  ShipmentLineItem(UUID orderableId, Long quantityShipped) {
+  public ShipmentLineItem(UUID orderableId, Long quantityShipped) {
     this(orderableId, null, quantityShipped);
   }
 

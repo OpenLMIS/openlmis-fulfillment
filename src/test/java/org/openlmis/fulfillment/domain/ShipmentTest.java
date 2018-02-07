@@ -15,9 +15,6 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
@@ -27,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
-import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
@@ -70,18 +66,6 @@ public class ShipmentTest {
     Shipment actual = Shipment.newInstance(shipmentDto, order);
 
     assertThat(expected, new ReflectionEquals(actual));
-  }
-
-  @Test
-  public void shouldCreateInstanceBasedOnOrder() {
-    Order order = new OrderDataBuilder().build();
-    Shipment shipment = Shipment.newInstance(order);
-
-    assertThat(shipment.getOrder(), is(order));
-    assertThat(shipment.getShippedById(), is(order.getCreatedById()));
-    assertThat(shipment.getShippedDate(), is(order.getCreatedDate()));
-    assertThat(shipment.getNotes(), is(nullValue()));
-    assertThat(shipment.getExtraData(), hasEntry("external", "true"));
   }
 
   @Test

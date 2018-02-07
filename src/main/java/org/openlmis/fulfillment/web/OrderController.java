@@ -18,9 +18,13 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 
+import com.google.common.collect.ImmutableMap;
+
+import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
@@ -347,7 +351,18 @@ public class OrderController extends BaseController {
     Order order = orderService.createOrder(orderDto, userId);
 
     if (order.isExternal()) {
-      shipmentService.save(Shipment.newInstance(order));
+      List<ShipmentLineItem> items = order
+          .getOrderLineItems()
+          .stream()
+          .map(line -> new ShipmentLineItem(line.getOrderableId(), line.getOrderedQuantity()))
+          .collect(Collectors.toList());
+
+      Shipment shipment = new Shipment(
+          order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
+          null, items, ImmutableMap.of("external", "true")
+      );
+
+      shipmentService.save(shipment);
     }
 
     return order;

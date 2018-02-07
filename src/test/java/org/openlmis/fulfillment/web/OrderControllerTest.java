@@ -15,6 +15,10 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -26,6 +30,7 @@ import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -172,6 +177,15 @@ public class OrderControllerTest {
     order.setStatus(OrderStatus.IN_ROUTE);
     orderController.createOrder(orderDto, authentication);
 
-    verify(shipmentService).save(any(Shipment.class));
+    ArgumentCaptor<Shipment> shipmentCaptor = ArgumentCaptor.forClass(Shipment.class);
+    verify(shipmentService).save(shipmentCaptor.capture());
+
+    Shipment shipment = shipmentCaptor.getValue();
+
+    assertThat(shipment.getOrder(), is(order));
+    assertThat(shipment.getShippedById(), is(order.getCreatedById()));
+    assertThat(shipment.getShippedDate(), is(order.getCreatedDate()));
+    assertThat(shipment.getNotes(), is(nullValue()));
+    assertThat(shipment.getExtraData(), hasEntry("external", "true"));
   }
 }
