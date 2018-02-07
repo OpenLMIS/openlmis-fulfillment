@@ -28,11 +28,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -116,26 +116,25 @@ public class OrderControllerTest {
   private static final String ORDER_NUMBER = "orderNumber";
   private static final String SERVICE_URL = "localhost";
 
-  private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
-  private OrderDto orderDto = new OrderDto();
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
+  private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
+  private UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
+      .withUpdaterId(lastUpdaterId)
+      .withUpdatedDate(ZonedDateTime.now())
+      .build();
+  private Order order = new OrderDataBuilder()
+      .withStatus(OrderStatus.ORDERED)
+      .withUpdateDetails(updateDetails)
+      .build();
+  private OrderDto orderDto = new OrderDto();
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
         ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     OrderNumberConfiguration orderNumberConfiguration =
         new OrderNumberConfiguration("prefix", false, false, false);
-
-    UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
-        .withUpdaterId(lastUpdaterId)
-        .withUpdatedDate(ZonedDateTime.now())
-        .build();
-
-    Order order = new OrderDataBuilder().withUpdateDetails(updateDetails).build();
 
     when(orderService.createOrder(orderDto, lastUpdaterId)).thenReturn(order);
     when(programReferenceDataService.findOne(any())).thenReturn(programDto);
@@ -166,5 +165,13 @@ public class OrderControllerTest {
     orderController.createOrder(orderDto, authentication);
 
     verify(orderService).createOrder(eq(orderDto), eq(lastUpdaterId));
+  }
+
+  @Test
+  public void shouldCreateShipmentForExternalOrder() {
+    order.setStatus(OrderStatus.IN_ROUTE);
+    orderController.createOrder(orderDto, authentication);
+
+    verify(shipmentService).save(any(Shipment.class));
   }
 }
