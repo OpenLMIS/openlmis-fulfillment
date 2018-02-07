@@ -18,7 +18,13 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.openlmis.fulfillment.domain.OrderStatus.*;
+import static org.openlmis.fulfillment.domain.OrderStatus.FULFILLING;
+import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
+import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
+import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
+import static org.openlmis.fulfillment.domain.OrderStatus.RECEIVED;
+import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
+import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
