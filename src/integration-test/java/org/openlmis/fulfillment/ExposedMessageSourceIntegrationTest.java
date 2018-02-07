@@ -53,31 +53,31 @@ public class ExposedMessageSourceIntegrationTest {
   @Qualifier("messageSource")
   private ExposedMessageSource exposedMessageSource;
 
-  private Set<String> entries;
+  private Set<String> propertyEntries;
   private Set<String> constants;
 
   @Before
   public void setUp() throws IllegalAccessException {
-    entries = getEntries();
+    propertyEntries = getPropertyEntries();
     constants = getConstants(MessageKeys.class);
   }
 
   @Test
   public void shouldContainAllConstants() {
     for (String key : constants) {
-      assertThat("Missing entry in messages_XX.properties", entries, hasItems(key));
+      assertThat("Missing entry in messages_XX.properties", propertyEntries, hasItems(key));
     }
   }
 
   @Test
   public void shouldContainAllKeys() {
-    for (String key : entries) {
+    for (String key : propertyEntries) {
       assertThat("Missing constant value", constants, hasItem(key));
     }
 
     List<String> left = constants
         .stream()
-        .filter(key -> !entries.contains(key))
+        .filter(key -> !propertyEntries.contains(key))
         .collect(Collectors.toList());
 
     assertThat(
@@ -86,7 +86,7 @@ public class ExposedMessageSourceIntegrationTest {
     );
   }
 
-  private Set<String> getEntries() {
+  private Set<String> getPropertyEntries() {
     return exposedMessageSource
         .getAllMessages(Locale.ENGLISH)
         .keySet()
