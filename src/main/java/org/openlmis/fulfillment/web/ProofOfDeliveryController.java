@@ -25,12 +25,15 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.shipment.ShipmentController;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
@@ -90,6 +93,12 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private ShipmentRepository shipmentRepository;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   /**
    * Get all proofOfDeliveries.
@@ -176,7 +185,9 @@ public class ProofOfDeliveryController extends BaseController {
 
       profiler.start("UPDATE_ORDER_STATUS_AND_SAVE");
       Order order = toUpdate.getShipment().getOrder();
-      order.setStatus(OrderStatus.RECEIVED);
+      order.updateStatus(OrderStatus.RECEIVED, new UpdateDetails(
+          authenticationHelper.getCurrentUser().getId(),
+          dateHelper.getCurrentDateTimeWithSystemZone()));
 
       orderRepository.save(order);
     }
