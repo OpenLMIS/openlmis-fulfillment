@@ -70,7 +70,7 @@ public class StockEventBuilder {
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
         shipment.getOrder().getProgramId(), shipment.getOrder().getSupplyingFacilityId(),
-        getLineItems(shipment), shipment.getCreatorId()
+        getLineItems(shipment), shipment.getShippedById()
     );
 
     profiler.stop().log();

@@ -42,6 +42,7 @@ public final class CreationDetails {
   private final UUID userId;
 
   @Column(columnDefinition = "timestamp with time zone")
+  @Getter(AccessLevel.PACKAGE)
   private final ZonedDateTime date;
 
   /**

@@ -23,10 +23,12 @@ import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +69,7 @@ public class Shipment extends BaseEntity {
   private CreationDetails shipDetails;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter(AccessLevel.PACKAGE)
   private String notes;
 
   @OneToMany(
@@ -78,6 +81,7 @@ public class Shipment extends BaseEntity {
 
   @Column(name = "extradata", columnDefinition = "jsonb")
   @Convert(converter = ExtraDataConverter.class)
+  @Getter(AccessLevel.PACKAGE)
   private Map<String, String> extraData;
 
   // Constructor needed by framework. Use all args constructor to create new instance.
@@ -91,8 +95,12 @@ public class Shipment extends BaseEntity {
         lineItems.stream().map(ShipmentLineItem::copy).collect(Collectors.toList()));
   }
 
-  public UUID getCreatorId() {
+  public UUID getShippedById() {
     return shipDetails.getUserId();
+  }
+
+  public ZonedDateTime getShippedDate() {
+    return shipDetails.getDate();
   }
 
   /**

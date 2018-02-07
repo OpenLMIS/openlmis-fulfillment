@@ -62,7 +62,7 @@ public class StockEventBuilderTest {
 
     assertThat(event.getFacilityId(), is(fixture.getOrder().getSupplyingFacilityId()));
     assertThat(event.getProgramId(), is(fixture.getOrder().getProgramId()));
-    assertThat(event.getUserId(), is(fixture.getShipment().getCreatorId()));
+    assertThat(event.getUserId(), is(fixture.getShipment().getShippedById()));
 
     assertThat(event.getLineItems(), hasSize(2));
     fixture.assertEventLineItem(event.getLineItems().get(0), fixture.getShipmentLineItemOne());
