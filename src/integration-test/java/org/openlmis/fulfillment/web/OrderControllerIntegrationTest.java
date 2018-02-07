@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -29,6 +30,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,14 +61,16 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
 import org.openlmis.fulfillment.service.ResultDto;
-import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -79,6 +83,7 @@ import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 
@@ -154,7 +159,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private ObjReferenceExpander objReferenceExpander;
 
   @MockBean
-  private ShipmentService shipmentService;
+  private ShipmentRepository shipmentRepository;
+
+  @MockBean
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @SpyBean
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
   private DateHelper dateHelper;
@@ -202,8 +213,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findOne(eq(facility1Id))).thenReturn(facility1);
     when(facilityService.findOne(eq(facility2Id))).thenReturn(facility2);
 
-    when(shipmentService.save(any(Shipment.class)))
+    when(shipmentRepository.save(any(Shipment.class)))
         .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
+
+    when(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .thenReturn(emptyList());
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
