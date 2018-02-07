@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.openlmis.fulfillment.domain.OrderStatus.*;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
@@ -37,7 +38,19 @@ public class OrderTest {
   public void shouldPrepareOrderForLocalFulfill() {
     Order order = new OrderDataBuilder().build();
     order.prepareToLocalFulfill();
-    assertEquals(OrderStatus.ORDERED, order.getStatus());
+    assertEquals(ORDERED, order.getStatus());
+  }
+
+  @Test
+  public void shouldCheckIfOrderIsExternal() {
+    assertTrue(new OrderDataBuilder().withStatus(TRANSFER_FAILED).build().isExternal());
+    assertTrue(new OrderDataBuilder().withStatus(IN_ROUTE).build().isExternal());
+    assertTrue(new OrderDataBuilder().withStatus(READY_TO_PACK).build().isExternal());
+
+    assertFalse(new OrderDataBuilder().withStatus(ORDERED).build().isExternal());
+    assertFalse(new OrderDataBuilder().withStatus(FULFILLING).build().isExternal());
+    assertFalse(new OrderDataBuilder().withStatus(SHIPPED).build().isExternal());
+    assertFalse(new OrderDataBuilder().withStatus(RECEIVED).build().isExternal());
   }
 
   @Test
@@ -48,19 +61,19 @@ public class OrderTest {
     order = new OrderDataBuilder().withFulfillingStatus().build();
     assertTrue(order.canBeFulfilled());
 
-    order.setStatus(OrderStatus.IN_ROUTE);
+    order.setStatus(IN_ROUTE);
     assertFalse(order.canBeFulfilled());
 
-    order.setStatus(OrderStatus.TRANSFER_FAILED);
+    order.setStatus(TRANSFER_FAILED);
     assertFalse(order.canBeFulfilled());
 
-    order.setStatus(OrderStatus.READY_TO_PACK);
+    order.setStatus(READY_TO_PACK);
     assertFalse(order.canBeFulfilled());
 
-    order.setStatus(OrderStatus.RECEIVED);
+    order.setStatus(RECEIVED);
     assertFalse(order.canBeFulfilled());
 
-    order.setStatus(OrderStatus.SHIPPED);
+    order.setStatus(SHIPPED);
     assertFalse(order.canBeFulfilled());
   }
 }
