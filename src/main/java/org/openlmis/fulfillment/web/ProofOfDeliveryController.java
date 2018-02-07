@@ -32,11 +32,15 @@ import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.util.Pagination;
+import org.openlmis.fulfillment.web.shipment.ShipmentController;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.ReportUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,8 +65,9 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @Transactional
 public class ProofOfDeliveryController extends BaseController {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryController.class);
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentController.class);
+
   private static final String PRINT_POD = "Print POD";
 
   @Autowired
@@ -97,27 +102,40 @@ public class ProofOfDeliveryController extends BaseController {
       @RequestParam(required = false) UUID shipmentId,
       Pageable pageable,
       OAuth2Authentication authentication) {
+    XLOGGER.entry(shipmentId, pageable, authentication);
+    Profiler profiler = new Profiler("GET_PODS");
+    profiler.setLogger(XLOGGER);
 
     Page<ProofOfDelivery> page;
 
     if (null == shipmentId) {
+      profiler.start("GET_ALL_PODS");
       page = proofOfDeliveryRepository.findAll(pageable);
     } else {
+      profiler.start("FIND_SHIPMENT_BY_ID");
       Shipment shipment = shipmentRepository.findOne(shipmentId);
 
       if (null == shipment) {
+        profiler.stop().log();
         throw new ValidationException(SHIPMENT_NOT_FOUND, shipmentId.toString());
       }
 
+      profiler.start("FIND_PODS_BY_SHIPMENT");
       page = proofOfDeliveryRepository.findByShipment(shipment, pageable);
     }
 
-    for (ProofOfDelivery proofOfDelivery : page.getContent()) {
-      canManagePod(authentication, proofOfDelivery.getId());
-    }
+    canManagePod(authentication, profiler, page.getContent().toArray(new ProofOfDelivery[0]));
 
+    profiler.start("BUILD_DTOS");
     List<ProofOfDeliveryDto> dto = dtoBuilder.build(page.getContent());
-    return Pagination.getPage(dto, pageable, page.getTotalElements());
+
+    profiler.start("BUILD_DTO_PAGE");
+    Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dto, pageable, page.getTotalElements());
+
+    profiler.stop().log();
+    XLOGGER.exit(dtoPage);
+
+    return dtoPage;
   }
 
   /**
@@ -132,35 +150,48 @@ public class ProofOfDeliveryController extends BaseController {
   public ProofOfDeliveryDto updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
                                                   @RequestBody ProofOfDeliveryDto dto,
                                                   OAuth2Authentication authentication) {
-    ProofOfDelivery toUpdate = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
+    XLOGGER.entry(proofOfDeliveryId, dto, authentication);
+    Profiler profiler = new Profiler("UPDATE_POD");
+    profiler.setLogger(XLOGGER);
 
-    if (null == toUpdate) {
-      throw new ProofOfDeliveryNotFoundException(proofOfDeliveryId);
-    }
+    ProofOfDelivery toUpdate = findProofOfDelivery(proofOfDeliveryId, profiler);
 
-    canManagePod(authentication, proofOfDeliveryId);
+    canManagePod(authentication, profiler, toUpdate);
     LOGGER.debug("Updating proofOfDelivery with id: {}", proofOfDeliveryId);
 
     if (toUpdate.isConfirmed()) {
+      profiler.stop().log();
       throw new ValidationException(PROOF_OF_DELIVERY_ALREADY_CONFIRMED);
     }
 
+    profiler.start("CREATE_DOMAIN_FROM_DTO");
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
     // we always update resource
+    profiler.start("UPDATE_POD");
     toUpdate.updateFrom(proofOfDelivery);
 
     if (dto.getStatus() == ProofOfDeliveryStatus.CONFIRMED) {
+      profiler.start("CONFIRM_POD");
       toUpdate.confirm();
+
+      profiler.start("UPDATE_ORDER_STATUS_AND_SAVE");
       Order order = toUpdate.getShipment().getOrder();
       order.setStatus(OrderStatus.RECEIVED);
 
       orderRepository.save(order);
     }
 
+    profiler.start("SAVE_POD");
     toUpdate = proofOfDeliveryRepository.save(toUpdate);
 
     LOGGER.debug("Saved proofOfDelivery with id: {}", proofOfDeliveryId);
-    return dtoBuilder.build(toUpdate);
+    profiler.start("BUILD_DTO");
+    ProofOfDeliveryDto response = dtoBuilder.build(toUpdate);
+
+    profiler.stop().log();
+    XLOGGER.exit(response);
+
+    return response;
   }
 
   /**
@@ -173,14 +204,21 @@ public class ProofOfDeliveryController extends BaseController {
   @ResponseBody
   public ProofOfDeliveryDto getProofOfDelivery(@PathVariable("id") UUID id,
                                                OAuth2Authentication authentication) {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(id);
+    XLOGGER.entry(id, authentication);
+    Profiler profiler = new Profiler("GET_POD");
+    profiler.setLogger(XLOGGER);
 
-    if (null == proofOfDelivery) {
-      throw new ProofOfDeliveryNotFoundException(id);
-    }
+    ProofOfDelivery proofOfDelivery = findProofOfDelivery(id, profiler);
 
-    canManagePod(authentication, id);
-    return dtoBuilder.build(proofOfDelivery);
+    canManagePod(authentication, profiler, proofOfDelivery);
+
+    profiler.start("BUILD_DTO");
+    ProofOfDeliveryDto response = dtoBuilder.build(proofOfDelivery);
+
+    profiler.stop().log();
+    XLOGGER.exit(response);
+
+    return response;
   }
 
   /**
@@ -193,13 +231,20 @@ public class ProofOfDeliveryController extends BaseController {
   public void print(
       @PathVariable("id") UUID id, HttpServletRequest request, HttpServletResponse response,
       OAuth2Authentication authentication) throws Exception {
-    canManagePod(authentication, id);
+    XLOGGER.entry(id, request, response, authentication);
+    Profiler profiler = new Profiler("PRINT_POD");
+    profiler.setLogger(XLOGGER);
 
+    canManagePod(authentication, id, profiler);
+
+    profiler.start("FIND_TEMPLATE_BY_NAME");
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
     if (podPrintTemplate == null) {
+      profiler.stop().log();
       throw new ValidationException(REPORTING_TEMPLATE_NOT_FOUND, PRINT_POD);
     }
 
+    profiler.start("GENERATE_JASPER_VIEW");
     Map<String, Object> params = ReportUtils.createParametersMap();
     String formatId = "'" + id + "'";
     params.put("pod_id", formatId);
@@ -207,12 +252,41 @@ public class ProofOfDeliveryController extends BaseController {
     JasperReportsMultiFormatView jasperView =
         jasperReportsViewService.getJasperReportsView(podPrintTemplate, request);
 
+    profiler.start("RENDER_JASPER_VIEW");
     jasperView.render(params, request, response);
+
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
-  private void canManagePod(OAuth2Authentication authentication, UUID id) {
+  private ProofOfDelivery findProofOfDelivery(UUID id, Profiler profiler) {
+    profiler.start("FIND_POD_BY_ID");
+    ProofOfDelivery entity = proofOfDeliveryRepository.findOne(id);
+
+    if (null == entity) {
+      profiler.stop().log();
+      throw new ProofOfDeliveryNotFoundException(id);
+    }
+
+    return entity;
+  }
+
+  private void canManagePod(OAuth2Authentication authentication, Profiler profiler,
+                            ProofOfDelivery... pods) {
+    if (!authentication.isClientOnly()) {
+      profiler.start("CHECK_PERMISSION");
+      for (ProofOfDelivery pod : pods) {
+        LOGGER.debug("Checking rights to manage POD: {}", pod.getId());
+        permissionService.canManagePod(pod);
+      }
+    }
+  }
+
+  private void canManagePod(OAuth2Authentication authentication, UUID id,
+                            Profiler profiler) {
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to manage POD: {}", id);
+      profiler.start("CHECK_PERMISSION");
       permissionService.canManagePod(id);
     }
   }
