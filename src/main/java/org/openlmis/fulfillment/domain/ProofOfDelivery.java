@@ -81,6 +81,10 @@ public class ProofOfDelivery extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private LocalDate receivedDate;
 
+  private ProofOfDelivery(Shipment shipment, List<ProofOfDeliveryLineItem> lineItems) {
+    this(shipment, ProofOfDeliveryStatus.INITIATED, lineItems, null, null, null);
+  }
+
   /**
    * Copy values of attributes into new or updated ProofOfDelivery.
    *
@@ -180,10 +184,7 @@ public class ProofOfDelivery extends BaseEntity {
         .map(line -> new ProofOfDeliveryLineItem(line, useVvm.get(line.getOrderableId())))
         .collect(Collectors.toList());
 
-    return new ProofOfDelivery(
-        shipment, ProofOfDeliveryStatus.INITIATED, items,
-        null, null, null
-    );
+    return new ProofOfDelivery(shipment, items);
   }
 
   private static void validateLineItems(List<?> lineItems) {
