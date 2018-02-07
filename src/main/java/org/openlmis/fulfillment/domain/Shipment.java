@@ -140,7 +140,7 @@ public class Shipment extends BaseEntity {
     List<ShipmentLineItem> items = order
         .getOrderLineItems()
         .stream()
-        .map(ShipmentLineItem::new)
+        .map(line -> new ShipmentLineItem(line.getOrderableId(), line.getOrderedQuantity()))
         .collect(Collectors.toList());
 
     return new Shipment(

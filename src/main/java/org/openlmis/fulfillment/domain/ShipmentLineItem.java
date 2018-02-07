@@ -52,8 +52,8 @@ public class ShipmentLineItem extends BaseEntity {
   // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentLineItem() {}
 
-  ShipmentLineItem(OrderLineItem orderLineItem) {
-    this(orderLineItem.getOrderableId(), null, orderLineItem.getOrderedQuantity());
+  ShipmentLineItem(UUID orderableId, Long quantityShipped) {
+    this(orderableId, null, quantityShipped);
   }
 
   /**
