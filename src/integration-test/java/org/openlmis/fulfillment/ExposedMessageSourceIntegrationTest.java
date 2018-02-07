@@ -19,12 +19,9 @@ import static java.lang.reflect.Modifier.isFinal;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 import static org.apache.commons.lang3.StringUtils.startsWith;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.fulfillment.i18n.ExposedMessageSource;
@@ -38,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,50 +49,39 @@ public class ExposedMessageSourceIntegrationTest {
   @Qualifier("messageSource")
   private ExposedMessageSource exposedMessageSource;
 
-  private Set<String> propertyEntries;
-  private Set<String> constants;
-
-  @Before
-  public void setUp() throws IllegalAccessException {
-    propertyEntries = getPropertyEntries();
-    constants = getConstants(MessageKeys.class);
-  }
-
   @Test
-  public void shouldContainAllConstants() {
-    for (String key : constants) {
-      assertThat("Missing entry in messages_XX.properties", propertyEntries, hasItems(key));
+  public void shouldBePairsOfConstantValueAndPropertyKey() throws IllegalAccessException {
+    Set<String> propertyKeys = getPropertyKeys();
+    Set<String> constantValues = getConstantValues(MessageKeys.class);
+
+    Set<String> all = new HashSet<>();
+    all.addAll(propertyKeys);
+    all.addAll(constantValues);
+
+    for (String key : all) {
+      assertThat(
+          "Missing constant value for key: " + key,
+          constantValues.contains(key), is(true)
+      );
+      assertThat(
+          "Missing property entry in messages.properties for key: " + key,
+          propertyKeys.contains(key), is(true)
+      );
     }
   }
 
-  @Test
-  public void shouldContainAllKeys() {
-    for (String key : propertyEntries) {
-      assertThat("Missing constant value", constants, hasItem(key));
-    }
-
-    List<String> left = constants
-        .stream()
-        .filter(key -> !propertyEntries.contains(key))
-        .collect(Collectors.toList());
-
-    assertThat(
-        "There are entries in messages_XX.properties without constant values: " + left,
-        left, hasSize(0)
-    );
-  }
-
-  private Set<String> getPropertyEntries() {
+  private Set<String> getPropertyKeys() {
     return exposedMessageSource
         .getAllMessages(Locale.ENGLISH)
         .keySet()
         .stream()
+        // those keys are used in jasper templates and they don't need constant values
         .filter(key -> !startsWith(key, "fulfillment.print.proofOfDelivery"))
         .filter(key -> !startsWith(key, "fulfillment.header"))
         .collect(Collectors.toSet());
   }
 
-  private Set<String> getConstants(Class clazz) throws IllegalAccessException {
+  private Set<String> getConstantValues(Class clazz) throws IllegalAccessException {
     Set<String> set = new HashSet<>();
 
     for (Field field : clazz.getDeclaredFields()) {
