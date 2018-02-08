@@ -58,7 +58,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -117,11 +116,11 @@ public class ProofOfDeliveryController extends BaseController {
     Profiler profiler = new Profiler("GET_PODS");
     profiler.setLogger(XLOGGER);
 
-    Page<ProofOfDelivery> page;
+    List<ProofOfDelivery> content;
 
     if (null == shipmentId) {
       profiler.start("GET_ALL_PODS");
-      page = proofOfDeliveryRepository.findAll(pageable);
+      content = proofOfDeliveryRepository.findAll();
     } else {
       profiler.start("FIND_SHIPMENT_BY_ID");
       Shipment shipment = shipmentRepository.findOne(shipmentId);
@@ -132,10 +131,8 @@ public class ProofOfDeliveryController extends BaseController {
       }
 
       profiler.start("FIND_PODS_BY_SHIPMENT");
-      page = proofOfDeliveryRepository.findByShipment(shipment, pageable);
+      content = proofOfDeliveryRepository.findByShipment(shipment);
     }
-
-    List<ProofOfDelivery> content = new ArrayList<>(page.getContent());
 
     if (!authentication.isClientOnly()) {
       profiler.start(CHECK_PERMISSION);
@@ -156,7 +153,7 @@ public class ProofOfDeliveryController extends BaseController {
     List<ProofOfDeliveryDto> dto = dtoBuilder.build(content);
 
     profiler.start("BUILD_DTO_PAGE");
-    Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dto, pageable, page.getTotalElements());
+    Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dto, pageable);
 
     profiler.stop().log();
     XLOGGER.exit(dtoPage);

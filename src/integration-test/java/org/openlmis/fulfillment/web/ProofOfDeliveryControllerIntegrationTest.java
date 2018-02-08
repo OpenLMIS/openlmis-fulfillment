@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.web;
 
-import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -30,6 +29,8 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import com.google.common.collect.Lists;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -56,8 +57,6 @@ import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -99,11 +98,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(true);
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
         .willAnswer(new SaveAnswer<>());
-    given(proofOfDeliveryRepository.findAll(any(Pageable.class)))
-        .willReturn(new PageImpl<>(singletonList(proofOfDelivery)));
-    given(proofOfDeliveryRepository
-        .findByShipment(eq(proofOfDelivery.getShipment()), any(Pageable.class)))
-        .willReturn(new PageImpl<>(singletonList(proofOfDelivery)));
+    given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
+    given(proofOfDeliveryRepository.findByShipment(eq(proofOfDelivery.getShipment())))
+        .willReturn(Lists.newArrayList(proofOfDelivery));
 
     given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
         .willReturn(proofOfDelivery.getShipment());
