@@ -58,6 +58,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -72,6 +73,7 @@ public class ProofOfDeliveryController extends BaseController {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentController.class);
 
   private static final String PRINT_POD = "Print POD";
+  private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
 
   @Autowired
   private JasperReportsViewService jasperReportsViewService;
@@ -133,10 +135,25 @@ public class ProofOfDeliveryController extends BaseController {
       page = proofOfDeliveryRepository.findByShipment(shipment, pageable);
     }
 
-    canManagePod(authentication, profiler, page.getContent().toArray(new ProofOfDelivery[0]));
+    List<ProofOfDelivery> content = new ArrayList<>(page.getContent());
+
+    if (!authentication.isClientOnly()) {
+      profiler.start(CHECK_PERMISSION);
+      String username = authenticationHelper.getCurrentUser().getUsername();
+
+      content.removeIf(proofOfDelivery -> {
+        try {
+          permissionService.canManagePod(proofOfDelivery);
+          return false;
+        } catch (MissingPermissionException exp) {
+          LOGGER.warn("User {} has no right for POD {}", username, proofOfDelivery.getId());
+          return true;
+        }
+      });
+    }
 
     profiler.start("BUILD_DTOS");
-    List<ProofOfDeliveryDto> dto = dtoBuilder.build(page.getContent());
+    List<ProofOfDeliveryDto> dto = dtoBuilder.build(content);
 
     profiler.start("BUILD_DTO_PAGE");
     Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dto, pageable, page.getTotalElements());
@@ -283,13 +300,11 @@ public class ProofOfDeliveryController extends BaseController {
   }
 
   private void canManagePod(OAuth2Authentication authentication, Profiler profiler,
-                            ProofOfDelivery... pods) {
+                            ProofOfDelivery pod) {
     if (!authentication.isClientOnly()) {
-      profiler.start("CHECK_PERMISSION");
-      for (ProofOfDelivery pod : pods) {
-        LOGGER.debug("Checking rights to manage POD: {}", pod.getId());
-        permissionService.canManagePod(pod);
-      }
+      profiler.start(CHECK_PERMISSION);
+      LOGGER.debug("Checking rights to manage POD: {}", pod.getId());
+      permissionService.canManagePod(pod);
     }
   }
 
@@ -297,7 +312,7 @@ public class ProofOfDeliveryController extends BaseController {
                             Profiler profiler) {
     if (!authentication.isClientOnly()) {
       LOGGER.debug("Checking rights to manage POD: {}", id);
-      profiler.start("CHECK_PERMISSION");
+      profiler.start(CHECK_PERMISSION);
       permissionService.canManagePod(id);
     }
   }

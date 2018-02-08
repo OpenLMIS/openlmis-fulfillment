@@ -26,9 +26,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import net.sf.jasperreports.engine.JRException;
@@ -126,21 +126,21 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldRejectGetAllRequestIfUserHasNoRight() {
+  public void shouldReturnEmptyListForGetAllProofOfDeliveriesIfUserHasNoRight() {
     denyUserAllRights();
 
-    String response = restAssured
+    PageImplRepresentation response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
         .get(RESOURCE_URL)
         .then()
-        .statusCode(403)
+        .statusCode(200)
         .extract()
-        .path(MESSAGE_KEY);
+        .as(PageImplRepresentation.class);
 
-    assertThat(response, is(PERMISSION_MISSING));
+    assertThat(response.getContent().isEmpty(), is(true));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

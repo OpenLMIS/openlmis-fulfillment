@@ -19,6 +19,7 @@ Contract breaking changes:
   * For external orders the service will create related shipment and Proof Of Delivery
   * Database migration will handle a new structure for legacy data
   * The submit endpoint has been merged with the update endpoint
+  * The GET all POD endpoint will filter out those PODs to which user has no right.
 
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
