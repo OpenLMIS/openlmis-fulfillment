@@ -50,6 +50,11 @@ public class ShipmentLineItemDataBuilder {
     return this;
   }
 
+  public ShipmentLineItemDataBuilder withoutLotId() {
+    this.lotId = null;
+    return this;
+  }
+
   /**
    * Builds instance of {@link ShipmentLineItem}.
    */

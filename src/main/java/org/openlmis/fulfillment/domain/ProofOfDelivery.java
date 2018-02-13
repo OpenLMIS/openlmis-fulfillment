@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -110,7 +111,7 @@ public class ProofOfDelivery extends BaseEntity {
           .getLineItems()
           .stream()
           .filter(shipped -> shipped.getOrderableId().equals(lineItem.getOrderableId())
-              && shipped.getLotId().equals(lineItem.getLotId()))
+              && Objects.equals(shipped.getLotId(), lineItem.getLotId()))
           .findFirst()
           .ifPresent(shipped -> lineItem.validate(shipped.getQuantityShipped()));
     }

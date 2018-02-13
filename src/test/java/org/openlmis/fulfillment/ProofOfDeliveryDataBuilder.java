@@ -54,6 +54,11 @@ public class ProofOfDeliveryDataBuilder {
     return this;
   }
 
+  public ProofOfDeliveryDataBuilder withLineItems(List<ProofOfDeliveryLineItem> lineItems) {
+    this.lineItems = lineItems;
+    return this;
+  }
+
   /**
    * Builds new instance of {@link ProofOfDelivery}.
    */

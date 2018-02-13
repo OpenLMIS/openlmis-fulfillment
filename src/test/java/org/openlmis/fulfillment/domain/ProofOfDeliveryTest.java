@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED;
 
@@ -32,7 +33,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
 
 import java.util.Collections;
@@ -127,6 +130,28 @@ public class ProofOfDeliveryTest {
         new DummyProofOfDeliveryDto(null, null, null, Collections.emptyList(), null, null, null);
 
     ProofOfDelivery.newInstance(importer);
+  }
+
+  @Test
+  public void shouldConfirmIfLineItemIsLotless() {
+    Shipment shipment = new ShipmentDataBuilder()
+        .withLineItems(Collections.singletonList(new ShipmentLineItemDataBuilder()
+            .withoutLotId()
+            .build()))
+        .build();
+
+    ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder()
+        .withLineItems(Collections.singletonList(
+            new ProofOfDeliveryLineItemDataBuilder()
+            .withOrderableId(shipment.getLineItems().get(0).getOrderableId())
+            .withoutLotId()
+            .build()
+        ))
+        .build();
+
+    proofOfDelivery.confirm();
+
+    assertTrue(proofOfDelivery.isConfirmed());
   }
 
   @Test

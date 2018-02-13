@@ -43,6 +43,11 @@ public class ProofOfDeliveryLineItemDataBuilder {
     );
   }
 
+  public ProofOfDeliveryLineItemDataBuilder withOrderableId(UUID orderableId) {
+    this.orderableId = orderableId;
+    return this;
+  }
+
   public ProofOfDeliveryLineItemDataBuilder withIncorrectQuantityAccepted() {
     quantityAccepted =  RandomUtils.nextInt(1, 10) * -1;
     return this;
@@ -65,6 +70,11 @@ public class ProofOfDeliveryLineItemDataBuilder {
 
   public ProofOfDeliveryLineItemDataBuilder withoutReason() {
     rejectionReasonId = null;
+    return this;
+  }
+
+  public ProofOfDeliveryLineItemDataBuilder withoutLotId() {
+    this.lotId = null;
     return this;
   }
 
