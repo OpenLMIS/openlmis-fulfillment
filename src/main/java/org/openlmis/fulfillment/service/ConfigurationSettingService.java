@@ -28,7 +28,7 @@ import java.util.UUID;
 public class ConfigurationSettingService {
 
   private static final String RESONS_SUFFIX = "reasons.";
-  private static final String TRANSFER_IN = RESONS_SUFFIX + ".transferIn";
+  static final String TRANSFER_IN = RESONS_SUFFIX + ".transferIn";
 
   @Autowired
   private Environment env;

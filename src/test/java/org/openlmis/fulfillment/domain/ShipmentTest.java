@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
@@ -24,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
@@ -108,6 +110,30 @@ public class ShipmentTest {
 
     assertEquals(lineItems.get(0), unchangedView);
     assertNotEquals(lineItems.get(0).getId(), changedView.getId());
+  }
+
+  @Test
+  public void shouldReturnProgramId() {
+    UUID programId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withProgramId(programId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    assertThat(shipment.getProgramId(), is(programId));
+  }
+
+  @Test
+  public void shouldReturnReceivingFacilityId() {
+    UUID receivingFacilityId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withReceivingFacilityId(receivingFacilityId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    assertThat(shipment.getReceivingFacilityId(), is(receivingFacilityId));
+  }
+
+  @Test
+  public void shouldReturnSupplyingFacilityId() {
+    UUID supplyingFacilityId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withSupplyingFacilityId(supplyingFacilityId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    assertThat(shipment.getSupplyingFacilityId(), is(supplyingFacilityId));
   }
 
   private Shipment createShipment() {

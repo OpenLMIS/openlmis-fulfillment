@@ -32,6 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
@@ -44,6 +45,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryTest {
 
   @Rule
@@ -167,6 +169,33 @@ public class ProofOfDeliveryTest {
     assertEquals(pod.getReceivedBy(), exporter.getReceivedBy());
     assertEquals(pod.getDeliveredBy(), exporter.getDeliveredBy());
     assertEquals(pod.getReceivedDate(), exporter.getReceivedDate());
+  }
+
+  @Test
+  public void shouldReturnProgramId() {
+    UUID programId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withProgramId(programId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    ProofOfDelivery instance = new ProofOfDeliveryDataBuilder().withShipment(shipment).build();
+    assertThat(instance.getProgramId(), is(programId));
+  }
+
+  @Test
+  public void shouldReturnReceivingFacilityId() {
+    UUID receivingFacilityId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withReceivingFacilityId(receivingFacilityId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    ProofOfDelivery instance = new ProofOfDeliveryDataBuilder().withShipment(shipment).build();
+    assertThat(instance.getReceivingFacilityId(), is(receivingFacilityId));
+  }
+
+  @Test
+  public void shouldReturnSupplyingFacilityId() {
+    UUID supplyingFacilityId = UUID.randomUUID();
+    Order order = new OrderDataBuilder().withSupplyingFacilityId(supplyingFacilityId).build();
+    Shipment shipment = new ShipmentDataBuilder().withOrder(order).build();
+    ProofOfDelivery instance = new ProofOfDeliveryDataBuilder().withShipment(shipment).build();
+    assertThat(instance.getSupplyingFacilityId(), is(supplyingFacilityId));
   }
 
   private void setException(String field) {

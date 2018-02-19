@@ -59,6 +59,11 @@ public class ProofOfDeliveryDataBuilder {
     return this;
   }
 
+  public ProofOfDeliveryDataBuilder withShipment(Shipment shipment) {
+    this.shipment = shipment;
+    return this;
+  }
+
   /**
    * Builds new instance of {@link ProofOfDelivery}.
    */
@@ -92,5 +97,4 @@ public class ProofOfDeliveryDataBuilder {
     status = ProofOfDeliveryStatus.CONFIRMED;
     return build();
   }
-
 }
