@@ -87,15 +87,15 @@ public class ProofOfDelivery extends BaseEntity {
   }
 
   public UUID getProgramId() {
-    return shipment.getOrder().getProgramId();
+    return shipment.getProgramId();
   }
 
   public UUID getReceivingFacilityId() {
-    return shipment.getOrder().getReceivingFacilityId();
+    return shipment.getReceivingFacilityId();
   }
 
   public UUID getSupplyingFacilityId() {
-    return shipment.getOrder().getSupplyingFacilityId();
+    return shipment.getSupplyingFacilityId();
   }
 
   /**
