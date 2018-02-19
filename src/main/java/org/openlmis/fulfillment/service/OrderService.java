@@ -15,12 +15,17 @@
 
 package org.openlmis.fulfillment.service;
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
+import static org.javers.common.collections.Sets.asSet;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NO_PERMISSION;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -36,23 +41,31 @@ import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
+import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -99,6 +112,12 @@ public class OrderService {
   private DateHelper dateHelper;
 
   @Autowired
+  private PermissionService permissionService;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
+  @Autowired
   protected MessageService messageService;
 
   @Value("${email.noreply}")
@@ -137,10 +156,30 @@ public class OrderService {
    * @param params provided parameters.
    * @return ist of Orders with matched parameters.
    */
-  public List<Order> searchOrders(OrderSearchParams params) {
+  public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
+    UserDto user = authenticationHelper.getCurrentUser();
+    PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+    Set<PermissionStringDto> permissionStrings = handler.get();
+
+    Set<UUID> supplyingFacilities = permissionStrings.stream().filter(
+        permissionString ->
+            permissionString.getRightName().equalsIgnoreCase(ORDERS_VIEW)
+                || permissionString.getRightName().equalsIgnoreCase(PODS_MANAGE))
+        .map(PermissionStringDto::getFacilityId)
+        .collect(toSet());
+
+    if (null != params.getSupplyingFacilityId()) {
+      if (supplyingFacilities.contains(params.getSupplyingFacilityId())) {
+        supplyingFacilities = asSet(params.getSupplyingFacilityId());
+      } else {
+        throw new ValidationException(ORDER_NO_PERMISSION,
+            params.getSupplyingFacilityId().toString());
+      }
+    }
+
     return orderRepository.searchOrders(
-        params.getSupplyingFacility(), params.getRequestingFacility(), params.getProgram(),
-        params.getProcessingPeriod(), params.getStatusAsEnum()
+        supplyingFacilities, params.getRequestingFacilityId(), params.getProgramId(),
+        params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable
     );
   }
 

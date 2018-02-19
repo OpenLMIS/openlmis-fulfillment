@@ -16,12 +16,14 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.ServiceResponse;
 import org.openlmis.fulfillment.util.BooleanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -88,4 +90,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     return new ResultDto<>(BooleanUtils.toBoolean(result.getResult()));
   }
 
+  public ServiceResponse<List<String>> getPermissionStrings(UUID user, String etag) {
+    return tryFindAll(user + "/permissionStrings", String[].class, etag);
+  }
 }

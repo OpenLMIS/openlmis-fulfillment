@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.repository;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +33,10 @@ import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.ZoneId;
@@ -49,6 +54,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Autowired
   private OrderRepository orderRepository;
+
+  Pageable pageable = new PageRequest(0, 10);
 
   @Override
   protected CrudRepository<Order, UUID> getRepository() {
@@ -107,32 +114,38 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order four = orderRepository.save(generateInstance(OrderStatus.TRANSFER_FAILED));
     Order five = orderRepository.save(generateInstance(OrderStatus.SHIPPED));
 
-    List<Order> list = orderRepository.searchOrders(null, null, null, null, null);
+    Page<Order> list = orderRepository.searchOrders(null, null, null, null, null, pageable);
     assertSearchOrders(list, one, two, three, four, five);
 
-    list = orderRepository.searchOrders(one.getSupplyingFacilityId(), null, null, null, null);
+    list = orderRepository.searchOrders(null, null, null, null, null, new PageRequest(1, 2));
+    assertSearchOrders(list, three, four);
+
+    list = orderRepository
+        .searchOrders(asSet(one.getSupplyingFacilityId()), null, null, null, null, pageable);
     assertSearchOrders(list, one);
 
-    list = orderRepository.searchOrders(null, two.getRequestingFacilityId(), null, null, null);
+    list = orderRepository
+        .searchOrders(null, two.getRequestingFacilityId(), null, null, null, pageable);
     assertSearchOrders(list, two);
 
-    list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null);
+    list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable);
     assertSearchOrders(list, three);
 
-    list = orderRepository.searchOrders(null, null, null, four.getProcessingPeriodId(), null);
+    list = orderRepository
+        .searchOrders(null, null, null, four.getProcessingPeriodId(), null, pageable);
     assertSearchOrders(list, four);
 
-    list = orderRepository.searchOrders(null, null, null, null, EnumSet.of(five.getStatus()));
+    list = orderRepository
+        .searchOrders(null, null, null, null, EnumSet.of(five.getStatus()), pageable);
     assertSearchOrders(list, five);
 
     list = orderRepository.searchOrders(
-        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus())
-    );
+        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable);
     assertSearchOrders(list, one, four);
   }
 
   @Test
-  public void shouldOrderOrdersByCreatedDate() {
+  public void shouldSort() {
     final Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
     final Order two = orderRepository.save(generateInstance(OrderStatus.ORDERED));
     final Order three = orderRepository.save(generateInstance(OrderStatus.ORDERED));
@@ -148,14 +161,18 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(three);
     orderRepository.save(four);
 
-    List<Order> result = orderRepository.searchOrders(null, null, null, null,
-        Collections.singleton(OrderStatus.ORDERED));
+    Page<Order> result = orderRepository.searchOrders(null, null, null, null,
+        Collections.singleton(OrderStatus.ORDERED),
+        new PageRequest(0, 10, new Sort(Sort.Direction.DESC, "createdDate")));
 
-    assertEquals(4, result.size());
+    assertEquals(4, result.getContent().size());
     // They should be returned from the most recent to the least recent
-    assertTrue(result.get(0).getCreatedDate().isAfter(result.get(1).getCreatedDate()));
-    assertTrue(result.get(1).getCreatedDate().isAfter(result.get(2).getCreatedDate()));
-    assertTrue(result.get(2).getCreatedDate().isAfter(result.get(3).getCreatedDate()));
+    assertTrue(result.getContent().get(0).getCreatedDate()
+        .isAfter(result.getContent().get(1).getCreatedDate()));
+    assertTrue(result.getContent().get(1).getCreatedDate()
+        .isAfter(result.getContent().get(2).getCreatedDate()));
+    assertTrue(result.getContent().get(2).getCreatedDate()
+        .isAfter(result.getContent().get(3).getCreatedDate()));
   }
 
   @Test
@@ -209,10 +226,10 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     }
   }
 
-  private void assertSearchOrders(List<Order> actual, Order... expected) {
-    assertThat(actual, hasSize(expected.length));
+  private void assertSearchOrders(Page<Order> actual, Order... expected) {
+    assertThat(actual.getContent(), hasSize(expected.length));
 
-    Set<UUID> actualIds = getIds(actual.stream());
+    Set<UUID> actualIds = getIds(actual.getContent().stream());
     Set<UUID> expectedIds = getIds(Stream.of(expected));
 
     assertThat(actualIds, hasSize(expected.length));

@@ -19,7 +19,6 @@ import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 
 import com.google.common.collect.ImmutableMap;
-
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderFileTemplate;
@@ -33,7 +32,6 @@ import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
 import org.openlmis.fulfillment.service.OrderSearchParams;
-import org.openlmis.fulfillment.service.OrderSecurityService;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
@@ -41,7 +39,6 @@ import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
-import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderPeriodFilter;
@@ -49,12 +46,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,7 +63,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -73,7 +71,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -107,9 +104,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private TemplateService templateService;
-
-  @Autowired
-  private OrderSecurityService orderSecurityService;
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
@@ -156,14 +150,24 @@ public class OrderController extends BaseController {
   }
 
   /**
-   * Get all orders.
+   * Search through orders with given parameters.
    *
+   * @param params   order search params
+   * @param pageable pagination parameters
    * @return OrderDtos.
    */
-  @RequestMapping(value = "/orders", method = RequestMethod.GET)
+  @GetMapping("/orders")
   @ResponseBody
-  public Iterable<BasicOrderDto> getAllOrders() {
-    return BasicOrderDto.newInstance(orderRepository.findAll(), exporter);
+  public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
+    Page<Order> orders = orderService.searchOrders(params, pageable);
+
+    List<BasicOrderDto> data = BasicOrderDto.newInstance(orders.getContent(), exporter);
+    List<BasicOrderDto> filteredData = data
+        .stream()
+        .filter(new OrderPeriodFilter(params.getPeriodStartDate(), params.getPeriodEndDate()))
+        .collect(Collectors.toList());
+
+    return new PageImpl<>(filteredData, pageable, orders.getTotalElements());
   }
 
   /**
@@ -186,28 +190,6 @@ public class OrderController extends BaseController {
       objReferenceExpander.expandDto(orderDto, expand);
       return orderDto;
     }
-  }
-
-  /**
-   * Finds Orders matching all of provided parameters.
-   *
-   * @param params provided parameters.
-   * @return ResponseEntity with list of all Orders matching provided parameters and OK httpStatus.
-   */
-  @RequestMapping(value = "/orders/search", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
-    List<Order> orders = orderService.searchOrders(params);
-
-    List<Order> filteredList = orderSecurityService.filterInaccessibleOrders(orders);
-    List<BasicOrderDto> data = BasicOrderDto.newInstance(filteredList, exporter);
-    List<BasicOrderDto> filteredData = data
-        .stream()
-        .filter(new OrderPeriodFilter(params.getPeriodStartDate(), params.getPeriodEndDate()))
-        .collect(Collectors.toList());
-
-    return Pagination.getPage(filteredData, pageable);
   }
 
   /**

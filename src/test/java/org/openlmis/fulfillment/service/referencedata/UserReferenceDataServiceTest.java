@@ -25,19 +25,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<UserDto> {
+
+  UserReferenceDataService service;
 
   @Override
   protected BaseReferenceDataService<UserDto> getService() {
@@ -47,6 +49,11 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
   @Override
   UserDto generateInstance() {
     return new UserDto();
+  }
+
+  @Before
+  public void before() {
+    service = (UserReferenceDataService) prepareService();
   }
 
   @Test
@@ -60,7 +67,6 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", name);
 
-    UserReferenceDataService service = (UserReferenceDataService) prepareService();
     ResponseEntity response = mock(ResponseEntity.class);
 
     // when
@@ -99,8 +105,6 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", name);
 
-    UserReferenceDataService service = (UserReferenceDataService) prepareService();
-
     // when
     when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
@@ -126,4 +130,61 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     assertThat(entityCaptor.getValue().getBody(), is(payload));
   }
 
+  /*@Test
+  public void shouldRetrievePermissionStrings() throws Exception {
+    UserDto instance = generateInstance();
+    String etag = RandomStringUtils.random(10);
+
+    // when
+    mockArrayRequest(HttpMethod.GET, String[].class);
+    mockArrayResponse(response ->
+        when(response.getBody()).thenReturn(new String[]{"PERMISSION_STRING"}));
+
+    ServiceResponse<List<String>> found = service.getPermissionStrings(instance.getId(), etag);
+
+    // then
+    ResponseEntity response = getArrayResponse();
+
+    assertThat(found.getBody(), hasItem("PERMISSION_STRING"));
+    assertThat(found.getHeaders(), equalTo(response.getHeaders()));
+    assertThat(found.isModified(), is(true));
+
+    URI uri = getUri();
+    String url = service.getServiceUrl() + service.getUrl() + "/permissionStrings";
+    assertThat(uri.toString(), equalTo(url));
+
+    HttpEntity entity = getEntity();
+
+    assertThat(entity.getBody(), is(nullValue()));
+    assertThat(entity.getHeaders(), hasEntry(HttpHeaders.IF_NONE_MATCH, singletonList(etag)));
+  }
+
+  @Test
+  public void shouldNotRetrievePermissionStringsIfThereWasNoChange() throws Exception {
+    UserDto instance = generateInstance();
+    String etag = RandomStringUtils.random(10);
+
+    // when
+    mockArrayRequest(HttpMethod.GET, String[].class);
+    mockArrayResponse(response ->
+        when(response.getStatusCode()).thenReturn(HttpStatus.NOT_MODIFIED));
+
+    ServiceResponse<List<String>> found = service.getPermissionStrings(instance.getId(), etag);
+
+    // then
+    ResponseEntity response = getArrayResponse();
+
+    assertThat(found.getBody(), is(nullValue()));
+    assertThat(found.getHeaders(), equalTo(response.getHeaders()));
+    assertThat(found.isModified(), is(false));
+
+    URI uri = getUri();
+    String url = service.getServiceUrl() + service.getUrl() + "/permissionStrings";
+    assertThat(uri.toString(), equalTo(url));
+
+    HttpEntity entity = getEntity();
+
+    assertThat(entity.getBody(), is(nullValue()));
+    assertThat(entity.getHeaders(), hasEntry(HttpHeaders.IF_NONE_MATCH, singletonList(etag)));
+  }*/
 }

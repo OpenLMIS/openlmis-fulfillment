@@ -36,6 +36,10 @@ public final class RequestHeaders {
     return isNotBlank(token) ? set(HttpHeaders.AUTHORIZATION, "Bearer " + token) : this;
   }
 
+  public RequestHeaders setIfNoneMatch(String value) {
+    return set(HttpHeaders.IF_NONE_MATCH, value);
+  }
+
   /**
    * Set parameter (key argument) with the value only if the value is not null.
    */

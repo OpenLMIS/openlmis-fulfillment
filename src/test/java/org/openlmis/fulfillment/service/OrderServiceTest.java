@@ -15,25 +15,32 @@
 
 package org.openlmis.fulfillment.service;
 
+import static java.util.Collections.singleton;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NO_PERMISSION;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -64,6 +71,8 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
+import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
@@ -74,20 +83,21 @@ import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ProcessingPeriodDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
@@ -95,6 +105,9 @@ public class OrderServiceTest {
 
   private static final String FROM_EMAIL = "noreply@openlmis.org";
   private static final String SUBJECT = "New order";
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Mock
   private OrderRepository orderRepository;
@@ -137,6 +150,12 @@ public class OrderServiceTest {
 
   @Mock
   private ExtensionManager extensionManager;
+
+  @Mock
+  private PermissionService permissionService;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
 
   @InjectMocks
   private ExporterBuilder exporter;
@@ -260,7 +279,7 @@ public class OrderServiceTest {
     StatusChange statusChange = new StatusChange();
     statusChange.setStatus(ExternalStatus.APPROVED);
     statusChange.setCreatedDate(ZonedDateTime.now());
-    statusChange.setAuthorId(UUID.randomUUID());
+    statusChange.setAuthorId(randomUUID());
     order.setStatusChanges(Lists.newArrayList(statusChange));
 
     when(orderSender.send(order)).thenReturn(false);
@@ -279,52 +298,79 @@ public class OrderServiceTest {
 
   @Test
   public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
-    // given
     Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+    UserDto user = new UserDataBuilder().build();
+    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
+    PermissionStringDto permission = PermissionStringDto.create(
+        ORDERS_VIEW, order.getSupplyingFacilityId(), order.getProgramId());
+
+    when(handler.get()).thenReturn(singleton(permission));
+
+    when(permissionService.getPermissionStrings(user.getId())
+    ).thenReturn(handler);
 
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), EnumSet.of(order.getStatus()))
-    ).thenReturn(Collections.singletonList(order));
+        asSet(order.getSupplyingFacilityId()), order.getRequestingFacilityId(),
+        order.getProgramId(), order.getProcessingPeriodId(),
+        EnumSet.of(order.getStatus()), pageable)
+    ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
-    // when
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
     );
-    List<Order> receivedOrders = orderService.searchOrders(params);
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
-    // then
-    assertEquals(1, receivedOrders.size());
-    assertEquals(receivedOrders.get(0).getSupplyingFacilityId(), order.getSupplyingFacilityId());
-    assertEquals(receivedOrders.get(0).getRequestingFacilityId(), order.getRequestingFacilityId());
-    assertEquals(receivedOrders.get(0).getProgramId(), order.getProgramId());
+    assertEquals(1, receivedOrders.getContent().size());
+    assertEquals(receivedOrders.getContent().get(0).getSupplyingFacilityId(),
+        order.getSupplyingFacilityId());
+    assertEquals(receivedOrders.getContent().get(0).getRequestingFacilityId(),
+        order.getRequestingFacilityId());
+    assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
+  public void shouldThrowExceptionIfUserHasNoPermission() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(ORDER_NO_PERMISSION);
+
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+    UserDto user = new UserDataBuilder().build();
+    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
+    PermissionStringDto permission = PermissionStringDto.create(
+        ORDERS_VIEW, randomUUID(), randomUUID());
+
+    when(handler.get()).thenReturn(singleton(permission));
+
+    when(permissionService.getPermissionStrings(user.getId())
+    ).thenReturn(handler);
+
+    when(orderRepository.searchOrders(
+        asSet(order.getSupplyingFacilityId()), order.getRequestingFacilityId(),
+        order.getProgramId(), order.getProcessingPeriodId(),
+        EnumSet.of(order.getStatus()), pageable)
+    ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(user);
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
+    );
+    orderService.searchOrders(params, pageable);
   }
 
   private Order generateOrder() {
-    int number = new Random().nextInt();
-    Order order = new Order();
-    order.setId(UUID.randomUUID());
-    order.setProgramId(program.getId());
-    order.setCreatedDate(ZonedDateTime.now().plusDays(number));
-    order.setCreatedById(UUID.randomUUID());
-    order.setQuotedCost(BigDecimal.valueOf(1));
-    order.setOrderCode("OrderCode " + number);
-    order.setStatus(OrderStatus.ORDERED);
-    order.setOrderLineItems(new ArrayList<>());
-    order.getOrderLineItems().add(generateOrderLineItem(order));
-    return order;
-  }
-
-  private OrderLineItem generateOrderLineItem(Order order) {
-    OrderLineItem orderLineItem = new OrderLineItem();
-    orderLineItem.setId(UUID.randomUUID());
-    orderLineItem.setOrder(order);
-    orderLineItem.setOrderedQuantity(1000L);
-    return orderLineItem;
+    return new OrderDataBuilder().withOrderedStatus().build();
   }
 
   private void validateCreatedOrder(Order actual, Order expected) {

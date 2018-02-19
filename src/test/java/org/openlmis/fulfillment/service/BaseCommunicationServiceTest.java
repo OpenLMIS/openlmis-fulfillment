@@ -15,13 +15,18 @@
 
 package org.openlmis.fulfillment.service;
 
+import static com.google.common.collect.ImmutableList.of;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import lombok.Getter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -31,10 +36,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseCommunicationServiceTest {
@@ -45,6 +53,10 @@ public abstract class BaseCommunicationServiceTest {
 
   @Mock
   protected AuthService authService;
+
+  @Mock
+  @Getter
+  private ResponseEntity arrayResponse;
 
   @Captor
   protected ArgumentCaptor<URI> uriCaptor;
@@ -85,4 +97,27 @@ public abstract class BaseCommunicationServiceTest {
     verify(authService, atLeastOnce()).obtainAccessToken();
   }
 
+  protected <P> void mockArrayRequest(HttpMethod method, Class<P[]> type) {
+    when(restTemplate.exchange(uriCaptor.capture(), eq(method), entityCaptor.capture(), eq(type)))
+        .thenReturn(arrayResponse);
+  }
+
+  protected void mockArrayResponse(Consumer<ResponseEntity> action) {
+    action.accept(arrayResponse);
+  }
+
+  protected URI getUri() {
+    return uriCaptor.getValue();
+  }
+
+  protected HttpEntity getEntity() {
+    HttpEntity entity = entityCaptor.getValue();
+    assertThat(entity.getHeaders(), hasEntry(AUTHORIZATION, of(getTokenHeader())));
+
+    return entity;
+  }
+
+  String getTokenHeader() {
+    return "Bearer " + TOKEN;
+  }
 }

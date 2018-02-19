@@ -15,27 +15,31 @@
 
 package org.openlmis.fulfillment.repository.custom.impl;
 
-import static org.openlmis.fulfillment.domain.Order.CREATED_DATE;
+import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.Order.PROCESSING_PERIOD_ID;
 import static org.openlmis.fulfillment.domain.Order.PROGRAM_ID;
 import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
-import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.Order.SUPPLYING_FACILITY_ID;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -47,31 +51,34 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   /**
    * Method returns all Orders with matched parameters.
    *
-   * @param supplyingFacility  supplyingFacility of searched Orders.
-   * @param requestingFacility requestingFacility of searched Orders.
-   * @param program            program of searched Orders.
-   * @param processingPeriod   UUID of processing period
-   * @param statuses           order statuses.
+   * @param supplyingFacilities set of supplyingFacility of searched Orders.
+   * @param requestingFacility  requestingFacility of searched Orders.
+   * @param program             program of searched Orders.
+   * @param processingPeriod    UUID of processing period
+   * @param statuses            order statuses.
+   * @param pageable            page parameters
    * @return List of Orders with matched parameters.
    */
   @Override
-  public List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-                                  UUID program, UUID processingPeriod, Set<OrderStatus> statuses) {
+  public Page<Order> searchOrders(Set<UUID> supplyingFacilities, UUID requestingFacility,
+                                  UUID program, UUID processingPeriod, Set<OrderStatus> statuses,
+                                  Pageable pageable) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
-    Root<Order> root = query.from(Order.class);
+    query = prepareQuery(query, supplyingFacilities, requestingFacility,
+        program, processingPeriod, statuses, pageable, false);
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareQuery(countQuery, supplyingFacilities, requestingFacility,
+        program, processingPeriod, statuses, pageable, true);
 
-    Predicate predicate = builder.conjunction();
-    predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
-    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
-    predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
-    predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
-    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
+    Long count = entityManager.createQuery(countQuery).getSingleResult();
+    List<Order> result = entityManager.createQuery(query)
+        .setMaxResults(pageable.getPageSize())
+        .setFirstResult(pageable.getPageSize() * pageable.getPageNumber())
+        .getResultList();
 
-    query.where(predicate);
-    query.orderBy(builder.desc(root.get(CREATED_DATE)));
-
-    return entityManager.createQuery(query).getResultList();
+    return new PageImpl<>(result, pageable, count);
   }
 
   /**
@@ -90,6 +97,34 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     query.select(root.get(REQUESTING_FACILITY_ID)).distinct(true);
 
     return entityManager.createQuery(query).getResultList();
+  }
+
+  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, Set<UUID> supplyingFacilities,
+                                            UUID requestingFacility, UUID program,
+                                            UUID processingPeriod, Set<OrderStatus> statuses,
+                                            Pageable pageable, boolean count) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    Root<Order> root = query.from(Order.class);
+
+    if (count) {
+      CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
+      query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
+    }
+
+    Predicate predicate = builder.conjunction();
+    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate, builder);
+    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
+    predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
+    predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
+    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
+
+    query.where(predicate);
+
+    if (!count && pageable != null && pageable.getSort() != null) {
+      query = addSortProperties(query, root, pageable);
+    }
+
+    return query;
   }
 
   private Predicate isOneOf(String field, Collection collection, Root<Order> root,
@@ -114,4 +149,24 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
         : predicate;
   }
 
+  private <T> CriteriaQuery<T> addSortProperties(CriteriaQuery<T> query,
+                                                 Root root, Pageable pageable) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    List<javax.persistence.criteria.Order> orders = new ArrayList<>();
+    Iterator<Sort.Order> iterator = pageable.getSort().iterator();
+    Sort.Order order;
+
+    while (iterator.hasNext()) {
+      order = iterator.next();
+      String property = order.getProperty();
+
+      Path path = root.get(property);
+      if (order.isAscending()) {
+        orders.add(builder.asc(path));
+      } else {
+        orders.add(builder.desc(path));
+      }
+    }
+    return query.orderBy(orders);
+  }
 }

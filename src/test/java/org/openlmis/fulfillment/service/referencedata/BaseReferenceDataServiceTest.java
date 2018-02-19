@@ -35,7 +35,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
-
 import java.net.URI;
 import java.util.UUID;
 
@@ -128,5 +127,4 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
   protected abstract BaseReferenceDataService<T> getService();
 
   abstract T generateInstance();
-
 }

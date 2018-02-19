@@ -49,10 +49,10 @@ import java.util.stream.Collectors;
 public class OrderSearchParams {
   private static final ToEnum TO_ENUM = new ToEnum();
 
-  UUID supplyingFacility;
-  UUID requestingFacility;
-  UUID program;
-  UUID processingPeriod;
+  UUID supplyingFacilityId;
+  UUID requestingFacilityId;
+  UUID programId;
+  UUID processingPeriodId;
   Set<String> status;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

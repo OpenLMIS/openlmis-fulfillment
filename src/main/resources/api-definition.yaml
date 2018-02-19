@@ -179,14 +179,67 @@ resourceTypes:
   /orders:
       displayName: Order
       get:
-          is: [ secured ]
+          is: [ secured, paginated ]
           description: Get all orders.
+          queryParameters:
+              supplyingFacilityId:
+                  displayName: supplyingFacility
+                  description: supplyingFacility ID
+                  type: string
+                  required: false
+                  repeat: false
+              requestingFacilityId:
+                  displayName: requestingFacility
+                  description: requestingFacility ID
+                  type: string
+                  required: false
+                  repeat: false
+              programId:
+                  displayName: program
+                  description: program ID
+                  type: string
+                  required: false
+                  repeat: false
+              processingPeriodId:
+                  displayName: processingPeriod
+                  description: processingPeriod ID
+                  type: string
+                  required: false
+                  repeat: false
+              status:
+                  displayName: status
+                  description: Order status
+                  type: string
+                  required: false
+                  repeat: true
+                  enum:
+                      - ORDERED
+                      - FULFILLING
+                      - SHIPPED
+                      - RECEIVED
+                      - TRANSFER_FAILED
+                      - IN_ROUTE
+                      - READY_TO_PACK
+              periodStartDate:
+                  displayName: periodStartDate
+                  type: string
+                  required: false
+                  repeat: false
+              periodEndDate:
+                  displayName: periodEndDate
+                  type: string
+                  required: false
+                  repeat: false
           responses:
               200:
                   body:
                     application/json:
-                      schema: basicOrderDtoArray
+                      schema: basicOrderDtoPage
               403:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+              404:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -276,68 +329,6 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
-      /search:
-              get:
-                  is: [ secured, paginated ]
-                  description: Find Orders with matched parameters. Filtered by warehouses for which the user has ORDERS_VIEW or PODS_MANAGE right.
-                  queryParameters:
-                      supplyingFacility:
-                          displayName: supplyingFacility
-                          description: supplyingFacility ID
-                          type: string
-                          required: false
-                          repeat: false
-                      requestingFacility:
-                          displayName: requestingFacility
-                          description: requestingFacility ID
-                          type: string
-                          required: false
-                          repeat: false
-                      program:
-                          displayName: program
-                          description: program ID
-                          type: string
-                          required: false
-                          repeat: false
-                      processingPeriod:
-                          displayName: processingPeriod
-                          description: processingPeriod ID
-                          type: string
-                          required: false
-                          repeat: false
-                      status:
-                          displayName: status
-                          description: Order status
-                          type: string
-                          required: false
-                          repeat: true
-                          enum:
-                              - ORDERED
-                              - FULFILLING
-                              - SHIPPED
-                              - RECEIVED
-                              - TRANSFER_FAILED
-                              - IN_ROUTE
-                              - READY_TO_PACK
-                      periodStartDate:
-                          displayName: periodStartDate
-                          type: string
-                          required: false
-                          repeat: false
-                      periodEndDate:
-                          displayName: periodEndDate
-                          type: string
-                          required: false
-                          repeat: false
-                  responses:
-                      200:
-                          body:
-                            application/json:
-                              schema: basicOrderDtoPage
-                      400:
-                          body:
-                            application/json:
-                              schema: localizedMessage
       /{id}/print:
           uriParameters:
               id:

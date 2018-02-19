@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -25,6 +26,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +34,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,10 +46,12 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,17 +72,22 @@ import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
+import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
+import org.openlmis.fulfillment.testutils.UserDataBuilder;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
@@ -85,10 +96,10 @@ import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -97,13 +108,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/orders";
-  private static final String SEARCH_URL = RESOURCE_URL + "/search";
   private static final String BATCH_URL = RESOURCE_URL + "/batch";
   private static final String REQUESTING_FACILITIES_URL = RESOURCE_URL + "/requestingFacilities";
 
@@ -112,10 +123,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String PRINT_URL = ID_URL + "/print";
 
-  private static final String REQUESTING_FACILITY = "requestingFacility";
-  private static final String SUPPLYING_FACILITY = "supplyingFacility";
-  private static final String PROCESSING_PERIOD = "processingPeriod";
-  private static final String PROGRAM = "program";
+  private static final String REQUESTING_FACILITY = "requestingFacilityId";
+  private static final String SUPPLYING_FACILITY = "supplyingFacilityId";
+  private static final String PROCESSING_PERIOD = "processingPeriodId";
+  private static final String PROGRAM = "programId";
   private static final String FORMAT = "format";
   private static final String MESSAGE_KEY = "messageKey";
   private static final String PERIOD_START_DATE = "periodStartDate";
@@ -124,6 +135,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String CSV = "csv";
   private static final String EXPAND = "expand";
   private static final String LAST_UPDATER = "lastUpdater";
+
+  private static final String PAGE = "page";
+  private static final String SIZE = "size";
 
   private static final UUID PERIOD_ID = UUID.fromString("4c6b05c2-894b-11e6-ae22-56b6b6499611");
 
@@ -164,6 +178,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
+  @MockBean
+  private AuthenticationHelper authenticationHelper;
+
+  @MockBean
+  private PermissionService permissionService;
+
   @SpyBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
@@ -183,9 +203,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private FacilityDto facility1;
   private FacilityDto facility2;
 
+  private Pageable pageable = new PageRequest(0, 10);
+
+  private UserDto user = new UserDataBuilder().build();
+
   @Before
   public void setUp() {
     this.setUpBootstrapData();
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
         ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
@@ -345,14 +371,18 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacility() {
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), null, null, null, null
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), null, null, null, null, pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -372,16 +402,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        null, null, null
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        null, null, null, pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -404,17 +438,21 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null, null
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), null, null, pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -442,18 +480,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK)
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK), pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -485,16 +527,20 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
     secondOrder.setStatus(IN_ROUTE);
 
-    given(orderRepository.searchOrders(
-        null, null, null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE)
-    )).willReturn(Lists.newArrayList(firstOrder, secondOrder));
+    given(orderRepository.searchOrders(asSet(firstOrder.getSupplyingFacilityId()), null, null,
+        null, EnumSet.of(READY_TO_PACK, IN_ROUTE), pageable))
+        .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder, secondOrder), pageable, 2));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(ORDER_STATUS, firstOrder.getStatus().toString())
         .queryParam(ORDER_STATUS, secondOrder.getStatus().toString())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -511,35 +557,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldReturnSearchPage() throws Exception {
-    given(orderRepository.searchOrders(null, null, null, null, null))
-        .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
-
-    PageImplRepresentation response = restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .queryParam("page", 0)
-        .queryParam("size", 1)
-        .when()
-        .get(SEARCH_URL)
-        .then()
-        .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
-
-    List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
-
-    assertThat(content, hasSize(1));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgramAndStatusAndPeriod() {
     firstOrder.setStatus(READY_TO_PACK);
     firstOrder.setProcessingPeriodId(PERIOD_ID);
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
+        EnumSet.of(READY_TO_PACK), pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -547,9 +575,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -587,9 +617,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
+        pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -598,9 +631,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_START_DATE, "2017-01-01")
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -638,9 +673,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
+        pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -649,9 +687,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_END_DATE, "2017-01-31")
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -689,9 +729,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
-        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK)
-    )).willReturn(Lists.newArrayList(firstOrder));
+        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
+        pageable
+    )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -701,9 +744,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_START_DATE, "2017-01-01")
         .queryParam(PERIOD_END_DATE, "2017-01-31")
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -736,6 +781,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectSearchRequestIfStatusIsIncorrect() {
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+
     String response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
@@ -743,7 +790,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ORDER_STATUS, "abc")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(400)
         .extract().path(MESSAGE_KEY);
@@ -809,17 +856,24 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldGetAllOrders() {
+    given(orderRepository.searchOrders(
+        asSet(firstOrder.getSupplyingFacilityId()), null, null, null, null, pageable))
+        .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    BasicOrderDto[] response = restAssured.given()
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+
+    PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .when()
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(BasicOrderDto[].class);
+        .extract().as(PageImplRepresentation.class);
 
-    Iterable<BasicOrderDto> orders = asList(response);
+    Iterable<Object> orders = asList(response.getContent());
     assertTrue(orders.iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -901,7 +955,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnForbiddenWhenUserHasNoRightsToCreateOrder() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_EDIT))
+        .when(permissionService).canEditOrder(any(OrderDto.class));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -917,7 +972,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnForbiddenWhenUserHasNoRightsToCreateMultipleOrders() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_EDIT))
+        .when(permissionService).canEditOrder(any(OrderDto.class));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1070,13 +1126,19 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(null, null, null, null, null))
-        .willReturn(Lists.newArrayList(firstOrder, secondOrder, thirdOrder));
+    given(orderRepository.searchOrders(asSet(firstOrder.getSupplyingFacilityId()), null, null,
+        null, null, pageable))
+        .willReturn(
+            new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 3));
+
+    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
 
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .queryParam(PAGE, 0)
+        .queryParam(SIZE, 10)
         .when()
-        .get(SEARCH_URL)
+        .get(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract().as(PageImplRepresentation.class);
@@ -1132,7 +1194,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectGetRequestWhenUserHasNoRights() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_VIEW))
+        .when(permissionService).canViewOrder(any(Order.class));
 
     String response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1150,7 +1213,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectPrintRequestWhenUserHasNoRights() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_VIEW))
+        .when(permissionService).canViewOrder(any(Order.class));
 
     String response = restAssured.given()
         .queryParam(FORMAT, CSV)
@@ -1168,7 +1232,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectExportRequestWhenUserHasNoRights() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_VIEW))
+        .when(permissionService).canViewOrder(any(Order.class));
 
     String response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1185,7 +1250,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectCreateRequestWhenUserHasNoRights() {
-    denyUserAllRights();
+    doThrow(new MissingPermissionException(ORDERS_EDIT))
+        .when(permissionService).canEditOrder(any(OrderDto.class));
 
     String response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1228,5 +1294,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         ZonedDateTime.now(), user));
 
     return list;
+  }
+
+  private void mockPermissionStrings(UUID programId, UUID... supplyingFacilityIds) {
+    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
+
+    Set<PermissionStringDto> permissions = Arrays.stream(supplyingFacilityIds)
+        .map(id -> PermissionStringDto.create(ORDERS_VIEW, id, programId))
+        .collect(toSet());
+
+    when(handler.get()).thenReturn(permissions);
+
+    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
   }
 }

@@ -37,9 +37,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
   protected RestOperations restTemplate = new RestTemplate();
 
@@ -94,6 +97,27 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
+  protected <P> ServiceResponse<List<P>> tryFindAll(String resourceUrl, Class<P[]> type,
+                                                    String etag) {
+    String url = getServiceUrl() + getUrl() + resourceUrl;
+
+    try {
+      RequestHeaders headers = RequestHeaders.init().setIfNoneMatch(etag);
+      ResponseEntity<P[]> response = restTemplate.exchange(
+          url, HttpMethod.GET, RequestHelper.createEntity(null, addAuthHeader(headers)), type
+      );
+
+      if (response.getStatusCode() == HttpStatus.NOT_MODIFIED) {
+        return new ServiceResponse<>(null, response.getHeaders(), false);
+      } else {
+        List<P> list = Stream.of(response.getBody()).collect(Collectors.toList());
+        return new ServiceResponse<>(list, response.getHeaders(), true);
+      }
+    } catch (HttpStatusCodeException ex) {
+      throw buildDataRetrievalException(ex);
+    }
+  }
+
   /**
    * Return all reference data T objects for Page that need to be retrieved with POST request.
    *
@@ -138,6 +162,12 @@ public abstract class BaseCommunicationService<T> {
 
   protected  <E> HttpEntity<E> createEntity() {
     return RequestHelper.createEntity(createHeadersWithAuth());
+  }
+
+  private RequestHeaders addAuthHeader(RequestHeaders headers) {
+    return null == headers
+        ? RequestHeaders.init().setAuth(authService.obtainAccessToken())
+        : headers.setAuth(authService.obtainAccessToken());
   }
 
   private RequestHeaders createHeadersWithAuth() {

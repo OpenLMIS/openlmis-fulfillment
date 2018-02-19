@@ -13,13 +13,21 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.service;
 
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpHeaders;
 
-public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>,
-    OrderRepositoryCustom {
+@Getter
+@AllArgsConstructor
+public class ServiceResponse<T> {
+  private T body;
+  private HttpHeaders headers;
+  private boolean modified;
+
+  public String getETag() {
+    return headers.getETag();
+  }
+
 }

@@ -17,16 +17,16 @@ package org.openlmis.fulfillment.repository.custom;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 public interface OrderRepositoryCustom {
 
-  List<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program,
-                           UUID processingPeriod, Set<OrderStatus> statuses);
+  Page<Order> searchOrders(Set<UUID> supplyingFacility, UUID requestingFacility, UUID program,
+                           UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable);
 
   List<UUID> getRequestingFacilities(UUID supplyingFacility);
-
 }
