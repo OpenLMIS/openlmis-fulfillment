@@ -27,6 +27,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
@@ -72,13 +73,15 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     countQuery = prepareQuery(countQuery, supplyingFacilities, requestingFacility,
         program, processingPeriod, statuses, pageable, true);
 
+    Pageable page = null != pageable ? pageable : new PageRequest(0, Integer.MAX_VALUE);
+
     Long count = entityManager.createQuery(countQuery).getSingleResult();
     List<Order> result = entityManager.createQuery(query)
-        .setMaxResults(pageable.getPageSize())
-        .setFirstResult(pageable.getPageSize() * pageable.getPageNumber())
+        .setMaxResults(page.getPageSize())
+        .setFirstResult(page.getPageSize() * page.getPageNumber())
         .getResultList();
 
-    return new PageImpl<>(result, pageable, count);
+    return new PageImpl<>(result, page, count);
   }
 
   /**
