@@ -17,7 +17,6 @@ package org.openlmis.fulfillment.service;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.openlmis.fulfillment.service.ConfigurationSettingService.TRANSFER_IN;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +32,7 @@ import java.util.UUID;
 @RunWith(SpringRunner.class)
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
 @SpringBootTest
-@TestPropertySource(properties = {TRANSFER_IN + "=d748d73c-cfa9-4cf0-81c6-b684f7c7e19c"})
+@TestPropertySource(properties = {"reasons.transferIn=d748d73c-cfa9-4cf0-81c6-b684f7c7e19c"})
 @ActiveProfiles("test")
 public class ConfigurationSettingServiceIntegrationTest {
   private static final UUID TRANSFER_IN_REASON_ID = UUID
