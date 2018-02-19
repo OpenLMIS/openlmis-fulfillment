@@ -90,13 +90,14 @@ public class ExporterBuilder {
   public void export(OrderLineItem item, OrderLineItem.Exporter exporter,
                      List<OrderableDto> orderables) {
     exporter.setId(item.getId());
-    Optional<OrderableDto> orderableDto = orderables.stream().filter(
+    Optional<OrderableDto> orderableOptional = orderables.stream().filter(
         orderable -> orderable.getId().equals(item.getOrderableId())).findAny();
-    exporter.setOrderable(orderableDto.orElse(
-            getIfPresent(products, item.getOrderableId())));
-    exporter.setFilledQuantity(item.getFilledQuantity());
+    OrderableDto orderableDto = orderableOptional
+        .orElse(getIfPresent(products, item.getOrderableId()));
+
+    exporter.setOrderable(orderableDto);
     exporter.setOrderedQuantity(item.getOrderedQuantity());
-    exporter.setPacksToShip(item.getPacksToShip());
+    exporter.setTotalDispensingUnits(item.getOrderedQuantity() * orderableDto.getNetContent());
   }
 
   /**

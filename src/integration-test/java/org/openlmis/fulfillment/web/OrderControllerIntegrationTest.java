@@ -221,19 +221,19 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
-        createOrderLineItem(product1Id, 35L, 50L)
+        createOrderLineItem(product1Id, 50L)
     );
 
     secondOrder = createOrder(
         period1Id, program1Id, facility2Id, facility1Id, new BigDecimal(100),
-        createOrderLineItem(product1Id, 35L, 50L),
-        createOrderLineItem(product2Id, 10L, 15L)
+        createOrderLineItem(product1Id, 50L),
+        createOrderLineItem(product2Id, 15L)
     );
 
     thirdOrder = createOrder(
         period2Id, program2Id, facility2Id, facility1Id, new BigDecimal(200),
-        createOrderLineItem(product1Id, 50L, 50L),
-        createOrderLineItem(product2Id, 5L, 10L)
+        createOrderLineItem(product1Id, 50L),
+        createOrderLineItem(product2Id, 10L)
     );
 
     firstOrder.setExternalId(secondOrder.getExternalId());
@@ -289,12 +289,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return order;
   }
 
-  private OrderLineItem createOrderLineItem(UUID product, Long filledQuantity,
-                                            Long orderedQuantity) {
+  private OrderLineItem createOrderLineItem(UUID product, Long orderedQuantity) {
     return new OrderLineItemDataBuilder()
         .withOrderableId(product)
         .withOrderedQuantity(orderedQuantity)
-        .withFilledQuantity(filledQuantity)
         .build();
   }
 

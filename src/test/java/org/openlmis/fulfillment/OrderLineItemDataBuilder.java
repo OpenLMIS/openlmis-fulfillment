@@ -25,8 +25,6 @@ public class OrderLineItemDataBuilder {
   private Order order;
   private UUID orderableId = UUID.randomUUID();
   private Long orderedQuantity = 1200L;
-  private Long filledQuantity = 0L;
-  private Long packsToShip = 0L;
 
   public OrderLineItemDataBuilder withoutId() {
     id = null;
@@ -48,22 +46,12 @@ public class OrderLineItemDataBuilder {
     return this;
   }
 
-  public OrderLineItemDataBuilder withRandomFilledQuantity() {
-    filledQuantity = randomValue();
-    return this;
-  }
-
-  public OrderLineItemDataBuilder withFilledQuantity(Long filledQuantity) {
-    this.filledQuantity = filledQuantity;
-    return this;
-  }
-
   /**
    * Creates new instance of {@link OrderLineItem} based on passed data.
    */
   public OrderLineItem build() {
     OrderLineItem lineItem = new OrderLineItem(
-        order, orderableId, orderedQuantity, filledQuantity, packsToShip
+        order, orderableId, orderedQuantity
     );
     lineItem.setId(id);
 

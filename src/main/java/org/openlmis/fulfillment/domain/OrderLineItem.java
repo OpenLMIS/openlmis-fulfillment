@@ -52,14 +52,6 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long orderedQuantity;
 
-  @Column(nullable = false)
-  @Getter
-  @Setter
-  private Long filledQuantity;
-
-  @Getter
-  private Long packsToShip;
-
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}
    * @param importer instance of {@link OrderLineItem.Importer}
@@ -71,8 +63,7 @@ public class OrderLineItem extends BaseEntity {
         : null;
 
     OrderLineItem orderLineItem = new OrderLineItem(
-        null, orderable, importer.getOrderedQuantity(), importer.getFilledQuantity(),
-        importer.getPacksToShip()
+        null, orderable, importer.getOrderedQuantity()
     );
     orderLineItem.setId(importer.getId());
 
@@ -86,10 +77,7 @@ public class OrderLineItem extends BaseEntity {
 
     void setOrderedQuantity(Long orderedQuantity);
 
-    void setFilledQuantity(Long filledQuantity);
-
-    void setPacksToShip(Long packsToShip);
-
+    void setTotalDispensingUnits(Long totalDispensingUnits);
   }
 
   public interface Importer {
@@ -99,9 +87,6 @@ public class OrderLineItem extends BaseEntity {
 
     Long getOrderedQuantity();
 
-    Long getFilledQuantity();
-
-    Long getPacksToShip();
-
+    Long getTotalDispensingUnits();
   }
 }

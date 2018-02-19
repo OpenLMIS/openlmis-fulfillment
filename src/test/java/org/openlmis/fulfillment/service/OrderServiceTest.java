@@ -322,7 +322,6 @@ public class OrderServiceTest {
   private OrderLineItem generateOrderLineItem(Order order) {
     OrderLineItem orderLineItem = new OrderLineItem();
     orderLineItem.setId(UUID.randomUUID());
-    orderLineItem.setFilledQuantity(1000L);
     orderLineItem.setOrder(order);
     orderLineItem.setOrderedQuantity(1000L);
     return orderLineItem;

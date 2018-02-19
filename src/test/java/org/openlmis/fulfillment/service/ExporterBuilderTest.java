@@ -118,6 +118,26 @@ public class ExporterBuilderTest {
   }
 
   @Test
+  public void lineItemExportShouldCalculateTotalDispensingUnits() {
+    // given
+    final Long netContent = 100L;
+    final Long orderedQuantity = 35L;
+    when(products.findOne(orderableId)).thenReturn(orderableDto);
+    when(orderableDto.getNetContent()).thenReturn(netContent);
+    when(orderLineItem.getOrderedQuantity()).thenReturn(orderedQuantity);
+
+    OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
+
+    // when
+    exportBuilder.export(orderLineItem, orderLineItemDto, Collections.emptyList());
+
+    // then
+    assertEquals(orderedQuantity, orderLineItemDto.getOrderedQuantity());
+    assertEquals((Long) (netContent * orderedQuantity), orderLineItemDto.getTotalDispensingUnits());
+    verify(products, times(1)).findOne(orderableId);
+  }
+
+  @Test
   public void shouldGetLineItemOrderables() {
     // given
     when(products.findByIds(argumentCaptor.capture())).thenReturn(

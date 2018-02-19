@@ -34,8 +34,7 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
   private UUID id;
   private OrderableDto orderable;
   private Long orderedQuantity;
-  private Long filledQuantity;
-  private Long packsToShip;
+  private Long totalDispensingUnits;
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}

@@ -15,22 +15,18 @@
     },
     "orderedQuantity": {
       "type": "integer",
+      "description": "Ordered quantity in packs",
       "title": "orderedQuantity"
     },
-    "filledQuantity": {
+    "totalDispensingUnits": {
       "type": "integer",
-      "title": "filledQuantity"
-    },
-    "packsToShip": {
-      "type": "integer",
-      "title": "packsToShip"
+      "description": "Ordered quantity in dispensing units (number of packs multiplied by net content)",
+      "title": "orderedQuantity"
     }
   },
   "required": [
     "id",
     "orderable",
-    "orderedQuantity",
-    "filledQuantity",
-    "packsToShip"
+    "orderedQuantity"
   ]
 }
