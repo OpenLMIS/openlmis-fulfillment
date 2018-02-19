@@ -17,17 +17,17 @@ package org.openlmis.fulfillment.service.stockmanagement;
 
 import org.openlmis.fulfillment.service.BaseCommunicationService;
 
-public class ValidDestinationsStockManagementServiceTest
+public class ValidSourcesStockManagementServiceTest
     extends ValidSourceDestinationsStockManagementServiceTest {
 
   @Override
   protected String getUrl() {
-    return "/api/validDestinations";
+    return "/api/validSources";
   }
 
   @Override
   protected BaseCommunicationService getService() {
-    return new ValidDestinationsStockManagementService();
+    return new ValidSourcesStockManagementService();
   }
 
 }

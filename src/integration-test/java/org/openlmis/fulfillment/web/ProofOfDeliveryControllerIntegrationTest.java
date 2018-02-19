@@ -52,8 +52,11 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
@@ -86,6 +89,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @MockBean
   private OrderRepository orderRepository;
+
+  @MockBean
+  private StockEventBuilder stockEventBuilder;
+
+  @MockBean
+  private StockEventStockManagementService stockEventStockManagementService;
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -265,12 +274,15 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .as(ProofOfDeliveryDto.class);
 
+    assertThat(response.getStatus(), is(ProofOfDeliveryStatus.CONFIRMED));
+
     ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
 
     verify(orderRepository).save(captor.capture());
+    verify(stockEventBuilder).fromProofOfDelivery(any(ProofOfDelivery.class));
+    verify(stockEventStockManagementService).submit(any(StockEventDto.class));
     assertThat(captor.getValue().getStatus(), is(OrderStatus.RECEIVED));
 
-    assertThat(response.getStatus(), is(ProofOfDeliveryStatus.CONFIRMED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -294,7 +306,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path("messageKey");
 
-    verifyZeroInteractions(orderRepository);
+    verifyZeroInteractions(orderRepository, stockEventBuilder, stockEventStockManagementService);
     assertThat(response, is(MUST_CONTAIN_VALUE));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }

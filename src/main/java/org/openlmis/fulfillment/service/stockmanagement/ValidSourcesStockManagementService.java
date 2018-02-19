@@ -15,19 +15,15 @@
 
 package org.openlmis.fulfillment.service.stockmanagement;
 
-import org.openlmis.fulfillment.service.BaseCommunicationService;
+import org.springframework.stereotype.Service;
 
-public class ValidDestinationsStockManagementServiceTest
-    extends ValidSourceDestinationsStockManagementServiceTest {
+@Service
+public class ValidSourcesStockManagementService
+    extends ValidSourceDestinationsStockManagementService {
 
   @Override
   protected String getUrl() {
-    return "/api/validDestinations";
-  }
-
-  @Override
-  protected BaseCommunicationService getService() {
-    return new ValidDestinationsStockManagementService();
+    return "/api/validSources";
   }
 
 }

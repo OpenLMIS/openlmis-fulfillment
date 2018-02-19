@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web.stockmanagement;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -28,6 +29,10 @@ public class StockEventLineItemDtoDataBuilder {
   private UUID destinationId = UUID.randomUUID();
   private Integer quantity = 10;
   private LocalDate occurredDate = LocalDate.now();
+  private UUID reasonId = UUID.randomUUID();
+  private UUID sourceId = UUID.randomUUID();
+  private Map<String, String> extraData;
+
 
   public StockEventLineItemDtoDataBuilder withOrderableId(UUID orderableId) {
     this.orderableId = orderableId;
@@ -49,7 +54,7 @@ public class StockEventLineItemDtoDataBuilder {
    */
   public StockEventLineItemDto build() {
     return new StockEventLineItemDto(
-        this.orderableId, this.lotId, this.quantity, this.occurredDate, this.destinationId
+        orderableId, lotId, quantity, occurredDate, destinationId, reasonId, sourceId, extraData
     );
   }
 }

@@ -100,6 +100,18 @@ public class Shipment extends BaseEntity {
     return shipDetails.getDate();
   }
 
+  public UUID getProgramId() {
+    return order.getProgramId();
+  }
+
+  public UUID getSupplyingFacilityId() {
+    return order.getSupplyingFacilityId();
+  }
+
+  public UUID getReceivingFacilityId() {
+    return order.getReceivingFacilityId();
+  }
+
   /**
    * Creates new instance based on data from {@link Importer}
    *

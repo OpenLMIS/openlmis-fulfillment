@@ -13,21 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service.stockmanagement;
+package org.openlmis.fulfillment.service;
 
-import org.openlmis.fulfillment.service.BaseCommunicationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 
-public class ValidDestinationsStockManagementServiceTest
-    extends ValidSourceDestinationsStockManagementServiceTest {
+import lombok.NoArgsConstructor;
 
-  @Override
-  protected String getUrl() {
-    return "/api/validDestinations";
-  }
+import java.util.UUID;
 
-  @Override
-  protected BaseCommunicationService getService() {
-    return new ValidDestinationsStockManagementService();
+@Service
+@NoArgsConstructor
+public class ConfigurationSettingService {
+
+  private static final String RESONS_SUFFIX = "reasons.";
+  private static final String TRANSFER_IN = RESONS_SUFFIX + ".transferIn";
+
+  @Autowired
+  private Environment env;
+
+  public UUID getTransferInReasonId() {
+    return UUID.fromString(env.getProperty(TRANSFER_IN));
   }
 
 }

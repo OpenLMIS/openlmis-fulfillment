@@ -124,6 +124,8 @@ expected use-case for this is when this service is deployed through the
 
 Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
 
+* **TRANSFER_IN_REASON_ID** - the ID of the reason that will be used to make receive entries in the Stock Management physical inventory  
+
 If you are using the [hauptmedia/proftpd](https://hub.docker.com/r/hauptmedia/proftpd/) Docker image for testing fulfillment (like we do in our reference distribution), you can use the following variables to set the username and password for that server:
 
 * **FTP_USERNAME** - the username of the FTP user. 

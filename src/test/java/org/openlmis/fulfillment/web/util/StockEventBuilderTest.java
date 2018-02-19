@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web.util;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,14 +26,36 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.service.ConfigurationSettingService;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.FacilityTypeDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
+import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
+import org.openlmis.fulfillment.testutils.DtoGenerator;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
+import org.openlmis.fulfillment.web.stockmanagement.NodeDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
+import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
+import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDtoDataBuilder;
+
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class StockEventBuilderTest {
+  private static final UUID TRANSFER_IN_REASON_ID = UUID.randomUUID();
+  private static final LocalDate CURRENT_DATE = LocalDate.now();
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -41,31 +64,97 @@ public class StockEventBuilderTest {
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
 
   @Mock
+  private ValidSourcesStockManagementService validSourcesStockManagementService;
+
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
+
+  @Mock
+  private AuthenticationHelper authenticationHelper;
+
+  @Mock
   private DateHelper dateHelper;
 
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
 
-  private StockEventBuilderFixture fixture;
+  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
+  private FacilityTypeDto facilityType = facility.getType();
+  private ValidSourceDestinationDto destination = new ValidSourceDestinationDtoDataBuilder()
+      .withNode(facility.getId())
+      .build();
+  private NodeDto node = destination.getNode();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
+  private Shipment shipment = proofOfDelivery.getShipment();
+  private Order order = shipment.getOrder();
+  private UserDto user = DtoGenerator.of(UserDto.class);
 
   @Before
   public void setUp() {
-    fixture = new StockEventBuilderFixture(
-        facilityReferenceDataService, validDestinationsStockManagementService, dateHelper
-    );
-    fixture.setUp();
+    when(facilityReferenceDataService.findOne(order.getReceivingFacilityId()))
+        .thenReturn(facility);
+    when(facilityReferenceDataService.findOne(order.getSupplyingFacilityId()))
+        .thenReturn(facility);
+
+    when(validDestinationsStockManagementService
+        .findOne(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .thenReturn(Optional.of(destination));
+
+    when(validSourcesStockManagementService
+        .findOne(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .thenReturn(Optional.of(destination));
+
+    when(configurationSettingService.getTransferInReasonId())
+        .thenReturn(TRANSFER_IN_REASON_ID);
+
+    when(dateHelper.getCurrentDate()).thenReturn(CURRENT_DATE);
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
   }
 
   @Test
   public void shouldCreateEventFromShipment() {
-    StockEventDto event = stockEventBuilder.fromShipment(fixture.getShipment());
+    StockEventDto event = stockEventBuilder.fromShipment(shipment);
 
-    assertThat(event.getFacilityId(), is(fixture.getOrder().getSupplyingFacilityId()));
-    assertThat(event.getProgramId(), is(fixture.getOrder().getProgramId()));
-    assertThat(event.getUserId(), is(fixture.getShipment().getShippedById()));
+    assertThat(event.getFacilityId(), is(order.getSupplyingFacilityId()));
+    assertThat(event.getProgramId(), is(order.getProgramId()));
+    assertThat(event.getUserId(), is(shipment.getShippedById()));
 
-    assertThat(event.getLineItems(), hasSize(2));
-    fixture.assertEventLineItem(event.getLineItems().get(0), fixture.getShipmentLineItemOne());
-    fixture.assertEventLineItem(event.getLineItems().get(1), fixture.getShipmentLineItemTwo());
+    assertThat(event.getLineItems(), hasSize(shipment.getLineItems().size()));
+    assertEventLineItemOfShipment(event.getLineItems().get(0));
+  }
+
+  @Test
+  public void shouldCreateEventFromProofOfDelivery() {
+    StockEventDto event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
+
+    assertThat(event.getFacilityId(), is(order.getReceivingFacilityId()));
+    assertThat(event.getProgramId(), is(order.getProgramId()));
+    assertThat(event.getUserId(), is(user.getId()));
+
+    assertThat(event.getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
+    assertEventLineItemOfProofOfDelivery(event.getLineItems().get(0));
+  }
+
+  private void assertEventLineItemOfShipment(StockEventLineItemDto eventLine) {
+    ShipmentLineItemDto dto = new ShipmentLineItemDto();
+    shipment.getLineItems().get(0).export(dto);
+
+    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
+    assertThat(eventLine.getLotId(), is(dto.getLotId()));
+    assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
+    assertThat(eventLine.getOccurredDate(), is(CURRENT_DATE));
+    assertThat(eventLine.getDestinationId(), is(node.getId()));
+  }
+
+  private void assertEventLineItemOfProofOfDelivery(StockEventLineItemDto eventLine) {
+    ProofOfDeliveryLineItemDto dto = new ProofOfDeliveryLineItemDto();
+    proofOfDelivery.getLineItems().get(0).export(dto);
+
+    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
+    assertThat(eventLine.getLotId(), is(dto.getLotId()));
+    assertThat(eventLine.getQuantity(), is(dto.getQuantityAccepted()));
+    assertThat(eventLine.getOccurredDate(), is(proofOfDelivery.getReceivedDate()));
+    assertThat(eventLine.getSourceId(), is(node.getId()));
+    assertThat(eventLine.getReasonId(), is(TRANSFER_IN_REASON_ID));
   }
 }

@@ -16,12 +16,17 @@
 package org.openlmis.fulfillment.web.util;
 
 
-import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
+import org.openlmis.fulfillment.service.stockmanagement.ValidSourceDestinationsStockManagementService;
+import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
@@ -34,9 +39,8 @@ import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -52,13 +56,19 @@ public class StockEventBuilder {
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
 
   @Autowired
+  private ValidSourcesStockManagementService validSourcesStockManagementService;
+
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+
+  @Autowired
   private DateHelper dateHelper;
 
   /**
-   * Builds a physical inventory draft DTO from the given requisition.
-   *
-   * @param shipment the requisition to be used a source for the physical inventory draft
-   * @return the create physical inventory draft
+   * Builds a stock event DTO from the given shipment.
    */
   public StockEventDto fromShipment(Shipment shipment) {
     XLOGGER.entry(shipment);
@@ -69,8 +79,29 @@ public class StockEventBuilder {
 
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
-        shipment.getOrder().getProgramId(), shipment.getOrder().getSupplyingFacilityId(),
+        shipment.getProgramId(), shipment.getSupplyingFacilityId(),
         getLineItems(shipment), shipment.getShippedById()
+    );
+
+    profiler.stop().log();
+    XLOGGER.exit(stockEventDto);
+    return stockEventDto;
+  }
+
+  /**
+   * Builds a stock event DTO from the given proof of delivery.
+   */
+  public StockEventDto fromProofOfDelivery(ProofOfDelivery proofOfDelivery) {
+    XLOGGER.entry(proofOfDelivery);
+    Profiler profiler = new Profiler("BUILD_STOCK_EVENT_FROM_POD");
+    profiler.setLogger(XLOGGER);
+
+    LOGGER.debug("Building stock events for proof of delivery: {}", proofOfDelivery.getId());
+
+    profiler.start("BUILD_STOCK_EVENT");
+    StockEventDto stockEventDto = new StockEventDto(
+        proofOfDelivery.getProgramId(), proofOfDelivery.getReceivingFacilityId(),
+        getLineItems(proofOfDelivery), authenticationHelper.getCurrentUser().getId()
     );
 
     profiler.stop().log();
@@ -86,28 +117,63 @@ public class StockEventBuilder {
         .collect(Collectors.toList());
   }
 
+  private List<StockEventLineItemDto> getLineItems(ProofOfDelivery proofOfDelivery) {
+    return proofOfDelivery
+        .getLineItems()
+        .stream()
+        .map(lineItem -> createLineItem(proofOfDelivery, lineItem))
+        .collect(Collectors.toList());
+  }
+
   private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem) {
+    UUID destinationId = getDestinationId(
+        shipment.getReceivingFacilityId(), shipment.getProgramId()
+    );
+
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(dateHelper.getCurrentDate());
-    dto.setDestinationId(getDestinationId(shipment.getOrder()));
+    dto.setDestinationId(destinationId);
 
     lineItem.export(dto);
 
     return dto;
   }
 
-  private UUID getDestinationId(Order order) {
-    FacilityDto facility = facilityReferenceDataService.findOne(order.getReceivingFacilityId());
-    Collection<ValidSourceDestinationDto> destinations = validDestinationsStockManagementService
-        .getValidDestinations(order.getProgramId(), facility.getType().getId());
+  private StockEventLineItemDto createLineItem(ProofOfDelivery proofOfDelivery,
+                                               ProofOfDeliveryLineItem lineItem) {
+    UUID sourceId = getSourceId(
+        proofOfDelivery.getSupplyingFacilityId(), proofOfDelivery.getProgramId()
+    );
 
-    return destinations
-        .stream()
-        .filter(elem -> elem.getNode().isRefDataFacility())
-        .filter(elem -> Objects.equals(facility.getId(), elem.getNode().getReferenceId()))
-        .findFirst()
-        .map(elem -> elem.getNode().getId())
-        .orElse(null);
+    StockEventLineItemDto dto = new StockEventLineItemDto();
+    dto.setOccurredDate(proofOfDelivery.getReceivedDate());
+    dto.setSourceId(sourceId);
+    dto.setReasonId(configurationSettingService.getTransferInReasonId());
+
+    lineItem.export(dto);
+
+    return dto;
+  }
+
+  private UUID getDestinationId(UUID facilityId, UUID programId) {
+    return getNodeId(facilityId, programId, validDestinationsStockManagementService);
+  }
+
+  private UUID getSourceId(UUID facilityId, UUID programId) {
+    return getNodeId(facilityId, programId, validSourcesStockManagementService);
+  }
+
+  private UUID getNodeId(UUID facilityId, UUID programId,
+                         ValidSourceDestinationsStockManagementService service) {
+    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+    Optional<ValidSourceDestinationDto> response = service
+        .findOne(programId, facility.getType().getId(), facility.getId());
+
+    if (response.isPresent()) {
+      return response.get().getNode().getId();
+    }
+
+    return null;
   }
 
 }

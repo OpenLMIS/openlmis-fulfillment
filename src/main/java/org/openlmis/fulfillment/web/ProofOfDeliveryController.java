@@ -32,13 +32,16 @@ import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.shipment.ShipmentController;
+import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.ReportUtils;
+import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -100,6 +103,12 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private DateHelper dateHelper;
+
+  @Autowired
+  private StockEventBuilder stockEventBuilder;
+
+  @Autowired
+  private StockEventStockManagementService stockEventStockManagementService;
 
   /**
    * Get all proofOfDeliveries.
@@ -204,6 +213,10 @@ public class ProofOfDeliveryController extends BaseController {
           dateHelper.getCurrentDateTimeWithSystemZone()));
 
       orderRepository.save(order);
+
+      profiler.start("SEND_STOCK_EVENT");
+      StockEventDto event = stockEventBuilder.fromProofOfDelivery(toUpdate);
+      stockEventStockManagementService.submit(event);
     }
 
     profiler.start("SAVE_POD");

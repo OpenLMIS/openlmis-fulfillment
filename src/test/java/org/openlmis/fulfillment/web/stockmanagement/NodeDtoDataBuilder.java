@@ -22,11 +22,15 @@ public class NodeDtoDataBuilder {
   private UUID referenceId = UUID.randomUUID();
   private boolean isRefDataFacility = true;
 
+  public NodeDtoDataBuilder withReferenceId(UUID referenceId) {
+    this.referenceId = referenceId;
+    return this;
+  }
+
   /**
    * Builds instance of {@link NodeDto}.
    */
   public NodeDto build() {
     return new NodeDto(id, referenceId, isRefDataFacility);
   }
-
 }

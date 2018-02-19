@@ -20,7 +20,9 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,7 +30,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
@@ -37,17 +43,58 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public final class StockEventLineItemDto implements ShipmentLineItem.Exporter {
+public final class StockEventLineItemDto
+    implements ShipmentLineItem.Exporter, ProofOfDeliveryLineItem.Exporter {
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;
   @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd")
   private LocalDate occurredDate;
   private UUID destinationId;
+  private UUID reasonId;
+  private UUID sourceId;
+  private Map<String, String> extraData;
 
   @Override
   @JsonIgnore
   public void setId(UUID id) {
+    // nothing to do here
+  }
+
+  @Override
+  @JsonIgnore
+  public void setQuantityAccepted(Integer quantityAccepted) {
+    quantity = quantityAccepted;
+  }
+
+  @Override
+  @JsonIgnore
+  public void setUseVvm(Boolean useVvm) {
+    // nothing to do here
+  }
+
+  @Override
+  @JsonIgnore
+  public void setVvmStatus(VvmStatus vvmStatus) {
+    extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
+    extraData.put("vvmStatus", vvmStatus.toString());
+  }
+
+  @Override
+  @JsonIgnore
+  public void setQuantityRejected(Integer quantityRejected) {
+    // nothing to do here
+  }
+
+  @Override
+  @JsonIgnore
+  public void setRejectionReasonId(UUID rejectionReasonId) {
+    // nothing to do here
+  }
+
+  @Override
+  @JsonIgnore
+  public void setNotes(String notes) {
     // nothing to do here
   }
 

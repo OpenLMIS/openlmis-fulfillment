@@ -30,6 +30,11 @@ public class ValidSourceDestinationDtoDataBuilder {
   private String name = RandomStringUtils.randomAlphanumeric(5);
   private boolean isFreeTextAllowed = true;
 
+  public ValidSourceDestinationDtoDataBuilder withNode(UUID referenceId) {
+    node = new NodeDtoDataBuilder().withReferenceId(referenceId).build();
+    return this;
+  }
+
   /**
    * Builds instance of {@link ValidSourceDestinationDto}.
    */

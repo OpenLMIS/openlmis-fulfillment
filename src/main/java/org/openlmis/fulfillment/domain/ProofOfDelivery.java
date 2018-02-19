@@ -68,7 +68,7 @@ public class ProofOfDelivery extends BaseEntity {
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private List<ProofOfDeliveryLineItem> lineItems;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
@@ -79,11 +79,23 @@ public class ProofOfDelivery extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private String deliveredBy;
 
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private LocalDate receivedDate;
 
   private ProofOfDelivery(Shipment shipment, List<ProofOfDeliveryLineItem> lineItems) {
     this(shipment, ProofOfDeliveryStatus.INITIATED, lineItems, null, null, null);
+  }
+
+  public UUID getProgramId() {
+    return shipment.getOrder().getProgramId();
+  }
+
+  public UUID getReceivingFacilityId() {
+    return shipment.getOrder().getReceivingFacilityId();
+  }
+
+  public UUID getSupplyingFacilityId() {
+    return shipment.getOrder().getSupplyingFacilityId();
   }
 
   /**

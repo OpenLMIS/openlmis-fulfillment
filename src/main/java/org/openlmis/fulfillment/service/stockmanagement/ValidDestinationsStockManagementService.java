@@ -15,42 +15,15 @@
 
 package org.openlmis.fulfillment.service.stockmanagement;
 
-import com.google.common.collect.Maps;
-
-import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class ValidDestinationsStockManagementService
-    extends BaseStockManagementService<ValidSourceDestinationDto> {
+    extends ValidSourceDestinationsStockManagementService {
+
   @Override
   protected String getUrl() {
     return "/api/validDestinations";
   }
 
-  @Override
-  protected Class<ValidSourceDestinationDto> getResultClass() {
-    return ValidSourceDestinationDto.class;
-  }
-
-  @Override
-  protected Class<ValidSourceDestinationDto[]> getArrayResultClass() {
-    return ValidSourceDestinationDto[].class;
-  }
-
-  /**
-   * Gets valid destinations for the given program and facility type.
-   */
-  public Collection<ValidSourceDestinationDto> getValidDestinations(UUID program,
-                                                                    UUID facilityType) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("program", program);
-    map.put("facilityType", facilityType);
-
-    return findAll("", map);
-  }
 }
