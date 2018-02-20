@@ -80,19 +80,19 @@ public final class StockEventLineItemDto
   @Override
   @JsonIgnore
   public void setVvmStatus(VvmStatus vvmStatus) {
-    setExtraData(VVM_STATUS, vvmStatus);
+    putExtraData(VVM_STATUS, vvmStatus);
   }
 
   @Override
   @JsonIgnore
   public void setQuantityRejected(Integer quantityRejected) {
-    setExtraData(QUANTITY_REJECTED, quantityRejected);
+    putExtraData(QUANTITY_REJECTED, quantityRejected);
   }
 
   @Override
   @JsonIgnore
   public void setRejectionReasonId(UUID rejectionReasonId) {
-    setExtraData(REJECTION_REASON_ID, rejectionReasonId);
+    putExtraData(REJECTION_REASON_ID, rejectionReasonId);
   }
 
   @Override
@@ -107,7 +107,7 @@ public final class StockEventLineItemDto
     quantity = Math.toIntExact(quantityShipped);
   }
 
-  private void setExtraData(String key, Object value) {
+  private void putExtraData(String key, Object value) {
     if (null != value) {
       extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
       extraData.put(key, value.toString());
