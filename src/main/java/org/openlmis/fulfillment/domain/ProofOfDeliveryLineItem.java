@@ -52,7 +52,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private UUID lotId;
 
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private Integer quantityAccepted;
 
   @Column(nullable = false)
