@@ -115,7 +115,7 @@ public class ProofOfDeliveryController extends BaseController {
    *
    * @return ProofOfDeliveries.
    */
-  @RequestMapping(value = "/proofOfDeliveries", method = RequestMethod.GET)
+  @RequestMapping(value = "/proofsOfDelivery", method = RequestMethod.GET)
   @ResponseBody
   public Page<ProofOfDeliveryDto> getAllProofOfDeliveries(
       @RequestParam(required = false) UUID shipmentId,
@@ -177,7 +177,7 @@ public class ProofOfDeliveryController extends BaseController {
    * @param dto               A proofOfDeliveryDto bound to the request body
    * @return ResponseEntity containing the updated proofOfDelivery
    */
-  @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.PUT)
+  @RequestMapping(value = "/proofsOfDelivery/{id}", method = RequestMethod.PUT)
   @ResponseBody
   public ProofOfDeliveryDto updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
                                                   @RequestBody ProofOfDeliveryDto dto,
@@ -238,7 +238,7 @@ public class ProofOfDeliveryController extends BaseController {
    * @param id UUID of proofOfDelivery whose we want to get
    * @return ProofOfDelivery.
    */
-  @RequestMapping(value = "/proofOfDeliveries/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/proofsOfDelivery/{id}", method = RequestMethod.GET)
   @ResponseBody
   public ProofOfDeliveryDto getProofOfDelivery(@PathVariable("id") UUID id,
                                                OAuth2Authentication authentication) {
@@ -265,7 +265,7 @@ public class ProofOfDeliveryController extends BaseController {
    * @param id The UUID of the ProofOfDelivery to print
    *
    */
-  @RequestMapping(value = "/proofOfDeliveries/{id}/print", method = RequestMethod.GET)
+  @RequestMapping(value = "/proofsOfDelivery/{id}/print", method = RequestMethod.GET)
   public void print(
       @PathVariable("id") UUID id, HttpServletRequest request, HttpServletResponse response,
       OAuth2Authentication authentication) throws Exception {

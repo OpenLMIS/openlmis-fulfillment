@@ -30,7 +30,7 @@ scenarios:
   get-pods:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries
+      - url: ${__P(base-uri)}/api/proofsOfDelivery
         method: GET
         label: GetAllProofOfDeliveries
         headers:
@@ -39,7 +39,7 @@ scenarios:
   get-pod:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}
+      - url: ${__P(base-uri)}/api/proofsOfDelivery/${__P(pod_id)}
         method: GET
         label: GetProofOfDelivery
         headers:
@@ -48,7 +48,7 @@ scenarios:
   print-pod-pdf:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=pdf
+      - url: ${__P(base-uri)}/api/proofsOfDelivery/${__P(pod_id)}/print?format=pdf
         method: GET
         label: PrintProofOfDeliveryAsPdf
         headers:
@@ -57,7 +57,7 @@ scenarios:
   print-pod-csv:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/proofOfDeliveries/${__P(pod_id)}/print?format=csv
+      - url: ${__P(base-uri)}/api/proofsOfDelivery/${__P(pod_id)}/print?format=csv
         method: GET
         label: PrintProofOfDeliveryAsCsv
         headers:

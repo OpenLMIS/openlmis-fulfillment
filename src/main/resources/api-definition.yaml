@@ -437,7 +437,7 @@ resourceTypes:
               body:
                 application/json:
                   schema: localizedMessage
-  /proofOfDeliveries:
+  /proofsOfDelivery:
       displayName: Proof Of Delivery
       get:
           is: [ secured, paginated ]

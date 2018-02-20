@@ -22,6 +22,7 @@ Contract breaking changes:
   * The GET all POD endpoint will filter out those PODs to which user has no right.
 * [OLMIS-3958](https://openlmis.atlassian.net/browse/OLMIS-3958): Ordered Quantity value is now in packs. Filled Quantity and Packs To Ship have been removed.
 * [OLMIS-4165](https://openlmis.atlassian.net/browse/OLMIS-4165): Changed Order search endpoint and renamed its parameters, added database pagination and introduced permission strings.
+* [OLMIS-4119](https://openlmis.atlassian.net/browse/OLMIS-4119): Change POD endpoint name to proofsOfDelivery.
 
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
