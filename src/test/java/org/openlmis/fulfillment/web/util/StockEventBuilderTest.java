@@ -15,10 +15,15 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.QUANTITY_REJECTED;
+import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.REJECTION_REASON_ID;
+import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.VVM_STATUS;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -156,5 +161,13 @@ public class StockEventBuilderTest {
     assertThat(eventLine.getOccurredDate(), is(proofOfDelivery.getReceivedDate()));
     assertThat(eventLine.getSourceId(), is(node.getId()));
     assertThat(eventLine.getReasonId(), is(TRANSFER_IN_REASON_ID));
+    assertThat(
+        eventLine.getExtraData(),
+        allOf(
+            hasEntry(VVM_STATUS, dto.getVvmStatus().toString()),
+            hasEntry(QUANTITY_REJECTED, dto.getQuantityRejected().toString()),
+            hasEntry(REJECTION_REASON_ID, dto.getRejectionReasonId().toString())
+        )
+    );
   }
 }

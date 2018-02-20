@@ -45,6 +45,10 @@ import java.util.UUID;
 @EqualsAndHashCode
 public final class StockEventLineItemDto
     implements ShipmentLineItem.Exporter, ProofOfDeliveryLineItem.Exporter {
+  public static final String VVM_STATUS = "vvmStatus";
+  public static final String QUANTITY_REJECTED = "quantityRejected";
+  public static final String REJECTION_REASON_ID = "rejectionReasonId";
+
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;
@@ -76,22 +80,19 @@ public final class StockEventLineItemDto
   @Override
   @JsonIgnore
   public void setVvmStatus(VvmStatus vvmStatus) {
-    if (null != vvmStatus) {
-      extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
-      extraData.put("vvmStatus", vvmStatus.toString());
-    }
+    setExtraData(VVM_STATUS, vvmStatus);
   }
 
   @Override
   @JsonIgnore
   public void setQuantityRejected(Integer quantityRejected) {
-    // nothing to do here
+    setExtraData(QUANTITY_REJECTED, quantityRejected);
   }
 
   @Override
   @JsonIgnore
   public void setRejectionReasonId(UUID rejectionReasonId) {
-    // nothing to do here
+    setExtraData(REJECTION_REASON_ID, rejectionReasonId);
   }
 
   @Override
@@ -104,5 +105,12 @@ public final class StockEventLineItemDto
   @JsonIgnore
   public void setQuantityShipped(Long quantityShipped) {
     quantity = Math.toIntExact(quantityShipped);
+  }
+
+  private void setExtraData(String key, Object value) {
+    if (null != value) {
+      extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
+      extraData.put(key, value.toString());
+    }
   }
 }

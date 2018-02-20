@@ -121,7 +121,6 @@ public class StockEventBuilder {
     return proofOfDelivery
         .getLineItems()
         .stream()
-        .filter(line -> line.getQuantityAccepted() > 0)
         .map(lineItem -> createLineItem(proofOfDelivery, lineItem))
         .collect(Collectors.toList());
   }
