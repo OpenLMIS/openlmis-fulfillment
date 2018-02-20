@@ -35,6 +35,7 @@ public abstract class MessageKeys {
   private static final String PROOF_OF_DELIVERY = "proofOfDelivery";
   private static final String SHIPMENT = "shipment";
   private static final String SHIPMENT_DRAFT = "shipmentDraft";
+  private static final String STOCK_EVENT = "stockEvent";
 
   private static final String CLASS = "class";
   private static final String ENCODING = "encoding";
@@ -169,6 +170,9 @@ public abstract class MessageKeys {
       join(ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, DUPLICATE);
   public static final String CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS =
       join(ERROR_PREFIX, SHIPMENT_DRAFT, "create", "orderWithWrongStatus");
+
+  public static final String EVENT_MISSING_SOURCE_DESTINATION =
+      join(ERROR_PREFIX, STOCK_EVENT, "missingSourceDestination");
 
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));

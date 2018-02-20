@@ -20,13 +20,17 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.i18n.MessageKeys.EVENT_MISSING_SOURCE_DESTINATION;
 import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.QUANTITY_REJECTED;
 import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.REJECTION_REASON_ID;
 import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.VVM_STATUS;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -45,6 +49,7 @@ import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagem
 import org.openlmis.fulfillment.testutils.DtoGenerator;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.NodeDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
@@ -61,6 +66,9 @@ import java.util.UUID;
 public class StockEventBuilderTest {
   private static final UUID TRANSFER_IN_REASON_ID = UUID.randomUUID();
   private static final LocalDate CURRENT_DATE = LocalDate.now();
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -138,6 +146,28 @@ public class StockEventBuilderTest {
 
     assertThat(event.getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
     assertEventLineItemOfProofOfDelivery(event.getLineItems().get(0));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfDestinationCannotBeFound() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(EVENT_MISSING_SOURCE_DESTINATION);
+
+    when(validDestinationsStockManagementService.findOne(any(), any(), any()))
+        .thenReturn(Optional.empty());
+
+    stockEventBuilder.fromShipment(shipment);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfSourceCannotBeFound() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(EVENT_MISSING_SOURCE_DESTINATION);
+
+    when(validSourcesStockManagementService.findOne(any(), any(), any()))
+        .thenReturn(Optional.empty());
+
+    stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
   }
 
   private void assertEventLineItemOfShipment(StockEventLineItemDto eventLine) {

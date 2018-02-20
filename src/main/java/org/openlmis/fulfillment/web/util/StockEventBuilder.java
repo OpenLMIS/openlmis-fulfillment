@@ -16,6 +16,8 @@
 package org.openlmis.fulfillment.web.util;
 
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.EVENT_MISSING_SOURCE_DESTINATION;
+
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -28,6 +30,7 @@ import org.openlmis.fulfillment.service.stockmanagement.ValidSourceDestinationsS
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
@@ -173,7 +176,7 @@ public class StockEventBuilder {
       return response.get().getNode().getId();
     }
 
-    return null;
+    throw new ValidationException(EVENT_MISSING_SOURCE_DESTINATION, facility.getCode());
   }
 
 }
