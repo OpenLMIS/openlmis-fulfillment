@@ -15,9 +15,16 @@
 
 package org.openlmis.fulfillment.web.stockmanagement;
 
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+
 import org.junit.Test;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
 public class StockEventLineItemDtoTest {
@@ -33,5 +40,21 @@ public class StockEventLineItemDtoTest {
   public void shouldImplementToString() {
     StockEventLineItemDto stockEventDto = new StockEventLineItemDtoDataBuilder().build();
     ToStringTestUtils.verify(StockEventLineItemDto.class, stockEventDto);
+  }
+
+  @Test
+  public void shouldAddVvmStatusToExtraData() {
+    StockEventLineItemDto stockEventDto = new StockEventLineItemDtoDataBuilder().build();
+    stockEventDto.setVvmStatus(VvmStatus.STAGE_3);
+
+    assertThat(stockEventDto.getExtraData(), hasEntry("vvmStatus", "STAGE_3"));
+  }
+
+  @Test
+  public void shouldNotModifyExtraDataIfVvmStatusIsNull() {
+    StockEventLineItemDto stockEventDto = new StockEventLineItemDtoDataBuilder().build();
+    stockEventDto.setVvmStatus(null);
+
+    assertThat(stockEventDto.getExtraData(), not(hasKey("vvmStatus")));
   }
 }

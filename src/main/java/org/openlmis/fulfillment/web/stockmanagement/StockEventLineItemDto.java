@@ -76,8 +76,10 @@ public final class StockEventLineItemDto
   @Override
   @JsonIgnore
   public void setVvmStatus(VvmStatus vvmStatus) {
-    extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
-    extraData.put("vvmStatus", vvmStatus.toString());
+    if (null != vvmStatus) {
+      extraData = Optional.ofNullable(extraData).orElse(new HashMap<>());
+      extraData.put("vvmStatus", vvmStatus.toString());
+    }
   }
 
   @Override
