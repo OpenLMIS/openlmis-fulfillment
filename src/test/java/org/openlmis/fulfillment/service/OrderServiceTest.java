@@ -307,8 +307,7 @@ public class OrderServiceTest {
 
     when(handler.get()).thenReturn(singleton(permission));
 
-    when(permissionService.getPermissionStrings(user.getId())
-    ).thenReturn(handler);
+    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
 
     when(orderRepository.searchOrders(
         asSet(order.getSupplyingFacilityId()), order.getRequestingFacilityId(),
@@ -316,8 +315,7 @@ public class OrderServiceTest {
         EnumSet.of(order.getStatus()), pageable)
     ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(user);
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -334,6 +332,37 @@ public class OrderServiceTest {
 
     verify(orderRepository, atLeastOnce())
         .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
+  public void shouldNotCheckPermissionWhenCrossServiceRequest() {
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+
+    when(orderRepository.searchOrders(
+        asSet(order.getSupplyingFacilityId()), order.getRequestingFacilityId(),
+        order.getProgramId(), order.getProcessingPeriodId(),
+        EnumSet.of(order.getStatus()), pageable)
+    ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
+    );
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
+
+    assertEquals(receivedOrders.getContent().get(0).getSupplyingFacilityId(),
+        order.getSupplyingFacilityId());
+    assertEquals(receivedOrders.getContent().get(0).getRequestingFacilityId(),
+        order.getRequestingFacilityId());
+    assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
+
+    verify(orderRepository, atLeastOnce())
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+
+    verify(permissionService, never()).getPermissionStrings(anyObject());
   }
 
   @Test

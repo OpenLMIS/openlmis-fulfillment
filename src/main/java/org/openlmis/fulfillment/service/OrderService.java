@@ -60,7 +60,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -158,23 +157,29 @@ public class OrderService {
    */
   public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
-    PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
-    Set<PermissionStringDto> permissionStrings = handler.get();
 
-    Set<UUID> supplyingFacilities = permissionStrings.stream().filter(
-        permissionString ->
-            permissionString.getRightName().equalsIgnoreCase(ORDERS_VIEW)
-                || permissionString.getRightName().equalsIgnoreCase(PODS_MANAGE))
-        .map(PermissionStringDto::getFacilityId)
-        .collect(toSet());
+    Set<UUID> supplyingFacilities = null;
+    if (null != user) {
+      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+      Set<PermissionStringDto> permissionStrings = handler.get();
 
-    if (null != params.getSupplyingFacilityId()) {
-      if (supplyingFacilities.contains(params.getSupplyingFacilityId())) {
-        supplyingFacilities = asSet(params.getSupplyingFacilityId());
-      } else {
-        throw new ValidationException(ORDER_NO_PERMISSION,
-            params.getSupplyingFacilityId().toString());
+      supplyingFacilities = permissionStrings.stream().filter(
+          permissionString ->
+              permissionString.getRightName().equalsIgnoreCase(ORDERS_VIEW)
+                  || permissionString.getRightName().equalsIgnoreCase(PODS_MANAGE))
+          .map(PermissionStringDto::getFacilityId)
+          .collect(toSet());
+
+      if (null != params.getSupplyingFacilityId()) {
+        if (supplyingFacilities.contains(params.getSupplyingFacilityId())) {
+          supplyingFacilities = asSet(params.getSupplyingFacilityId());
+        } else {
+          throw new ValidationException(ORDER_NO_PERMISSION,
+              params.getSupplyingFacilityId().toString());
+        }
       }
+    } else if (null != params.getSupplyingFacilityId()) {
+      supplyingFacilities = asSet(params.getSupplyingFacilityId());
     }
 
     return orderRepository.searchOrders(
