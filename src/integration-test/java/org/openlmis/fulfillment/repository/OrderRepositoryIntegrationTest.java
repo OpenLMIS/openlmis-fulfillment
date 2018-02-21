@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -26,7 +27,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
@@ -38,7 +38,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -219,10 +218,29 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order five = orderRepository.save(generateInstance());
 
     for (Order order : Lists.newArrayList(one, two, three, four, five)) {
-      List<UUID> uuids = orderRepository.getRequestingFacilities(order.getSupplyingFacilityId());
+      List<UUID> uuids = orderRepository
+          .getRequestingFacilities(Collections.singletonList(order.getSupplyingFacilityId()));
 
       assertThat(uuids, hasSize(1));
       assertThat(uuids, hasItems(order.getRequestingFacilityId()));
+    }
+  }
+
+  @Test
+  public void shouldRetrieveRequestingFacilitiesForMultipleSupplyingFacilities() {
+    Order one = orderRepository.save(generateInstance());
+    Order two = orderRepository.save(generateInstance());
+    Order three = orderRepository.save(generateInstance());
+    Order four = orderRepository.save(generateInstance());
+    Order five = orderRepository.save(generateInstance());
+    Order six = orderRepository.save(generateInstance());
+
+    for (Order order : Lists.newArrayList(one, two, three, four, five)) {
+      List<UUID> uuids = orderRepository.getRequestingFacilities(asList(
+          order.getSupplyingFacilityId(), six.getSupplyingFacilityId()));
+
+      assertThat(uuids, hasSize(2));
+      assertThat(uuids, hasItems(order.getRequestingFacilityId(), six.getRequestingFacilityId()));
     }
   }
 

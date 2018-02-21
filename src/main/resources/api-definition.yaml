@@ -397,7 +397,7 @@ resourceTypes:
                       description: supplyingFacility ID
                       type: string
                       required: false
-                      repeat: false
+                      repeat: true
               responses:
                   200:
                       body:

@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.web;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -1172,9 +1173,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnAvailableRequestingFacilitiesForGivenSupplyingFacility() {
-    given(orderRepository.getRequestingFacilities(facilityId))
-        .willReturn(Lists.newArrayList(facilityId));
-    given(orderRepository.getRequestingFacilities(facility1Id))
+    given(orderRepository.getRequestingFacilities(singletonList(facilityId)))
+        .willReturn(Lists.newArrayList(singletonList(facilityId)));
+    given(orderRepository.getRequestingFacilities(singletonList(facility1Id)))
         .willReturn(Lists.newArrayList(facility2Id));
 
     UUID[] response = restAssured.given()
@@ -1189,6 +1190,27 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(response.length, is(equalTo(1)));
     assertThat(response[0], equalTo(facility2Id));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnAvailableRequestingFacilitiesForMultipleSupplyingFacilities() {
+    given(orderRepository.getRequestingFacilities(asList(facilityId, facility1Id)))
+        .willReturn(Lists.newArrayList(facilityId));
+
+    UUID[] response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("supplyingFacility", facilityId)
+        .queryParam("supplyingFacility", facility1Id)
+        .when()
+        .get(REQUESTING_FACILITIES_URL)
+        .then()
+        .extract()
+        .as(UUID[].class);
+
+    assertThat(response.length, is(equalTo(1)));
+    assertThat(response[0], equalTo(facilityId));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

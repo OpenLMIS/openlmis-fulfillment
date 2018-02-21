@@ -28,5 +28,5 @@ public interface OrderRepositoryCustom {
   Page<Order> searchOrders(Set<UUID> supplyingFacility, UUID requestingFacility, UUID program,
                            UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable);
 
-  List<UUID> getRequestingFacilities(UUID supplyingFacility);
+  List<UUID> getRequestingFacilities(List<UUID> supplyingFacilityIds);
 }
