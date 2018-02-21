@@ -130,7 +130,9 @@ public class StockEventBuilder {
 
   private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem) {
     UUID destinationId = getDestinationId(
-        shipment.getReceivingFacilityId(), shipment.getProgramId()
+        shipment.getSupplyingFacilityId(),
+        shipment.getReceivingFacilityId(),
+        shipment.getProgramId()
     );
 
     StockEventLineItemDto dto = new StockEventLineItemDto();
@@ -145,7 +147,9 @@ public class StockEventBuilder {
   private StockEventLineItemDto createLineItem(ProofOfDelivery proofOfDelivery,
                                                ProofOfDeliveryLineItem lineItem) {
     UUID sourceId = getSourceId(
-        proofOfDelivery.getSupplyingFacilityId(), proofOfDelivery.getProgramId()
+        proofOfDelivery.getReceivingFacilityId(),
+        proofOfDelivery.getSupplyingFacilityId(),
+        proofOfDelivery.getProgramId()
     );
 
     StockEventLineItemDto dto = new StockEventLineItemDto();
@@ -158,25 +162,31 @@ public class StockEventBuilder {
     return dto;
   }
 
-  private UUID getDestinationId(UUID facilityId, UUID programId) {
-    return getNodeId(facilityId, programId, validDestinationsStockManagementService);
+  private UUID getDestinationId(UUID source, UUID destination, UUID programId) {
+    return getNodeId(
+        source, destination, programId, validDestinationsStockManagementService
+    );
   }
 
-  private UUID getSourceId(UUID facilityId, UUID programId) {
-    return getNodeId(facilityId, programId, validSourcesStockManagementService);
+  private UUID getSourceId(UUID destination, UUID source, UUID programId) {
+    return getNodeId(
+        destination, source, programId, validSourcesStockManagementService
+    );
   }
 
-  private UUID getNodeId(UUID facilityId, UUID programId,
+  private UUID getNodeId(UUID fromFacilityId, UUID toFacilityId, UUID programId,
                          ValidSourceDestinationsStockManagementService service) {
-    FacilityDto facility = facilityReferenceDataService.findOne(facilityId);
+    FacilityDto fromFacility = facilityReferenceDataService.findOne(fromFacilityId);
+    FacilityDto toFacility = facilityReferenceDataService.findOne(toFacilityId);
+
     Optional<ValidSourceDestinationDto> response = service
-        .findOne(programId, facility.getType().getId(), facility.getId());
+        .findOne(programId, fromFacility.getType().getId(), toFacility.getId());
 
     if (response.isPresent()) {
       return response.get().getNode().getId();
     }
 
-    throw new ValidationException(EVENT_MISSING_SOURCE_DESTINATION, facility.getCode());
+    throw new ValidationException(EVENT_MISSING_SOURCE_DESTINATION, toFacility.getCode());
   }
 
 }
