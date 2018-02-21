@@ -199,7 +199,8 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public List<UUID> getRequestingFacilities(
-      @RequestParam(name = "supplyingFacility", required = false) List<UUID> supplyingFacilityIds) {
+      @RequestParam(name = "supplyingFacilityId", required = false)
+          List<UUID> supplyingFacilityIds) {
     return orderRepository.getRequestingFacilities(supplyingFacilityIds);
   }
 

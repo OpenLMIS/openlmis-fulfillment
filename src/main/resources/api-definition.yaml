@@ -392,9 +392,9 @@ resourceTypes:
               is: [ secured ]
               description: Return UUIDs of all the available, distinct requesting facilities. The supplying facility when provided, it will also filter the available requesting facilities by the supplying facility of the order.
               queryParameters:
-                  supplyingFacility:
-                      displayName: supplyingFacility
-                      description: supplyingFacility ID
+                  supplyingFacilityId:
+                      displayName: supplyingFacilityId
+                      description: supplying facility ID
                       type: string
                       required: false
                       repeat: true
