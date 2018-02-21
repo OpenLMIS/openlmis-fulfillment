@@ -32,7 +32,7 @@ scenarios:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/proofsOfDelivery
         method: GET
-        label: GetAllProofOfDeliveries
+        label: GetAllProofsOfDelivery
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json

@@ -49,7 +49,7 @@ complete data).
 ## Proof of Delivery
 
 The PoDs listed below are defined in the following files:
-fulfillment.proof_of_deliveries.json and fulfillment.proof_of_delivery_line_items.json.
+fulfillment.proofs_of_delivery.json and fulfillment.proof_of_delivery_line_items.json.
 
 1. PoD for ORDER-00000000-0000-0000-0000-000000000006R
   * it has 3 line items for quantities received

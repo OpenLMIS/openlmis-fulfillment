@@ -50,7 +50,7 @@ import javax.persistence.Table;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-@Table(name = "proof_of_deliveries")
+@Table(name = "proofs_of_delivery")
 public class ProofOfDelivery extends BaseEntity {
 
   @OneToOne

@@ -14,7 +14,7 @@ var filesOrdered = [
     "fulfillment.order_line_items",
     "fulfillment.shipments",
     "fulfillment.shipment_line_items",
-    "fulfillment.proof_of_deliveries",
+    "fulfillment.proofs_of_delivery",
     "fulfillment.proof_of_delivery_line_items",
     "fulfillment.templates"
 ]

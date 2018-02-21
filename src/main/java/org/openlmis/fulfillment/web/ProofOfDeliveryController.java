@@ -111,13 +111,13 @@ public class ProofOfDeliveryController extends BaseController {
   private StockEventStockManagementService stockEventStockManagementService;
 
   /**
-   * Get all proofOfDeliveries.
+   * Get all proofs of delivery.
    *
-   * @return ProofOfDeliveries.
+   * @return proofs of delivery.
    */
   @RequestMapping(value = "/proofsOfDelivery", method = RequestMethod.GET)
   @ResponseBody
-  public Page<ProofOfDeliveryDto> getAllProofOfDeliveries(
+  public Page<ProofOfDeliveryDto> getAllProofsOfDelivery(
       @RequestParam(required = false) UUID shipmentId,
       Pageable pageable,
       OAuth2Authentication authentication) {
@@ -171,7 +171,7 @@ public class ProofOfDeliveryController extends BaseController {
   }
 
   /**
-   * Allows updating proofOfDeliveries.
+   * Allows updating proofs of delivery.
    *
    * @param proofOfDeliveryId UUID of proofOfDelivery which we want to update
    * @param dto               A proofOfDeliveryDto bound to the request body

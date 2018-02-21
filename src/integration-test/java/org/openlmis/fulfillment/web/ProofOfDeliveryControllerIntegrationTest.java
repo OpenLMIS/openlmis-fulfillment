@@ -116,7 +116,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldGetAllProofOfDeliveries() {
+  public void shouldGetAllProofsOfDelivery() {
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -132,7 +132,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldReturnEmptyListForGetAllProofOfDeliveriesIfUserHasNoRight() {
+  public void shouldReturnEmptyListForGetAllProofsOfDeliveryIfUserHasNoRight() {
     denyUserAllRights();
 
     PageImplRepresentation response = restAssured
