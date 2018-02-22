@@ -25,6 +25,8 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourceDestinationsStockManagementService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
@@ -43,7 +45,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -66,6 +70,9 @@ public class StockEventBuilder {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
+
+  @Autowired
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private DateHelper dateHelper;
@@ -113,22 +120,31 @@ public class StockEventBuilder {
   }
 
   private List<StockEventLineItemDto> getLineItems(Shipment shipment) {
+    Map<UUID, OrderableDto> orderables = getOrderables(shipment.getLineItems().stream()
+        .map(ShipmentLineItem::getOrderableId)
+        .collect(Collectors.toSet()));
+
     return shipment
         .getLineItems()
         .stream()
-        .map(lineItem -> createLineItem(shipment, lineItem))
+        .map(lineItem -> createLineItem(shipment, lineItem, orderables))
         .collect(Collectors.toList());
   }
 
   private List<StockEventLineItemDto> getLineItems(ProofOfDelivery proofOfDelivery) {
+    Map<UUID, OrderableDto> orderables = getOrderables(proofOfDelivery.getLineItems().stream()
+        .map(ProofOfDeliveryLineItem::getOrderableId)
+        .collect(Collectors.toSet()));
+
     return proofOfDelivery
         .getLineItems()
         .stream()
-        .map(lineItem -> createLineItem(proofOfDelivery, lineItem))
+        .map(lineItem -> createLineItem(proofOfDelivery, lineItem, orderables))
         .collect(Collectors.toList());
   }
 
-  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem) {
+  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem,
+                                               Map<UUID, OrderableDto> orderables) {
     UUID destinationId = getDestinationId(
         shipment.getSupplyingFacilityId(),
         shipment.getReceivingFacilityId(),
@@ -140,12 +156,14 @@ public class StockEventBuilder {
     dto.setDestinationId(destinationId);
 
     lineItem.export(dto);
+    convertQuantityToDispensingUnits(dto, orderables);
 
     return dto;
   }
 
   private StockEventLineItemDto createLineItem(ProofOfDelivery proofOfDelivery,
-                                               ProofOfDeliveryLineItem lineItem) {
+                                               ProofOfDeliveryLineItem lineItem,
+                                               Map<UUID, OrderableDto> orderables) {
     UUID sourceId = getSourceId(
         proofOfDelivery.getReceivingFacilityId(),
         proofOfDelivery.getSupplyingFacilityId(),
@@ -158,8 +176,24 @@ public class StockEventBuilder {
     dto.setReasonId(configurationSettingService.getTransferInReasonId());
 
     lineItem.export(dto);
+    convertQuantityToDispensingUnits(dto, orderables);
 
     return dto;
+  }
+
+  private Map<UUID, OrderableDto> getOrderables(Set<UUID> orderableUuids) {
+    return orderableReferenceDataService
+        .findByIds(orderableUuids)
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getId, orderable -> orderable));
+  }
+
+  private void convertQuantityToDispensingUnits(StockEventLineItemDto dto,
+                                                Map<UUID, OrderableDto> orderables) {
+    if (orderables.containsKey(dto.getOrderableId())) {
+      Long netContent = orderables.get(dto.getOrderableId()).getNetContent();
+      dto.setQuantity((int) (dto.getQuantity() * netContent));
+    }
   }
 
   private UUID getDestinationId(UUID source, UUID destination, UUID programId) {

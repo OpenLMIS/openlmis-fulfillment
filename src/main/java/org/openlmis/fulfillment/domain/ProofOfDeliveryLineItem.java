@@ -45,7 +45,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
   @Column(nullable = false)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter(AccessLevel.PUBLIC)
   private UUID orderableId;
 
   @Type(type = UUID_TYPE)

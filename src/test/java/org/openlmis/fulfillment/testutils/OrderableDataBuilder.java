@@ -64,4 +64,14 @@ public class OrderableDataBuilder {
     orderable.setId(id);
     return orderable;
   }
+
+  public OrderableDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
+  public OrderableDataBuilder withNetContent(long netContent) {
+    this.netContent = netContent;
+    return this;
+  }
 }

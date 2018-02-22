@@ -27,6 +27,9 @@ import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto
 import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.REJECTION_REASON_ID;
 import static org.openlmis.fulfillment.web.stockmanagement.StockEventLineItemDto.VVM_STATUS;
 
+import com.google.common.collect.Lists;
+
+import org.javers.common.collections.Sets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,10 +46,13 @@ import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityTypeDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
 import org.openlmis.fulfillment.testutils.DtoGenerator;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -62,10 +68,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class StockEventBuilderTest {
   private static final UUID TRANSFER_IN_REASON_ID = UUID.randomUUID();
   private static final LocalDate CURRENT_DATE = LocalDate.now();
+  private static final Long NET_CONTENT = 76L;
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -81,6 +88,9 @@ public class StockEventBuilderTest {
 
   @Mock
   private ConfigurationSettingService configurationSettingService;
+
+  @Mock
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
   private AuthenticationHelper authenticationHelper;
@@ -126,6 +136,13 @@ public class StockEventBuilderTest {
 
   @Test
   public void shouldCreateEventFromShipment() {
+    final OrderableDto orderable = new OrderableDataBuilder()
+        .withId(shipment.getLineItems().get(0).getOrderableId())
+        .withNetContent(NET_CONTENT)
+        .build();
+    when(orderableReferenceDataService.findByIds(Sets.asSet(orderable.getId())))
+        .thenReturn(Lists.newArrayList(orderable));
+
     StockEventDto event = stockEventBuilder.fromShipment(shipment);
 
     assertThat(event.getFacilityId(), is(order.getSupplyingFacilityId()));
@@ -138,6 +155,13 @@ public class StockEventBuilderTest {
 
   @Test
   public void shouldCreateEventFromProofOfDelivery() {
+    final OrderableDto orderable = new OrderableDataBuilder()
+        .withId(proofOfDelivery.getLineItems().get(0).getOrderableId())
+        .withNetContent(NET_CONTENT)
+        .build();
+    when(orderableReferenceDataService.findByIds(Sets.asSet(orderable.getId())))
+        .thenReturn(Lists.newArrayList(orderable));
+
     StockEventDto event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
 
     assertThat(event.getFacilityId(), is(order.getReceivingFacilityId()));
@@ -176,7 +200,8 @@ public class StockEventBuilderTest {
 
     assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
-    assertThat(eventLine.getQuantity(), is(dto.getQuantityShipped().intValue()));
+    assertThat(eventLine.getQuantity(),
+        is(dto.getQuantityShipped().intValue() * NET_CONTENT.intValue()));
     assertThat(eventLine.getOccurredDate(), is(CURRENT_DATE));
     assertThat(eventLine.getDestinationId(), is(node.getId()));
   }
@@ -187,7 +212,8 @@ public class StockEventBuilderTest {
 
     assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
-    assertThat(eventLine.getQuantity(), is(dto.getQuantityAccepted()));
+    assertThat(eventLine.getQuantity(),
+        is(dto.getQuantityAccepted() * NET_CONTENT.intValue()));
     assertThat(eventLine.getOccurredDate(), is(proofOfDelivery.getReceivedDate()));
     assertThat(eventLine.getSourceId(), is(node.getId()));
     assertThat(eventLine.getReasonId(), is(TRANSFER_IN_REASON_ID));
