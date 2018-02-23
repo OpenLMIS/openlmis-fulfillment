@@ -190,10 +190,11 @@ public class StockEventBuilder {
 
   private void convertQuantityToDispensingUnits(StockEventLineItemDto dto,
                                                 Map<UUID, OrderableDto> orderables) {
-    if (orderables.containsKey(dto.getOrderableId())) {
+    orderables.computeIfPresent(dto.getOrderableId(), (id, orderable) -> {
       Long netContent = orderables.get(dto.getOrderableId()).getNetContent();
       dto.setQuantity((int) (dto.getQuantity() * netContent));
-    }
+      return orderable;
+    });
   }
 
   private UUID getDestinationId(UUID source, UUID destination, UUID programId) {
