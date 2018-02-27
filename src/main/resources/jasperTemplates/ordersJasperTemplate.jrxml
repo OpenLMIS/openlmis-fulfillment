@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2018-02-19T16:39:53 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order" pageWidth="595" pageHeight="842" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="6e843fe2-ce72-4257-a4c3-1df03728dc95">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -198,25 +197,25 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<text><![CDATA[Ordered Quantity (packs)]]></text>
+				<text><![CDATA[Ordered Quantity]]></text>
 			</staticText>
 			<staticText>
 				<reportElement mode="Opaque" x="475" y="0" width="80" height="30" backcolor="#3D9297" uuid="646a24fe-b770-4291-8a0d-13db58237726"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<text><![CDATA[Total Dispensing Units]]></text>
+				<text><![CDATA[Dispensing Units]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="25" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
-				<reportElement style="Row" mode="Opaque" x="140" y="0" width="260" height="25" uuid="31100a38-97d8-400d-bf98-3b9039cd4d01">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="140" y="0" width="260" height="25" uuid="31100a38-97d8-400d-bf98-3b9039cd4d01">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<box bottomPadding="1">
+				<box padding="3">
 					<pen lineColor="#3D9297"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3D9297"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -224,16 +223,16 @@ Fax numbers: 01-241193,01-246288]]></text>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
+					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orderable}.getFullProductName()]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement style="Row" mode="Opaque" x="475" y="0" width="80" height="25" uuid="5e3e13b2-3de1-4613-927b-3d352faaed85">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="475" y="0" width="80" height="25" uuid="5e3e13b2-3de1-4613-927b-3d352faaed85">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
-				<box bottomPadding="1">
+				<box padding="3">
 					<pen lineColor="#3D9297"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3D9297"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -241,13 +240,13 @@ Fax numbers: 01-241193,01-246288]]></text>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
+					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalDispensingUnits}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement style="Row" mode="Opaque" x="0" y="0" width="50" height="25" uuid="28c1bf9c-6c13-4551-abf3-82481d555ab9"/>
-				<box bottomPadding="1">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="50" height="25" uuid="28c1bf9c-6c13-4551-abf3-82481d555ab9"/>
+				<box padding="3">
 					<pen lineColor="#3D9297"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3D9297"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -255,15 +254,15 @@ Fax numbers: 01-241193,01-246288]]></text>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
+					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement style="Row" mode="Opaque" x="50" y="0" width="90" height="25" uuid="5c934beb-6a56-414f-b44b-039716390a2f">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="50" y="0" width="90" height="25" uuid="5c934beb-6a56-414f-b44b-039716390a2f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<box bottomPadding="1">
+				<box padding="3">
 					<pen lineColor="#3D9297"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3D9297"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -271,15 +270,15 @@ Fax numbers: 01-241193,01-246288]]></text>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
+					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orderable}.getProductCode()]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement style="Row" mode="Opaque" x="400" y="0" width="75" height="25" uuid="325890b1-a7bb-4c2b-b9aa-0149b25d9968">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="400" y="0" width="75" height="25" uuid="325890b1-a7bb-4c2b-b9aa-0149b25d9968">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<box bottomPadding="1">
+				<box padding="3">
 					<pen lineColor="#3D9297"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3D9297"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +286,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font size="12"/>
+					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orderedQuantity}]]></textFieldExpression>
 			</textField>
