@@ -41,6 +41,7 @@ public abstract class MessageKeys {
   private static final String ENCODING = "encoding";
   private static final String JASPER = "jasper";
   private static final String PERMISSION = "permission";
+  private static final String PERMISSIONS = PERMISSION + "s";
   private static final String FILE = "file";
   private static final String PARAMETER = "parameter";
   private static final String TEMPLATE = "template";
@@ -77,6 +78,7 @@ public abstract class MessageKeys {
       join(ERROR_JASPER, "reportCreationWithMessage");
 
   public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);
+  public static final String PERMISSIONS_MISSING = join(ERROR_PREFIX, PERMISSIONS, MISSING);
 
   public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
   public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);

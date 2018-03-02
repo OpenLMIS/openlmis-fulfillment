@@ -26,10 +26,14 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.referencedata.PermissionStringDto.create;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import net.sf.jasperreports.engine.JRException;
@@ -52,6 +56,8 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
@@ -59,6 +65,7 @@ import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -67,6 +74,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -96,6 +104,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @MockBean
   private StockEventStockManagementService stockEventStockManagementService;
 
+  @SpyBean
+  private PermissionService permissionService;
+
+  @MockBean
+  private PermissionStrings.Handler permissionStringsHandler;
+
   @Value("${service.url}")
   private String serviceUrl;
 
@@ -113,6 +127,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
         .willReturn(proofOfDelivery.getShipment());
+
+    given(permissionService.getPermissionStrings(INITIAL_USER_ID))
+        .willReturn(permissionStringsHandler);
+
+    given(permissionStringsHandler.get())
+        .willReturn(ImmutableSet.of(create(
+            PODS_MANAGE, proofOfDelivery.getReceivingFacilityId(), proofOfDelivery.getProgramId()
+        )));
   }
 
   @Test
@@ -133,7 +155,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldReturnEmptyListForGetAllProofsOfDeliveryIfUserHasNoRight() {
-    denyUserAllRights();
+    given(permissionStringsHandler.get()).willReturn(Collections.emptySet());
 
     PageImplRepresentation response = restAssured
         .given()
@@ -360,7 +382,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(response, is(PERMISSION_MISSING));
+    assertThat(response, is(PERMISSIONS_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -429,7 +451,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .path(MESSAGE_KEY);
 
-    assertThat(response, is(PERMISSION_MISSING));
+    assertThat(response, is(PERMISSIONS_MISSING));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

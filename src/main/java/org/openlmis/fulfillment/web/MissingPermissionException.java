@@ -15,12 +15,17 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 
 public class MissingPermissionException extends AuthorizationException {
 
   public MissingPermissionException(String permissionName) {
     super(PERMISSION_MISSING, permissionName);
+  }
+
+  public MissingPermissionException(String... permissionNames) {
+    super(PERMISSIONS_MISSING, String.join(", ", permissionNames));
   }
 
 }

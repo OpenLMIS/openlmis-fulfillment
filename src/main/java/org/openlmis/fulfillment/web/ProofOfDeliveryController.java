@@ -18,6 +18,10 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_TEMPLATE_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
+import static org.openlmis.fulfillment.service.referencedata.PermissionStringDto.create;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -32,6 +36,9 @@ import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
+import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -63,6 +70,7 @@ import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiForm
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -119,9 +127,8 @@ public class ProofOfDeliveryController extends BaseController {
   @ResponseBody
   public Page<ProofOfDeliveryDto> getAllProofsOfDelivery(
       @RequestParam(required = false) UUID shipmentId,
-      Pageable pageable,
-      OAuth2Authentication authentication) {
-    XLOGGER.entry(shipmentId, pageable, authentication);
+      Pageable pageable) {
+    XLOGGER.entry(shipmentId, pageable);
     Profiler profiler = new Profiler("GET_PODS");
     profiler.setLogger(XLOGGER);
 
@@ -143,18 +150,21 @@ public class ProofOfDeliveryController extends BaseController {
       content = proofOfDeliveryRepository.findByShipment(shipment);
     }
 
-    if (!authentication.isClientOnly()) {
+    UserDto user = authenticationHelper.getCurrentUser();
+
+    if (null != user) {
       profiler.start(CHECK_PERMISSION);
-      String username = authenticationHelper.getCurrentUser().getUsername();
+      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+      Set<PermissionStringDto> permissionStrings = handler.get();
 
       content.removeIf(proofOfDelivery -> {
-        try {
-          permissionService.canManagePod(proofOfDelivery);
-          return false;
-        } catch (MissingPermissionException exp) {
-          LOGGER.warn("User {} has no right for POD {}", username, proofOfDelivery.getId());
-          return true;
-        }
+        UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
+        UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
+        UUID programId = proofOfDelivery.getProgramId();
+
+        return !permissionStrings.contains(create(PODS_MANAGE, receivingFacilityId, programId))
+            && !permissionStrings.contains(create(PODS_VIEW, receivingFacilityId, programId))
+            && !permissionStrings.contains(create(SHIPMENTS_VIEW, supplyingFacilityId, null));
       });
     }
 
@@ -247,8 +257,7 @@ public class ProofOfDeliveryController extends BaseController {
     profiler.setLogger(XLOGGER);
 
     ProofOfDelivery proofOfDelivery = findProofOfDelivery(id, profiler);
-
-    canManagePod(authentication, profiler, proofOfDelivery);
+    canViewPod(authentication, profiler, proofOfDelivery);
 
     profiler.start("BUILD_DTO");
     ProofOfDeliveryDto response = dtoBuilder.build(proofOfDelivery);
@@ -273,7 +282,8 @@ public class ProofOfDeliveryController extends BaseController {
     Profiler profiler = new Profiler("PRINT_POD");
     profiler.setLogger(XLOGGER);
 
-    canManagePod(authentication, id, profiler);
+    ProofOfDelivery proofOfDelivery = findProofOfDelivery(id, profiler);
+    canViewPod(authentication, profiler, proofOfDelivery);
 
     profiler.start("FIND_TEMPLATE_BY_NAME");
     Template podPrintTemplate = templateService.getByName(PRINT_POD);
@@ -318,12 +328,12 @@ public class ProofOfDeliveryController extends BaseController {
     }
   }
 
-  private void canManagePod(OAuth2Authentication authentication, UUID id,
-                            Profiler profiler) {
+  private void canViewPod(OAuth2Authentication authentication, Profiler profiler,
+                          ProofOfDelivery pod) {
     if (!authentication.isClientOnly()) {
-      LOGGER.debug("Checking rights to manage POD: {}", id);
       profiler.start(CHECK_PERMISSION);
-      permissionService.canManagePod(id);
+      LOGGER.debug("Checking rights to view POD: {}", pod.getId());
+      permissionService.canViewPod(pod);
     }
   }
 }

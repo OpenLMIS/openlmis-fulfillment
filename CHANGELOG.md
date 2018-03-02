@@ -30,6 +30,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3954](https://openlmis.atlassian.net/browse/OLMIS-3954): Updated order status to FULFILLING when creating shipment draft and ORDERED when deleting.
 * [OLMIS-3952](https://openlmis.atlassian.net/browse/OLMIS-3952): Created order status is set to ORDERED based on supplying facility program fulfilling setting.
 * [OLMIS-3826](https://openlmis.atlassian.net/browse/OLMIS-3826): Requesting facilities endpoint now accepts multiple supplyingFacilityId parameters.
+* [OLMIS-4168](https://openlmis.atlassian.net/browse/OLMIS-4168): Made sure that PoD endpoints will use new rights
 
 6.1.0 / 2017-11-09
 ==================

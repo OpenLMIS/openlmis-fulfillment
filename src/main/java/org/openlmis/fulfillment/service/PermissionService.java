@@ -19,15 +19,12 @@ package org.openlmis.fulfillment.service;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
-import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -44,17 +41,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+
 import java.util.UUID;
+
 import javax.validation.constraints.NotNull;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
 public class PermissionService {
   static final String ORDERS_TRANSFER = "ORDERS_TRANSFER";
-  static final String PODS_MANAGE = "PODS_MANAGE";
+  public static final String PODS_MANAGE = "PODS_MANAGE";
+  public static final String PODS_VIEW = "PODS_VIEW";
   public static final String ORDERS_VIEW = "ORDERS_VIEW";
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
-  static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
+  public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
   static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
 
@@ -65,13 +65,7 @@ public class PermissionService {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private ShipmentRepository shipmentRepository;
 
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
@@ -87,32 +81,29 @@ public class PermissionService {
   }
 
   /**
-   * Checks if user has permission to manage POD.
-   *
-   * @param proofOfDeliveryId ID of Proof of delivery
+   * Checks if user has permission to manage PoD.
    */
-  public void canManagePod(UUID proofOfDeliveryId) {
-    ProofOfDelivery proofOfDelivery = proofOfDeliveryRepository.findOne(proofOfDeliveryId);
-
-    if (null == proofOfDelivery) {
-      throw new MissingPermissionException(PODS_MANAGE);
-    }
-
-    canManagePod(proofOfDelivery);
+  public void canManagePod(ProofOfDelivery proofOfDelivery) {
+    checkPermission(
+        PODS_MANAGE, proofOfDelivery.getReceivingFacilityId(), proofOfDelivery.getProgramId()
+    );
   }
 
   /**
-   * Checks if user has permission to manage POD.
+   * Checks if user has permission to view PoD.
    */
-  public void canManagePod(ProofOfDelivery proofOfDelivery) {
-    UUID shipmentId = proofOfDelivery.getShipment().getId();
-    Shipment shipment = shipmentRepository.findOne(shipmentId);
+  public void canViewPod(ProofOfDelivery proofOfDelivery) {
+    UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
+    UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
+    UUID programId = proofOfDelivery.getProgramId();
 
-    if (null == shipment) {
-      throw new ValidationException(SHIPMENT_NOT_FOUND, shipmentId.toString());
+    if (hasPermission(PODS_MANAGE, receivingFacilityId, programId)
+        || hasPermission(PODS_VIEW, receivingFacilityId, programId)
+        || hasPermission(SHIPMENTS_VIEW, supplyingFacilityId)) {
+      return;
     }
 
-    checkPermission(PODS_MANAGE, shipment.getOrder().getSupplyingFacilityId());
+    throw new MissingPermissionException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_VIEW);
   }
 
   public void canManageSystemSettings() {
@@ -204,28 +195,51 @@ public class PermissionService {
 
   private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
     Order order = orderRepository.findOne(orderDto.getId());
-    if (order == null) {
+
+    if (null == order) {
       throw new ValidationException(ORDER_NOT_FOUND, orderDto.getId().toString());
     }
+
     checkPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId());
   }
 
-  private boolean hasPermission(String rightName, UUID warehouse) {
-    return hasPermission(rightName, warehouse, true, false);
+  private void checkPermission(String rightName, UUID facility, UUID program) {
+    checkPermission(rightName, facility, program, null, true, false);
   }
 
-  private boolean hasPermission(String rightName, UUID warehouse, boolean allowUserTokens,
-                                boolean allowApiKey) {
+  private void checkPermission(String rightName, UUID warehouse) {
+    checkPermission(rightName, null, null, warehouse, true, false);
+  }
+
+  private void checkPermission(String rightName, UUID facility, UUID program, UUID warehouse,
+                               boolean allowUserTokens, boolean allowApiKey) {
+    if (hasPermission(rightName, facility, program, warehouse, allowUserTokens, allowApiKey)) {
+      return;
+    }
+
+    throw new MissingPermissionException(rightName);
+  }
+
+  private boolean hasPermission(String rightName, UUID facility, UUID program) {
+    return hasPermission(rightName, facility, program, null, true, false);
+  }
+
+  private boolean hasPermission(String rightName, UUID warehouse) {
+    return hasPermission(rightName, null, null, warehouse, true, false);
+  }
+
+  private boolean hasPermission(String rightName, UUID facility, UUID program, UUID warehouse,
+                                boolean allowUserTokens, boolean allowApiKey) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
         .getContext()
         .getAuthentication();
 
     return authentication.isClientOnly()
         ? checkServiceToken(allowApiKey, authentication)
-        : checkUserToken(rightName, warehouse, allowUserTokens);
+        : checkUserToken(rightName, facility, program, warehouse, allowUserTokens);
   }
 
-  private boolean checkUserToken(String rightName, UUID warehouse,
+  private boolean checkUserToken(String rightName, UUID facility, UUID program, UUID warehouse,
                                  boolean allowUserTokens) {
     if (!allowUserTokens) {
       return false;
@@ -234,7 +248,7 @@ public class PermissionService {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result =  userReferenceDataService.hasRight(
-        user.getId(), right.getId(), null, null, warehouse
+        user.getId(), right.getId(), program, facility, warehouse
     );
 
     return null != result && isTrue(result.getResult());
@@ -255,9 +269,4 @@ public class PermissionService {
     return false;
   }
 
-  private void checkPermission(String rightName, UUID warehouse) {
-    if (!hasPermission(rightName, warehouse)) {
-      throw new MissingPermissionException(rightName);
-    }
-  }
 }

@@ -17,28 +17,31 @@ package org.openlmis.fulfillment.service;
 
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SYSTEM_SETTINGS_MANAGE;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.API_KEY_PREFIX;
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -51,6 +54,7 @@ import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.testutils.DtoGenerator;
 import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
@@ -63,6 +67,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -88,82 +94,48 @@ public class PermissionServiceTest {
   private PermissionService permissionService;
 
   @Mock
-  private UserDto user;
-
-  @Mock
-  private RightDto fulfillmentOrdersEditRight;
-
-  @Mock
-  private RightDto fulfillmentTransferOrderRight;
-
-  @Mock
-  private RightDto fulfillmentManagePodRight;
-
-  @Mock
-  private RightDto shipmentsViewRight;
-
-  @Mock
-  private RightDto shipmentsEditRight;
-
-  @Mock
-  private RightDto fulfillmentOrdersViewRight;
-
-  @Mock
-  private RightDto systemSettingsManageRight;
-
-  private UUID fulfillmentTransferOrderRightId = UUID.randomUUID();
-  private UUID fulfillmentManagePodRightId = UUID.randomUUID();
-  private UUID fulfillmentOrdersViewRightId = UUID.randomUUID();
-  private UUID fulfillmentOrdersEditRightId = UUID.randomUUID();
-  private UUID shipmentsViewRightId = UUID.randomUUID();
-  private UUID shipmentsEditRightId = UUID.randomUUID();
-  private UUID systemSettingsManageRightId = UUID.randomUUID();
-
-  private UUID userId;
-  private UUID facilityId;
-
-  private ProofOfDelivery proofOfDelivery;
-  private Shipment shipment;
-  private Order order;
-
-  private ShipmentDto shipmentDto;
-
   private SecurityContext securityContext;
-  private OAuth2Authentication userClient;
-  private OAuth2Authentication trustedClient;
-  private OAuth2Authentication apiKeyClient;
+
+  private UserDto user = DtoGenerator.of(UserDto.class);
+  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 8);
+  private Map<String, RightDto> rightsMap = ImmutableMap
+      .<String, RightDto>builder()
+      .put(ORDERS_TRANSFER, rights.get(0))
+      .put(PODS_MANAGE, rights.get(1))
+      .put(PODS_VIEW, rights.get(2))
+      .put(ORDERS_VIEW, rights.get(3))
+      .put(ORDERS_EDIT, rights.get(4))
+      .put(SHIPMENTS_VIEW, rights.get(5))
+      .put(SHIPMENTS_EDIT, rights.get(6))
+      .put(SYSTEM_SETTINGS_MANAGE, rights.get(7))
+      .build();
+
+  private ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
+  private Shipment shipment = pod.getShipment();
+  private Order order = shipment.getOrder();
+
+  private ShipmentDto shipmentDto = new ShipmentDtoDataBuilder()
+      .withOrder(new ObjectReferenceDto(order.getId()))
+      .build();
+
+  private OAuth2Authentication trustedClient = new OAuth2AuthenticationDataBuilder()
+      .buildServiceAuthentication();
+  private OAuth2Authentication userClient = new OAuth2AuthenticationDataBuilder()
+      .buildUserAuthentication();
+  private OAuth2Authentication apiKeyClient = new OAuth2AuthenticationDataBuilder()
+      .buildApiKeyAuthentication();
 
   @Before
   public void setUp() {
-    securityContext = mock(SecurityContext.class);
     SecurityContextHolder.setContext(securityContext);
 
-    trustedClient = new OAuth2AuthenticationDataBuilder().buildServiceAuthentication();
-    userClient = new OAuth2AuthenticationDataBuilder().buildUserAuthentication();
-    apiKeyClient = new OAuth2AuthenticationDataBuilder().buildApiKeyAuthentication();
-
-    proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
-    shipment = proofOfDelivery.getShipment();
-    order = shipment.getOrder();
-
-    userId = order.getCreatedById();
-    facilityId = order.getSupplyingFacilityId();
-
-    shipmentDto = new ShipmentDtoDataBuilder()
-        .withOrder(new ObjectReferenceDto(order.getId()))
-        .build();
+    user.setId(order.getCreatedById());
 
     when(orderRepository.findOne(order.getId())).thenReturn(order);
     when(shipmentRepository.findOne(shipment.getId())).thenReturn(shipment);
-    when(user.getId()).thenReturn(userId);
 
-    mockRight(fulfillmentTransferOrderRight, fulfillmentTransferOrderRightId, ORDERS_TRANSFER);
-    mockRight(fulfillmentManagePodRight, fulfillmentManagePodRightId, PODS_MANAGE);
-    mockRight(fulfillmentOrdersViewRight, fulfillmentOrdersViewRightId, ORDERS_VIEW);
-    mockRight(fulfillmentOrdersEditRight, fulfillmentOrdersEditRightId, ORDERS_EDIT);
-    mockRight(systemSettingsManageRight, systemSettingsManageRightId, SYSTEM_SETTINGS_MANAGE);
-    mockRight(shipmentsEditRight, shipmentsEditRightId, SHIPMENTS_EDIT);
-    mockRight(shipmentsViewRight, shipmentsViewRightId, SHIPMENTS_VIEW);
+    rightsMap.forEach((right, details) ->
+        when(authenticationHelper.getRight(right)).thenReturn(details));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
     when(securityContext.getAuthentication()).thenReturn(userClient);
@@ -173,20 +145,16 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canTransferOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
-    mockFulfillmentHasRight(fulfillmentTransferOrderRightId, true, facilityId);
+  public void canTransferOrder() {
+    mockHasRight(ORDERS_TRANSFER, null, null, order.getSupplyingFacilityId());
 
     permissionService.canTransferOrder(order);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_TRANSFER, fulfillmentTransferOrderRightId, facilityId);
+    verifyRight(ORDERS_TRANSFER, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
-  public void cannotTransferOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
+  public void cannotTransferOrder() {
     expectException(ORDERS_TRANSFER);
 
     permissionService.canTransferOrder(order);
@@ -195,15 +163,10 @@ public class PermissionServiceTest {
   @Test
   public void canManageSystemSettingsByServiceToken() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
-    //If endpoint does not allow for service level token authorization, method will throw Exception.
+
     permissionService.canManageSystemSettings();
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-
-    order.verify(authenticationHelper, never()).getCurrentUser();
-    order.verify(authenticationHelper, never()).getRight(SYSTEM_SETTINGS_MANAGE);
-    order.verify(userReferenceDataService, never()).hasRight(userId, systemSettingsManageRightId,
-        null, null, null);
+    verifyZeroInteractions(authenticationHelper, userReferenceDataService);
   }
 
   @Test
@@ -217,108 +180,123 @@ public class PermissionServiceTest {
 
   @Test
   public void canManageSystemSettingsByUserToken() {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
-    mockFulfillmentHasRight(systemSettingsManageRightId, true, null);
+    mockHasRight(SYSTEM_SETTINGS_MANAGE, null, null, null);
 
     permissionService.canManageSystemSettings();
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, SYSTEM_SETTINGS_MANAGE, systemSettingsManageRightId, null);
+    verifyRight(SYSTEM_SETTINGS_MANAGE, null, null, null);
   }
 
   @Test
-  public void cannotManageSystemSettingsByUserToken() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
+  public void cannotManageSystemSettingsByUserToken() {
     expectException(SYSTEM_SETTINGS_MANAGE);
 
     permissionService.canManageSystemSettings();
   }
 
   @Test
-  public void canManagePod() throws Exception {
-    mockFulfillmentHasRight(fulfillmentManagePodRightId, true, facilityId);
-    when(securityContext.getAuthentication()).thenReturn(userClient);
+  public void canManagePod() {
+    mockHasRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
 
+    permissionService.canManagePod(pod);
 
-    permissionService.canManagePod(proofOfDelivery);
-
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, PODS_MANAGE, fulfillmentManagePodRightId, facilityId);
+    verifyRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
   }
 
   @Test
-  public void cannotManagePod() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
+  public void cannotManagePod() {
     expectException(PODS_MANAGE);
 
-    permissionService.canManagePod(proofOfDelivery);
+    permissionService.canManagePod(pod);
   }
 
   @Test
-  public void canViewOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
+  public void canViewPodWithPodManageRight() {
+    mockHasRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
 
-    mockFulfillmentHasRight(fulfillmentOrdersViewRightId, true, facilityId);
+    permissionService.canViewPod(pod);
+
+    verifyRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
+  }
+
+  @Test
+  public void canViewPodWithShipmentViewRight() {
+    mockHasRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canViewPod(pod);
+
+    verifyRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
+  public void canViewPod() {
+    mockHasRight(PODS_VIEW, pod.getReceivingFacilityId(), pod.getProgramId(), null);
+
+    permissionService.canViewPod(pod);
+
+    verifyRight(PODS_VIEW, pod.getReceivingFacilityId(), pod.getProgramId(), null);
+  }
+
+  @Test
+  public void cannotViewPod() {
+    expectException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_VIEW);
+
+    permissionService.canViewPod(pod);
+  }
+
+  @Test
+  public void canViewOrder() {
+    mockHasRight(ORDERS_VIEW, null, null, order.getSupplyingFacilityId());
 
     permissionService.canViewOrder(order);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_VIEW, fulfillmentOrdersViewRightId, facilityId);
+    verifyRight(ORDERS_VIEW, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
-  public void cannotViewOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
+  public void cannotViewOrder() {
     expectException(ORDERS_VIEW);
 
     permissionService.canViewOrder(order);
   }
 
   @Test
-  public void canEditOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
-    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+  public void canEditOrder() {
+    mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
 
     permissionService.canEditOrder(order);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, ORDERS_EDIT, fulfillmentOrdersEditRightId, facilityId);
+    verifyRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
-  public void cannotEditOrder() throws Exception {
-    when(securityContext.getAuthentication()).thenReturn(userClient);
-
+  public void cannotEditOrder() {
     expectException(ORDERS_EDIT);
 
     permissionService.canEditOrder(order);
   }
 
   @Test
-  public void canManageShipment() throws Exception {
-    mockFulfillmentHasRight(shipmentsEditRightId, true, facilityId);
+  public void canManageShipment() {
+    mockHasRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
 
     permissionService.canEditShipment(shipmentDto);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, SHIPMENTS_EDIT, shipmentsEditRightId, facilityId);
+    verifyRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
-  public void cannotManageShipmentWhenUserHasNoRights() throws Exception {
+  public void cannotManageShipmentWhenUserHasNoRights() {
     expectException(SHIPMENTS_EDIT);
 
     permissionService.canEditShipment(shipmentDto);
   }
 
   @Test
-  public void cannotManageShipmentWhenOrderIsNotFound() throws Exception {
-    mockFulfillmentHasRight(fulfillmentOrdersEditRightId, true, facilityId);
+  public void cannotManageShipmentWhenOrderIsNotFound() {
+    mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
     when(orderRepository.findOne(order.getId())).thenReturn(null);
+
     exception.expect(ValidationException.class);
     exception.expect(hasProperty("params", arrayContaining(order.getId().toString())));
     exception.expectMessage(ORDER_NOT_FOUND);
@@ -327,33 +305,26 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewShipment() throws Exception {
-    mockFulfillmentHasRight(shipmentsViewRightId, true, facilityId);
+  public void canViewShipment() {
+    mockHasRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
 
     permissionService.canViewShipment(shipment);
 
-    InOrder order = inOrder(authenticationHelper, userReferenceDataService);
-    verifyFulfillmentRight(order, SHIPMENTS_VIEW, shipmentsViewRightId, facilityId);
+    verifyRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
-  public void cannotViewShipmentWhenUserHasNoRights() throws Exception {
+  public void cannotViewShipmentWhenUserHasNoRights() {
     expectException(SHIPMENTS_VIEW);
 
     permissionService.canViewShipment(shipment);
   }
 
-  private void mockRight(RightDto right, UUID rightId, String rightName) {
-    when(authenticationHelper.getRight(rightName))
-        .thenReturn(right);
-    when(right.getId()).thenReturn(rightId, rightId);
-  }
-
-  private void mockFulfillmentHasRight(UUID rightId, boolean assign, UUID facility) {
-    ResultDto<Boolean> resultDto = new ResultDto<>(assign);
+  private void mockHasRight(String rightName, UUID facility, UUID program,
+                            UUID warehouse) {
     when(userReferenceDataService
-        .hasRight(userId, rightId, null, null, facility)
-    ).thenReturn(resultDto);
+        .hasRight(user.getId(), rightsMap.get(rightName).getId(), program, facility, warehouse))
+        .thenReturn(new ResultDto<>(true));
   }
 
   private void expectException(String rightName) {
@@ -362,11 +333,19 @@ public class PermissionServiceTest {
     exception.expectMessage(PERMISSION_MISSING);
   }
 
-  private void verifyFulfillmentRight(InOrder order, String rightName, UUID rightId,
-                                      UUID facility) {
-    order.verify(authenticationHelper).getCurrentUser();
-    order.verify(authenticationHelper).getRight(rightName);
-    order.verify(userReferenceDataService).hasRight(userId, rightId, null, null, facility);
+  private void expectException(String... rightNames) {
+    exception.expect(MissingPermissionException.class);
+    exception.expect(hasProperty("params", arrayContaining(String.join(", ", rightNames))));
+    exception.expectMessage(PERMISSIONS_MISSING);
+  }
+
+  private void verifyRight(String rightName, UUID facility, UUID program,
+                           UUID warehouse) {
+    verify(authenticationHelper, atLeastOnce()).getCurrentUser();
+    verify(authenticationHelper).getRight(rightName);
+    verify(userReferenceDataService).hasRight(
+        user.getId(), rightsMap.get(rightName).getId(), program, facility, warehouse
+    );
   }
 
 }
