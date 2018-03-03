@@ -24,10 +24,11 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_CREATI
 
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperReport;
-
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.OrderReportDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,10 @@ public class JasperReportsViewService {
 
   @Autowired
   private ExporterBuilder exporter;
+
+  @Autowired
+  private AuthenticationHelper authenticationHelper;
+  
 
   /**
    * Create Jasper Report View.
@@ -91,6 +96,12 @@ public class JasperReportsViewService {
     OrderReportDto orderDto = OrderReportDto.newInstance(order, exporter);
     parameters.put("datasource", new JRBeanCollectionDataSource(orderDto.getOrderLineItems()));
     parameters.put("order", orderDto);
+
+    String userName = "";
+    if (authenticationHelper != null) {
+      userName = authenticationHelper.getCurrentUser().getUsername();
+    }
+    parameters.put("loggedInUser", userName);
 
     return new ModelAndView(jasperView, parameters);
   }
