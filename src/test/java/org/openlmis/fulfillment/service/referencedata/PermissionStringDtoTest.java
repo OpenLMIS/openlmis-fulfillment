@@ -15,14 +15,16 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import lombok.AllArgsConstructor;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -66,11 +68,36 @@ public class PermissionStringDtoTest {
   }
 
   @Test
-  public void shouldParse() throws Exception {
+  public void shouldParse() {
     PermissionStringDto parsed = PermissionStringDto.from(permissionString);
-    assertThat(parsed.getRightName(), equalTo(rightName));
-    assertThat(parsed.getFacilityId(), equalTo(facilityId));
-    assertThat(parsed.getProgramId(), equalTo(programId));
-    assertThat(parsed.toString(), equalTo(permissionString));
+    assertThat(parsed.getRightName(), is(rightName));
+    assertThat(parsed.getFacilityId(), is(facilityId));
+    assertThat(parsed.getProgramId(), is(programId));
+    assertThat(parsed.toString(), is(permissionString));
+  }
+
+  @Test
+  public void shouldMatch() {
+    testMatch(rightName, facilityId, programId, true);
+  }
+
+  @Test
+  public void shouldNotMatchIfRightNameIsDifferent() {
+    testMatch(RandomStringUtils.randomAlphabetic(5), facilityId, programId, false);
+  }
+
+  @Test
+  public void shouldNotMatchIfFacilityIdIsDifferent() {
+    testMatch(rightName, UUID.randomUUID(), programId, false);
+  }
+
+  @Test
+  public void shouldNotMatchIfProgramIdIsDifferent() {
+    testMatch(rightName, facilityId, UUID.randomUUID(), false);
+  }
+
+  private void testMatch(String rightName, UUID facilityId, UUID programId, boolean expected) {
+    PermissionStringDto parsed = PermissionStringDto.from(permissionString);
+    assertThat(parsed.match(rightName, facilityId, programId), is(expected));
   }
 }

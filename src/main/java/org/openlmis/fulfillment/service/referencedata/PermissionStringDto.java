@@ -21,7 +21,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -68,6 +70,20 @@ public class PermissionStringDto {
 
   public static PermissionStringDto create(String rightName, UUID facilityId, UUID programId) {
     return new PermissionStringDto(rightName, facilityId, programId);
+  }
+
+  /**
+   * Verify if this permission string matches the passed parameters.
+   *
+   * @param rightName  right name
+   * @param facilityId facility id
+   * @param programId  program id
+   * @return true if parameters and fields are equal, otherwise false.
+   */
+  public boolean match(String rightName, UUID facilityId, UUID programId) {
+    return Objects.equals(this.rightName, rightName)
+        && Objects.equals(this.facilityId, facilityId)
+        && Objects.equals(this.programId, programId);
   }
 
   @Override
