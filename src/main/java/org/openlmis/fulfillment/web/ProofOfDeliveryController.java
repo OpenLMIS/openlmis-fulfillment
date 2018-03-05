@@ -32,6 +32,7 @@ import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
+import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.TemplateService;
@@ -116,6 +117,9 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private StockEventStockManagementService stockEventStockManagementService;
+
+  @Autowired
+  private FulfillmentNotificationService fulfillmentNotificationService;
 
   /**
    * Get all proofs of delivery.
@@ -228,6 +232,8 @@ public class ProofOfDeliveryController extends BaseController {
       profiler.start("SEND_STOCK_EVENT");
       StockEventDto event = stockEventBuilder.fromProofOfDelivery(toUpdate);
       stockEventStockManagementService.submit(event);
+
+      fulfillmentNotificationService.sendPodConfirmedNotification(toUpdate);
     }
 
     profiler.start("SAVE_POD");

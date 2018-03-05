@@ -77,6 +77,11 @@ public class FacilityDataBuilder {
     return facility;
   }
 
+  public FacilityDataBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
+
   public FacilityDataBuilder withId(UUID id) {
     this.id = id;
     return this;

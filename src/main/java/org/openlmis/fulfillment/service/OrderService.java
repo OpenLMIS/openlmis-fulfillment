@@ -15,12 +15,9 @@
 
 package org.openlmis.fulfillment.service;
 
-import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
-import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
@@ -36,38 +33,28 @@ import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
-import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
-import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.OrderDto;
-import org.openlmis.util.NotificationRequest;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -85,13 +72,10 @@ public class OrderService {
   private OrderRepository orderRepository;
 
   @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
-  @Autowired
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Autowired
-  private NotificationService notificationService;
+  private FulfillmentNotificationService fulfillmentNotificationService;
 
   @Autowired
   private OrderStorage orderStorage;
@@ -119,12 +103,6 @@ public class OrderService {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
-
-  @Autowired
-  protected MessageService messageService;
-
-  @Value("${email.noreply}")
-  private String from;
 
   /**
    * Creates an order.
@@ -233,43 +211,9 @@ public class OrderService {
     }
 
     // Send an email notification to the user that converted the order
-    sendNotification(saved, saved.getCreatedById());
+    fulfillmentNotificationService.sendOrderCreatedNotification(saved);
 
     return saved;
-  }
-
-  private void sendNotification(Order order, UUID userId) {
-    String to = userReferenceDataService.findOne(userId).getEmail();
-    String subject = messageService
-        .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
-        .getMessage();
-
-    String content = createContent(order);
-
-    notificationService.send(new NotificationRequest(from, to, subject, content));
-  }
-
-  private String createContent(Order order) {
-    String content = messageService
-        .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_BODY))
-        .getMessage();
-
-    try {
-      List<PropertyDescriptor> descriptors = Arrays
-          .stream(getPropertyDescriptors(order.getClass()))
-          .filter(d -> null != d.getReadMethod())
-          .collect(Collectors.toList());
-
-      for (PropertyDescriptor descriptor : descriptors) {
-        String target = "{" + descriptor.getName() + "}";
-        String replacement = String.valueOf(descriptor.getReadMethod().invoke(order));
-
-        content = content.replace(target, replacement);
-      }
-    } catch (IllegalAccessException | InvocationTargetException exp) {
-      throw new IllegalStateException("Can't get access to getter method", exp);
-    }
-    return content;
   }
 
   private void setOrderStatus(Order order) {

@@ -17,12 +17,10 @@ package org.openlmis.fulfillment.service;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -30,8 +28,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
-import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
@@ -66,11 +62,9 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
-import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -89,14 +83,11 @@ import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
-import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.util.OrderDto;
-import org.openlmis.util.NotificationRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -106,9 +97,6 @@ import java.util.EnumSet;
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
-
-  private static final String FROM_EMAIL = "noreply@openlmis.org";
-  private static final String SUBJECT = "New order";
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -138,16 +126,13 @@ public class OrderServiceTest {
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Mock
-  private NotificationService notificationService;
+  private FulfillmentNotificationService notificationService;
 
   @Mock
   private OrderStorage orderStorage;
 
   @Mock
   private OrderSender orderSender;
-
-  @Mock
-  private MessageService messageService;
 
   @Mock
   private DateHelper dateHelper;
@@ -168,9 +153,6 @@ public class OrderServiceTest {
   private OrderService orderService;
 
   @Captor
-  private ArgumentCaptor<NotificationRequest> notificationCaptor;
-
-  @Captor
   private ArgumentCaptor<Order> orderCaptor;
 
   private ProgramDto program;
@@ -184,7 +166,6 @@ public class OrderServiceTest {
 
   @Before
   public void setUp() {
-    ReflectionTestUtils.setField(orderService, "from", FROM_EMAIL);
     generateTestData();
     mockResponses();
   }
@@ -206,16 +187,7 @@ public class OrderServiceTest {
 
     assertEquals(OrderStatus.IN_ROUTE, orderCaptor.getValue().getStatus());
 
-    verify(notificationService).send(notificationCaptor.capture());
-
-    NotificationRequest notification = notificationCaptor.getValue();
-    assertThat(notification, is(notNullValue()));
-
-    assertThat(notification.getFrom(), is(FROM_EMAIL));
-    assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), is(SUBJECT));
-    assertThat(notification.getContent(),
-        is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
+    verify(notificationService).sendOrderCreatedNotification(eq(created));
   }
 
   @Test
@@ -240,16 +212,7 @@ public class OrderServiceTest {
 
     assertEquals(OrderStatus.ORDERED, orderCaptor.getValue().getStatus());
 
-    verify(notificationService).send(notificationCaptor.capture());
-
-    NotificationRequest notification = notificationCaptor.getValue();
-    assertThat(notification, is(notNullValue()));
-
-    assertThat(notification.getFrom(), is(FROM_EMAIL));
-    assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), is(SUBJECT));
-    assertThat(notification.getContent(),
-        is("Create an order: " + order.getId() + " with status: ORDERED"));
+    verify(notificationService).sendOrderCreatedNotification(eq(created));
   }
 
   @Test
@@ -266,16 +229,7 @@ public class OrderServiceTest {
     inOrder.verify(orderSender).send(order);
     inOrder.verify(orderStorage).delete(order);
 
-    verify(notificationService).send(notificationCaptor.capture());
-
-    NotificationRequest notification = notificationCaptor.getValue();
-    assertThat(notification, is(notNullValue()));
-
-    assertThat(notification.getFrom(), is(FROM_EMAIL));
-    assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), is(SUBJECT));
-    assertThat(notification.getContent(),
-        is("Create an order: " + order.getId() + " with status: IN_ROUTE"));
+    verify(notificationService).sendOrderCreatedNotification(eq(created));
   }
 
   @Test
@@ -475,20 +429,5 @@ public class OrderServiceTest {
     when(orderSender.send(order)).thenReturn(true);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
-
-    mockMessages();
-  }
-
-  private void mockMessages() {
-    Message orderCreationSubject = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT);
-    Message.LocalizedMessage localizedMessage =
-        orderCreationSubject.new LocalizedMessage(SUBJECT);
-    when(messageService.localize(orderCreationSubject))
-        .thenReturn(localizedMessage);
-    Message orderCreationBody = new Message(FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
-    localizedMessage = orderCreationBody
-        .new LocalizedMessage("Create an order: {id} with status: {status}");
-    when(messageService.localize(orderCreationBody))
-        .thenReturn(localizedMessage);
   }
 }

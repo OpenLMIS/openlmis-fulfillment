@@ -140,6 +140,11 @@ public abstract class MessageKeys {
   public static final String FULFILLMENT_EMAIL_ORDER_CREATION_BODY
       = "fulfillment.email.orderCreation.body";
 
+  public static final String FULFILLMENT_EMAIL_POD_CONFIRMED_SUBJECT
+      = "fulfillment.email.podConfirmed.subject";
+  public static final String FULFILLMENT_EMAIL_POD_CONFIRMED_BODY
+      = "fulfillment.email.podConfirmed.body";
+
   private static final String ERROR_DTO_EXPANSION = join(ERROR_PREFIX, "dtoExpansion");
   public static final String ERROR_DTO_EXPANSION_CAST = join(ERROR_DTO_EXPANSION, "cast");
   public static final String ERROR_DTO_EXPANSION_HREF = join(ERROR_DTO_EXPANSION, "href");

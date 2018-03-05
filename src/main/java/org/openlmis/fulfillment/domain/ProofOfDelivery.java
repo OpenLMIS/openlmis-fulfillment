@@ -72,7 +72,7 @@ public class ProofOfDelivery extends BaseEntity {
   private List<ProofOfDeliveryLineItem> lineItems;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private String receivedBy;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)

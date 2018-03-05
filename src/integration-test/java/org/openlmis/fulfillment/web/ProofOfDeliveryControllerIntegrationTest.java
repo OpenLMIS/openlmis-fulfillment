@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
@@ -55,9 +56,11 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
+import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
@@ -109,6 +112,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @MockBean
   private PermissionStrings.Handler permissionStringsHandler;
+
+  @MockBean
+  private FulfillmentNotificationService fulfillmentNotificationService;
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -217,6 +223,30 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .as(ProofOfDeliveryDto.class);
 
     assertThat(response.getDeliveredBy(), is(somebody));
+    // Notifications are only sent on POD confirmation
+    verify(fulfillmentNotificationService, never())
+        .sendPodConfirmedNotification(any(ProofOfDelivery.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldSendNotificationOnProofOfDeliveryConfirmation() {
+    ProofOfDeliveryDto dto = createDto();
+    dto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .pathParam("id", proofOfDelivery.getId())
+        .body(dto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(ProofOfDeliveryDto.class);
+
+    verify(fulfillmentNotificationService).sendPodConfirmedNotification(any(ProofOfDelivery.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -19,6 +19,7 @@ New features:
 * [OLMIS-1611](https://openlmis.atlassian.net/browse/OLMIS-1611): Send stock event when shipment is finalized
 * [OLMIS-3881](https://openlmis.atlassian.net/browse/OLMIS-3881): Create Proof Of Delivery draft for finalized shipment
 * [OLMIS-235](https://openlmis.atlassian.net/browse/OLMIS-235): Send Stock Event on Proof of Delivery confirmation
+* [OLMIS-3991](https://openlmis.atlassian.net/browse/OLMIS-3991): Confirming Proof of Delivery will now result in sending a notification to the user that created the shipment
 
 Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order
