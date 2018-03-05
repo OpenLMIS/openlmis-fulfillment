@@ -30,7 +30,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
-import static org.openlmis.fulfillment.service.referencedata.PermissionStringDto.create;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +56,7 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
@@ -132,7 +132,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willReturn(permissionStringsHandler);
 
     given(permissionStringsHandler.get())
-        .willReturn(ImmutableSet.of(create(
+        .willReturn(ImmutableSet.of(PermissionStringDto.create(
             PODS_MANAGE, proofOfDelivery.getReceivingFacilityId(), proofOfDelivery.getProgramId()
         )));
   }
