@@ -141,13 +141,13 @@ public class PermissionStringsTest {
   public void shouldReturnFacilityIdsRelatedToRights() {
     String etag = random(5);
     PermissionStringDto data = PermissionStringDto.create(PODS_MANAGE, randomUUID(), randomUUID());
-    PermissionStrings.Handler handler = permissionStrings.forUser(USER);
 
     when(userReferenceDataService.getPermissionStrings(USER, null)).thenReturn(response);
     when(response.isModified()).thenReturn(true);
     when(response.getETag()).thenReturn(etag);
     when(response.getBody()).thenReturn(singletonList(data.toString()));
 
+    PermissionStrings.Handler handler = permissionStrings.forUser(USER);
     assertThat(handler.getFacilityIds(PODS_MANAGE), contains(data.getFacilityId()));
   }
 
