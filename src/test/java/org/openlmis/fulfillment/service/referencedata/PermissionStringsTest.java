@@ -16,7 +16,9 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.random;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -24,6 +26,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +34,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.service.ServiceResponse;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +44,7 @@ import java.util.UUID;
 @RunWith(MockitoJUnitRunner.class)
 public class PermissionStringsTest {
   private static final String HANDLERS_FIELD_NAME = "handlers";
-  private static final UUID USER = UUID.randomUUID();
+  private static final UUID USER = randomUUID();
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
@@ -132,4 +136,19 @@ public class PermissionStringsTest {
 
     assertThat(one, is(equalTo(two)));
   }
+
+  @Test
+  public void shouldReturnFacilityIdsRelatedToRights() {
+    String etag = random(5);
+    PermissionStringDto data = PermissionStringDto.create(PODS_MANAGE, randomUUID(), randomUUID());
+    PermissionStrings.Handler handler = permissionStrings.forUser(USER);
+
+    when(userReferenceDataService.getPermissionStrings(USER, null)).thenReturn(response);
+    when(response.isModified()).thenReturn(true);
+    when(response.getETag()).thenReturn(etag);
+    when(response.getBody()).thenReturn(singletonList(data.toString()));
+
+    assertThat(handler.getFacilityIds(PODS_MANAGE), contains(data.getFacilityId()));
+  }
+
 }
