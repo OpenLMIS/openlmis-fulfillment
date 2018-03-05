@@ -55,7 +55,7 @@ public class PermissionService {
   public static final String ORDERS_VIEW = "ORDERS_VIEW";
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
   public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
-  static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
+  public static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
 
   @Autowired

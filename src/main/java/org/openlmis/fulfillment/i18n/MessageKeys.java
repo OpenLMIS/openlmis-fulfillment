@@ -82,7 +82,6 @@ public abstract class MessageKeys {
 
   public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
   public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);
-  public static final String ORDER_NO_PERMISSION = join(ERROR_PREFIX, ORDER, "noPermission");
 
   public static final String ORDER_RETRY_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_RETRY, INVALID_STATUS);

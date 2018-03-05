@@ -15,17 +15,19 @@
 
 package org.openlmis.fulfillment.service;
 
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.beanutils.PropertyUtils.getPropertyDescriptors;
-import static org.javers.common.collections.Sets.asSet;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NO_PERMISSION;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -41,7 +43,6 @@ import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
@@ -50,7 +51,7 @@ import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.NotificationRequest;
 import org.slf4j.ext.XLogger;
@@ -60,10 +61,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -71,7 +76,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
-
   static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
       "productName", "productCode", "orderedQuantity", "filledQuantity"};
 
@@ -158,32 +162,42 @@ public class OrderService {
   public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
 
-    Set<UUID> supplyingFacilities = null;
+    Set<UUID> supplyingFacilities = new HashSet<>();
+    Set<UUID> requestingFacilities = new HashSet<>();
+
     if (null != user) {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
-      Set<PermissionStringDto> permissionStrings = handler.get();
 
-      supplyingFacilities = permissionStrings.stream().filter(
-          permissionString ->
-              permissionString.getRightName().equalsIgnoreCase(ORDERS_VIEW)
-                  || permissionString.getRightName().equalsIgnoreCase(PODS_MANAGE))
-          .map(PermissionStringDto::getFacilityId)
-          .collect(toSet());
+      supplyingFacilities.addAll(
+          handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW)
+      );
 
       if (null != params.getSupplyingFacilityId()) {
-        if (supplyingFacilities.contains(params.getSupplyingFacilityId())) {
-          supplyingFacilities = asSet(params.getSupplyingFacilityId());
-        } else {
-          throw new ValidationException(ORDER_NO_PERMISSION,
-              params.getSupplyingFacilityId().toString());
-        }
+        supplyingFacilities.removeIf(id -> !id.equals(params.getSupplyingFacilityId()));
       }
-    } else if (null != params.getSupplyingFacilityId()) {
-      supplyingFacilities = asSet(params.getSupplyingFacilityId());
+
+      requestingFacilities.addAll(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW));
+
+      if (null != params.getRequestingFacilityId()) {
+        requestingFacilities.removeIf(id -> !id.equals(params.getRequestingFacilityId()));
+      }
+
+      if (isEmpty(supplyingFacilities) && isEmpty(requestingFacilities)) {
+        // missing rights
+        return Pagination.getPage(Collections.emptyList(), pageable);
+      }
+    } else {
+      Optional
+          .ofNullable(params.getSupplyingFacilityId())
+          .ifPresent(supplyingFacilities::add);
+
+      Optional
+          .ofNullable(params.getRequestingFacilityId())
+          .ifPresent(requestingFacilities::add);
     }
 
     return orderRepository.searchOrders(
-        supplyingFacilities, params.getRequestingFacilityId(), params.getProgramId(),
+        supplyingFacilities, requestingFacilities, params.getProgramId(),
         params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable
     );
   }

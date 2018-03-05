@@ -30,12 +30,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -52,25 +54,25 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   /**
    * Method returns all Orders with matched parameters.
    *
-   * @param supplyingFacilities set of supplyingFacility of searched Orders.
-   * @param requestingFacility  requestingFacility of searched Orders.
-   * @param program             program of searched Orders.
-   * @param processingPeriod    UUID of processing period
-   * @param statuses            order statuses.
-   * @param pageable            page parameters
+   * @param supplyingFacilities  set of supplyingFacility of searched Orders.
+   * @param requestingFacilities set of requestingFacility of searched Orders.
+   * @param program              program of searched Orders.
+   * @param processingPeriod     UUID of processing period
+   * @param statuses             order statuses.
+   * @param pageable             page parameters
    * @return List of Orders with matched parameters.
    */
   @Override
-  public Page<Order> searchOrders(Set<UUID> supplyingFacilities, UUID requestingFacility,
+  public Page<Order> searchOrders(Set<UUID> supplyingFacilities, Set<UUID> requestingFacilities,
                                   UUID program, UUID processingPeriod, Set<OrderStatus> statuses,
                                   Pageable pageable) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
-    query = prepareQuery(query, supplyingFacilities, requestingFacility,
+    query = prepareQuery(query, supplyingFacilities, requestingFacilities,
         program, processingPeriod, statuses, pageable, false);
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareQuery(countQuery, supplyingFacilities, requestingFacility,
+    countQuery = prepareQuery(countQuery, supplyingFacilities, requestingFacilities,
         program, processingPeriod, statuses, pageable, true);
 
     Pageable page = null != pageable ? pageable : new PageRequest(0, Integer.MAX_VALUE);
@@ -107,7 +109,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   }
 
   private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, Set<UUID> supplyingFacilities,
-                                            UUID requestingFacility, UUID program,
+                                            Set<UUID> requestingFacilities, UUID program,
                                             UUID processingPeriod, Set<OrderStatus> statuses,
                                             Pageable pageable, boolean count) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -119,11 +121,11 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     Predicate predicate = builder.conjunction();
-    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate, builder);
-    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
+    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate);
+    predicate = isOneOf(REQUESTING_FACILITY_ID, requestingFacilities, root, predicate);
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
     predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
-    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
+    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate);
 
     query.where(predicate);
 
@@ -135,18 +137,11 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   }
 
   private Predicate isOneOf(String field, Collection collection, Root<Order> root,
-                            Predicate predicate, CriteriaBuilder builder) {
-    if (!isEmpty(collection)) {
-      Predicate collectionPredicate = builder.disjunction();
+                            Predicate predicate) {
+    return !isEmpty(collection)
+        ? root.get(field).in(collection)
+        : predicate;
 
-      for (Object elem : collection) {
-        collectionPredicate = builder.or(collectionPredicate, builder.equal(root.get(field), elem));
-      }
-
-      return builder.and(predicate, collectionPredicate);
-    }
-
-    return predicate;
   }
 
   private Predicate isEqual(String field, Object value, Root<Order> root, Predicate predicate,

@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
-import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,6 +27,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
+
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
@@ -38,6 +39,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -120,11 +122,11 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertSearchOrders(list, three, four);
 
     list = orderRepository
-        .searchOrders(asSet(one.getSupplyingFacilityId()), null, null, null, null, pageable);
+        .searchOrders(newHashSet(one.getSupplyingFacilityId()), null, null, null, null, pageable);
     assertSearchOrders(list, one);
 
     list = orderRepository
-        .searchOrders(null, two.getRequestingFacilityId(), null, null, null, pageable);
+        .searchOrders(null, newHashSet(two.getRequestingFacilityId()), null, null, null, pageable);
     assertSearchOrders(list, two);
 
     list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable);

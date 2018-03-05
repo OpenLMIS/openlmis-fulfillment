@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.web;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -49,10 +48,14 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STAT
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
-import guru.nidi.ramltester.junit.RamlMatchers;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +82,6 @@ import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
@@ -101,6 +103,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
+
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -372,10 +377,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacility() {
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), null, null, null, null, pageable
+        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet(), null, null, null, pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -403,11 +408,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         null, null, null, pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -439,11 +448,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), null, null, pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -481,11 +494,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
 
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK), pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -528,11 +545,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
     secondOrder.setStatus(IN_ROUTE);
 
-    given(orderRepository.searchOrders(asSet(firstOrder.getSupplyingFacilityId()), null, null,
-        null, EnumSet.of(READY_TO_PACK, IN_ROUTE), pageable))
+    given(orderRepository.searchOrders(newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(), null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE), pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder, secondOrder), pageable, 2));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(ORDER_STATUS, firstOrder.getStatus().toString())
@@ -563,12 +580,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setProcessingPeriodId(PERIOD_ID);
 
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
         EnumSet.of(READY_TO_PACK), pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -618,12 +639,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
         pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -674,12 +699,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
         pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -730,12 +759,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), firstOrder.getRequestingFacilityId(),
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId()),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
         pageable
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(
+        newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+    );
 
     PageImplRepresentation response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -782,12 +815,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldRejectSearchRequestIfStatusIsIncorrect() {
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
     String response = restAssured.given()
-        .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
-        .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
-        .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(ORDER_STATUS, "abc")
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .when()
@@ -858,10 +888,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetAllOrders() {
     given(orderRepository.searchOrders(
-        asSet(firstOrder.getSupplyingFacilityId()), null, null, null, null, pageable))
+        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet(), null, null, null, pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1127,12 +1157,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(asSet(firstOrder.getSupplyingFacilityId()), null, null,
-        null, null, pageable))
-        .willReturn(
-            new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 3));
+    given(orderRepository.searchOrders(newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(), null, null, null, pageable))
+        .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 3));
 
-    mockPermissionStrings(firstOrder.getProgramId(), firstOrder.getSupplyingFacilityId());
+    mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1318,15 +1347,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     return list;
   }
 
-  private void mockPermissionStrings(UUID programId, UUID... supplyingFacilityIds) {
+  private void mockPermissionStrings(Set<UUID> supplyingFacilityIds,
+                                     Set<UUID> requestingFacilityIds) {
     PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
 
-    Set<PermissionStringDto> permissions = Arrays.stream(supplyingFacilityIds)
-        .map(id -> PermissionStringDto.create(ORDERS_VIEW, id, programId))
-        .collect(toSet());
-
-    when(handler.get()).thenReturn(permissions);
-
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
+    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
+        .thenReturn(supplyingFacilityIds);
+    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)).thenReturn(requestingFacilityIds);
   }
 }

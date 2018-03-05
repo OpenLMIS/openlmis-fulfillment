@@ -15,12 +15,21 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toSet;
+
 import com.google.common.collect.Maps;
+
 import org.openlmis.fulfillment.service.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -37,26 +46,60 @@ public class PermissionStrings {
   }
 
   public class Handler implements Supplier<Set<PermissionStringDto>> {
+    private final Object lock = new Object();
+
     private UUID userId;
 
     private Set<PermissionStringDto> permissionStrings;
     private String etag;
+
+    private Map<String, Set<UUID>> facilityIds;
 
     Handler(UUID userId) {
       this.userId = userId;
     }
 
     @Override
-    public synchronized Set<PermissionStringDto> get() {
-      ServiceResponse<List<String>> response = userReferenceDataService
-          .getPermissionStrings(userId, etag);
-
-      if (response.isModified()) {
-        permissionStrings = PermissionStringDto.from(response.getBody());
-        etag = response.getETag();
-      }
-
+    public Set<PermissionStringDto> get() {
+      updatePermissionStrings();
       return permissionStrings;
+    }
+
+    /**
+     * Get facility IDs for the given rights from permission strings.
+     *
+     * @param rightNames a list of right names.
+     * @return Set with all related facility IDs. If there is no permission strings for the given
+     *         rights, an empty set will be returned.
+     */
+    public Set<UUID> getFacilityIds(String... rightNames) {
+      updatePermissionStrings();
+      return Arrays
+          .stream(rightNames)
+          .map(facilityIds::get)
+          .filter(Objects::nonNull)
+          .flatMap(Collection::stream)
+          .collect(toSet());
+    }
+
+    private void updatePermissionStrings() {
+      synchronized (lock) {
+        ServiceResponse<List<String>> response = userReferenceDataService
+            .getPermissionStrings(userId, etag);
+
+        if (response.isModified()) {
+          permissionStrings = PermissionStringDto.from(response.getBody());
+          etag = response.getETag();
+          facilityIds = permissionStrings
+              .stream()
+              .filter(Objects::nonNull)
+              .filter(elem -> Objects.nonNull(elem.getFacilityId()))
+              .collect(groupingBy(
+                  PermissionStringDto::getRightName,
+                  mapping(PermissionStringDto::getFacilityId, toSet())
+              ));
+        }
+      }
     }
   }
 }
