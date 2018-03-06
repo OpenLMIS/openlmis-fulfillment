@@ -119,7 +119,7 @@ public class FulfillmentNotificationService {
   }
 
   private String getContent(Object object, String messageKey) {
-    return getContent(object, messageKey, Collections.EMPTY_MAP);
+    return getContent(object, messageKey, Collections.emptyMap());
   }
 
   private String getContent(Object object, String messageKey, Map<String, String> messageParams) {
