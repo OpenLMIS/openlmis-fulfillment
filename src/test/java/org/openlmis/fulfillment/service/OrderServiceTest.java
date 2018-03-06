@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.service;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -191,9 +192,32 @@ public class OrderServiceTest {
   }
 
   @Test
+  public void shouldCreateRegularOrderIfFacilityNotSupportProgram() throws Exception {
+    facility.setSupportedPrograms(emptyList());
+
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+    dto.setId(null);
+
+    order.setStatus(OrderStatus.ORDERED);
+
+    Order created = orderService.createOrder(dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(created, order);
+
+    verify(orderRepository).save(orderCaptor.capture());
+    verify(orderStorage).store(any(Order.class));
+    verify(orderSender).send(any(Order.class));
+    verify(orderStorage).delete(any(Order.class));
+
+    assertEquals(OrderStatus.IN_ROUTE, orderCaptor.getValue().getStatus());
+
+    verify(notificationService).sendOrderCreatedNotification(eq(created));
+  }
+
+  @Test
   public void shouldCreateOrderForFulfill() throws Exception {
     program.setSupportLocallyFulfilled(true);
-    facility.setSupportedPrograms(Collections.singletonList(program));
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
     dto.setId(null);

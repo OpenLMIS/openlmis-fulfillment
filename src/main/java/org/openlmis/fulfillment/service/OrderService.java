@@ -36,7 +36,6 @@ import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
-import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
@@ -58,7 +57,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -222,13 +220,14 @@ public class OrderService {
       // Is the supplying facility have the FTP configuration?
 
       ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-      FacilityDto supplyingFacility = facilityReferenceDataService
-          .findOne(order.getSupplyingFacilityId());
-      if (supplyingFacility.getSupportedPrograms()
+      Optional<ProgramDto> supportedProgram = facilityReferenceDataService
+          .findOne(order.getSupplyingFacilityId())
+          .getSupportedPrograms()
           .stream()
-          .filter(p -> p.getCode().equals(program.getCode()))
-          .collect(Collectors.toList())
-          .get(0).isSupportLocallyFulfilled()) {
+          .filter(p -> program.getCode().equals(p.getCode()))
+          .findFirst();
+
+      if (supportedProgram.isPresent() && supportedProgram.get().isSupportLocallyFulfilled()) {
         order.prepareToLocalFulfill();
       } else {
         TransferProperties properties = transferPropertiesRepository
