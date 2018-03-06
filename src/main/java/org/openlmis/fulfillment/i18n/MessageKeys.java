@@ -168,8 +168,6 @@ public abstract class MessageKeys {
       join(ERROR_PREFIX, SHIPMENT_DRAFT, "orderId", REQUIRED);
   public static final String SHIPMENT_DRAFT_ORDER_NOT_FOUND =
       join(ERROR_PREFIX, SHIPMENT_DRAFT, ORDER, NOT_FOUND);
-  public static final String SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED =
-      join(ERROR_PREFIX, SHIPMENT_DRAFT, LINE_ITEMS, REQUIRED);
   public static final String SHIPMENT_DRAFT_ID_MISMATCH =
       join(ERROR_PREFIX, SHIPMENT_DRAFT, "id", "mismatch");
   public static final String SHIPMENT_DRAT_ORDER_DUPLICATE =

@@ -19,8 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.TypeName;
-import org.openlmis.fulfillment.i18n.MessageKeys;
-import org.openlmis.fulfillment.web.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +76,6 @@ public class ShipmentDraft extends BaseEntity {
    */
   @NotNull
   public static ShipmentDraft newInstance(@NotNull Importer importer) {
-    validateLineItems(importer.getLineItems());
     List<ShipmentDraftLineItem> items = new ArrayList<>(importer.getLineItems().size());
     importer.getLineItems().stream()
         .map(ShipmentDraftLineItem::newInstance)
@@ -107,7 +104,6 @@ public class ShipmentDraft extends BaseEntity {
 
   private void updateLineItems(ShipmentDraft newDraft) {
     List<ShipmentDraftLineItem> newLineItems = newDraft.viewLineItems();
-    validateLineItems(newLineItems);
 
     List<ShipmentDraftLineItem> updatedList = new ArrayList<>();
     for (ShipmentDraftLineItem newItem : newLineItems) {
@@ -127,12 +123,6 @@ public class ShipmentDraft extends BaseEntity {
 
     this.lineItems.clear();
     this.lineItems.addAll(updatedList);
-  }
-
-  private static void validateLineItems(List<?> lineItems) {
-    if (lineItems == null || lineItems.isEmpty()) {
-      throw new ValidationException(MessageKeys.SHIPMENT_DRAFT_LINE_ITEMS_REQUIRED);
-    }
   }
 
   public interface Exporter {

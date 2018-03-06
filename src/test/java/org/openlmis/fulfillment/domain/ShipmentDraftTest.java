@@ -27,7 +27,6 @@ import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 import java.util.List;
@@ -62,14 +61,6 @@ public class ShipmentDraftTest {
     ShipmentDraft actual = ShipmentDraft.newInstance(shipmentDraftDto);
 
     assertThat(expected, new ReflectionEquals(actual));
-  }
-
-  @Test(expected = ValidationException.class)
-  public void shouldThrowExceptionIfLineItemsAreNotGiven() {
-    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes,
-        Collections.emptyList());
-
-    ShipmentDraft.newInstance(shipmentDraftDto);
   }
 
   @Test
