@@ -33,6 +33,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3826](https://openlmis.atlassian.net/browse/OLMIS-3826): Requesting facilities endpoint now accepts multiple supplyingFacilityId parameters.
 * [OLMIS-4168](https://openlmis.atlassian.net/browse/OLMIS-4168): Made sure that PoD endpoints will use new rights
 * [OLMIS-4240](https://openlmis.atlassian.net/browse/OLMIS-4240): Updated orders endpoint to respect user rights
+* [OLMIS-4078](https://openlmis.atlassian.net/browse/OLMIS-4078): Removed line item validation from shipment draft to allow starting order fulfillment even if no matching stock cards.
 
 6.1.0 / 2017-11-09
 ==================
