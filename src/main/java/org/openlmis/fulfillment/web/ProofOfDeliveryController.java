@@ -337,9 +337,6 @@ public class ProofOfDeliveryController extends BaseController {
       @RequestParam(name = "author", required = false, defaultValue = "") String author,
       @RequestParam(name = "changedPropertyName", required = false, defaultValue = "")
           String changedPropertyName,
-      //Because JSON is all we formally support, returnJSON is excluded from our JavaDoc
-      @RequestParam(name = "returnJSON", required = false, defaultValue = "true")
-          boolean returnJson,
       Pageable page,
       OAuth2Authentication authentication) {
     Profiler profiler = new Profiler("GET_AUDIT_LOG");
@@ -350,7 +347,7 @@ public class ProofOfDeliveryController extends BaseController {
 
     profiler.start("GET_AUDIT_LOG");
     ResponseEntity<String> response = getAuditLogResponse(
-        ProofOfDelivery.class, id, author, changedPropertyName, page, returnJson
+        ProofOfDelivery.class, id, author, changedPropertyName, page
     );
 
     profiler.stop().log();

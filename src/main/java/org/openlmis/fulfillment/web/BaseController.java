@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Comparator.comparing;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
-import org.javers.core.changelog.SimpleTextChangeLog;
 import org.javers.core.diff.Change;
 import org.javers.core.json.JsonConverter;
 import org.javers.repository.jql.QueryBuilder;
@@ -55,34 +55,13 @@ public abstract class BaseController {
 
   ResponseEntity<String> getAuditLogResponse(Class type, UUID id, String author,
                                              String changedPropertyName,
-                                             Pageable page, boolean returnJson) {
-    String auditLogs = getAuditLog(type, id, author, changedPropertyName, page, returnJson);
-
-    MediaType contentType = returnJson ? MediaType.APPLICATION_JSON : MediaType.TEXT_PLAIN;
+                                             Pageable page) {
+    String auditLogs = getAuditLog(type, id, author, changedPropertyName, page);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(contentType);
+    headers.setContentType(MediaType.APPLICATION_JSON);
 
     return new ResponseEntity<>(auditLogs, headers, HttpStatus.OK);
-  }
-
-  /**
-   * <p>
-   * Convenience method intended to return audit log information via either JSON or raw text,
-   * based on the value of the returnJson argument.
-   * </p><p>
-   * For testing and development, it’s useful to set this to false in order to retrieve a
-   * human-readable response. For production, however, JSON should exclusively be returned.
-   * </p>
-   * See getAuditedChanges() for a list and explanation of the available parameters.
-   */
-  private String getAuditLog(Class type, UUID id, String author, String changedPropertyName,
-                             Pageable page, boolean returnJson) {
-    if (returnJson) {
-      return getAuditLogJson(type, id, author, changedPropertyName, page);
-    } else {
-      return getAuditLogText(type, id, author, changedPropertyName, page);
-    }
   }
 
   /**
@@ -99,57 +78,43 @@ public abstract class BaseController {
    * @param page                A Pageable object with PageNumber and PageSize values used
    *                            for pagination.
    */
-  private String getAuditLogJson(Class type, UUID id, String author,
-                                 String changedPropertyName, Pageable page) {
-    List<Change> changes = getChangesByType(type, id, author, changedPropertyName, page);
+  private String getAuditLog(Class type, UUID id, String author, String changedPropertyName,
+                             Pageable page) {
+    List<Change> changes = getChanges(type, id, author, changedPropertyName, page);
     JsonConverter jsonConverter = javers.getJsonConverter();
     return jsonConverter.toJson(changes);
   }
 
 
-  /**
-   * Return a list of changes as a log (in other words, as a series of line entries).
-   * The available parameters and their means are the same as for the getChangesByClass() method.
-   */
-  private String getAuditLogText(Class type, UUID id, String author,
-                                 String changedPropertyName, Pageable page) {
-    List<Change> changes = getChangesByType(type, id, author, changedPropertyName, page);
-    return javers.processChangeList(changes, new SimpleTextChangeLog());
-  }
-
   /*
     Return JaVers changes for the specified type, optionally filtered by id, author, and property.
   */
-  private List<Change> getChangesByType(Class type, UUID id, String author,
-                                        String changedPropertyName, Pageable page) {
-    QueryBuilder queryBuilder;
-
-    if (id != null) {
-      queryBuilder = QueryBuilder.byInstanceId(id, type);
-    } else {
-      queryBuilder = QueryBuilder.byClass(type);
-    }
-
+  private List<Change> getChanges(Class type, UUID id, String author, String changedPropertyName,
+                                  Pageable page) {
     int skip = Pagination.getPageNumber(page);
     int limit = Pagination.getPageSize(page);
 
-    queryBuilder = queryBuilder.withNewObjectChanges(true).skip(skip).limit(limit);
+    QueryBuilder queryBuilder = QueryBuilder
+        .byInstanceId(id, type)
+        .withNewObjectChanges(true)
+        .skip(skip)
+        .limit(limit);
 
-    if ( StringUtils.isNotBlank(author) ) {
+    if (StringUtils.isNotBlank(author)) {
       queryBuilder = queryBuilder.byAuthor(author);
     }
-    if ( StringUtils.isNotBlank(changedPropertyName) ) {
+
+    if (StringUtils.isNotBlank(changedPropertyName)) {
       queryBuilder = queryBuilder.andProperty(changedPropertyName);
     }
 
-    /* Depending on the business' preference, we can either use findSnapshots() or findChanges().
-       Whereas the former returns the entire state of the object as it was at each commit, the later
-       returns only the property and values which changed. */
-    List<Change> changes = javers.findChanges(queryBuilder.build());
-
-    changes.sort((o1, o2) -> -1 * o1.getCommitMetadata().get().getCommitDate()
-        .compareTo(o2.getCommitMetadata().get().getCommitDate()));
-    return changes;
+    return javers
+        .findChanges(queryBuilder.build())
+        .stream()
+        .sorted(
+            comparing((Change change) -> change.getCommitMetadata().get().getCommitDate())
+            .reversed())
+        .collect(Collectors.toList());
   }
 
 }
