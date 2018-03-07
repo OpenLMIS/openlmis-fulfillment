@@ -56,11 +56,10 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
-
+import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
-import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
@@ -78,6 +77,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -85,6 +85,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String RESOURCE_URL = "/api/proofsOfDelivery";
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String PRINT_URL = ID_URL + "/print";
+  private static final String AUDIT_LOG_URL = ID_URL + "/auditLog";
 
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
@@ -482,6 +483,54 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .path(MESSAGE_KEY);
 
     assertThat(response, is(PERMISSIONS_MISSING));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundIfProofOfDeliveryDoesNotExistForAuditLogEndpoint() {
+    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(null);
+
+    restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .get(AUDIT_LOG_URL)
+        .then()
+        .statusCode(404);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnUnauthorizedIfUserDoesNotHaveRightForAuditLogEndpoint() {
+    denyUserAllRights();
+
+    restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .get(AUDIT_LOG_URL)
+        .then()
+        .statusCode(403);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetProofOfDeliveryAuditLog() {
+    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(proofOfDelivery);
+
+    restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .get(AUDIT_LOG_URL)
+        .then()
+        .statusCode(200);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

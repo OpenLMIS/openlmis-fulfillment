@@ -26,6 +26,7 @@ New features:
     * Any changes to receivedBy, deliveredBy, receivedDate fields
     * Confirmation of the PoD (changing status to confirmed)
   * The audit include changes made, date and user making changes.
+  * The audit logs for any given PoD can be retrieve by related endpoint
 
 Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order
