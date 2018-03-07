@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web;
 
+import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -30,19 +32,18 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
+import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperReport;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
@@ -57,10 +58,13 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
+import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
+import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
@@ -68,17 +72,19 @@ import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -89,6 +95,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private static final String PRINT_POD = "Print POD";
   private static final String CONSISTENCY_REPORT = "Consistency Report";
+
+  private static final String MESSAGE_KEY = "messageKey";
 
   @MockBean
   private TemplateRepository templateRepository;
@@ -116,6 +124,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @MockBean
   private FulfillmentNotificationService fulfillmentNotificationService;
+
+  @MockBean
+  private JasperReportsViewService jasperReportsViewService;
+
+  @SpyBean
+  private AuthenticationHelper authenticationHelper;
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -180,6 +194,95 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldGetAllProofsOfDeliveryIfUserHasPodManageRight() {
+    given(permissionStringsHandler.get())
+        .willReturn(singleton(PermissionStringDto.create(PODS_MANAGE, proofOfDelivery
+            .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
+
+    PageImplRepresentation response = restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertTrue(response.getContent().iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofsOfDeliveryIfUserHasPodViewRight() {
+    given(permissionStringsHandler.get())
+        .willReturn(singleton(PermissionStringDto.create(PODS_VIEW, proofOfDelivery
+            .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
+
+    PageImplRepresentation response = restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertTrue(response.getContent().iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofsOfDeliveryIfUserHasShipmentViewRight() {
+    given(permissionStringsHandler.get())
+        .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_VIEW, proofOfDelivery
+            .getSupplyingFacilityId(), null)));
+
+    PageImplRepresentation response = restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertTrue(response.getContent().iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofsOfDeliveryIfAnotherServiceAskForThem() {
+    // I get NPE in the given method without those settings
+    SecurityContext context = new SecurityContextImpl();
+    context.setAuthentication(new OAuth2AuthenticationDataBuilder().buildServiceAuthentication());
+
+    SecurityContextHolder.setContext(context);
+
+    given(authenticationHelper.getCurrentUser()).willReturn(null);
+
+    PageImplRepresentation response = restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertTrue(response.getContent().iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verifyZeroInteractions(permissionService, permissionStringsHandler);
+  }
+
+  @Test
   public void shouldFindProofOfDeliveryBasedOnShipment() {
     PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -201,6 +304,23 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnErrorMessageIfShipmentNotExists() {
+    String response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("shipmentId", UUID.randomUUID())
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path(MESSAGE_KEY);
+
+    assertThat(response, is(SHIPMENT_NOT_FOUND));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -284,7 +404,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(400)
         .extract()
-        .path("messageKey");
+        .path(MESSAGE_KEY);
 
     assertThat(response, is(PROOF_OF_DELIVERY_ALREADY_CONFIRMED));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -357,7 +477,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(400)
         .extract()
-        .path("messageKey");
+        .path(MESSAGE_KEY);
 
     verifyZeroInteractions(orderRepository, stockEventBuilder, stockEventStockManagementService);
     assertThat(response, is(MUST_CONTAIN_VALUE));
@@ -418,25 +538,15 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  @Ignore("Current version *.jrxml have relations to different modules (like reference-data)")
-  public void shouldPrintProofOfDeliveryToPdf() throws IOException, JRException {
-    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
-
+  public void shouldPrintProofOfDeliveryToPdf() {
+    // temporary fix for code smell, correct tests will be added in OLMIS-4001
     Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
-
-    JasperReport report = JasperCompileManager.compileReport(podReport.getInputStream());
-    JRParameter[] jrParameters = report.getParameters();
-
-    if (jrParameters != null && jrParameters.length > 0) {
-      template.setTemplateParameters(
-          Arrays.stream(jrParameters)
-              .filter(p -> !p.isSystemDefined())
-              .map(this::createParameter)
-              .collect(Collectors.toList())
-      );
-    }
+    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
 
     given(templateRepository.findByName(PRINT_POD)).willReturn(template);
+    given(jasperReportsViewService
+        .getJasperReportsView(eq(template), any(HttpServletRequest.class)))
+        .willReturn(view);
 
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
@@ -445,8 +555,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .get(PRINT_URL)
         .then()
         .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -526,6 +634,24 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", proofOfDelivery.getId())
+        .when()
+        .get(AUDIT_LOG_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetProofOfDeliveryAuditLogForAuthorAndChangedPropertyName() {
+    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(proofOfDelivery);
+
+    restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", proofOfDelivery.getId())
+        .queryParam("author", "admin")
+        .queryParam("changedPropertyName", "status")
         .when()
         .get(AUDIT_LOG_URL)
         .then()
