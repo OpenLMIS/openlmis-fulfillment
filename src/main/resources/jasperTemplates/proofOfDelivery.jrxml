@@ -3,7 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proofOfDelivery" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="c9b88bba-e685-4f37-89f1-8175e056a730">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="localDataAdapter.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<parameter name="id" class="java.lang.String" isForPrompting="false">
+	<parameter name="id" class="java.lang.String" isForPrompting="true">
 		<property name="displayName" value="Proof of Delivery"/>
 	</parameter>
 	<queryString language="SQL">
@@ -82,7 +82,7 @@ FROM
   stockmanagement.stock_card_line_item_reasons reason
     ON reason.id = li.rejectionreasonid
 WHERE
-  pod.id = 'a82ac429-c937-40dc-b3d1-cc25d45c9759';]]>
+  pod.id = $P{id}::uuid;]]>
 	</queryString>
 	<field name="programName" class="java.lang.String"/>
 	<field name="ordercode" class="java.lang.String">
