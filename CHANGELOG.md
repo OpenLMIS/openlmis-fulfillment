@@ -20,6 +20,12 @@ New features:
 * [OLMIS-3881](https://openlmis.atlassian.net/browse/OLMIS-3881): Create Proof Of Delivery draft for finalized shipment
 * [OLMIS-235](https://openlmis.atlassian.net/browse/OLMIS-235): Send Stock Event on Proof of Delivery confirmation
 * [OLMIS-3991](https://openlmis.atlassian.net/browse/OLMIS-3991): Confirming Proof of Delivery will now result in sending a notification to the user that created the shipment
+* [OLMIS-3994](https://openlmis.atlassian.net/browse/OLMIS-3994): Added audit logging for ProofOfDelivery
+  * We are able to track:
+    * Any changes to PoD line items
+    * Any changes to receivedBy, deliveredBy, receivedDate fields
+    * Confirmation of the PoD (changing status to confirmed)
+  * The audit include changes made, date and user making changes.
 
 Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order

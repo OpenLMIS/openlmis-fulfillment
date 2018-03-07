@@ -15,21 +15,65 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Lists;
+
+import org.javers.core.Javers;
+import org.javers.core.commit.CommitMetadata;
+import org.javers.core.metamodel.object.CdoSnapshot;
+import org.javers.core.metamodel.object.SnapshotType;
+import org.javers.repository.jql.JqlQuery;
+import org.javers.repository.jql.QueryBuilder;
 import org.junit.Test;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
+import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
 
+  private static final String EXPECTED_NEW_POD_SNAPSHOT =
+      "There should be new snapshot for PoD";
+  private static final String NOT_EXPECTED_NEW_POD_SNAPSHOT =
+      "There should not be new snapshot for PoD";
+
+  private static final String EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT =
+      "There should be new snapshot for PoD line item";
+  private static final String NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT =
+      "There should not be new snapshot for PoD line item";
+
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @Autowired
+  private ShipmentRepository shipmentRepository;
+
+  @Autowired
+  private OrderRepository orderRepository;
+
+  @Autowired
+  private Javers javers;
 
   @Override
   ProofOfDeliveryRepository getRepository() {
@@ -38,7 +82,42 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Override
   ProofOfDelivery generateInstance() {
-    return new ProofOfDeliveryDataBuilder().buildAsNew();
+    Order order = new OrderDataBuilder()
+        .withoutId()
+        .withoutLineItems()
+        .build();
+    Shipment shipment = new ShipmentDataBuilder()
+        .withoutId()
+        .withoutLineItems()
+        .withOrder(order)
+        .build();
+    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder()
+        .withShipment(shipment)
+        .withoutReceivedDate()
+        .withoutReceivedBy()
+        .withoutDeliveredBy()
+        .withLineItems(Lists.newArrayList(
+            new ProofOfDeliveryLineItemDataBuilder()
+                .withoutQuantityAccepted()
+                .withoutQuantityRejected()
+                .build()
+        ))
+        .buildAsNew();
+
+    orderRepository.save(order);
+    shipmentRepository.save(shipment);
+
+    return pod;
+  }
+
+  @Override
+  void assertInstance(ProofOfDelivery instance) {
+    super.assertInstance(instance);
+
+    JqlQuery jqlQuery = QueryBuilder.byInstanceId(instance.getId(), ProofOfDelivery.class).build();
+    List<CdoSnapshot> snapshots = javers.findSnapshots(jqlQuery);
+
+    assertThat(snapshots, hasSize(greaterThan(0)));
   }
 
   @Test
@@ -54,5 +133,127 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.delete(instanceId);
 
     assertFalse(proofOfDeliveryRepository.exists(instanceId));
+  }
+
+  @Test
+  public void shouldLoggingChangesInProofOfDelivery() {
+    ProofOfDelivery pod = generateInstance();
+    ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+
+    ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+
+    // new PoD
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
+    List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+
+    assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(1));
+    verifyAuditLog(podSnapshots.get(0), SnapshotType.INITIAL);
+    assertThat(EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
+    verifyAuditLog(lineSnapshots.get(0), SnapshotType.INITIAL);
+
+    // first changes
+    podDto.setReceivedBy("Test receiver");
+    podDto.setDeliveredBy("Test deliverer");
+    podDto.setReceivedDate(LocalDate.now());
+    pod = ProofOfDelivery.newInstance(podDto);
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
+    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+
+    assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(2));
+    verifyAuditLog(
+        podSnapshots.get(0),
+        SnapshotType.UPDATE,
+        new String[]{"receivedBy", "deliveredBy", "receivedDate"},
+        new Object[]{podDto.getReceivedBy(), podDto.getDeliveredBy(), podDto.getReceivedDate()}
+    );
+
+    assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
+
+    // change PoD line
+    lineItemDto.setQuantityAccepted(15);
+    lineItemDto.setQuantityRejected(5);
+
+    podDto.setLineItems(Lists.newArrayList(ProofOfDeliveryLineItem.newInstance(lineItemDto)));
+    pod = ProofOfDelivery.newInstance(podDto);
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
+    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+
+    assertThat(NOT_EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(2));
+
+    assertThat(EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(2));
+    verifyAuditLog(
+        lineSnapshots.get(0),
+        SnapshotType.UPDATE,
+        new String[]{"quantityAccepted", "quantityRejected"},
+        new Object[]{lineItemDto.getQuantityAccepted(), lineItemDto.getQuantityRejected()}
+    );
+
+    // confirm PoD
+    podDto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
+    pod = ProofOfDelivery.newInstance(podDto);
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
+    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+
+    assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(3));
+    verifyAuditLog(
+        podSnapshots.get(0),
+        SnapshotType.UPDATE,
+        new String[]{"status"},
+        new Object[]{podDto.getStatus()}
+    );
+
+    assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(2));
+  }
+
+  private List<CdoSnapshot> getSnapshots(UUID id, Class type) {
+    return javers.findSnapshots(QueryBuilder.byInstanceId(id, type).build());
+  }
+
+  private void verifyAuditLog(CdoSnapshot snapshot, SnapshotType type) {
+    verifyAuditLog(snapshot, type, new String[0], new Object[0]);
+  }
+
+  private void verifyAuditLog(CdoSnapshot snapshot, SnapshotType type,
+                              String[] fields, Object[] values) {
+    assertThat(snapshot.getType(), is(type));
+
+    CommitMetadata commit = snapshot.getCommitMetadata();
+    assertThat(commit.getAuthor(), is(notNullValue()));
+    assertThat(commit.getCommitDate(), is(notNullValue()));
+
+    if (fields.length > 0) {
+      assertThat(snapshot.getChanged(), hasSize(fields.length));
+      assertThat(snapshot.getChanged(), hasItems(fields));
+
+      assertThat(fields.length, is(values.length));
+
+      for (int i = 0, length = fields.length; i < length; ++i) {
+        assertThat(snapshot.getPropertyValue(fields[i]), is(values[i]));
+      }
+    }
   }
 }

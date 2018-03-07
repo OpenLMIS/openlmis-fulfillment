@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +23,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
+@JaversSpringDataAuditable
 public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
 
   List<ProofOfDelivery> findByShipment(Shipment shipment);

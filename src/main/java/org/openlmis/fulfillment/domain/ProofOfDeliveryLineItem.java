@@ -21,6 +21,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STAT
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
 
 import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
 import org.openlmis.fulfillment.web.ValidationException;
 
@@ -41,6 +42,7 @@ import javax.persistence.Table;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @Table(name = "proof_of_delivery_line_items")
+@TypeName("ProofOfDeliveryLineItem")
 public class ProofOfDeliveryLineItem extends BaseEntity {
 
   @Type(type = UUID_TYPE)
@@ -133,7 +135,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @param importer instance of {@link ProofOfDeliveryLineItem.Importer}
    * @return instance of ProofOfDeliveryLineItem.
    */
-  static ProofOfDeliveryLineItem newInstance(Importer importer) {
+  public static ProofOfDeliveryLineItem newInstance(Importer importer) {
     ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
         importer.getOrderableId(), importer.getLotId(), importer.getQuantityAccepted(),
         importer.getUseVvm(), importer.getVvmStatus(), importer.getQuantityRejected(),

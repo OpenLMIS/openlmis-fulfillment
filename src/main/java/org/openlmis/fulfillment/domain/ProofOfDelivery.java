@@ -18,6 +18,8 @@ package org.openlmis.fulfillment.domain;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
 
@@ -51,11 +53,13 @@ import javax.persistence.Table;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @Table(name = "proofs_of_delivery")
+@TypeName("ProofOfDelivery")
 public class ProofOfDelivery extends BaseEntity {
 
   @OneToOne
   @JoinColumn(name = "shipmentId", nullable = false)
   @Getter
+  @DiffIgnore
   private Shipment shipment;
 
   @Column(nullable = false)

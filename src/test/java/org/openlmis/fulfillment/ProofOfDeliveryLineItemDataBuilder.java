@@ -22,6 +22,7 @@ import org.openlmis.fulfillment.domain.naming.VvmStatus;
 
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
@@ -75,6 +76,29 @@ public class ProofOfDeliveryLineItemDataBuilder {
 
   public ProofOfDeliveryLineItemDataBuilder withoutLotId() {
     this.lotId = null;
+    return this;
+  }
+
+  /**
+   * Sets quantity accepted as null value. If useVVM flag is set, the vvmStatus will have a null
+   * value.
+   */
+  public ProofOfDeliveryLineItemDataBuilder withoutQuantityAccepted() {
+    this.quantityAccepted = null;
+
+    if (useVvm) {
+      this.vvmStatus = null;
+    }
+
+    return this;
+  }
+
+  /**
+   * Sets quantity rejected as null value. The rejection reason id will have a null value as well.
+   */
+  public ProofOfDeliveryLineItemDataBuilder withoutQuantityRejected() {
+    this.quantityRejected = null;
+    this.rejectionReasonId = null;
     return this;
   }
 
