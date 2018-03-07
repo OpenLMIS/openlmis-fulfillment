@@ -61,7 +61,7 @@ public class JasperReportsViewService {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
-  
+
 
   /**
    * Create Jasper Report View.

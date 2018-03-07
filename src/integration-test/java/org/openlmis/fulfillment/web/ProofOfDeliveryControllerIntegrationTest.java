@@ -56,7 +56,6 @@ import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
-import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
@@ -93,13 +92,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String PRINT_URL = ID_URL + "/print";
   private static final String AUDIT_LOG_URL = ID_URL + "/auditLog";
 
-  private static final String PRINT_POD = "Print POD";
-  private static final String CONSISTENCY_REPORT = "Consistency Report";
-
   private static final String MESSAGE_KEY = "messageKey";
-
-  @MockBean
-  private TemplateRepository templateRepository;
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
@@ -538,14 +531,11 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldPrintProofOfDeliveryToPdf() {
+  public void shouldPrintProofOfDelivery() {
     // temporary fix for code smell, correct tests will be added in OLMIS-4001
-    Template template = new Template(PRINT_POD, null, null, CONSISTENCY_REPORT, "");
     JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
-
-    given(templateRepository.findByName(PRINT_POD)).willReturn(template);
     given(jasperReportsViewService
-        .getJasperReportsView(eq(template), any(HttpServletRequest.class)))
+        .getJasperReportsView(any(Template.class), any(HttpServletRequest.class)))
         .willReturn(view);
 
     restAssured.given()
@@ -555,24 +545,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .get(PRINT_URL)
         .then()
         .statusCode(200);
-  }
-
-  @Test
-  public void shouldNotPrintProofOfDeliveryIfTemplateNonExistent() {
-    // given
-    given(templateRepository.findByName(any(String.class))).willReturn(null);
-
-    // when
-    restAssured.given()
-        .pathParam("id", proofOfDelivery.getId())
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .when()
-        .get(PRINT_URL)
-        .then()
-        .statusCode(400);
-
-    // then
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

@@ -16,12 +16,14 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.REPORTING_TEMPLATE_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -47,7 +49,6 @@ import org.openlmis.fulfillment.web.shipment.ShipmentController;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
-import org.openlmis.fulfillment.web.util.ReportUtils;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 import java.util.List;
@@ -77,7 +79,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @Transactional
@@ -85,7 +86,6 @@ public class ProofOfDeliveryController extends BaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryController.class);
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentController.class);
 
-  private static final String PRINT_POD = "Print POD";
   private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
 
   @Autowired
@@ -279,42 +279,46 @@ public class ProofOfDeliveryController extends BaseController {
   }
 
   /**
-   * Print to PDF Proof of Delivery.
+   * Prints proofOfDelivery in PDF format.
    *
-   * @param id The UUID of the ProofOfDelivery to print
-   *
+   * @param id UUID of ProofOfDelivery to print
    */
   @RequestMapping(value = "/proofsOfDelivery/{id}/print", method = RequestMethod.GET)
-  public void print(
-      @PathVariable("id") UUID id, HttpServletRequest request, HttpServletResponse response,
-      OAuth2Authentication authentication) throws Exception {
-    XLOGGER.entry(id, request, response, authentication);
-    Profiler profiler = new Profiler("PRINT_POD");
+  @ResponseStatus(HttpStatus.OK)
+  public ModelAndView printProofOfDelivery(HttpServletRequest request,
+      @PathVariable("id") UUID id, OAuth2Authentication authentication) throws IOException {
+
+    XLOGGER.entry(id, authentication);
+    Profiler profiler = new Profiler("GET_POD");
     profiler.setLogger(XLOGGER);
 
     ProofOfDelivery proofOfDelivery = findProofOfDelivery(id, profiler);
     canViewPod(authentication, profiler, proofOfDelivery);
 
-    profiler.start("FIND_TEMPLATE_BY_NAME");
-    Template podPrintTemplate = templateService.getByName(PRINT_POD);
-    if (podPrintTemplate == null) {
-      profiler.stop().log();
-      throw new ValidationException(REPORTING_TEMPLATE_NOT_FOUND, PRINT_POD);
+    profiler.start("LOAD_JASPER_TEMPLATE");
+    String filePath = "jasperTemplates/proofOfDelivery.jrxml";
+    ClassLoader classLoader = getClass().getClassLoader();
+
+    Template template = new Template();
+    template.setName("ordersJasperTemplate");
+
+    try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
+      templateService.createTemplateParameters(template, fis);
     }
-
     profiler.start("GENERATE_JASPER_VIEW");
-    Map<String, Object> params = ReportUtils.createParametersMap();
-    String formatId = "'" + id + "'";
-    params.put("pod_id", formatId);
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService
+        .getJasperReportsView(template, request);
 
-    JasperReportsMultiFormatView jasperView =
-        jasperReportsViewService.getJasperReportsView(podPrintTemplate, request);
+    Map<String, Object> params = new HashMap<>();
+    params.put("format", "pdf");
+    params.put("id", proofOfDelivery.getId());
 
-    profiler.start("RENDER_JASPER_VIEW");
-    jasperView.render(params, request, response);
+    ModelAndView modelAndView = new ModelAndView(jasperView, params);
 
     profiler.stop().log();
-    XLOGGER.exit();
+    XLOGGER.exit(modelAndView);
+
+    return modelAndView;
   }
 
   /**
