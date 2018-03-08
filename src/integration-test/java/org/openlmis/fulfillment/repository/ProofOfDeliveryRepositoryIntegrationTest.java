@@ -25,7 +25,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
-
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.javers.core.Javers;
 import org.javers.core.commit.CommitMetadata;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -45,10 +47,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
@@ -136,18 +135,12 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   }
 
   @Test
-  public void shouldLoggingChangesInProofOfDelivery() {
+  public void shouldLogProofOfDeliveryCreation() {
     ProofOfDelivery pod = generateInstance();
     ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
 
-    ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
-    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
-
     // new PoD
     proofOfDeliveryRepository.save(pod);
-
-    pod.export(podDto);
-    lineItem.export(lineItemDto);
 
     List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
     List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
@@ -156,8 +149,21 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     verifyAuditLog(podSnapshots.get(0), SnapshotType.INITIAL);
     assertThat(EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
     verifyAuditLog(lineSnapshots.get(0), SnapshotType.INITIAL);
+  }
 
-    // first changes
+  @Test
+  public void shouldLogChangesInProofOfDelivery() {
+    ProofOfDelivery pod = generateInstance();
+    ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+
+    ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
     podDto.setReceivedBy("Test receiver");
     podDto.setDeliveredBy("Test deliverer");
     podDto.setReceivedDate(LocalDate.now());
@@ -168,8 +174,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     pod.export(podDto);
     lineItem.export(lineItemDto);
 
-    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
-    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+    List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
 
     assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(2));
     verifyAuditLog(
@@ -180,12 +186,26 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     );
 
     assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
+  }
 
-    // change PoD line
+  @Test
+  public void shouldLogChangesInProofOfDeliveryLineItem() {
+    ProofOfDelivery pod = generateInstance();
+    ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+
+    ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
     lineItemDto.setQuantityAccepted(15);
     lineItemDto.setQuantityRejected(5);
 
-    podDto.setLineItems(Lists.newArrayList(ProofOfDeliveryLineItem.newInstance(lineItemDto)));
+    ReflectionTestUtils.setField(podDto, "lineItems", Lists.newArrayList(lineItemDto));
+
     pod = ProofOfDelivery.newInstance(podDto);
 
     proofOfDeliveryRepository.save(pod);
@@ -193,10 +213,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     pod.export(podDto);
     lineItem.export(lineItemDto);
 
-    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
-    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+    List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
 
-    assertThat(NOT_EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(2));
+    assertThat(NOT_EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(1));
 
     assertThat(EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(2));
     verifyAuditLog(
@@ -205,8 +225,21 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
         new String[]{"quantityAccepted", "quantityRejected"},
         new Object[]{lineItemDto.getQuantityAccepted(), lineItemDto.getQuantityRejected()}
     );
+  }
 
-    // confirm PoD
+  @Test
+  public void shouldLogProofOfDeliveryConfirmation() {
+    ProofOfDelivery pod = generateInstance();
+    ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+
+    ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+
+    proofOfDeliveryRepository.save(pod);
+
+    pod.export(podDto);
+    lineItem.export(lineItemDto);
+
     podDto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
     pod = ProofOfDelivery.newInstance(podDto);
 
@@ -215,10 +248,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     pod.export(podDto);
     lineItem.export(lineItemDto);
 
-    podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
-    lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
+    List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
+    List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
 
-    assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(3));
+    assertThat(EXPECTED_NEW_POD_SNAPSHOT, podSnapshots, hasSize(2));
     verifyAuditLog(
         podSnapshots.get(0),
         SnapshotType.UPDATE,
@@ -226,7 +259,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
         new Object[]{podDto.getStatus()}
     );
 
-    assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(2));
+    assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
   }
 
   private List<CdoSnapshot> getSnapshots(UUID id, Class type) {

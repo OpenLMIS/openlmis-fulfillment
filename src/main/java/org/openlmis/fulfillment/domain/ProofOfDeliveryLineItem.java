@@ -135,7 +135,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @param importer instance of {@link ProofOfDeliveryLineItem.Importer}
    * @return instance of ProofOfDeliveryLineItem.
    */
-  public static ProofOfDeliveryLineItem newInstance(Importer importer) {
+  static ProofOfDeliveryLineItem newInstance(Importer importer) {
     ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
         importer.getOrderableId(), importer.getLotId(), importer.getQuantityAccepted(),
         importer.getUseVvm(), importer.getVvmStatus(), importer.getQuantityRejected(),
