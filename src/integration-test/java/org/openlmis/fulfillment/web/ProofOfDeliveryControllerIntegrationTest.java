@@ -532,7 +532,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldPrintProofOfDelivery() {
-    // temporary fix for code smell, correct tests will be added in OLMIS-4001
     JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
     given(jasperReportsViewService
         .getJasperReportsView(any(Template.class), any(HttpServletRequest.class)))

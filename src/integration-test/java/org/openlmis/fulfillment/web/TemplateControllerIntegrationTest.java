@@ -80,7 +80,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldAddReportTemplate() throws IOException {
-    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    ClassPathResource podReport = new ClassPathResource("jasperTemplates/proofOfDelivery.jrxml");
 
     try (InputStream podStream = podReport.getInputStream()) {
       restAssured.given()
@@ -100,7 +100,7 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnBadRequestWhenTemplateExist() throws IOException {
-    ClassPathResource podReport = new ClassPathResource("reports/podPrint.jrxml");
+    ClassPathResource podReport = new ClassPathResource("jasperTemplates/proofOfDelivery.jrxml");
 
     given(templateRepository.findByName(TEMPLATE_CONTROLLER_TEST)).willReturn(new Template());
     try (InputStream podStream = podReport.getInputStream()) {
