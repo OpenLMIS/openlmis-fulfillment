@@ -41,6 +41,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4168](https://openlmis.atlassian.net/browse/OLMIS-4168): Made sure that PoD endpoints will use new rights
 * [OLMIS-4240](https://openlmis.atlassian.net/browse/OLMIS-4240): Updated orders endpoint to respect user rights
 * [OLMIS-4078](https://openlmis.atlassian.net/browse/OLMIS-4078): Removed line item validation from shipment draft to allow starting order fulfillment even if no matching stock cards.
+* [OLMIS-4216](https://openlmis.atlassian.net/browse/OLMIS-4216): Fixed problem with saving an order if supplying facility does not support a program
 
 6.1.0 / 2017-11-09
 ==================
