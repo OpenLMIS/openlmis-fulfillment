@@ -46,5 +46,4 @@ public final class ShipmentObjectReferenceDto extends ObjectReferenceDto {
   public ShipmentObjectReferenceDto(UUID id, String serviceUrl) {
     super(id, serviceUrl, SHIPMENTS);
   }
-
 }

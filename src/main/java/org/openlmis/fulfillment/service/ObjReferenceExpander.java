@@ -23,6 +23,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ENCODING;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createEntity;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
+import com.google.common.collect.Maps;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,9 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.fulfillment.service.request.RequestHeaders;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.util.converter.UuidConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +55,13 @@ import org.springframework.web.util.UriUtils;
 
 @Component
 public class ObjReferenceExpander {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ObjReferenceExpander.class);
+  private static final Map<String, Class> REF_RESOURCES = Maps.newHashMap();
+
+  static {
+    REF_RESOURCES.put("shipment", ShipmentDto.class);
+    REF_RESOURCES.put("order", OrderDto.class);
+  }
 
   @Autowired
   private AuthService authService;
@@ -89,8 +97,9 @@ public class ObjReferenceExpander {
     for (String expand : expands) {
       try {
         String[] elements = expand.split("\\.", 2);
+        String field = elements[0];
 
-        ObjectReferenceDto refDto = getObjectReferenceDto(dto, elements[0]);
+        ObjectReferenceDto refDto = getObjectReferenceDto(dto, field);
         StringBuilder href = new StringBuilder(getHref(expand, refDto));
 
         if (elements.length >= 2) {
@@ -99,10 +108,9 @@ public class ObjReferenceExpander {
               .append(UriUtils.encodeQueryParam(elements[1], StandardCharsets.UTF_8.name()));
         }
 
-        Map<String, Object> refObj = retrieve(href.toString());
-        if (MapUtils.isNotEmpty(refObj)) {
-          beanUtils.populate(refDto, refObj);
-        }
+        Class<?> responseType = REF_RESOURCES.computeIfAbsent(field, key -> Map.class);
+        Object refObj = retrieve(href.toString(), responseType);
+        populate(dto, field, refObj);
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
         throw new ValidationException(ex, ERROR_DTO_EXPANSION_ASSIGNMENT, expand);
       } catch (UnsupportedEncodingException exp) {
@@ -129,12 +137,12 @@ public class ObjReferenceExpander {
     return href;
   }
 
-  private Map<String, Object> retrieve(String href) {
+  private <T> T retrieve(String href, Class<T> type) {
     HttpEntity<Object> entity =
         createEntity(RequestHeaders.init().setAuth(authService.obtainAccessToken()));
     try {
       return restTemplate
-          .exchange(createUri(href), HttpMethod.GET, entity, Map.class)
+          .exchange(createUri(href), HttpMethod.GET, entity, type)
           .getBody();
     } catch (HttpStatusCodeException ex) {
       // We don't want to stop processing if the referenced instance does not exist.
@@ -144,6 +152,20 @@ public class ObjReferenceExpander {
       }
 
       throw new DataRetrievalException(href, ex);
+    }
+  }
+
+  private void populate(Object dto, String field, Object refObj)
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    if (refObj instanceof Map) {
+      Map map = (Map) refObj;
+
+      if (MapUtils.isNotEmpty(map)) {
+        ObjectReferenceDto refDto = getObjectReferenceDto(dto, field);
+        beanUtils.populate(refDto, map);
+      }
+    } else if (null != refObj) {
+      populate(dto, field, beanUtils.getPropertyUtils().describe(refObj));
     }
   }
 
