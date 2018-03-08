@@ -34,6 +34,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
@@ -57,14 +59,12 @@ import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDto;
 import org.openlmis.fulfillment.web.shipmentdraft.ShipmentDraftDtoDataBuilder;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -118,7 +118,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     shipmentDraftDtoExpected.setLineItems(lineItemsDtos);
 
     shipmentDraftDto = new ShipmentDraftDtoDataBuilder()
-        .withOrder(new ObjectReferenceDto(shipmentDraftDtoExpected.getOrder().getId()))
+        .withOrder(new OrderObjectReferenceDto(shipmentDraftDtoExpected.getOrder().getId()))
         .withNotes(shipmentDraftDtoExpected.getNotes())
         .withLineItems(lineItemsDtos)
         .build();
@@ -197,7 +197,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldReturnBadRequestIfShipmentDraftOrderIsNotGiven() {
-    shipmentDraftDto.setOrder((ObjectReferenceDto) null);
+    shipmentDraftDto.setOrder((OrderObjectReferenceDto) null);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -294,7 +294,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldReturnBadRequestIfShipmentDraftOrderIsNotGivenWhenPut() {
-    shipmentDraftDto.setOrder((ObjectReferenceDto) null);
+    shipmentDraftDto.setOrder((OrderObjectReferenceDto) null);
     shipmentDraftDto.setId(draftIdFromUser);
 
     restAssured.given()

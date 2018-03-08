@@ -15,9 +15,9 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-
 import org.junit.Test;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -30,6 +30,10 @@ public class ProofOfDeliveryDtoTest {
     EqualsVerifier
         .forClass(ProofOfDeliveryDto.class)
         .withRedefinedSuperclass()
+        .withPrefabValues(
+            ShipmentObjectReferenceDto.class,
+            new ShipmentObjectReferenceDto(UUID.randomUUID()),
+            new ShipmentObjectReferenceDto(UUID.randomUUID()))
         .suppress(Warning.NONFINAL_FIELDS)
         .withIgnoredFields("serviceUrl")
         .verify();

@@ -16,20 +16,30 @@
 package org.openlmis.fulfillment.service;
 
 import static java.util.Collections.singleton;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_ASSIGNMENT;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_CAST;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_HREF;
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -44,12 +54,6 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 public class ObjReferenceExpanderTest {
@@ -57,7 +61,12 @@ public class ObjReferenceExpanderTest {
   private static final String EXPANDED_STRING_VALUE = "property1";
   private static final List<String> EXPANDED_LIST_VALUE = Arrays.asList("element1", "element2");
   private static final UUID EXPANDED_UUID_VALUE = UUID.randomUUID();
+  private static final ExpandedObjectReferenceDto EXPANDED_NESTED_PROPERTY =
+      new ExpandedObjectReferenceDto();
   private static final String EXPANDED_OBJECT_REFERENCE_DTO_FIELD = "expandedObjectReferenceDto";
+  private static final String EXPANDED_NESTED_PROPERTY_FIELD = "expandedNestedProperty";
+  private static final String EXPANDED_NESTED_FIELD =
+      EXPANDED_OBJECT_REFERENCE_DTO_FIELD + '.' + EXPANDED_NESTED_PROPERTY_FIELD;
 
   @Rule
   public ExpectedException expected = ExpectedException.none();
@@ -120,6 +129,7 @@ public class ObjReferenceExpanderTest {
     assertNull(actual.getExpandedStringProperty());
     assertNull(actual.getExpandedListProperty());
     assertNull(actual.getExpandedUuidProperty());
+    assertNull(actual.getExpandedNestedProperty());
   }
 
   @Test
@@ -128,6 +138,7 @@ public class ObjReferenceExpanderTest {
     responseMap.put("expandedStringProperty", EXPANDED_STRING_VALUE);
     responseMap.put("expandedListProperty", EXPANDED_LIST_VALUE);
     responseMap.put("expandedUuidProperty", EXPANDED_UUID_VALUE);
+    responseMap.put("expandedNestedProperty", EXPANDED_NESTED_PROPERTY);
 
     when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(RequestEntity.class),
         eq(Map.class))).thenReturn(ResponseEntity.ok(responseMap));
@@ -146,6 +157,31 @@ public class ObjReferenceExpanderTest {
 
     assertNotNull(actual.getExpandedUuidProperty());
     assertEquals(EXPANDED_UUID_VALUE, actual.getExpandedUuidProperty());
+
+    assertNotNull(actual.getExpandedNestedProperty());
+    assertEquals(EXPANDED_NESTED_PROPERTY, actual.getExpandedNestedProperty());
+  }
+
+  @Test
+  public void shouldHandleNestedExpand() {
+    Map<String, Object> responseMap = new HashMap<>();
+    responseMap.put("expandedStringProperty", EXPANDED_STRING_VALUE);
+    responseMap.put("expandedListProperty", EXPANDED_LIST_VALUE);
+    responseMap.put("expandedUuidProperty", EXPANDED_UUID_VALUE);
+    responseMap.put("expandedNestedProperty", EXPANDED_NESTED_PROPERTY);
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(RequestEntity.class),
+        eq(Map.class))).thenReturn(ResponseEntity.ok(responseMap));
+
+    objReferenceExpander.expandDto(testDto, singleton(EXPANDED_NESTED_FIELD));
+
+    verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.GET), any(RequestEntity.class),
+        eq(Map.class));
+
+    URI value = uriCaptor.getValue();
+    assertThat(value.toString(), endsWith("?expand=" + EXPANDED_NESTED_PROPERTY_FIELD));
   }
 
   private void checkOriginalProperties(ObjectReferenceDto actual) {

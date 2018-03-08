@@ -15,27 +15,22 @@
 
 package org.openlmis.fulfillment.web.util;
 
-import static org.openlmis.fulfillment.service.ResourceNames.SHIPMENTS;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
-import org.openlmis.fulfillment.domain.Shipment;
-
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
+import org.openlmis.fulfillment.domain.Shipment;
 
 
 @ToString
@@ -50,7 +45,7 @@ public final class ProofOfDeliveryDto
   private String serviceUrl;
 
   @Getter
-  private ObjectReferenceDto shipment;
+  private ShipmentObjectReferenceDto shipment;
 
   @Getter
   @Setter
@@ -71,7 +66,7 @@ public final class ProofOfDeliveryDto
   private LocalDate receivedDate;
 
   @JsonProperty
-  public void setShipment(ObjectReferenceDto shipment) {
+  public void setShipment(ShipmentObjectReferenceDto shipment) {
     this.shipment = shipment;
   }
 
@@ -79,7 +74,7 @@ public final class ProofOfDeliveryDto
   @JsonIgnore
   public void setShipment(Shipment shipment) {
     if (null != shipment) {
-      this.shipment = ObjectReferenceDto.create(shipment.getId(), serviceUrl, SHIPMENTS);
+      this.shipment = new ShipmentObjectReferenceDto(shipment.getId(), serviceUrl);
     }
   }
 

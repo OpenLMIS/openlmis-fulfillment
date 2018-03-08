@@ -15,10 +15,10 @@
 
 package org.openlmis.fulfillment.web.shipmentdraft;
 
+import java.util.List;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
-import java.util.List;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 
 public class ShipmentDraftDtoDataBuilder {
 
@@ -33,7 +33,7 @@ public class ShipmentDraftDtoDataBuilder {
     new ShipmentDraftDataBuilder().build().export(draftDto);
   }
 
-  public ShipmentDraftDtoDataBuilder withOrder(ObjectReferenceDto order) {
+  public ShipmentDraftDtoDataBuilder withOrder(OrderObjectReferenceDto order) {
     draftDto.setOrder(order);
     return this;
   }

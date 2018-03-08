@@ -15,13 +15,15 @@
 
 package org.openlmis.fulfillment.web.shipmentdraft;
 
+import java.util.Collections;
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDtoDataBuilder;
-import java.util.Collections;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 
 public class ShipmentDraftDtoTest {
 
@@ -29,6 +31,10 @@ public class ShipmentDraftDtoTest {
   public void equalsContract() {
     EqualsVerifier.forClass(ShipmentDraftDto.class)
         .suppress(Warning.NONFINAL_FIELDS)
+        .withPrefabValues(
+            OrderObjectReferenceDto.class,
+            new OrderObjectReferenceDto(UUID.randomUUID()),
+            new OrderObjectReferenceDto(UUID.randomUUID()))
         .withIgnoredFields("serviceUrl")
         .verify();
   }

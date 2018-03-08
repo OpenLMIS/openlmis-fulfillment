@@ -23,6 +23,10 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_STATUS_IN
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipment.ShipmentController.RESOURCE_PATH;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -62,10 +66,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Controller
 @Transactional
@@ -215,7 +215,8 @@ public class ShipmentController extends BaseController {
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public ShipmentDto getShipment(@PathVariable UUID id) {
+  public ShipmentDto getShipment(@PathVariable UUID id,
+                                 @RequestParam(required = false) Set<String> expand) {
     XLOGGER.entry(id);
     Profiler profiler = new Profiler("GET_SHIPMENT_BY_ID");
     profiler.setLogger(XLOGGER);
@@ -232,6 +233,7 @@ public class ShipmentController extends BaseController {
 
     profiler.start("CREATE_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
+    expandDto(dto, expand);
 
     profiler.stop().log();
     XLOGGER.exit(dto);

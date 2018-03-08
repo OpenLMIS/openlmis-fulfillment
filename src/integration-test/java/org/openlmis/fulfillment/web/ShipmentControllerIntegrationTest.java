@@ -31,6 +31,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
@@ -59,17 +63,13 @@ import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -143,7 +143,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     shipmentDto = new ShipmentDtoDataBuilder()
         .withoutShippedBy()
         .withoutShippedDate()
-        .withOrder(new ObjectReferenceDto(shipmentDtoExpected.getOrder().getId()))
+        .withOrder(new OrderObjectReferenceDto(shipmentDtoExpected.getOrder().getId()))
         .withNotes(shipmentDtoExpected.getNotes())
         .withLineItems(lineItemsDtos)
         .build();
@@ -203,7 +203,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnBadRequestIfShipmentOrderIsNotGiven() {
-    shipmentDto.setOrder((ObjectReferenceDto) null);
+    shipmentDto.setOrder((OrderObjectReferenceDto) null);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

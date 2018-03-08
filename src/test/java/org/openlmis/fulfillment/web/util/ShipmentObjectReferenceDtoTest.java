@@ -13,54 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.web.shipment;
-
-import static org.junit.Assert.assertEquals;
+package org.openlmis.fulfillment.web.util;
 
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.fulfillment.service.ResourceNames;
-import org.openlmis.fulfillment.testutils.ToStringTestUtils;
-import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 
-public class ShipmentDtoTest {
-
-  public static final String SERVICE_URL = "localhost";
+public class ShipmentObjectReferenceDtoTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier.forClass(ShipmentDto.class)
-        .suppress(Warning.NONFINAL_FIELDS)
+    EqualsVerifier
+        .forClass(ShipmentObjectReferenceDto.class)
+        .withRedefinedSuperclass()
+        .withPrefabValues(
+            ShipmentObjectReferenceDto.class,
+            new ShipmentObjectReferenceDto(UUID.randomUUID()),
+            new ShipmentObjectReferenceDto(UUID.randomUUID()))
         .withPrefabValues(
             OrderObjectReferenceDto.class,
             new OrderObjectReferenceDto(UUID.randomUUID()),
             new OrderObjectReferenceDto(UUID.randomUUID()))
-        .withIgnoredFields("serviceUrl")
+        .suppress(Warning.NONFINAL_FIELDS)
         .verify();
   }
 
-  @Test
-  public void shouldImplementToString() {
-    ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
-
-    ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
-  }
-
-  @Test
-  public void shouldSetReferenceDtoForShippedBy() {
-    // No use of data builders because we actually tests setter here and builder hides what
-    // it really does.
-    ShipmentDto shipmentDto = new ShipmentDto();
-    shipmentDto.setServiceUrl(SERVICE_URL);
-
-    UUID userId = UUID.randomUUID();
-    shipmentDto.setUserId(userId);
-
-    assertEquals(userId, shipmentDto.getShippedBy().getId());
-    assertEquals(
-        SERVICE_URL + ResourceNames.getUsersPath() + userId,
-        shipmentDto.getShippedBy().getHref());
-  }
 }

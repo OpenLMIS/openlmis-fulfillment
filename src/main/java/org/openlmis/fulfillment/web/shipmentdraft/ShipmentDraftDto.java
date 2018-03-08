@@ -15,10 +15,11 @@
 
 package org.openlmis.fulfillment.web.shipmentdraft;
 
-import static org.openlmis.fulfillment.service.ResourceNames.ORDERS;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -29,10 +30,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,7 +46,7 @@ public final class ShipmentDraftDto implements ShipmentDraft.Exporter, ShipmentD
   private UUID id;
 
   @Getter
-  private ObjectReferenceDto order;
+  private OrderObjectReferenceDto order;
 
   @Getter
   @Setter
@@ -58,7 +56,7 @@ public final class ShipmentDraftDto implements ShipmentDraft.Exporter, ShipmentD
   private List<ShipmentLineItemDto> lineItems;
 
   @JsonProperty
-  public void setOrder(ObjectReferenceDto order) {
+  public void setOrder(OrderObjectReferenceDto order) {
     this.order = order;
   }
 
@@ -66,7 +64,7 @@ public final class ShipmentDraftDto implements ShipmentDraft.Exporter, ShipmentD
   @JsonIgnore
   public void setOrder(Order order) {
     if (order != null) {
-      this.order = ObjectReferenceDto.create(order.getId(), serviceUrl, ORDERS);
+      this.order = new OrderObjectReferenceDto(order.getId(), serviceUrl);
     }
   }
 

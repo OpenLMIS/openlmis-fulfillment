@@ -18,12 +18,20 @@ package org.openlmis.fulfillment.web;
 import static java.util.Comparator.comparing;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
 import org.javers.core.diff.Change;
 import org.javers.core.json.JsonConverter;
 import org.javers.repository.jql.QueryBuilder;
+import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.util.Pagination;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,18 +41,18 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 @RequestMapping(BASE_PATH)
 public abstract class BaseController {
 
   @Resource(name = "javersProvider")
   private Javers javers;
+
+  @Autowired
+  private ObjReferenceExpander objReferenceExpander;
+
+  protected void expandDto(Object dto, Set<String> expands) {
+    objReferenceExpander.expandDto(dto, expands);
+  }
 
   Map<String, String> getErrors(BindingResult bindingResult) {
     return bindingResult

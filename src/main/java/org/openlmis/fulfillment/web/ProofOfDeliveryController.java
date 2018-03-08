@@ -24,6 +24,11 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -72,13 +77,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Controller
 @Transactional
@@ -261,6 +259,7 @@ public class ProofOfDeliveryController extends BaseController {
   @RequestMapping(value = "/proofsOfDelivery/{id}", method = RequestMethod.GET)
   @ResponseBody
   public ProofOfDeliveryDto getProofOfDelivery(@PathVariable("id") UUID id,
+                                               @RequestParam(required = false) Set<String> expand,
                                                OAuth2Authentication authentication) {
     XLOGGER.entry(id, authentication);
     Profiler profiler = new Profiler("GET_POD");
@@ -271,6 +270,7 @@ public class ProofOfDeliveryController extends BaseController {
 
     profiler.start("BUILD_DTO");
     ProofOfDeliveryDto response = dtoBuilder.build(proofOfDelivery);
+    expandDto(response, expand);
 
     profiler.stop().log();
     XLOGGER.exit(response);

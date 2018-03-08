@@ -19,9 +19,17 @@ package org.openlmis.fulfillment.service;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_ASSIGNMENT;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_CAST;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_HREF;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ENCODING;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createEntity;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import javax.annotation.PostConstruct;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.MapUtils;
@@ -40,11 +48,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import javax.annotation.PostConstruct;
+import org.springframework.web.util.UriUtils;
 
 @Component
 public class ObjReferenceExpander {
@@ -84,15 +88,25 @@ public class ObjReferenceExpander {
 
     for (String expand : expands) {
       try {
-        ObjectReferenceDto refDto = getObjectReferenceDto(dto, expand);
-        String href = getHref(expand, refDto);
+        String[] elements = expand.split("\\.", 2);
 
-        Map<String, Object> refObj = retrieve(href);
+        ObjectReferenceDto refDto = getObjectReferenceDto(dto, elements[0]);
+        StringBuilder href = new StringBuilder(getHref(expand, refDto));
+
+        if (elements.length >= 2) {
+          href
+              .append("?expand=")
+              .append(UriUtils.encodeQueryParam(elements[1], StandardCharsets.UTF_8.name()));
+        }
+
+        Map<String, Object> refObj = retrieve(href.toString());
         if (MapUtils.isNotEmpty(refObj)) {
           beanUtils.populate(refDto, refObj);
         }
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
         throw new ValidationException(ex, ERROR_DTO_EXPANSION_ASSIGNMENT, expand);
+      } catch (UnsupportedEncodingException exp) {
+        throw new ValidationException(exp, ERROR_ENCODING);
       }
     }
   }

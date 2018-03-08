@@ -15,30 +15,25 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
-import static org.openlmis.fulfillment.service.ResourceNames.ORDERS;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.openlmis.fulfillment.domain.CreationDetails;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
-import org.openlmis.fulfillment.web.util.UserObjectReferenceDto;
-
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import org.openlmis.fulfillment.domain.CreationDetails;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.UserObjectReferenceDto;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,7 +50,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   private UUID id;
 
   @Getter
-  private ObjectReferenceDto order;
+  private OrderObjectReferenceDto order;
 
   @Getter
   @Setter
@@ -91,7 +86,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   }
 
   @JsonProperty
-  public void setOrder(ObjectReferenceDto order) {
+  public void setOrder(OrderObjectReferenceDto order) {
     this.order = order;
   }
 
@@ -99,7 +94,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   @JsonIgnore
   public void setOrder(Order order) {
     if (order != null) {
-      this.order = ObjectReferenceDto.create(order.getId(), serviceUrl, ORDERS);
+      this.order = new OrderObjectReferenceDto(order.getId(), serviceUrl);
     }
   }
 

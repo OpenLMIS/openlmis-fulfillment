@@ -13,32 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.testutils;
+package org.openlmis.fulfillment.web.util;
 
 import java.util.List;
-import java.util.UUID;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.testutils.DtoGenerator;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class ExpandedObjectReferenceDto extends ObjectReferenceDto {
+public class OrderObjectReferenceDtoTest {
 
-  private String expandedStringProperty;
+  @Test
+  public void equalsContract() {
+    List<FacilityDto> facilities = DtoGenerator.of(FacilityDto.class, 2);
+    List<UserDto> users = DtoGenerator.of(UserDto.class, 2);
 
-  private List<String> expandedListProperty;
-
-  private UUID expandedUuidProperty;
-
-  private ExpandedObjectReferenceDto expandedNestedProperty;
-
-  /**
-   * Test object constructor.
-   */
-  public ExpandedObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
-    super(id, serviceUrl, resourceName);
+    EqualsVerifier
+        .forClass(OrderObjectReferenceDto.class)
+        .withRedefinedSuperclass()
+        .withPrefabValues(FacilityDto.class, facilities.get(0), facilities.get(1))
+        .withPrefabValues(UserDto.class, users.get(0), users.get(1))
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
   }
+
 }

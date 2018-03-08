@@ -13,32 +13,38 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.testutils;
+package org.openlmis.fulfillment.web.util;
 
+import static org.openlmis.fulfillment.service.ResourceNames.SHIPMENTS;
+
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class ExpandedObjectReferenceDto extends ObjectReferenceDto {
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public final class ShipmentObjectReferenceDto extends ObjectReferenceDto {
+  private OrderObjectReferenceDto order;
+  private UserObjectReferenceDto shippedBy;
+  private ZonedDateTime shippedDate;
+  private String notes;
+  private List<ShipmentLineItemDto> lineItems;
+  private Map<String, String> extraData;
 
-  private String expandedStringProperty;
-
-  private List<String> expandedListProperty;
-
-  private UUID expandedUuidProperty;
-
-  private ExpandedObjectReferenceDto expandedNestedProperty;
-
-  /**
-   * Test object constructor.
-   */
-  public ExpandedObjectReferenceDto(UUID id, String serviceUrl, String resourceName) {
-    super(id, serviceUrl, resourceName);
+  public ShipmentObjectReferenceDto(UUID id) {
+    this(id, null);
   }
+
+  public ShipmentObjectReferenceDto(UUID id, String serviceUrl) {
+    super(id, serviceUrl, SHIPMENTS);
+  }
+
 }

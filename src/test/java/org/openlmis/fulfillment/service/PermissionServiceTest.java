@@ -36,7 +36,9 @@ import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
 import com.google.common.collect.ImmutableMap;
-
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,15 +63,11 @@ import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
-import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
@@ -115,7 +113,7 @@ public class PermissionServiceTest {
   private Order order = shipment.getOrder();
 
   private ShipmentDto shipmentDto = new ShipmentDtoDataBuilder()
-      .withOrder(new ObjectReferenceDto(order.getId()))
+      .withOrder(new OrderObjectReferenceDto(order.getId()))
       .build();
 
   private OAuth2Authentication trustedClient = new OAuth2AuthenticationDataBuilder()
