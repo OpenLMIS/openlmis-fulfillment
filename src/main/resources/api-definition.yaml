@@ -257,7 +257,7 @@ resourceTypes:
       displayName: Order
       get:
           is: [ secured, paginated, sorted ]
-          description: Get all orders.
+          description: Get all orders. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
           queryParameters:
               supplyingFacilityId:
                   displayName: supplyingFacility
@@ -322,7 +322,7 @@ resourceTypes:
                       schema: localizedMessage
       post:
           is: [ secured ]
-          description: Creates new order.
+          description: Creates new order. This endpoint requires ORDERS_EDIT right.
           body:
               application/json:
                 schema: orderDto
@@ -348,7 +348,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen order.
+              description: Get chosen order. This endpoint requires ORDERS_VIEW right.
               responses:
                   200:
                       body:
@@ -365,7 +365,7 @@ resourceTypes:
           /export:
               get:
                   is: [ secured ]
-                  description: Export Order to csv.
+                  description: Export Order to csv. This endpoint requires ORDERS_VIEW right.
                   queryParameters:
                       type:
                           displayName: type
@@ -415,7 +415,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured ]
-              description: Print all order line items from an order to a csv or pdf file.
+              description: Print all order line items from an order to a csv or pdf file. This endpoint requires ORDERS_VIEW right.
               queryParameters:
                   format:
                       displayName: format
@@ -440,7 +440,7 @@ resourceTypes:
       /batch:
           post:
               is: [ secured ]
-              description: Creates multiple new orders in one transaction.
+              description: Creates multiple new orders in one transaction. This endpoint requires ORDERS_EDIT right.
               body:
                   application/json:
                     schema: orderDtoArray
@@ -511,7 +511,7 @@ resourceTypes:
       displayName: Proof Of Delivery
       get:
           is: [ secured, paginated ]
-          description: Get proofs of delivery page.
+          description: Get proofs of delivery page. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
           queryParameters:
               shipmentId:
                   displayName: shipmentId
@@ -542,7 +542,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen proofOfDelivery.
+              description: Get chosen proofOfDelivery. This endpoint requires PODS_VIEW right.
               responses:
                   200:
                       body:
@@ -558,7 +558,7 @@ resourceTypes:
                           schema: localizedMessage
           put:
               is: [ secured ]
-              description: Update existing proofOfDelivery.
+              description: Update existing proofOfDelivery. This endpoint requires PODS_MANAGE right.
               body:
                   application/json:
                     schema: proofOfDeliveryDto
@@ -588,7 +588,7 @@ resourceTypes:
                     repeat: false
           get:
               is: [ secured ]
-              description: Print proof of delivery to a pdf file.
+              description: Print proof of delivery to a pdf file. This endpoint requires PODS_VIEW right.
               responses:
                   200:
                       body:
@@ -841,7 +841,7 @@ resourceTypes:
   /shipmentDrafts:
       post:
           is: [ secured ]
-          description: Create a shipment draft. Only one draft can exist in the system for a given order.
+          description: Create a shipment draft. Only one draft can exist in the system for a given order. This endpoint requires SHIPMENT_EDIT right.
           body:
               application/json:
                 schema: shipmentDraft
@@ -865,7 +865,7 @@ resourceTypes:
                       schema: localizedMessage
       get:
           is: [ secured, paginated ]
-          description: Get shipment drafts.
+          description: Get shipment drafts. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
           queryParameters:
               orderId:
                   displayName: orderId
@@ -898,7 +898,7 @@ resourceTypes:
                   repeat: false
           put:
               is: [ secured ]
-              description: Create or update shipment draft.
+              description: Create or update shipment draft. This endpoint requires SHIPMENT_VIEW right.
               body:
                   application/json:
                     schema: shipmentDraft
@@ -923,7 +923,7 @@ resourceTypes:
                           schema: localizedMessage
           get:
               is: [ secured, expandable ]
-              description: Get chosen shipment draft.
+              description: Get chosen shipment draft. This endpoint requires SHIPMENT_VIEW right.
               responses:
                   200:
                       body:
@@ -942,7 +942,7 @@ resourceTypes:
                           schema: localizedMessage
           delete:
               is: [ secured ]
-              description: Delete chosen shipment draft.
+              description: Delete chosen shipment draft. This endpoint requires SHIPMENT_EDIT right.
               responses:
                   204:
                   401:
@@ -960,7 +960,7 @@ resourceTypes:
   /shipments:
       post:
           is: [ secured ]
-          description: Create a shipment.
+          description: Create a shipment. This endpoint requires SHIPMENT_EDIT right.
           body:
               application/json:
                   schema: shipment
@@ -984,7 +984,7 @@ resourceTypes:
                       schema: localizedMessage
       get:
           is: [ secured, paginated ]
-          description: Get shipments page.
+          description: Get shipments page. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
           queryParameters:
               orderId:
                   displayName: orderId
@@ -1017,7 +1017,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen shipment.
+              description: Get chosen shipment. This endpoint requires SHIPMENT_VIEW right.
               responses:
                   200:
                       body:
