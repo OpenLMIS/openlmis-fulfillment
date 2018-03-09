@@ -222,10 +222,6 @@ public class PermissionService {
     return hasPermission(rightName, facility, program, null, true, false);
   }
 
-  private boolean hasPermission(String rightName, UUID warehouse) {
-    return hasPermission(rightName, null, null, warehouse, true, false);
-  }
-
   private boolean hasPermission(String rightName, UUID facility, UUID program, UUID warehouse,
                                 boolean allowUserTokens, boolean allowApiKey) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
