@@ -22,6 +22,19 @@ import static org.openlmis.fulfillment.domain.Order.REQUESTING_FACILITY_ID;
 import static org.openlmis.fulfillment.domain.Order.SUPPLYING_FACILITY_ID;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
@@ -30,21 +43,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
@@ -121,11 +119,11 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     Predicate predicate = builder.conjunction();
-    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate);
-    predicate = isOneOf(REQUESTING_FACILITY_ID, requestingFacilities, root, predicate);
+    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate, builder);
+    predicate = isOneOf(REQUESTING_FACILITY_ID, requestingFacilities, root, predicate, builder);
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
     predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
-    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate);
+    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
 
     query.where(predicate);
 
@@ -137,11 +135,10 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   }
 
   private Predicate isOneOf(String field, Collection collection, Root<Order> root,
-                            Predicate predicate) {
+                            Predicate predicate, CriteriaBuilder builder) {
     return !isEmpty(collection)
-        ? root.get(field).in(collection)
+        ? builder.and(predicate, root.get(field).in(collection))
         : predicate;
-
   }
 
   private Predicate isEqual(String field, Object value, Root<Order> root, Predicate predicate,

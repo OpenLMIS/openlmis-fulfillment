@@ -27,7 +27,15 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
-
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
@@ -39,16 +47,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegrationTest<Order> {
@@ -143,6 +141,33 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     list = orderRepository.searchOrders(
         null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable);
     assertSearchOrders(list, one, four);
+
+    list = orderRepository.searchOrders(
+        newHashSet(one.getSupplyingFacilityId(), two.getSupplyingFacilityId()),
+        newHashSet(two.getRequestingFacilityId()),
+        null, null, null, pageable
+    );
+    assertSearchOrders(list, two);
+
+    list = orderRepository.searchOrders(
+        newHashSet(one.getSupplyingFacilityId(), two.getSupplyingFacilityId()),
+        newHashSet(), one.getProgramId(), null, null, pageable
+    );
+    assertSearchOrders(list, one);
+
+    list = orderRepository.searchOrders(
+        newHashSet(one.getSupplyingFacilityId(), two.getSupplyingFacilityId()),
+        newHashSet(two.getRequestingFacilityId()),
+        two.getProgramId(), null, null, pageable
+    );
+    assertSearchOrders(list, two);
+
+    list = orderRepository.searchOrders(
+        newHashSet(),
+        newHashSet(two.getRequestingFacilityId()),
+        two.getProgramId(), null, null, pageable
+    );
+    assertSearchOrders(list, two);
   }
 
   @Test
