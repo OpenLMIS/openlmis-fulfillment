@@ -18,8 +18,10 @@ package org.openlmis.fulfillment.web;
 import static java.util.Comparator.comparing;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -61,10 +63,10 @@ public abstract class BaseController {
         .collect(Collectors.toMap(FieldError::getField, FieldError::getCode));
   }
 
-  ResponseEntity<String> getAuditLogResponse(Class type, UUID id, String author,
+  ResponseEntity<String> getAuditLogResponse(Map<UUID, Class> pairs, String author,
                                              String changedPropertyName,
                                              Pageable page) {
-    String auditLogs = getAuditLog(type, id, author, changedPropertyName, page);
+    String auditLogs = getAuditLog(pairs, author, changedPropertyName, page);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -75,9 +77,9 @@ public abstract class BaseController {
   /**
    * Return a list of changes via JSON.
    *
-   * @param type                The type of class for which we wish to retrieve historical changes.
-   * @param id                  The ID of class for which we wish to retrieve historical changes.
-   *                            If null, entries are returned regardless of their ID.
+   * @param pairs               The map that contain as a key the ID of class for which we wish to
+   *                            retrieve historical changes and as a value the type of class for
+   *                            which we wish to retrieve historical changes.
    * @param author              The author of the changes which should be returned.
    *                            If null or empty, changes are returned regardless of author.
    * @param changedPropertyName The name of the property about which changes should be returned.
@@ -86,9 +88,9 @@ public abstract class BaseController {
    * @param page                A Pageable object with PageNumber and PageSize values used
    *                            for pagination.
    */
-  private String getAuditLog(Class type, UUID id, String author, String changedPropertyName,
+  private String getAuditLog(Map<UUID, Class> pairs, String author, String changedPropertyName,
                              Pageable page) {
-    List<Change> changes = getChanges(type, id, author, changedPropertyName, page);
+    List<Change> changes = getChanges(pairs, author, changedPropertyName, page);
     JsonConverter jsonConverter = javers.getJsonConverter();
     return jsonConverter.toJson(changes);
   }
@@ -96,33 +98,35 @@ public abstract class BaseController {
 
   /*
     Return JaVers changes for the specified type, optionally filtered by id, author, and property.
+    We need to pass a map of pairs for aggregate and child classes because of:
+    https://stackoverflow.com/q/44386270
+    https://stackoverflow.com/q/39826142
   */
-  private List<Change> getChanges(Class type, UUID id, String author, String changedPropertyName,
-                                  Pageable page) {
-    int skip = Pagination.getPageNumber(page);
-    int limit = Pagination.getPageSize(page);
+  private List<Change> getChanges(Map<UUID, Class> pairs, String author,
+                                  String changedPropertyName, Pageable page) {
+    List<Change> changes = Lists.newArrayList();
 
-    QueryBuilder queryBuilder = QueryBuilder
-        .byInstanceId(id, type)
-        .withNewObjectChanges(true)
-        .skip(skip)
-        .limit(limit);
+    for (Entry<UUID, Class> pair : pairs.entrySet()) {
+      QueryBuilder queryBuilder = QueryBuilder
+          .byInstanceId(pair.getKey(), pair.getValue())
+          .withNewObjectChanges();
 
-    if (StringUtils.isNotBlank(author)) {
-      queryBuilder = queryBuilder.byAuthor(author);
+      if (StringUtils.isNotBlank(author)) {
+        queryBuilder = queryBuilder.byAuthor(author);
+      }
+
+      if (StringUtils.isNotBlank(changedPropertyName)) {
+        queryBuilder = queryBuilder.andProperty(changedPropertyName);
+      }
+
+      changes.addAll(javers.findChanges(queryBuilder.build()));
     }
 
-    if (StringUtils.isNotBlank(changedPropertyName)) {
-      queryBuilder = queryBuilder.andProperty(changedPropertyName);
-    }
+    changes.sort(
+        comparing((Change change) -> change.getCommitMetadata().get().getCommitDate())
+            .reversed());
 
-    return javers
-        .findChanges(queryBuilder.build())
-        .stream()
-        .sorted(
-            comparing((Change change) -> change.getCommitMetadata().get().getCommitDate())
-            .reversed())
-        .collect(Collectors.toList());
+    return Pagination.getPage(changes, page).getContent();
   }
 
 }

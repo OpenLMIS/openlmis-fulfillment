@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
@@ -347,9 +348,11 @@ public class ProofOfDeliveryController extends BaseController {
     canManagePod(authentication, profiler, pod);
 
     profiler.start("GET_AUDIT_LOG");
-    ResponseEntity<String> response = getAuditLogResponse(
-        ProofOfDelivery.class, id, author, changedPropertyName, page
-    );
+    Map<UUID, Class> pairs = new HashMap<>();
+    pairs.put(pod.getId(), ProofOfDelivery.class);
+    pod.getLineItems().forEach(line -> pairs.put(line.getId(), ProofOfDeliveryLineItem.class));
+
+    ResponseEntity<String> response = getAuditLogResponse(pairs, author, changedPropertyName, page);
 
     profiler.stop().log();
 
