@@ -284,10 +284,8 @@ public class OrderServiceTest {
     Pageable pageable = new PageRequest(0, 10);
     UserDto user = new UserDataBuilder().build();
     PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
-    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
+    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW))
         .thenReturn(newHashSet(order.getSupplyingFacilityId()));
-    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
-        .thenReturn(newHashSet(order.getRequestingFacilityId()));
 
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
 

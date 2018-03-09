@@ -35,14 +35,15 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREAD
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
-import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-
+import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Collections;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRParameter;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -77,13 +78,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
-
-import guru.nidi.ramltester.junit.RamlMatchers;
-
-import java.util.Collections;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -212,27 +206,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(permissionStringsHandler.get())
         .willReturn(singleton(PermissionStringDto.create(PODS_VIEW, proofOfDelivery
             .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
-
-    PageImplRepresentation response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageImplRepresentation.class);
-
-    assertTrue(response.getContent().iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetAllProofsOfDeliveryIfUserHasShipmentViewRight() {
-    given(permissionStringsHandler.get())
-        .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_VIEW, proofOfDelivery
-            .getSupplyingFacilityId(), null)));
 
     PageImplRepresentation response = restAssured
         .given()

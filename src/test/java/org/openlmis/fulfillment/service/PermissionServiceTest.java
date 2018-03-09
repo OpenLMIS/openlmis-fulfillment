@@ -218,12 +218,11 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewPodWithShipmentViewRight() {
-    mockHasRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
+  public void cannotViewPodWithShipmentViewRight() {
+    mockHasRight(SHIPMENTS_VIEW, null, null, pod.getSupplyingFacilityId());
+    expectException(PODS_MANAGE, PODS_VIEW);
 
     permissionService.canViewPod(pod);
-
-    verifyRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
   }
 
   @Test
@@ -237,7 +236,7 @@ public class PermissionServiceTest {
 
   @Test
   public void cannotViewPod() {
-    expectException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_VIEW);
+    expectException(PODS_MANAGE, PODS_VIEW);
 
     permissionService.canViewPod(pod);
   }

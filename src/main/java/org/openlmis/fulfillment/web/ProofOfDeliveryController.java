@@ -19,7 +19,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREAD
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
-import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -163,14 +162,12 @@ public class ProofOfDeliveryController extends BaseController {
 
       content.removeIf(proofOfDelivery -> {
         UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
-        UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
         UUID programId = proofOfDelivery.getProgramId();
 
         return permissionStrings
             .stream()
             .noneMatch(elem -> elem.match(PODS_MANAGE, receivingFacilityId, programId)
-                || elem.match(PODS_VIEW, receivingFacilityId, programId)
-                || elem.match(SHIPMENTS_VIEW, supplyingFacilityId, null));
+                || elem.match(PODS_VIEW, receivingFacilityId, programId));
       });
     }
 

@@ -94,16 +94,14 @@ public class PermissionService {
    */
   public void canViewPod(ProofOfDelivery proofOfDelivery) {
     UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
-    UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
     UUID programId = proofOfDelivery.getProgramId();
 
     if (hasPermission(PODS_MANAGE, receivingFacilityId, programId)
-        || hasPermission(PODS_VIEW, receivingFacilityId, programId)
-        || hasPermission(SHIPMENTS_VIEW, supplyingFacilityId)) {
+        || hasPermission(PODS_VIEW, receivingFacilityId, programId)) {
       return;
     }
 
-    throw new MissingPermissionException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_VIEW);
+    throw new MissingPermissionException(PODS_MANAGE, PODS_VIEW);
   }
 
   public void canManageSystemSettings() {
