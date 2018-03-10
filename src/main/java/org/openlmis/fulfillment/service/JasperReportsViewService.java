@@ -99,7 +99,7 @@ public class JasperReportsViewService {
 
     String userName = "";
     if (authenticationHelper != null) {
-      userName = authenticationHelper.getCurrentUser().getUsername();
+      userName = authenticationHelper.getCurrentUser().printName();
     }
     parameters.put("loggedInUser", userName);
 
