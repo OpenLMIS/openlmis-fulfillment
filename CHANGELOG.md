@@ -13,6 +13,7 @@ Contract breaking changes:
 * [OLMIS-3958](https://openlmis.atlassian.net/browse/OLMIS-3958): Ordered Quantity value is now in packs. Filled Quantity and Packs To Ship have been removed.
 * [OLMIS-4165](https://openlmis.atlassian.net/browse/OLMIS-4165): Changed Order search endpoint and renamed its parameters, added database pagination and introduced permission strings.
 * [OLMIS-4119](https://openlmis.atlassian.net/browse/OLMIS-4119): Change POD endpoint name to proofsOfDelivery.
+* [OLMIS-4001](https://openlmis.atlassian.net/browse/OLMIS-4001): Made it possible to print Proof of Delivery. Removed the obsolete "/proofOfDeliveryTemplates" endpoint.
 
 New features:
 * [OLMIS-3663](https://openlmis.atlassian.net/browse/OLMIS-3663): Created Shipment resource model
