@@ -75,7 +75,7 @@ FROM
   LEFT JOIN
   referencedata.dispensable_attributes unit
     ON unit.dispensableid = dispensable.id
-       AND unit.key = 'dispensingUnit'
+       AND unit.key = 'displayUnit'
   LEFT JOIN
   referencedata.lots lot
     ON li.lotid = lot.id
