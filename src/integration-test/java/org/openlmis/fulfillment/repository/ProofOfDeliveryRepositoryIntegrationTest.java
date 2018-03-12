@@ -16,7 +16,9 @@
 package org.openlmis.fulfillment.repository;
 
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -49,6 +51,7 @@ import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
 
@@ -260,6 +263,44 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     );
 
     assertThat(NOT_EXPECTED_NEW_POD_LINE_ITEM_SNAPSHOT, lineSnapshots, hasSize(1));
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveryByShipmentId() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    for (ProofOfDelivery proofOfDelivery : list) {
+      List<ProofOfDelivery> found = proofOfDeliveryRepository
+          .findByShipmentId(proofOfDelivery.getShipment().getId());
+
+      assertThat(found, hasSize(1));
+      assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveryByOrderId() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    for (ProofOfDelivery proofOfDelivery : list) {
+      List<ProofOfDelivery> found = proofOfDeliveryRepository
+          .findByOrderId(proofOfDelivery.getShipment().getOrder().getId());
+
+      assertThat(found, hasSize(1));
+      assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
   }
 
   private List<CdoSnapshot> getSnapshots(UUID id, Class type) {

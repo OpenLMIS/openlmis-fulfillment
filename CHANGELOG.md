@@ -28,6 +28,7 @@ New features:
   * The audit include changes made, date and user making changes.
   * The audit logs for any given PoD can be retrieve by related endpoint
 * [OLMIS-4266](https://openlmis.atlassian.net/browse/OLMIS-4266): Provided expand pattern for shipments and PoDs
+* [OLMIS-4262](https://openlmis.atlassian.net/browse/OLMIS-4262): Added orderId parameter to GET /proofsOfDelivery
 
 Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3607](https://openlmis.atlassian.net/browse/OLMIS-3607): Added update details to Order

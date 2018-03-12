@@ -32,7 +32,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -130,7 +129,10 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
         .willAnswer(new SaveAnswer<>());
     given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
-    given(proofOfDeliveryRepository.findByShipment(eq(proofOfDelivery.getShipment())))
+    given(proofOfDeliveryRepository.findByShipmentId(eq(proofOfDelivery.getShipment().getId())))
+        .willReturn(Lists.newArrayList(proofOfDelivery));
+    given(proofOfDeliveryRepository
+        .findByOrderId(eq(proofOfDelivery.getShipment().getOrder().getId())))
         .willReturn(Lists.newArrayList(proofOfDelivery));
 
     given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
@@ -274,19 +276,27 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldReturnErrorMessageIfShipmentNotExists() {
-    String response = restAssured.given()
+  public void shouldFindProofOfDeliveryBasedOnOrder() {
+    PageImplRepresentation response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
-        .queryParam("shipmentId", UUID.randomUUID())
+        .queryParam("orderId", proofOfDelivery.getShipment().getOrder().getId())
         .when()
         .get(RESOURCE_URL)
         .then()
-        .statusCode(400)
+        .statusCode(200)
         .extract()
-        .path(MESSAGE_KEY);
+        .as(PageImplRepresentation.class);
 
-    assertThat(response, is(SHIPMENT_NOT_FOUND));
+    assertEquals(2000, response.getSize()); // default size
+    assertEquals(0, response.getNumber());
+    assertEquals(1, response.getContent().size());
+    assertEquals(1, response.getNumberOfElements());
+    assertEquals(1, response.getTotalElements());
+    assertEquals(1, response.getTotalPages());
+
+    assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

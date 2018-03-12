@@ -513,6 +513,12 @@ resourceTypes:
           is: [ secured, paginated ]
           description: Get proofs of delivery page. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
           queryParameters:
+              orderId:
+                  displayName: orderId
+                  description: order ID
+                  type: string
+                  required: false
+                  repeat: false
               shipmentId:
                   displayName: shipmentId
                   description: shipment ID

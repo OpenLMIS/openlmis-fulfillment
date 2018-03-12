@@ -15,18 +15,22 @@
 
 package org.openlmis.fulfillment.repository;
 
-import org.javers.spring.annotation.JaversSpringDataAuditable;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.domain.Shipment;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.UUID;
+import org.javers.spring.annotation.JaversSpringDataAuditable;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 @JaversSpringDataAuditable
 public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
 
-  List<ProofOfDelivery> findByShipment(Shipment shipment);
+  @Query("SELECT p FROM ProofOfDelivery AS p WHERE p.shipment.id = :shipmentId")
+  List<ProofOfDelivery> findByShipmentId(@Param("shipmentId") UUID shipmentId);
+
+  @Query("SELECT p FROM ProofOfDelivery AS p WHERE p.shipment.order.id = :orderId")
+  List<ProofOfDelivery> findByOrderId(@Param("orderId") UUID orderId);
 
 }
 

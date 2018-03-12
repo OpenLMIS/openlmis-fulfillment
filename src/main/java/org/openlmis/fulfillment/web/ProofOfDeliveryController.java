@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
-import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_NOT_FOUND;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 
@@ -33,12 +32,10 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
-import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
@@ -105,9 +102,6 @@ public class ProofOfDeliveryController extends BaseController {
   private ProofOfDeliveryDtoBuilder dtoBuilder;
 
   @Autowired
-  private ShipmentRepository shipmentRepository;
-
-  @Autowired
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
@@ -130,6 +124,7 @@ public class ProofOfDeliveryController extends BaseController {
   @RequestMapping(value = "/proofsOfDelivery", method = RequestMethod.GET)
   @ResponseBody
   public Page<ProofOfDeliveryDto> getAllProofsOfDelivery(
+      @RequestParam(required = false) UUID orderId,
       @RequestParam(required = false) UUID shipmentId,
       Pageable pageable) {
     XLOGGER.entry(shipmentId, pageable);
@@ -138,20 +133,15 @@ public class ProofOfDeliveryController extends BaseController {
 
     List<ProofOfDelivery> content;
 
-    if (null == shipmentId) {
+    if (null == shipmentId && null == orderId) {
       profiler.start("GET_ALL_PODS");
       content = proofOfDeliveryRepository.findAll();
+    } else if (null != shipmentId) {
+      profiler.start("FIND_PODS_BY_SHIPMENT_ID");
+      content = proofOfDeliveryRepository.findByShipmentId(shipmentId);
     } else {
-      profiler.start("FIND_SHIPMENT_BY_ID");
-      Shipment shipment = shipmentRepository.findOne(shipmentId);
-
-      if (null == shipment) {
-        profiler.stop().log();
-        throw new ValidationException(SHIPMENT_NOT_FOUND, shipmentId.toString());
-      }
-
-      profiler.start("FIND_PODS_BY_SHIPMENT");
-      content = proofOfDeliveryRepository.findByShipment(shipment);
+      profiler.start("FIND_PODS_BY_ORDER_ID");
+      content = proofOfDeliveryRepository.findByOrderId(orderId);
     }
 
     UserDto user = authenticationHelper.getCurrentUser();
