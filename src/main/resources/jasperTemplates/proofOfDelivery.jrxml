@@ -3,7 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proofOfDelivery" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="c9b88bba-e685-4f37-89f1-8175e056a730">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="localDataAdapter.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<parameter name="id" class="java.lang.String" isForPrompting="true">
+	<parameter name="id" class="java.lang.String">
 		<property name="displayName" value="Proof of Delivery"/>
 	</parameter>
 	<queryString language="SQL">
@@ -414,7 +414,7 @@ ORDER BY
 				<reportElement mode="Opaque" x="600" y="0" width="90" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="f9d6f98e-afd8-4ce5-8157-220bd9fa8446">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<box leftPadding="4">
+				<box leftPadding="4" rightPadding="5">
 					<pen lineWidth="1.0" lineColor="#DDDDDD"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
