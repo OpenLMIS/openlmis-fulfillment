@@ -348,7 +348,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen order. This endpoint requires ORDERS_VIEW right.
+              description: Get chosen order. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
               responses:
                   200:
                       body:
@@ -365,7 +365,7 @@ resourceTypes:
           /export:
               get:
                   is: [ secured ]
-                  description: Export Order to csv. This endpoint requires ORDERS_VIEW right.
+                  description: Export Order to csv. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
                   queryParameters:
                       type:
                           displayName: type
@@ -415,7 +415,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured ]
-              description: Print all order line items from an order to a csv or pdf file. This endpoint requires ORDERS_VIEW right.
+              description: Print all order line items from an order to a csv or pdf file. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
               queryParameters:
                   format:
                       displayName: format
@@ -548,7 +548,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen proofOfDelivery. This endpoint requires PODS_VIEW right.
+              description: Get chosen proofOfDelivery. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
               responses:
                   200:
                       body:
@@ -594,7 +594,7 @@ resourceTypes:
                     repeat: false
           get:
               is: [ secured ]
-              description: Print proof of delivery to a pdf file. This endpoint requires PODS_VIEW right.
+              description: Print proof of delivery to a pdf file. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
               responses:
                   200:
                       body:
@@ -904,7 +904,7 @@ resourceTypes:
                   repeat: false
           put:
               is: [ secured ]
-              description: Create or update shipment draft. This endpoint requires SHIPMENT_VIEW right.
+              description: Create or update shipment draft. This endpoint requires SHIPMENT_EDIT right.
               body:
                   application/json:
                     schema: shipmentDraft
@@ -929,7 +929,7 @@ resourceTypes:
                           schema: localizedMessage
           get:
               is: [ secured, expandable ]
-              description: Get chosen shipment draft. This endpoint requires SHIPMENT_VIEW right.
+              description: Get chosen shipment draft. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
               responses:
                   200:
                       body:
@@ -1023,7 +1023,7 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen shipment. This endpoint requires SHIPMENT_VIEW right.
+              description: Get chosen shipment. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
               responses:
                   200:
                       body:

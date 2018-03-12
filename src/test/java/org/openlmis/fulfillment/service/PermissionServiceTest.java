@@ -235,6 +235,15 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canViewPodWithEditRight() {
+    mockHasRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
+
+    permissionService.canViewPod(pod);
+
+    verifyRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
+  }
+
+  @Test
   public void cannotViewPod() {
     expectException(PODS_MANAGE, PODS_VIEW);
 
@@ -251,8 +260,17 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canViewOrderWithEditRight() {
+    mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canViewOrder(order);
+
+    verifyRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
   public void cannotViewOrder() {
-    expectException(ORDERS_VIEW);
+    expectException(ORDERS_VIEW, ORDERS_EDIT);
 
     permissionService.canViewOrder(order);
   }
@@ -311,8 +329,17 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canViewShipmentWithEditRight() {
+    mockHasRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canViewShipment(shipment);
+
+    verifyRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
   public void cannotViewShipmentWhenUserHasNoRights() {
-    expectException(SHIPMENTS_VIEW);
+    expectException(SHIPMENTS_VIEW, SHIPMENTS_EDIT);
 
     permissionService.canViewShipment(shipment);
   }

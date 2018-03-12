@@ -20,6 +20,8 @@ import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 
+import java.util.UUID;
+import javax.validation.constraints.NotNull;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -41,10 +43,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
-
-import javax.validation.constraints.NotNull;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -112,8 +110,16 @@ public class PermissionService {
     canViewOrder(order.getSupplyingFacilityId());
   }
 
+  /**
+   * Checks if user has permission to view order.
+   */
   public void canViewOrder(UUID supplyingFacility) {
-    checkPermission(ORDERS_VIEW, supplyingFacility);
+    if (hasPermission(ORDERS_VIEW, supplyingFacility)
+        || hasPermission(ORDERS_EDIT, supplyingFacility)) {
+      return;
+    }
+
+    throw new MissingPermissionException(ORDERS_VIEW, ORDERS_EDIT);
   }
 
   public void canEditOrder(Order order) {
@@ -130,7 +136,7 @@ public class PermissionService {
    * @param shipment a shipment
    */
   public void canViewShipment(@NotNull Shipment shipment) {
-    checkPermission(SHIPMENTS_VIEW, shipment.getOrder().getSupplyingFacilityId());
+    canViewShipment(shipment.getOrder());
   }
 
   /**
@@ -139,7 +145,12 @@ public class PermissionService {
    * @param order an order associated with shipment
    */
   public void canViewShipment(@NotNull Order order) {
-    checkPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId());
+    if (hasPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId())
+        || hasPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId())) {
+      return;
+    }
+
+    throw new MissingPermissionException(SHIPMENTS_VIEW, SHIPMENTS_EDIT);
   }
 
   /**
@@ -148,7 +159,7 @@ public class PermissionService {
    * @param shipmentDraft a shipment draft
    */
   public void canViewShipmentDraft(@NotNull ShipmentDraft shipmentDraft) {
-    checkPermission(SHIPMENTS_VIEW, shipmentDraft.getOrder().getSupplyingFacilityId());
+    canViewShipmentDraft(shipmentDraft.getOrder());
   }
 
   /**
@@ -157,7 +168,12 @@ public class PermissionService {
    * @param order an order associated with draft
    */
   public void canViewShipmentDraft(@NotNull Order order) {
-    checkPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId());
+    if (hasPermission(SHIPMENTS_VIEW, order.getSupplyingFacilityId())
+        || hasPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId())) {
+      return;
+    }
+
+    throw new MissingPermissionException(SHIPMENTS_VIEW, SHIPMENTS_EDIT);
   }
 
   /**
@@ -220,6 +236,10 @@ public class PermissionService {
 
   private boolean hasPermission(String rightName, UUID facility, UUID program) {
     return hasPermission(rightName, facility, program, null, true, false);
+  }
+
+  private boolean hasPermission(String rightName, UUID warehouse) {
+    return hasPermission(rightName, null, null, warehouse, true, false);
   }
 
   private boolean hasPermission(String rightName, UUID facility, UUID program, UUID warehouse,
