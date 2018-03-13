@@ -257,7 +257,10 @@ resourceTypes:
       displayName: Order
       get:
           is: [ secured, paginated, sorted ]
-          description: Get all orders. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
+          description: >
+              Get all orders. This endpoint requires one of the following rights: ORDERS_EDIT,
+              ORDERS_VIEW, SHIPMENT_EDIT, SHIPMENT_VIEW (for supplying facility) POD_MANAGE,
+              POD_VIEW (for requesting facility)
           queryParameters:
               supplyingFacilityId:
                   displayName: supplyingFacility
@@ -348,7 +351,10 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen order. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
+              description: >
+                  Get chosen order. This endpoint requires one of the following rights: ORDERS_EDIT,
+                  ORDERS_VIEW, SHIPMENT_EDIT, SHIPMENT_VIEW (for supplying facility) POD_MANAGE,
+                  POD_VIEW (for requesting facility)
               responses:
                   200:
                       body:
@@ -365,7 +371,10 @@ resourceTypes:
           /export:
               get:
                   is: [ secured ]
-                  description: Export Order to csv. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
+                  description: >
+                      Export Order to csv. This endpoint requires one of the following rights:
+                      ORDERS_EDIT, ORDERS_VIEW, SHIPMENT_EDIT, SHIPMENT_VIEW (for supplying
+                      facility) POD_MANAGE, POD_VIEW (for requesting facility)
                   queryParameters:
                       type:
                           displayName: type
@@ -415,7 +424,11 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured ]
-              description: Print all order line items from an order to a csv or pdf file. This endpoint requires ORDERS_VIEW or ORDERS_EDIT rights.
+              description: >
+                  Print all order line items from an order to a csv or pdf file. This endpoint
+                  requires one of the following rights: ORDERS_EDIT, ORDERS_VIEW, SHIPMENT_EDIT,
+                  SHIPMENT_VIEW (for supplying facility) POD_MANAGE, POD_VIEW (for requesting
+                  facility)
               queryParameters:
                   format:
                       displayName: format
@@ -511,7 +524,10 @@ resourceTypes:
       displayName: Proof Of Delivery
       get:
           is: [ secured, paginated ]
-          description: Get proofs of delivery page. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
+          description: >
+              Get proofs of delivery page. This endpoint requires one of the following rights:
+              PODS_MANAGE, PODS_VIEW (for requesting facility), SHIPMENTS_EDIT (for supplying
+              facility)
           queryParameters:
               orderId:
                   displayName: orderId
@@ -548,7 +564,10 @@ resourceTypes:
                   repeat: false
           get:
               is: [ secured, expandable ]
-              description: Get chosen proofOfDelivery. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
+              description: >
+                  Get chosen proofOfDelivery. This endpoint requires one of the following rights:
+                  PODS_MANAGE, PODS_VIEW (for requesting facility), SHIPMENTS_EDIT (for supplying
+                  facility)
               responses:
                   200:
                       body:
@@ -594,7 +613,10 @@ resourceTypes:
                     repeat: false
           get:
               is: [ secured ]
-              description: Print proof of delivery to a pdf file. This endpoint requires PODS_MANAGE or PODS_VIEW rights.
+              description: >
+                  Print proof of delivery to a pdf file. This endpoint requires one of the
+                  following rights: PODS_MANAGE, PODS_VIEW (for requesting facility),
+                  SHIPMENTS_EDIT (for supplying facility)
               responses:
                   200:
                       body:

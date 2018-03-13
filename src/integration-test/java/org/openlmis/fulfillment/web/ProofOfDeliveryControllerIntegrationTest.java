@@ -34,6 +34,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
@@ -208,6 +209,27 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(permissionStringsHandler.get())
         .willReturn(singleton(PermissionStringDto.create(PODS_VIEW, proofOfDelivery
             .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
+
+    PageImplRepresentation response = restAssured
+        .given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageImplRepresentation.class);
+
+    assertTrue(response.getContent().iterator().hasNext());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetAllProofsOfDeliveryIfUserHasShipmentEditRight() {
+    given(permissionStringsHandler.get())
+        .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_EDIT, proofOfDelivery
+            .getSupplyingFacilityId(), null)));
 
     PageImplRepresentation response = restAssured
         .given()

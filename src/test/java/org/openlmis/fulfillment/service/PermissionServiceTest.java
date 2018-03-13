@@ -209,23 +209,6 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewPodWithPodManageRight() {
-    mockHasRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
-
-    permissionService.canViewPod(pod);
-
-    verifyRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
-  }
-
-  @Test
-  public void cannotViewPodWithShipmentViewRight() {
-    mockHasRight(SHIPMENTS_VIEW, null, null, pod.getSupplyingFacilityId());
-    expectException(PODS_MANAGE, PODS_VIEW);
-
-    permissionService.canViewPod(pod);
-  }
-
-  @Test
   public void canViewPod() {
     mockHasRight(PODS_VIEW, pod.getReceivingFacilityId(), pod.getProgramId(), null);
 
@@ -235,7 +218,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewPodWithEditRight() {
+  public void canViewPodWithPodManageRight() {
     mockHasRight(PODS_MANAGE, pod.getReceivingFacilityId(), pod.getProgramId(), null);
 
     permissionService.canViewPod(pod);
@@ -244,8 +227,17 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canViewPodWithShipmentEditRight() {
+    mockHasRight(SHIPMENTS_EDIT, null, null, pod.getSupplyingFacilityId());
+
+    permissionService.canViewPod(pod);
+
+    verifyRight(SHIPMENTS_EDIT, null, null, pod.getSupplyingFacilityId());
+  }
+
+  @Test
   public void cannotViewPod() {
-    expectException(PODS_MANAGE, PODS_VIEW);
+    expectException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_EDIT);
 
     permissionService.canViewPod(pod);
   }
@@ -260,7 +252,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void canViewOrderWithEditRight() {
+  public void canViewOrderWithOrderEditRight() {
     mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
 
     permissionService.canViewOrder(order);
@@ -269,8 +261,46 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canViewOrderWithShipmentEditRight() {
+    mockHasRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canViewOrder(order);
+
+    verifyRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
+  public void canViewOrderWithShipmentViewRight() {
+    mockHasRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canViewOrder(order);
+
+    verifyRight(SHIPMENTS_VIEW, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
+  public void canViewOrderWithPodViewRight() {
+    mockHasRight(PODS_VIEW, order.getRequestingFacilityId(), order.getProgramId(), null);
+
+    permissionService.canViewOrder(order);
+
+    verifyRight(PODS_VIEW, order.getRequestingFacilityId(), order.getProgramId(), null);
+  }
+
+  @Test
+  public void canViewOrderWithPodManageRight() {
+    mockHasRight(PODS_MANAGE, order.getRequestingFacilityId(), order.getProgramId(), null);
+
+    permissionService.canViewOrder(order);
+
+    verifyRight(PODS_MANAGE, order.getRequestingFacilityId(), order.getProgramId(), null);
+  }
+
+  @Test
   public void cannotViewOrder() {
-    expectException(ORDERS_VIEW, ORDERS_EDIT);
+    expectException(
+        ORDERS_VIEW, ORDERS_EDIT, SHIPMENTS_EDIT, SHIPMENTS_VIEW, PODS_VIEW, PODS_MANAGE
+    );
 
     permissionService.canViewOrder(order);
   }

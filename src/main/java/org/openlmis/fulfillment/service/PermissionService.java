@@ -20,8 +20,6 @@ import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 
-import java.util.UUID;
-import javax.validation.constraints.NotNull;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -43,6 +41,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -92,34 +94,42 @@ public class PermissionService {
    */
   public void canViewPod(ProofOfDelivery proofOfDelivery) {
     UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
+    UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
     UUID programId = proofOfDelivery.getProgramId();
 
     if (hasPermission(PODS_MANAGE, receivingFacilityId, programId)
-        || hasPermission(PODS_VIEW, receivingFacilityId, programId)) {
+        || hasPermission(PODS_VIEW, receivingFacilityId, programId)
+        || hasPermission(SHIPMENTS_EDIT, supplyingFacilityId)) {
       return;
     }
 
-    throw new MissingPermissionException(PODS_MANAGE, PODS_VIEW);
+    throw new MissingPermissionException(PODS_MANAGE, PODS_VIEW, SHIPMENTS_EDIT);
   }
 
   public void canManageSystemSettings() {
     checkPermission(SYSTEM_SETTINGS_MANAGE, null);
   }
 
-  public void canViewOrder(Order order) {
-    canViewOrder(order.getSupplyingFacilityId());
-  }
-
   /**
    * Checks if user has permission to view order.
    */
-  public void canViewOrder(UUID supplyingFacility) {
-    if (hasPermission(ORDERS_VIEW, supplyingFacility)
-        || hasPermission(ORDERS_EDIT, supplyingFacility)) {
+  public void canViewOrder(Order order) {
+    UUID requestingFacilityId = order.getRequestingFacilityId();
+    UUID supplyingFacilityId = order.getSupplyingFacilityId();
+    UUID programId = order.getProgramId();
+
+    if (hasPermission(ORDERS_VIEW, supplyingFacilityId)
+        || hasPermission(ORDERS_EDIT, supplyingFacilityId)
+        || hasPermission(SHIPMENTS_VIEW, supplyingFacilityId)
+        || hasPermission(SHIPMENTS_EDIT, supplyingFacilityId)
+        || hasPermission(PODS_VIEW, requestingFacilityId, programId)
+        || hasPermission(PODS_MANAGE, requestingFacilityId, programId)) {
       return;
     }
 
-    throw new MissingPermissionException(ORDERS_VIEW, ORDERS_EDIT);
+    throw new MissingPermissionException(
+        ORDERS_VIEW, ORDERS_EDIT, SHIPMENTS_EDIT, SHIPMENTS_VIEW, PODS_VIEW, PODS_MANAGE
+    );
   }
 
   public void canEditOrder(Order order) {
