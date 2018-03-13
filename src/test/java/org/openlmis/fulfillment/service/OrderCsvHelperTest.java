@@ -270,7 +270,7 @@ public class OrderCsvHelperTest {
     OrderableDto product = new OrderableDto();
     product.setProductCode("productCode");
     product.setFullProductName("productName");
-    product.setDispensable(new DispensableDto("each"));
+    product.setDispensable(new DispensableDto("each", "Each"));
 
     return product;
   }
