@@ -226,7 +226,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
-  public void shouldGetAllProofsOfDeliveryIfUserHasShipmentEditRight() {
+  public void shouldGetProofsOfDeliveryIfUserHasShipmentEditRight() {
     given(permissionStringsHandler.get())
         .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_EDIT, proofOfDelivery
             .getSupplyingFacilityId(), null)));
