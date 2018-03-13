@@ -26,6 +26,11 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -51,12 +56,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 
 @Service

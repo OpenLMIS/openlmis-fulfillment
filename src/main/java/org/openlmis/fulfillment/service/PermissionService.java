@@ -20,6 +20,8 @@ import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 
+import java.util.UUID;
+import javax.validation.constraints.NotNull;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -41,10 +43,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
-
-import javax.validation.constraints.NotNull;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -119,10 +117,16 @@ public class PermissionService {
     UUID programId = order.getProgramId();
 
     if (hasPermission(ORDERS_VIEW, supplyingFacilityId)
-        || hasPermission(ORDERS_EDIT, supplyingFacilityId)
-        || hasPermission(SHIPMENTS_VIEW, supplyingFacilityId)
-        || hasPermission(SHIPMENTS_EDIT, supplyingFacilityId)
-        || hasPermission(PODS_VIEW, requestingFacilityId, programId)
+        || hasPermission(ORDERS_EDIT, supplyingFacilityId)) {
+      return;
+    }
+
+    if (hasPermission(SHIPMENTS_VIEW, supplyingFacilityId)
+        || hasPermission(SHIPMENTS_EDIT, supplyingFacilityId)) {
+      return;
+    }
+
+    if (hasPermission(PODS_VIEW, requestingFacilityId, programId)
         || hasPermission(PODS_MANAGE, requestingFacilityId, programId)) {
       return;
     }
