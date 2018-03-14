@@ -19,14 +19,17 @@ import static org.apache.commons.lang3.StringUtils.joinWith;
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.service.ResourceNames.SEPARATOR;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import org.openlmis.fulfillment.domain.Identifiable;
-import java.util.UUID;
 
 @EqualsAndHashCode
 @ToString
+@JsonInclude(Include.NON_NULL)
 public class ObjectReferenceDto implements Identifiable {
 
   @Getter
