@@ -58,11 +58,11 @@ FROM
   JOIN
   referencedata.dispensables dispensable
     ON dispensable.id = orderable.dispensableid
-  JOIN
+  LEFT JOIN
   fulfillment.order_line_items oli
     ON oli.orderid = ord.id
        AND li.orderableid = oli.orderableid
-  JOIN
+  LEFT JOIN
   fulfillment.shipment_line_items sli
     ON sli.shipmentid = shipment.id
        AND li.orderableid = sli.orderableid
