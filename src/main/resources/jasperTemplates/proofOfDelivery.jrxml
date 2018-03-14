@@ -7,7 +7,7 @@
 		<property name="displayName" value="Proof of Delivery"/>
 	</parameter>
 	<queryString language="SQL">
-		<![CDATA[SELECT
+		<![CDATA[SELECT DISTINCT ON (productName, lotCode)
   program.name              AS programName,
   ord.ordercode             AS orderCode,
   ord.status                AS orderStatus,
@@ -58,10 +58,58 @@ FROM
   JOIN
   referencedata.dispensables dispensable
     ON dispensable.id = orderable.dispensableid
+  LEFT JOIN referencedata.orderable_identifiers pod_oi ON orderable.id = pod_oi.orderableid
+                                                       AND (pod_oi.key = 'tradeItem' OR pod_oi.key = 'commodityType')
   LEFT JOIN
   fulfillment.order_line_items oli
-    ON oli.orderid = ord.id
-       AND li.orderableid = oli.orderableid
+    ON oli.orderid = ord.id AND (li.orderableid = oli.orderableid OR oli.orderableid IN
+    (
+      SELECT
+        o.id
+      FROM
+        referencedata.orderables o
+        LEFT JOIN
+        referencedata.orderable_identifiers order_oi
+          ON o.id = order_oi.orderableid
+             AND (order_oi.key = 'tradeItem' OR order_oi.key = 'commodityType')
+        LEFT JOIN
+        referencedata.trade_item_classifications tic
+          ON tic.tradeitemid = order_oi.value::uuid
+        LEFT JOIN
+        referencedata.commodity_types ct
+          ON order_oi.value::uuid = ct.id
+             OR (ct.classificationid = tic.classificationid AND ct.classificationsystem = tic.classificationsystem)
+        LEFT JOIN
+        referencedata.trade_items ti
+          ON order_oi.value::uuid = ti.id
+             OR EXISTS
+             (
+                 SELECT
+                   1
+                 FROM
+                   referencedata.trade_item_classifications tic
+                 WHERE
+                   tic.tradeitemid = ti.id
+                   AND tic.classificationid = ct.classificationid
+                   AND tic.classificationsystem = ct.classificationsystem
+             )
+      WHERE
+        NOT EXISTS
+        (
+            SELECT
+              1
+            FROM
+              referencedata.dispensable_attributes o_da
+              JOIN
+              referencedata.dispensable_attributes pod_da
+                ON pod_da.dispensableid = dispensable.id
+            WHERE
+              o_da.dispensableid = o.dispensableid
+              AND o_da.key = pod_da.key
+              AND o_da.value <> pod_da.value
+        )
+        AND (pod_oi.value::uuid = ti.id OR pod_oi.value::uuid = ct.id)
+    ))
   LEFT JOIN
   fulfillment.shipment_line_items sli
     ON sli.shipmentid = shipment.id
@@ -85,7 +133,8 @@ FROM
 WHERE
   pod.id = $P{id}::uuid
 ORDER BY
-  productName, lotCode DESC]]>
+  productName, lotCode DESC
+]]>
 	</queryString>
 	<field name="programname" class="java.lang.String"/>
 	<field name="ordercode" class="java.lang.String">
