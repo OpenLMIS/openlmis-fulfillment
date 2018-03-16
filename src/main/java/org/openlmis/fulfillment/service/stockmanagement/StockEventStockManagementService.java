@@ -55,13 +55,12 @@ public class StockEventStockManagementService
     LOGGER.debug("Sending Stock Events to Stock Management: {}", stockEventDto);
 
     try {
-      runWithTokenRetry(() ->
-          restTemplate.exchange(
-              createUri(url),
-              HttpMethod.POST,
-              createEntity(stockEventDto),
-              UUID.class
-          ));
+      restTemplate.exchange(
+          createUri(url),
+          HttpMethod.POST,
+          createEntity(stockEventDto),
+          UUID.class
+      );
 
     } catch (HttpStatusCodeException ex) {
       if (ex.getStatusCode() == HttpStatus.BAD_REQUEST) {

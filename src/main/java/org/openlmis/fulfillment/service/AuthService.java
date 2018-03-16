@@ -18,10 +18,10 @@ package org.openlmis.fulfillment.service;
 
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
+import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -29,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-import java.util.Map;
 
 @Service
 public class AuthService {
@@ -71,10 +70,5 @@ public class AuthService {
     );
 
     return ((Map<String, String>) response.getBody()).get(ACCESS_TOKEN);
-  }
-
-  @CacheEvict(cacheNames = "token", allEntries = true)
-  public void clearTokenCache() {
-    // Intentionally blank
   }
 }

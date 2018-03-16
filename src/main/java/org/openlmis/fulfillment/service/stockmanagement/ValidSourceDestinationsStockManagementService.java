@@ -15,15 +15,12 @@
 
 package org.openlmis.fulfillment.service.stockmanagement;
 
-import com.google.common.collect.Maps;
-
-import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
-
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.openlmis.fulfillment.service.request.RequestParameters;
+import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 
 public abstract class ValidSourceDestinationsStockManagementService
     extends BaseStockManagementService<ValidSourceDestinationDto> {
@@ -41,8 +38,8 @@ public abstract class ValidSourceDestinationsStockManagementService
   /**
    * Try to find an instance of {@link ValidSourceDestinationDto} based on passed parameters.
    */
-  public Optional<ValidSourceDestinationDto> findOne(UUID program, UUID facilityType,
-                                                     UUID facility) {
+  public Optional<ValidSourceDestinationDto> search(UUID program, UUID facilityType,
+      UUID facility) {
     Collection<ValidSourceDestinationDto> sources = search(program, facilityType);
 
     return sources
@@ -53,10 +50,7 @@ public abstract class ValidSourceDestinationsStockManagementService
   }
 
   private Collection<ValidSourceDestinationDto> search(UUID program, UUID facilityType) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("program", program);
-    map.put("facilityType", facilityType);
-
-    return findAll("", map);
+    return findAll("", RequestParameters.init()
+        .set("program", program).set("facilityType", facilityType));
   }
 }

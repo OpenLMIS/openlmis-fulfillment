@@ -120,11 +120,11 @@ public class StockEventBuilderTest {
         .thenReturn(facility);
 
     when(validDestinationsStockManagementService
-        .findOne(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .search(order.getProgramId(), facilityType.getId(), facility.getId()))
         .thenReturn(Optional.of(destination));
 
     when(validSourcesStockManagementService
-        .findOne(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .search(order.getProgramId(), facilityType.getId(), facility.getId()))
         .thenReturn(Optional.of(destination));
 
     when(configurationSettingService.getTransferInReasonId())
@@ -177,7 +177,7 @@ public class StockEventBuilderTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(EVENT_MISSING_SOURCE_DESTINATION);
 
-    when(validDestinationsStockManagementService.findOne(any(), any(), any()))
+    when(validDestinationsStockManagementService.search(any(), any(), any()))
         .thenReturn(Optional.empty());
 
     stockEventBuilder.fromShipment(shipment);
@@ -188,7 +188,7 @@ public class StockEventBuilderTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(EVENT_MISSING_SOURCE_DESTINATION);
 
-    when(validSourcesStockManagementService.findOne(any(), any(), any()))
+    when(validSourcesStockManagementService.search(any(), any(), any()))
         .thenReturn(Optional.empty());
 
     stockEventBuilder.fromProofOfDelivery(proofOfDelivery);

@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -80,10 +79,10 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Value("${service.url}")
   private String serviceUrl;
 
-  @MockBean(answer = Answers.RETURNS_MOCKS)
+  @MockBean
   protected ShipmentRepository shipmentRepository;
 
-  @MockBean(answer = Answers.RETURNS_MOCKS)
+  @MockBean
   protected ShipmentDraftRepository shipmentDraftRepository;
 
   @MockBean

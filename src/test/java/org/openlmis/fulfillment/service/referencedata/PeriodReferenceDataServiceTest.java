@@ -24,7 +24,7 @@ public class PeriodReferenceDataServiceTest
   }
 
   @Override
-  ProcessingPeriodDto generateInstance() {
+  protected ProcessingPeriodDto generateInstance() {
     return new ProcessingPeriodDto();
   }
 }

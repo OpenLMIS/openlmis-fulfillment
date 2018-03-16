@@ -40,7 +40,7 @@ public class RightReferenceDataServiceTest extends BaseReferenceDataServiceTest<
   }
 
   @Override
-  RightDto generateInstance() {
+  protected RightDto generateInstance() {
     return new RightDto();
   }
 

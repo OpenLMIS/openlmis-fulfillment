@@ -37,7 +37,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import java.net.URI;
 
-public class NotificationServiceTest extends BaseCommunicationServiceTest {
+public class NotificationServiceTest extends BaseCommunicationServiceTest<NotificationRequest> {
 
   @Captor
   private ArgumentCaptor<HttpEntity<NotificationRequest>> captor;
@@ -86,8 +86,13 @@ public class NotificationServiceTest extends BaseCommunicationServiceTest {
   }
 
   @Override
-  protected BaseCommunicationService getService() {
+  protected BaseCommunicationService<NotificationRequest> getService() {
     return new NotificationService();
+  }
+
+  @Override
+  protected NotificationRequest generateInstance() {
+    return new NotificationRequest();
   }
 
   @Override

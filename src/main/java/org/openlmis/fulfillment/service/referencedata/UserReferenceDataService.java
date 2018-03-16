@@ -15,17 +15,16 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
-import org.openlmis.fulfillment.service.ResultDto;
-import org.openlmis.fulfillment.service.ServiceResponse;
-import org.openlmis.fulfillment.util.BooleanUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.ServiceResponse;
+import org.openlmis.fulfillment.service.request.RequestParameters;
+import org.openlmis.fulfillment.util.BooleanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserReferenceDataService extends BaseReferenceDataService<UserDto> {
@@ -55,7 +54,7 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", name);
 
-    Page<UserDto> users = getPage("search", Collections.emptyMap(), payload);
+    Page<UserDto> users = getPage("search", RequestParameters.init(), payload);
     return users.getContent().isEmpty() ? null : users.getContent().get(0);
   }
 
@@ -70,22 +69,9 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
    */
   public ResultDto<Boolean> hasRight(UUID user, UUID right, UUID program, UUID facility,
                                      UUID warehouse) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("rightId", right);
-
-    if (null != program) {
-      parameters.put("programId", program);
-    }
-
-    if (null != facility) {
-      parameters.put("facilityId", facility);
-    }
-
-    if (null != warehouse) {
-      parameters.put("warehouseId", warehouse);
-    }
-
-    ResultDto result = get(ResultDto.class, user + "/hasRight", parameters);
+    ResultDto result = get(ResultDto.class, user + "/hasRight", RequestParameters.init()
+        .set("rightId", right).set("programId", program)
+        .set("facilityId", facility).set("warehouseId", warehouse));
 
     return new ResultDto<>(BooleanUtils.toBoolean(result.getResult()));
   }

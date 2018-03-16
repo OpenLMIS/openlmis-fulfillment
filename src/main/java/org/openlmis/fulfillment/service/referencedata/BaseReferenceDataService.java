@@ -15,7 +15,11 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
+
+import java.util.UUID;
 import org.openlmis.fulfillment.service.BaseCommunicationService;
+import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,11 +27,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public abstract class BaseReferenceDataService<T> extends BaseCommunicationService<T> {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -59,25 +58,10 @@ public abstract class BaseReferenceDataService<T> extends BaseCommunicationServi
     }
   }
 
-  /**
-   * Return all reference data T objects that need to be retrieved with POST request.
-   *
-   * @param resourceUrl   Endpoint url.
-   * @param uriParameters Map of query parameters.
-   * @param payload       body to include with the outgoing request.
-   * @return all reference data T objects.
-   */
-  Collection<T> postFindAll(String resourceUrl, Map<String, Object> uriParameters,
-                                   Map<String, Object> payload) {
-    return findAllWithMethod(resourceUrl, uriParameters, payload, HttpMethod.POST);
-  }
-
-  <P> P get(Class<P> type, String resourceUrl, Map<String, Object> parameters) {
+  <P> P get(Class<P> type, String resourceUrl, RequestParameters parameters) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
-    Map<String, Object> params = new HashMap<>();
-    params.putAll(parameters);
 
-    ResponseEntity<P> response = restTemplate.exchange(buildUri(url, params), HttpMethod.GET,
+    ResponseEntity<P> response = restTemplate.exchange(createUri(url, parameters), HttpMethod.GET,
             createEntity(), type);
 
     return response.getBody();

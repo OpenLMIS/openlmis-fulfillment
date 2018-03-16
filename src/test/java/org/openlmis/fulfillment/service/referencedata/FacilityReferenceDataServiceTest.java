@@ -23,7 +23,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
   }
 
   @Override
-  FacilityDto generateInstance() {
+  protected FacilityDto generateInstance() {
     return new FacilityDto();
   }
 

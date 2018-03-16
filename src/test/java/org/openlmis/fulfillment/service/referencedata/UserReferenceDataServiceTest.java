@@ -47,7 +47,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
   }
 
   @Override
-  UserDto generateInstance() {
+  protected UserDto generateInstance() {
     return new UserDto();
   }
 

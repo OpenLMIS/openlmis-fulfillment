@@ -17,13 +17,13 @@ package org.openlmis.fulfillment.service.request;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ENCODING;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
 public final class RequestHelper {
 
@@ -45,15 +45,15 @@ public final class RequestHelper {
     UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
 
     if (parameters != null) {
-      parameters.forEach(e -> {
+      parameters.forEach(e -> e.getValue().forEach(one -> {
         try {
           builder.queryParam(e.getKey(),
-              UriUtils.encodeQueryParam(
-                  String.valueOf(e.getValue()), StandardCharsets.UTF_8.name()));
+              UriUtils.encodeQueryParam(String.valueOf(one),
+                  StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException ex) {
           throw new ValidationException(ex, ERROR_ENCODING);
         }
-      });
+      }));
     }
 
     return builder.build(true).toUri();

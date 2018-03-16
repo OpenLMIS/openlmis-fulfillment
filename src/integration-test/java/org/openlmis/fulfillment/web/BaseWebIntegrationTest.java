@@ -383,17 +383,17 @@ public abstract class BaseWebIntegrationTest {
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_FACILITY_RESULT)));
 
+    // This mocks searching for orderables
+    wireMockRule.stubFor(get(urlMatching("/api/orderables.*"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withBody(MOCK_SEARCH_PRODUCTS)));
+
     // This mocks for find one orderable
     wireMockRule.stubFor(get(urlMatching("/api/orderables/" + UUID_REGEX + ".*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PRODUCT_RESULT)));
-
-    // This mocks searching for orderables
-    wireMockRule.stubFor(post(urlMatching("/api/orderables/search.*"))
-            .willReturn(aResponse()
-                    .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .withBody(MOCK_SEARCH_PRODUCTS)));
 
     // This mocks searching for supplying facilities
     wireMockRule.stubFor(get(urlMatching("/api/facilities/supplying.*"))
@@ -665,7 +665,7 @@ public abstract class BaseWebIntegrationTest {
     }
 
     void extraSteps(T obj) {
-      // should be overriden if extra steps are required.
+      // should be overridden if extra steps are required.
     }
 
   }

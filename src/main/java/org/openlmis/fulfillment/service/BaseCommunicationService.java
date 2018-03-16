@@ -17,6 +17,14 @@ package org.openlmis.fulfillment.service;
 
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.openlmis.fulfillment.service.request.RequestHeaders;
 import org.openlmis.fulfillment.service.request.RequestHelper;
 import org.openlmis.fulfillment.service.request.RequestParameters;
@@ -31,16 +39,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
@@ -61,10 +59,6 @@ public abstract class BaseCommunicationService<T> {
     return createUri(url);
   }
 
-  protected URI buildUri(String url, Map<String, Object> params) {
-    return createUri(url, RequestParameters.of(params));
-  }
-
   public void setRestTemplate(RestOperations template) {
     this.restTemplate = template;
   }
@@ -76,19 +70,16 @@ public abstract class BaseCommunicationService<T> {
    * @param parameters  Map of query parameters.
    * @return all reference data T objects.
    */
-  protected Collection<T> findAll(String resourceUrl, Map<String, Object> parameters) {
+  protected Collection<T> findAll(String resourceUrl, RequestParameters parameters) {
     return findAllWithMethod(resourceUrl, parameters, null, HttpMethod.GET);
   }
 
-  protected Collection<T> findAllWithMethod(String resourceUrl, Map<String, Object> uriParameters,
-                                          Map<String, Object> payload, HttpMethod method) {
+  protected Collection<T> findAllWithMethod(String resourceUrl,
+      RequestParameters uriParameters, Map<String, Object> payload, HttpMethod method) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
-    Map<String, Object> params = new HashMap<>();
-    params.putAll(uriParameters);
-
     try {
-      ResponseEntity<T[]> responseEntity = restTemplate.exchange(buildUri(url, params),
+      ResponseEntity<T[]> responseEntity = restTemplate.exchange(createUri(url, uriParameters),
           method, createEntity(payload), getArrayResultClass());
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
@@ -119,6 +110,16 @@ public abstract class BaseCommunicationService<T> {
   }
 
   /**
+   * Return all reference data T objects for Page that need to be retrieved with GET request.
+   *
+   * @param parameters  Map of query parameters.
+   * @return Page of reference data T objects.
+   */
+  protected Page<T> getPage(RequestParameters parameters) {
+    return getPage("", parameters, null, HttpMethod.GET, getResultClass());
+  }
+
+  /**
    * Return all reference data T objects for Page that need to be retrieved with POST request.
    *
    * @param resourceUrl Endpoint url.
@@ -126,17 +127,17 @@ public abstract class BaseCommunicationService<T> {
    * @param payload     body to include with the outgoing request.
    * @return Page of reference data T objects.
    */
-  protected Page<T> getPage(String resourceUrl, Map<String, Object> parameters, Object payload) {
+  protected Page<T> getPage(String resourceUrl, RequestParameters parameters, Object payload) {
     return getPage(resourceUrl, parameters, payload, HttpMethod.POST, getResultClass());
   }
 
-  protected <P> Page<P> getPage(String resourceUrl, Map<String, Object> parameters, Object payload,
+  protected <P> Page<P> getPage(String resourceUrl, RequestParameters parameters, Object payload,
                                 HttpMethod method, Class<P> type) {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
     try {
       ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
-              buildUri(url, parameters),
+              createUri(url, parameters),
               method,
               createEntity(payload),
               new DynamicPageTypeReference<>(type)
@@ -172,22 +173,5 @@ public abstract class BaseCommunicationService<T> {
 
   private RequestHeaders createHeadersWithAuth() {
     return RequestHeaders.init().setAuth(authService.obtainAccessToken());
-  }
-
-  protected <T> ResponseEntity<T> runWithTokenRetry(HttpTask<T> task) {
-    try {
-      return task.run();
-    } catch (HttpStatusCodeException ex) {
-      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
-        // the token has (most likely) expired - clear the cache and retry once
-        authService.clearTokenCache();
-        return task.run();
-      }
-      throw ex;
-    }
-  }
-
-  protected interface HttpTask<T> {
-    ResponseEntity<T> run() throws HttpStatusCodeException;
   }
 }

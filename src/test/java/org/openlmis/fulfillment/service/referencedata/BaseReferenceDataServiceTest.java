@@ -38,7 +38,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.net.URI;
 import java.util.UUID;
 
-public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationServiceTest {
+public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationServiceTest<T> {
+
+  protected final String serviceUrl = "http://localhost";
 
   @Test
   public void shouldFindById() throws Exception {
@@ -119,12 +121,9 @@ public abstract class BaseReferenceDataServiceTest<T> extends BaseCommunicationS
   protected BaseReferenceDataService<T> prepareService() {
     BaseCommunicationService service = super.prepareService();
 
-    ReflectionTestUtils.setField(service, "referenceDataUrl", "http://localhost/referencedata");
+    ReflectionTestUtils.setField(service, "referenceDataUrl", serviceUrl);
 
     return (BaseReferenceDataService<T>) service;
   }
 
-  protected abstract BaseReferenceDataService<T> getService();
-
-  abstract T generateInstance();
 }

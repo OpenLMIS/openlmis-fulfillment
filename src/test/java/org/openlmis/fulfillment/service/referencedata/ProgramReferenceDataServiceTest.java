@@ -23,7 +23,7 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
   }
 
   @Override
-  ProgramDto generateInstance() {
+  protected ProgramDto generateInstance() {
     return new ProgramDto();
   }
 }

@@ -60,7 +60,7 @@ public class UserReferenceDataServiceParameterizedTest
   }
 
   @Override
-  UserDto generateInstance() {
+  protected UserDto generateInstance() {
     return new UserDto();
   }
 

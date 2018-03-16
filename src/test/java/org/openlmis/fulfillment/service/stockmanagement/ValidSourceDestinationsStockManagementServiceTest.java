@@ -26,6 +26,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
@@ -37,12 +40,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.net.URI;
-import java.util.Optional;
-import java.util.UUID;
-
 public abstract class ValidSourceDestinationsStockManagementServiceTest
-    extends BaseCommunicationServiceTest {
+    extends BaseCommunicationServiceTest<ValidSourceDestinationDto> {
 
   private ValidSourceDestinationsStockManagementService service;
 
@@ -54,6 +53,11 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
     super.setUp();
     service = (ValidSourceDestinationsStockManagementService) prepareService();
     ReflectionTestUtils.setField(service, "stockmanagementUrl", "http://localhost");
+  }
+
+  @Override
+  protected ValidSourceDestinationDto generateInstance() {
+    return new ValidSourceDestinationDto();
   }
 
   @Test
@@ -76,7 +80,7 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
     UUID program = UUID.randomUUID();
     UUID facilityType = UUID.randomUUID();
     Optional<ValidSourceDestinationDto> validSourceDestination = service
-        .findOne(program, facilityType, facility);
+        .search(program, facilityType, facility);
 
     // then
     assertThat(validSourceDestination.isPresent(), is(true));

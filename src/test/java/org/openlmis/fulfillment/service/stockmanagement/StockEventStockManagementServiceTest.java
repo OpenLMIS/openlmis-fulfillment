@@ -22,11 +22,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URI;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -42,11 +44,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
-import java.io.IOException;
-import java.net.URI;
-import java.util.UUID;
 
-public class StockEventStockManagementServiceTest extends BaseCommunicationServiceTest {
+public class StockEventStockManagementServiceTest
+    extends BaseCommunicationServiceTest<StockEventDto> {
 
   @Mock
   private ObjectMapper objectMapper;
@@ -64,6 +64,11 @@ public class StockEventStockManagementServiceTest extends BaseCommunicationServi
     return new StockEventStockManagementService();
   }
 
+  @Override
+  protected StockEventDto generateInstance() {
+    return new StockEventDto();
+  }
+
   @Test
   public void shouldSubmitStockEvent() {
     ResponseEntity response = mock(ResponseEntity.class);
@@ -78,26 +83,6 @@ public class StockEventStockManagementServiceTest extends BaseCommunicationServi
     URI uri = uriCaptor.getValue();
     String url = service.getServiceUrl() + service.getUrl();
 
-    assertThat(uri.toString(), is(equalTo(url)));
-    assertThat(entityCaptor.getValue().getBody(), is(new StockEventDto()));
-  }
-
-  @Test
-  public void shouldResubmitStockEventOnceIfRequestFailedAsUnathorized() {
-    ResponseEntity response = mock(ResponseEntity.class);
-
-    when(restTemplate.exchange(
-        any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(UUID.class))
-    ).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED)).thenReturn(response);
-
-    service.submit(new StockEventDto());
-
-    verify(restTemplate, times(2)).exchange(uriCaptor.capture(), eq(HttpMethod.POST),
-        entityCaptor.capture(), eq(UUID.class));
-    verify(authService).clearTokenCache();
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + service.getUrl();
     assertThat(uri.toString(), is(equalTo(url)));
     assertThat(entityCaptor.getValue().getBody(), is(new StockEventDto()));
   }
