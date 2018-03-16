@@ -8,27 +8,27 @@
 	</parameter>
 	<queryString language="SQL">
 		<![CDATA[SELECT DISTINCT ON (productName, lotCode)
-  program.name              AS programName,
-  ord.ordercode             AS orderCode,
-  ord.status                AS orderStatus,
-  ordfacility.code          AS orderingFacilityCode,
-  ordfacility.name          AS orderingFacility,
-  ord.createddate           AS orderDate,
-  period.startdate          AS periodStartDate,
-  period.enddate            AS periodEndDate,
-  supfacility.name          AS supplyingFacility,
-  orderable.fullproductname AS productName,
-  unit.value                AS productUnit,
-  oli.orderedquantity       AS quantityOrdered,
-  sli.quantityshipped       AS quantityShipped,
-  lot.lotcode               AS lotCode,
-  li.quantityaccepted       AS quantityAccepted,
-  li.quantityrejected       AS quantityReturned,
-  reason.name               AS rejectionReason,
-  li.notes                  AS notes,
-  pod.deliveredby           AS deliveredBy,
-  pod.receivedby            AS receivedBy,
-  pod.receiveddate          AS receivedDate
+  program.name                AS programName,
+  ord.ordercode               AS ordererCode,
+  ord.status                  AS ordererStatus,
+  ordering_facility.code      AS ordereringFacilityCode,
+  ordering_facility.name      AS ordereringFacility,
+  ord.createddate             AS ordererDate,
+  period.startdate            AS periodStartDate,
+  period.enddate              AS periodEndDate,
+  supplying_facility.name     AS supplyingFacility,
+  orderable.fullproductname   AS productName,
+  unit.value                  AS productUnit,
+  order_li.orderedquantity    AS quantityOrdered,
+  shipment_li.quantityshipped AS quantityShipped,
+  lot.lotcode                 AS lotCode,
+  pod_li.quantityaccepted     AS quantityAccepted,
+  pod_li.quantityrejected     AS quantityReturned,
+  rejection_reason.name       AS rejectionReason,
+  pod_li.notes                AS notes,
+  pod.deliveredby             AS deliveredBy,
+  pod.receivedby              AS receivedBy,
+  pod.receiveddate            AS receivedDate
 FROM
   fulfillment.proofs_of_delivery pod
   JOIN
@@ -44,54 +44,54 @@ FROM
   referencedata.programs program
     ON program.id = ord.programid
   JOIN
-  referencedata.facilities ordfacility
-    ON ordfacility.id = ord.receivingfacilityid
+  referencedata.facilities ordering_facility
+    ON ordering_facility.id = ord.receivingfacilityid
   JOIN
-  referencedata.facilities supfacility
-    ON supfacility.id = ord.supplyingfacilityid
+  referencedata.facilities supplying_facility
+    ON supplying_facility.id = ord.supplyingfacilityid
   JOIN
-  fulfillment.proof_of_delivery_line_items li
-    ON li.proofofdeliveryid = pod.id
+  fulfillment.proof_of_delivery_line_items pod_li
+    ON pod_li.proofofdeliveryid = pod.id
   JOIN
   referencedata.orderables orderable
-    ON orderable.id = li.orderableid
+    ON orderable.id = pod_li.orderableid
   JOIN
   referencedata.dispensables dispensable
     ON dispensable.id = orderable.dispensableid
-  LEFT JOIN referencedata.orderable_identifiers pod_oi ON orderable.id = pod_oi.orderableid
-                                                       AND (pod_oi.key = 'tradeItem' OR pod_oi.key = 'commodityType')
+  LEFT JOIN referencedata.orderable_identifiers pod_orderable_identifier ON orderable.id = pod_orderable_identifier.orderableid
+                                                       AND (pod_orderable_identifier.key = 'tradeItem' OR pod_orderable_identifier.key = 'commodityType')
   LEFT JOIN
-  fulfillment.order_line_items oli
-    ON oli.orderid = ord.id AND (li.orderableid = oli.orderableid OR oli.orderableid IN
+  fulfillment.order_line_items order_li
+    ON order_li.orderid = ord.id AND (pod_li.orderableid = order_li.orderableid OR order_li.orderableid IN
     (
       SELECT
         o.id
       FROM
         referencedata.orderables o
         LEFT JOIN
-        referencedata.orderable_identifiers order_oi
-          ON o.id = order_oi.orderableid
-             AND (order_oi.key = 'tradeItem' OR order_oi.key = 'commodityType')
+        referencedata.orderable_identifiers order_orderable_identifier
+          ON o.id = order_orderable_identifier.orderableid
+             AND (order_orderable_identifier.key = 'tradeItem' OR order_orderable_identifier.key = 'commodityType')
         LEFT JOIN
-        referencedata.trade_item_classifications tic
-          ON tic.tradeitemid = order_oi.value::uuid
+        referencedata.trade_item_classifications trade_item_classification
+          ON trade_item_classification.tradeitemid = order_orderable_identifier.value::uuid
         LEFT JOIN
-        referencedata.commodity_types ct
-          ON order_oi.value::uuid = ct.id
-             OR (ct.classificationid = tic.classificationid AND ct.classificationsystem = tic.classificationsystem)
+        referencedata.commodity_types commodity_type
+          ON order_orderable_identifier.value::uuid = commodity_type.id
+             OR (commodity_type.classificationid = trade_item_classification.classificationid AND commodity_type.classificationsystem = trade_item_classification.classificationsystem)
         LEFT JOIN
-        referencedata.trade_items ti
-          ON order_oi.value::uuid = ti.id
+        referencedata.trade_items trade_item
+          ON order_orderable_identifier.value::uuid = trade_item.id
              OR EXISTS
              (
                  SELECT
                    1
                  FROM
-                   referencedata.trade_item_classifications tic
+                   referencedata.trade_item_classifications trade_item_classification
                  WHERE
-                   tic.tradeitemid = ti.id
-                   AND tic.classificationid = ct.classificationid
-                   AND tic.classificationsystem = ct.classificationsystem
+                   trade_item_classification.tradeitemid = trade_item.id
+                   AND trade_item_classification.classificationid = commodity_type.classificationid
+                   AND trade_item_classification.classificationsystem = commodity_type.classificationsystem
              )
       WHERE
         NOT EXISTS
@@ -99,26 +99,26 @@ FROM
             SELECT
               1
             FROM
-              referencedata.dispensable_attributes o_da
+              referencedata.dispensable_attributes orderer_dispensable_attribute
               JOIN
-              referencedata.dispensable_attributes pod_da
-                ON pod_da.dispensableid = dispensable.id
+              referencedata.dispensable_attributes pod_dispensable_attribute
+                ON pod_dispensable_attribute.dispensableid = dispensable.id
             WHERE
-              o_da.dispensableid = o.dispensableid
-              AND o_da.key = pod_da.key
-              AND o_da.value <> pod_da.value
+              orderer_dispensable_attribute.dispensableid = o.dispensableid
+              AND orderer_dispensable_attribute.key = pod_dispensable_attribute.key
+              AND orderer_dispensable_attribute.value <> pod_dispensable_attribute.value
         )
-        AND (pod_oi.value::uuid = ti.id OR pod_oi.value::uuid = ct.id)
+        AND (pod_orderable_identifier.value::uuid = trade_item.id OR pod_orderable_identifier.value::uuid = commodity_type.id)
     ))
   LEFT JOIN
-  fulfillment.shipment_line_items sli
-    ON sli.shipmentid = shipment.id
-       AND li.orderableid = sli.orderableid
+  fulfillment.shipment_line_items shipment_li
+    ON shipment_li.shipmentid = shipment.id
+       AND pod_li.orderableid = shipment_li.orderableid
        AND
        (
-         (li.lotid IS NULL
-          AND sli.lotid IS NULL)
-         OR li.lotid = sli.lotid
+         (pod_li.lotid IS NULL
+          AND shipment_li.lotid IS NULL)
+         OR pod_li.lotid = shipment_li.lotid
        )
   LEFT JOIN
   referencedata.dispensable_attributes unit
@@ -126,10 +126,10 @@ FROM
        AND unit.key = 'displayUnit'
   LEFT JOIN
   referencedata.lots lot
-    ON li.lotid = lot.id
+    ON pod_li.lotid = lot.id
   LEFT JOIN
-  stockmanagement.stock_card_line_item_reasons reason
-    ON reason.id = li.rejectionreasonid
+  stockmanagement.stock_card_line_item_reasons rejection_reason
+    ON rejection_reason.id = pod_li.rejectionreasonid
 WHERE
   pod.id = $P{id}::uuid
 ORDER BY
