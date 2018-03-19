@@ -9,16 +9,19 @@
 	<queryString language="SQL">
 		<![CDATA[SELECT DISTINCT ON (productName, lotCode)
   program.name                AS programName,
-  ord.ordercode               AS ordererCode,
-  ord.status                  AS ordererStatus,
-  ordering_facility.code      AS ordereringFacilityCode,
-  ordering_facility.name      AS ordereringFacility,
-  ord.createddate             AS ordererDate,
+  ord.ordercode               AS orderCode,
+  ord.status                  AS orderStatus,
+  ordering_facility.code      AS orderingFacilityCode,
+  ordering_facility.name      AS orderingFacility,
+  ord.createddate             AS orderDate,
   period.startdate            AS periodStartDate,
   period.enddate              AS periodEndDate,
   supplying_facility.name     AS supplyingFacility,
   orderable.fullproductname   AS productName,
-  unit.value                  AS productUnit,
+  CASE
+    WHEN display_unit IS NULL THEN dispensing_unit.value
+    ELSE display_unit.value
+  END                         AS productUnit,
   order_li.orderedquantity    AS quantityOrdered,
   shipment_li.quantityshipped AS quantityShipped,
   lot.lotcode                 AS lotCode,
@@ -121,9 +124,13 @@ FROM
          OR pod_li.lotid = shipment_li.lotid
        )
   LEFT JOIN
-  referencedata.dispensable_attributes unit
-    ON unit.dispensableid = dispensable.id
-       AND unit.key = 'displayUnit'
+  referencedata.dispensable_attributes display_unit
+    ON display_unit.dispensableid = dispensable.id
+       AND display_unit.key = 'displayUnit'
+  LEFT JOIN
+  referencedata.dispensable_attributes dispensing_unit
+    ON dispensing_unit.dispensableid = dispensable.id
+       AND dispensing_unit.key = 'dispensingUnit'
   LEFT JOIN
   referencedata.lots lot
     ON pod_li.lotid = lot.id
