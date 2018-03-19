@@ -7,31 +7,29 @@
     <property name="displayName" value="Proof of Delivery"/>
   </parameter>
   <queryString language="SQL">
-    <![CDATA[SELECT DISTINCT ON (productName, lotCode)
-  program.name                AS programName,
-  ord.ordercode               AS orderCode,
-  ord.status                  AS orderStatus,
-  ordering_facility.code      AS orderingFacilityCode,
-  ordering_facility.name      AS orderingFacility,
-  ord.createddate             AS orderDate,
-  period.startdate            AS periodStartDate,
-  period.enddate              AS periodEndDate,
-  supplying_facility.name     AS supplyingFacility,
-  orderable.fullproductname   AS productName,
-  CASE
-    WHEN display_unit.value <> '' THEN display_unit.value
-    ELSE dispensing_unit.value
-  END                         AS productUnit,
-  order_li.orderedquantity    AS quantityOrdered,
-  shipment_li.quantityshipped AS quantityShipped,
-  lot.lotcode                 AS lotCode,
-  pod_li.quantityaccepted     AS quantityAccepted,
-  pod_li.quantityrejected     AS quantityReturned,
-  rejection_reason.name       AS rejectionReason,
-  pod_li.notes                AS notes,
-  pod.deliveredby             AS deliveredBy,
-  pod.receivedby              AS receivedBy,
-  pod.receiveddate            AS receivedDate
+    <![CDATA[SELECT DISTINCT ON (productname, lotcode)
+  program.name                         AS programName,
+  ord.ordercode                        AS orderCode,
+  ord.status                           AS orderStatus,
+  ordering_facility.code               AS orderingFacilityCode,
+  ordering_facility.name               AS orderingFacility,
+  ord.createddate                      AS orderDate,
+  period.startdate                     AS periodStartDate,
+  period.enddate                       AS periodEndDate,
+  supplying_facility.name              AS supplyingFacility,
+  orderable.fullproductname            AS productName,
+  COALESCE(NULLIF(Concat_ws(',', size_code.value, route_of_administration.value),
+           ''), dispensing_unit.value) AS productUnit,
+  order_li.orderedquantity             AS quantityOrdered,
+  shipment_li.quantityshipped          AS quantityShipped,
+  lot.lotcode                          AS lotCode,
+  pod_li.quantityaccepted              AS quantityAccepted,
+  pod_li.quantityrejected              AS quantityReturned,
+  rejection_reason.name                AS rejectionReason,
+  pod_li.notes                         AS notes,
+  pod.deliveredby                      AS deliveredBy,
+  pod.receivedby                       AS receivedBy,
+  pod.receiveddate                     AS receivedDate
 FROM
   fulfillment.proofs_of_delivery pod
   JOIN
@@ -124,13 +122,17 @@ FROM
          OR pod_li.lotid = shipment_li.lotid
        )
   LEFT JOIN
-  referencedata.dispensable_attributes display_unit
-    ON display_unit.dispensableid = dispensable.id
-       AND display_unit.key = 'displayUnit'
-  LEFT JOIN
   referencedata.dispensable_attributes dispensing_unit
     ON dispensing_unit.dispensableid = dispensable.id
        AND dispensing_unit.key = 'dispensingUnit'
+  LEFT JOIN
+  referencedata.dispensable_attributes route_of_administration
+    ON route_of_administration.dispensableid = dispensable.id
+       AND route_of_administration.key = 'routeOfAdministration'
+  LEFT JOIN
+  referencedata.dispensable_attributes size_code
+    ON size_code.dispensableid = dispensable.id
+       AND size_code.key = 'sizeCode'
   LEFT JOIN
   referencedata.lots lot
     ON pod_li.lotid = lot.id
