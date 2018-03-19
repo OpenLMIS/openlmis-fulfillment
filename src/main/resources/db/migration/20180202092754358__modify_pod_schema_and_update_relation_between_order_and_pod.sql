@@ -24,7 +24,8 @@ WHERE p.orderId = o.id AND o.id = s.orderId;
 UPDATE fulfillment.proof_of_deliveries AS p
 SET status = 'CONFIRMED'
 FROM fulfillment.orders AS o
-WHERE o.status = 'RECEIVED';
+WHERE o.status = 'RECEIVED'
+  AND p.orderid = o.id;
 
 -- set not null flag for shipmentId column
 ALTER TABLE fulfillment.proof_of_deliveries ALTER COLUMN shipmentId SET NOT NULL;
