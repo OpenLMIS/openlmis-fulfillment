@@ -574,7 +574,7 @@ ORDER BY
           </reportElement>
           <textFieldExpression><![CDATA[$F{orderingfacilitycode} + " - " + $F{orderingfacility}]]></textFieldExpression>
         </textField>
-        <textField isStretchWithOverflow="true" pattern="dd/MM/yyyy hh:mm:ss" isBlankWhenNull="true">
+        <textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" x="420" y="24" width="110" height="20" uuid="bce52b53-860d-4071-b91e-88c902b244f2"/>
           <textFieldExpression><![CDATA[$F{orderdate}]]></textFieldExpression>
         </textField>
