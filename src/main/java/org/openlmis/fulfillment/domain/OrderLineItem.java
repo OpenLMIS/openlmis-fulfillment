@@ -15,22 +15,19 @@
 
 package org.openlmis.fulfillment.domain;
 
-import org.hibernate.annotations.Type;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
 @Entity
 @Table(name = "order_line_items")
@@ -43,6 +40,7 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Order order;
 
+  @Column(nullable = false)
   @Getter
   @Type(type = UUID_TYPE)
   private UUID orderableId;

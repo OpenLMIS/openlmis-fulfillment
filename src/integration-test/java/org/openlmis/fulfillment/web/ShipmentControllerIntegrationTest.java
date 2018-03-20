@@ -42,11 +42,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
@@ -102,9 +104,15 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private StockEventBuilder stockEventBuilder;
+  
+  @MockBean
+  private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @Mock
   private Order order;
+  
+  @Mock
+  private ProofOfDelivery proofOfDelivery;
 
   @Captor
   private ArgumentCaptor<Shipment> captor;
@@ -175,6 +183,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     when(orderRepository.findOne(shipment.getOrder().getId())).thenReturn(shipment.getOrder());
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
+    when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
 
     ShipmentDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
