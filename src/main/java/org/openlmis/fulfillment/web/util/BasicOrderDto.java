@@ -122,7 +122,9 @@ public class BasicOrderDto implements Order.Exporter, UpdateDetails.Exporter {
 
   @Override
   public void setUpdateDetails(UpdateDetails updateDetails) {
-    updateDetails.export(this);
+    if (null != updateDetails) {
+      updateDetails.export(this);
+    }
   }
 
   @Override
