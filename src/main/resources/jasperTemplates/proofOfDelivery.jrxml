@@ -18,13 +18,14 @@
   period.enddate                       AS periodEndDate,
   supplying_facility.name              AS supplyingFacility,
   orderable.fullproductname            AS productName,
-  order_orderable.fullproductname            AS orderProductName,
+  order_orderable.fullproductname      AS orderProductName,
   COALESCE(NULLIF(Concat_ws(',', size_code.value, route_of_administration.value),
            ''), dispensing_unit.value) AS productUnit,
   order_li.orderedquantity             AS quantityOrdered,
   shipment_li.quantityshipped          AS quantityShipped,
   lot.lotcode                          AS lotCode,
   pod_li.quantityaccepted              AS quantityAccepted,
+  pod_li.vvmstatus                     AS vvmStatus,
   pod_li.quantityrejected              AS quantityReturned,
   rejection_reason.name                AS rejectionReason,
   pod_li.notes                         AS notes,
@@ -208,6 +209,7 @@ ORDER BY
     <property name="com.jaspersoft.studio.field.label" value="receiveddate"/>
   </field>
   <field name="orderProductName" class="java.lang.String"/>
+  <field name="vvmstatus" class="java.lang.String"/>
   <group name="OrderProductGroup">
     <groupExpression><![CDATA[$F{orderProductName}]]></groupExpression>
     <groupHeader>
@@ -242,7 +244,7 @@ ORDER BY
           <textFieldExpression><![CDATA[$F{productunit}]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="190" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="4ad70c86-5691-4163-9574-37f4124787dc">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="190" y="0" width="70" height="20" backcolor="#F0F0F0" uuid="4ad70c86-5691-4163-9574-37f4124787dc">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -256,7 +258,7 @@ ORDER BY
           <textFieldExpression><![CDATA[$F{quantityordered}]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="600" y="0" width="90" height="20" backcolor="#F0F0F0" uuid="fee7ae94-a0b2-4ffe-84d0-9624f2b76451">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="620" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="fee7ae94-a0b2-4ffe-84d0-9624f2b76451">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -269,7 +271,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="440" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="9e8bffab-997f-4209-a101-3ab9ca042971">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="410" y="0" width="70" height="20" backcolor="#F0F0F0" uuid="9e8bffab-997f-4209-a101-3ab9ca042971">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -282,7 +284,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="270" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="4050679f-e53a-43c8-8c37-d29b997e1b27">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="260" y="0" width="70" height="20" backcolor="#F0F0F0" uuid="4050679f-e53a-43c8-8c37-d29b997e1b27">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -295,7 +297,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="350" y="0" width="90" height="20" backcolor="#F0F0F0" uuid="76569e5e-d124-4874-8df6-e094b7548038">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="330" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="76569e5e-d124-4874-8df6-e094b7548038">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -308,7 +310,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="520" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="ea79e84c-b4a2-4bf3-8c54-fa8a16441971">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="550" y="0" width="70" height="20" backcolor="#F0F0F0" uuid="ea79e84c-b4a2-4bf3-8c54-fa8a16441971">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -321,7 +323,21 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="690" y="0" width="110" height="20" backcolor="#F0F0F0" uuid="adcf989f-12f8-43b1-b484-2d9a58168a65">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="700" y="0" width="100" height="20" backcolor="#F0F0F0" uuid="adcf989f-12f8-43b1-b484-2d9a58168a65">
+            <property name="com.jaspersoft.studio.unit.width" value="px"/>
+            <property name="com.jaspersoft.studio.unit.x" value="px"/>
+          </reportElement>
+          <box topPadding="2" leftPadding="4" bottomPadding="2">
+            <pen lineColor="#DDDDDD"/>
+            <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+          </box>
+          <textElement verticalAlignment="Middle"/>
+        </textField>
+        <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+          <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="480" y="0" width="70" height="20" backcolor="#F0F0F0" uuid="8784645e-f6c5-4f27-920e-e54232b9ebfc">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -370,7 +386,7 @@ ORDER BY
           <textFieldExpression><![CDATA[$F{productunit}]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="80" height="20" uuid="0415ac4b-970a-42fb-a514-769c50a10192">
+          <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="70" height="20" uuid="0415ac4b-970a-42fb-a514-769c50a10192">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -383,7 +399,21 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="690" y="0" width="110" height="20" uuid="4cbc73d5-4ab3-433c-a7df-780698f0422f">
+          <reportElement stretchType="RelativeToTallestObject" x="700" y="0" width="100" height="20" uuid="4cbc73d5-4ab3-433c-a7df-780698f0422f">
+            <property name="com.jaspersoft.studio.unit.width" value="px"/>
+            <property name="com.jaspersoft.studio.unit.x" value="px"/>
+          </reportElement>
+          <box topPadding="2" leftPadding="4" bottomPadding="2">
+            <pen lineColor="#DDDDDD"/>
+            <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+            <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+          </box>
+          <textElement verticalAlignment="Middle"/>
+        </textField>
+        <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+          <reportElement stretchType="RelativeToTallestObject" x="330" y="0" width="80" height="20" uuid="2caacd83-50f0-4e39-b2d8-21f28c1c32c2">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -396,7 +426,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="350" y="0" width="90" height="20" uuid="2caacd83-50f0-4e39-b2d8-21f28c1c32c2">
+          <reportElement stretchType="RelativeToTallestObject" x="410" y="0" width="70" height="20" uuid="cf36e6c0-77a8-4bd6-b4d3-87f3c845f09a">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -409,7 +439,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="440" y="0" width="80" height="20" uuid="cf36e6c0-77a8-4bd6-b4d3-87f3c845f09a">
+          <reportElement stretchType="RelativeToTallestObject" x="620" y="0" width="80" height="20" uuid="e8c7bf10-e48a-4cf3-860d-e00e9c58b9bc">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -422,7 +452,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="600" y="0" width="90" height="20" uuid="e8c7bf10-e48a-4cf3-860d-e00e9c58b9bc">
+          <reportElement stretchType="RelativeToTallestObject" x="550" y="0" width="70" height="20" uuid="a830c58b-44c0-445a-8d71-748836d219d4">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -435,7 +465,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="520" y="0" width="80" height="20" uuid="a830c58b-44c0-445a-8d71-748836d219d4">
+          <reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="70" height="20" uuid="96f897b8-896e-403b-9017-570a8ed0f212">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -448,7 +478,7 @@ ORDER BY
           <textElement verticalAlignment="Middle"/>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-          <reportElement stretchType="RelativeToTallestObject" x="270" y="0" width="80" height="20" uuid="96f897b8-896e-403b-9017-570a8ed0f212">
+          <reportElement stretchType="RelativeToTallestObject" mode="Transparent" x="480" y="0" width="70" height="20" backcolor="#FFFFFF" uuid="5bd238d8-9032-47a4-bb75-4c8dcf51ea3f">
             <property name="com.jaspersoft.studio.unit.width" value="px"/>
           </reportElement>
           <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -605,7 +635,7 @@ ORDER BY
         <text><![CDATA[Product Unit]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="600" y="0" width="90" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="f9d6f98e-afd8-4ce5-8157-220bd9fa8446">
+        <reportElement mode="Opaque" x="620" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="f9d6f98e-afd8-4ce5-8157-220bd9fa8446">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4" rightPadding="5">
@@ -617,7 +647,7 @@ ORDER BY
         <text><![CDATA[Rejection Reason]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="440" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="3667b897-6566-4a00-9115-84b1bd096b63">
+        <reportElement mode="Opaque" x="410" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="3667b897-6566-4a00-9115-84b1bd096b63">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4">
@@ -629,7 +659,7 @@ ORDER BY
         <text><![CDATA[Quantity Accepted]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="520" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="d72c000a-17fc-4a96-8117-65f457417583">
+        <reportElement mode="Opaque" x="550" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="d72c000a-17fc-4a96-8117-65f457417583">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4">
@@ -641,8 +671,9 @@ ORDER BY
         <text><![CDATA[Quantity Returned]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="690" y="0" width="110" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4f61abba-d09f-476f-b326-8128d8beabf6">
+        <reportElement mode="Opaque" x="700" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4f61abba-d09f-476f-b326-8128d8beabf6">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
+          <property name="com.jaspersoft.studio.unit.x" value="px"/>
         </reportElement>
         <box leftPadding="4">
           <pen lineWidth="1.0" lineColor="#DDDDDD"/>
@@ -653,7 +684,7 @@ ORDER BY
         <text><![CDATA[Notes]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="350" y="0" width="90" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="b9210c7f-69d9-46a7-b90a-b762cba5722e">
+        <reportElement mode="Opaque" x="330" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="b9210c7f-69d9-46a7-b90a-b762cba5722e">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4">
@@ -665,7 +696,7 @@ ORDER BY
         <text><![CDATA[Lot Code]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="190" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="6b057f3a-3628-4b32-89a5-19424bd9a0a1">
+        <reportElement mode="Opaque" x="190" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="6b057f3a-3628-4b32-89a5-19424bd9a0a1">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4">
@@ -677,7 +708,7 @@ ORDER BY
         <text><![CDATA[Quantity Ordered]]></text>
       </staticText>
       <staticText>
-        <reportElement mode="Opaque" x="270" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="956509d5-6869-481c-ac40-3c532d43f180">
+        <reportElement mode="Opaque" x="260" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="956509d5-6869-481c-ac40-3c532d43f180">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box leftPadding="4">
@@ -700,13 +731,25 @@ ORDER BY
         </textElement>
         <text><![CDATA[Product Name]]></text>
       </staticText>
+      <staticText>
+        <reportElement mode="Opaque" x="480" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4dd0ebe8-9fe8-47bc-bd24-a2f0cc58a70d">
+          <property name="com.jaspersoft.studio.unit.width" value="px"/>
+        </reportElement>
+        <box leftPadding="4" rightPadding="5">
+          <pen lineWidth="1.0" lineColor="#DDDDDD"/>
+        </box>
+        <textElement textAlignment="Left" verticalAlignment="Middle">
+          <font size="10" isBold="true"/>
+        </textElement>
+        <text><![CDATA[VVM Status]]></text>
+      </staticText>
     </band>
   </columnHeader>
   <detail>
     <band height="20" splitType="Stretch">
       <property name="com.jaspersoft.studio.unit.height" value="px"/>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="350" y="0" width="90" height="20" uuid="59068d4e-5e09-4316-ac21-ca8af3968af1">
+        <reportElement stretchType="RelativeToTallestObject" x="330" y="0" width="80" height="20" uuid="59068d4e-5e09-4316-ac21-ca8af3968af1">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -720,7 +763,7 @@ ORDER BY
         <textFieldExpression><![CDATA[($F{lotcode} == null) ? "No Lot Defined" : $F{lotcode}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="270" y="0" width="80" height="20" uuid="03b293b8-2dd4-4a9c-9f15-fc4c01005f47">
+        <reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="70" height="20" uuid="03b293b8-2dd4-4a9c-9f15-fc4c01005f47">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -734,8 +777,9 @@ ORDER BY
         <textFieldExpression><![CDATA[$F{quantityshipped}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="690" y="0" width="110" height="20" uuid="3d74a886-184c-4912-9be8-d505876fe76c">
+        <reportElement stretchType="RelativeToTallestObject" x="700" y="0" width="100" height="20" uuid="3d74a886-184c-4912-9be8-d505876fe76c">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
+          <property name="com.jaspersoft.studio.unit.x" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
           <pen lineColor="#DDDDDD"/>
@@ -748,7 +792,7 @@ ORDER BY
         <textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="600" y="0" width="90" height="20" uuid="31bd7674-5efc-40cb-b704-910398e5a53a">
+        <reportElement stretchType="RelativeToTallestObject" x="620" y="0" width="80" height="20" uuid="31bd7674-5efc-40cb-b704-910398e5a53a">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -762,7 +806,7 @@ ORDER BY
         <textFieldExpression><![CDATA[$F{rejectionreason}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="440" y="0" width="80" height="20" uuid="e2085931-c16a-4880-b6ff-eedbb1301cf0">
+        <reportElement stretchType="RelativeToTallestObject" x="410" y="0" width="70" height="20" uuid="e2085931-c16a-4880-b6ff-eedbb1301cf0">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -776,7 +820,7 @@ ORDER BY
         <textFieldExpression><![CDATA[$F{quantityaccepted}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="520" y="0" width="80" height="20" uuid="a313b3f1-4386-4e49-bc65-cf3e9cc4f4b2">
+        <reportElement stretchType="RelativeToTallestObject" x="550" y="0" width="70" height="20" uuid="a313b3f1-4386-4e49-bc65-cf3e9cc4f4b2">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -790,7 +834,7 @@ ORDER BY
         <textFieldExpression><![CDATA[$F{quantityreturned}]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-        <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="80" height="20" uuid="12c21d58-5a3e-4b22-be39-ae601e5baece">
+        <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="70" height="20" uuid="12c21d58-5a3e-4b22-be39-ae601e5baece">
           <property name="com.jaspersoft.studio.unit.width" value="px"/>
         </reportElement>
         <box topPadding="2" leftPadding="4" bottomPadding="2">
@@ -827,6 +871,20 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
+      </textField>
+      <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+        <reportElement stretchType="RelativeToTallestObject" mode="Transparent" x="480" y="0" width="70" height="20" backcolor="#FFFFFF" uuid="7ebc9567-9dd6-442c-8a16-5e24e6949750">
+          <property name="com.jaspersoft.studio.unit.width" value="px"/>
+        </reportElement>
+        <box topPadding="2" leftPadding="4" bottomPadding="2">
+          <pen lineColor="#DDDDDD"/>
+          <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+          <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+          <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+          <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
+        </box>
+        <textElement verticalAlignment="Middle"/>
+        <textFieldExpression><![CDATA[$F{vvmstatus}]]></textFieldExpression>
       </textField>
     </band>
   </detail>
