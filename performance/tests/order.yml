@@ -57,7 +57,7 @@ scenarios:
   search-orders:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/orders/search?supplyingFacilityId=${__P(supplying_facility_id)}
+      - url: ${__P(base-uri)}/api/orders?supplyingFacilityId=${__P(supplying_facility_id)}
         method: GET
         label: FindOrdersBySupplyingFacility
         headers:
