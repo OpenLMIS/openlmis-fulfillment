@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.fulfillment.service;
@@ -60,8 +60,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OrderService {
-  static final String[] DEFAULT_COLUMNS = {"facilityCode", "createdDate", "orderNum",
-      "productName", "productCode", "orderedQuantity", "filledQuantity"};
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(OrderService.class);
 
@@ -104,8 +102,8 @@ public class OrderService {
   /**
    * Creates an order.
    *
-   * @param  orderDto object that order will be created from.
-   * @return          created Order.
+   * @param orderDto object that order will be created from.
+   * @return created Order.
    */
   public Order createOrder(OrderDto orderDto, UUID userId) {
     Order order = Order.newInstance(orderDto,
@@ -140,6 +138,8 @@ public class OrderService {
     Set<UUID> supplyingFacilities = new HashSet<>();
     Set<UUID> requestingFacilities = new HashSet<>();
 
+    UUID supplyingFacilityId = params.getSupplyingFacilityId();
+    UUID requestingFacilityId = params.getRequestingFacilityId();
     if (null != user) {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
@@ -147,14 +147,20 @@ public class OrderService {
           handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW)
       );
 
-      if (null != params.getSupplyingFacilityId()) {
-        supplyingFacilities.removeIf(id -> !id.equals(params.getSupplyingFacilityId()));
+      if (null != supplyingFacilityId) {
+        if (!supplyingFacilities.contains(supplyingFacilityId)) {
+          return Pagination.getPage(Collections.emptyList(), pageable);
+        }
+        supplyingFacilities.removeIf(id -> !id.equals(supplyingFacilityId));
       }
 
       requestingFacilities.addAll(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW));
 
-      if (null != params.getRequestingFacilityId()) {
-        requestingFacilities.removeIf(id -> !id.equals(params.getRequestingFacilityId()));
+      if (null != requestingFacilityId) {
+        if (!requestingFacilities.contains(requestingFacilityId)) {
+          return Pagination.getPage(Collections.emptyList(), pageable);
+        }
+        requestingFacilities.removeIf(id -> !id.equals(requestingFacilityId));
       }
 
       if (isEmpty(supplyingFacilities) && isEmpty(requestingFacilities)) {
@@ -163,11 +169,11 @@ public class OrderService {
       }
     } else {
       Optional
-          .ofNullable(params.getSupplyingFacilityId())
+          .ofNullable(supplyingFacilityId)
           .ifPresent(supplyingFacilities::add);
 
       Optional
-          .ofNullable(params.getRequestingFacilityId())
+          .ofNullable(requestingFacilityId)
           .ifPresent(requestingFacilities::add);
     }
 
@@ -178,9 +184,9 @@ public class OrderService {
   }
 
   /**
-   * Saves a new instance of order. The method also stores the order in local directory and try
-   * to send (if there are FTP transfer properties) to an FTP server. Also, the status field in
-   * the order will be updated.
+   * Saves a new instance of order. The method also stores the order in local directory and try to
+   * send (if there are FTP transfer properties) to an FTP server. Also, the status field in the
+   * order will be updated.
    *
    * @param order instance
    * @return passed instance after save.
