@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.testutils.DtoGenerator;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -87,6 +87,8 @@ public abstract class BaseCommunicationServiceTest<T> {
     service.setRestTemplate(restTemplate);
     ReflectionTestUtils.setField(service, "authService", authService);
 
+    ReflectionTestUtils.setField(service, "maxUrlLength", 2000);
+
     return service;
   }
 
@@ -116,14 +118,15 @@ public abstract class BaseCommunicationServiceTest<T> {
   }
 
   private void mockPageResponseEntity(Object dto) {
-    ResponseEntity<Page<T>> response = stubRestTemplateAndGetPageResponseEntity();
+    ResponseEntity<PageDto<T>> response = stubRestTemplateAndGetPageResponseEntity();
 
-    when(response.getBody())
-        .thenReturn((Page<T>) new PageImpl<>(ImmutableList.of(dto)));
+    doReturn(new PageDto<>(new PageImpl<>(ImmutableList.of(dto))))
+        .when(response)
+        .getBody();
   }
 
-  private ResponseEntity<Page<T>> stubRestTemplateAndGetPageResponseEntity() {
-    ResponseEntity<Page<T>> response = mock(ResponseEntity.class);
+  private ResponseEntity<PageDto<T>> stubRestTemplateAndGetPageResponseEntity() {
+    ResponseEntity<PageDto<T>> response = mock(ResponseEntity.class);
     when(restTemplate.exchange(
         any(URI.class),
         any(HttpMethod.class),

@@ -70,6 +70,14 @@ public final class Pagination {
   }
 
   /**
+   * Return Page of the list using Page defaults.
+   * See {@link #getPage(List, Pageable)}
+   */
+  public static <T> Page<T> getPage(List<T> originalList) {
+    return getPage(originalList, null);
+  }
+
+  /**
    * Returns the Page for a subset of the specified list, determined by the pageable passed in.
    *
    * @param originalList A list of values, some or all of which should be included in a page.

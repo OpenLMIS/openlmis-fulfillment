@@ -51,6 +51,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
@@ -59,7 +60,6 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
-import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.shipment.ShipmentDto;
 import org.openlmis.fulfillment.web.shipment.ShipmentDtoDataBuilder;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
@@ -280,7 +280,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     when(shipmentRepository.findByOrder(eq(shipment.getOrder()), any(Pageable.class)))
         .thenReturn(new PageImpl<>(singletonList(shipment)));
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam("page", 2)
         .queryParam("size", 10)
@@ -290,7 +290,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     assertEquals(10, response.getSize());
     assertEquals(2, response.getNumber());

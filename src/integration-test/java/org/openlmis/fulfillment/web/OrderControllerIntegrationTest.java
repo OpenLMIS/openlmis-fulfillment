@@ -86,6 +86,7 @@ import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
@@ -102,7 +103,6 @@ import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
-import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
@@ -379,7 +379,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
@@ -388,7 +388,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -415,7 +415,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PAGE, 0)
@@ -425,7 +425,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -455,7 +455,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -466,7 +466,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -501,7 +501,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -513,7 +513,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -548,7 +548,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(ORDER_STATUS, firstOrder.getStatus().toString())
         .queryParam(ORDER_STATUS, secondOrder.getStatus().toString())
         .queryParam(PAGE, 0)
@@ -558,7 +558,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -588,7 +588,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -601,7 +601,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -647,7 +647,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -661,7 +661,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -707,7 +707,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -721,7 +721,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -767,7 +767,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         newHashSet(firstOrder.getRequestingFacilityId())
     );
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
         .queryParam(REQUESTING_FACILITY, firstOrder.getRequestingFacilityId())
         .queryParam(PROGRAM, firstOrder.getProgramId())
@@ -782,7 +782,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<BasicOrderDto> content = getPageContent(response, BasicOrderDto.class);
 
@@ -890,7 +890,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam(PAGE, 0)
@@ -899,7 +899,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     Iterable<Object> orders = asList(response.getContent());
     assertTrue(orders.iterator().hasNext());
@@ -1160,7 +1160,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
 
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
@@ -1168,7 +1168,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .get(RESOURCE_URL)
         .then()
         .statusCode(200)
-        .extract().as(PageImplRepresentation.class);
+        .extract().as(PageDto.class);
 
     List<OrderDto> content = getPageContent(response, OrderDto.class);
 

@@ -59,13 +59,13 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
-import org.openlmis.fulfillment.util.PageImplRepresentation;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
@@ -150,7 +150,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetAllProofsOfDelivery() {
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -158,7 +158,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -168,7 +168,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   public void shouldReturnEmptyListForGetAllProofsOfDeliveryIfUserHasNoRight() {
     given(permissionStringsHandler.get()).willReturn(Collections.emptySet());
 
-    PageImplRepresentation response = restAssured
+    PageDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -177,7 +177,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertThat(response.getContent().isEmpty(), is(true));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -189,7 +189,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willReturn(singleton(PermissionStringDto.create(PODS_MANAGE, proofOfDelivery
             .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
 
-    PageImplRepresentation response = restAssured
+    PageDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -198,7 +198,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -210,7 +210,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willReturn(singleton(PermissionStringDto.create(PODS_VIEW, proofOfDelivery
             .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
 
-    PageImplRepresentation response = restAssured
+    PageDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -219,7 +219,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -231,7 +231,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_EDIT, proofOfDelivery
             .getSupplyingFacilityId(), null)));
 
-    PageImplRepresentation response = restAssured
+    PageDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -240,7 +240,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -256,7 +256,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     given(authenticationHelper.getCurrentUser()).willReturn(null);
 
-    PageImplRepresentation response = restAssured
+    PageDto response = restAssured
         .given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -265,7 +265,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -274,7 +274,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldFindProofOfDeliveryBasedOnShipment() {
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("shipmentId", proofOfDelivery.getShipment().getId())
@@ -283,7 +283,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertEquals(2000, response.getSize()); // default size
     assertEquals(0, response.getNumber());
@@ -299,7 +299,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldFindProofOfDeliveryBasedOnOrder() {
-    PageImplRepresentation response = restAssured.given()
+    PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("orderId", proofOfDelivery.getShipment().getOrder().getId())
@@ -308,7 +308,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(PageImplRepresentation.class);
+        .as(PageDto.class);
 
     assertEquals(2000, response.getSize()); // default size
     assertEquals(0, response.getNumber());

@@ -15,12 +15,12 @@
 
 package org.openlmis.fulfillment.service.request;
 
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ENCODING;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import org.openlmis.fulfillment.web.ValidationException;
+import java.util.Arrays;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -44,17 +44,18 @@ public final class RequestHelper {
   public static URI createUri(String url, RequestParameters parameters) {
     UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
 
-    if (parameters != null) {
-      parameters.forEach(e -> e.getValue().forEach(one -> {
-        try {
-          builder.queryParam(e.getKey(),
-              UriUtils.encodeQueryParam(String.valueOf(one),
-                  StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException ex) {
-          throw new ValidationException(ex, ERROR_ENCODING);
-        }
-      }));
-    }
+    RequestParameters
+        .init()
+        .setAll(parameters)
+        .forEach(e -> e.getValue().forEach(one -> {
+          try {
+            builder.queryParam(e.getKey(),
+                UriUtils.encodeQueryParam(String.valueOf(one),
+                    StandardCharsets.UTF_8.name()));
+          } catch (UnsupportedEncodingException ex) {
+            throw new EncodingException(ex);
+          }
+        }));
 
     return builder.build(true).toUri();
   }
@@ -71,6 +72,30 @@ public final class RequestHelper {
    */
   public static <E> HttpEntity<E> createEntity(RequestHeaders headers) {
     return new HttpEntity<>(headers.toHeaders());
+  }
+
+  /**
+   * Split the given {@link RequestParameters} into smaller chunks.
+   */
+  public static URI[] splitRequest(String url, RequestParameters queryParams, int maxUrlLength) {
+    RequestParameters safeQueryParams = RequestParameters.init().setAll(queryParams);
+    URI uri = createUri(url, safeQueryParams);
+
+    if (uri.toString().length() > maxUrlLength) {
+      Pair<RequestParameters, RequestParameters> split = safeQueryParams.split();
+
+      if (null != split.getLeft() && null != split.getRight()) {
+        URI[] left = splitRequest(url, split.getLeft(), maxUrlLength);
+        URI[] right = splitRequest(url, split.getRight(), maxUrlLength);
+
+        return Stream
+            .concat(Arrays.stream(left), Arrays.stream(right))
+            .distinct()
+            .toArray(URI[]::new);
+      }
+    }
+
+    return new URI[]{uri};
   }
 
 }

@@ -25,17 +25,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.openlmis.fulfillment.util.PageImplRepresentation;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import com.google.common.collect.ImmutableList;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Before;
+import org.junit.Test;
+import org.openlmis.fulfillment.service.PageDto;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<UserDto> {
 
@@ -74,8 +76,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
             any(ParameterizedTypeReference.class)))
         .thenReturn(response);
 
-    PageImplRepresentation<UserDto> page = mock(PageImplRepresentation.class);
-    when(page.getContent()).thenReturn(Collections.singletonList(userDto));
+    PageDto<UserDto> page = new PageDto<>(new PageImpl<>(ImmutableList.of(userDto)));
 
     when(response.getBody()).thenReturn(page);
 
@@ -110,8 +111,7 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
             any(ParameterizedTypeReference.class)))
             .thenReturn(response);
 
-    PageImplRepresentation<UserDto> page = mock(PageImplRepresentation.class);
-    when(page.getContent()).thenReturn(Collections.emptyList());
+    PageDto<UserDto> page = new PageDto<>(new PageImpl<>(Collections.emptyList()));
     when(response.getBody()).thenReturn(page);
 
     UserDto user = service.findUser(name);

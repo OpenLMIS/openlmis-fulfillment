@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service;
 
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,8 +30,10 @@ import org.openlmis.fulfillment.service.request.RequestHeaders;
 import org.openlmis.fulfillment.service.request.RequestHelper;
 import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
-import org.openlmis.fulfillment.util.PageImplRepresentation;
+import org.openlmis.fulfillment.util.Merger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -47,6 +50,9 @@ public abstract class BaseCommunicationService<T> {
   @Autowired
   protected AuthService authService;
 
+  @Value("${request.maxUrlLength}")
+  private int maxUrlLength;
+  
   protected abstract String getServiceUrl();
 
   protected abstract String getUrl();
@@ -79,8 +85,9 @@ public abstract class BaseCommunicationService<T> {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
     try {
-      ResponseEntity<T[]> responseEntity = restTemplate.exchange(createUri(url, uriParameters),
-          method, createEntity(payload), getArrayResultClass());
+      ResponseEntity<T[]> responseEntity = runWithTokenRetry(
+          () -> doListRequest(url, uriParameters, payload, method, getArrayResultClass())
+      );
 
       return new ArrayList<>(Arrays.asList(responseEntity.getBody()));
     } catch (HttpStatusCodeException ex) {
@@ -136,17 +143,103 @@ public abstract class BaseCommunicationService<T> {
     String url = getServiceUrl() + getUrl() + resourceUrl;
 
     try {
-      ResponseEntity<PageImplRepresentation<P>> response = restTemplate.exchange(
-              createUri(url, parameters),
-              method,
-              createEntity(payload),
-              new DynamicPageTypeReference<>(type)
+      ResponseEntity<PageDto<P>> response = runWithTokenRetry(
+          () -> doPageRequest(url, parameters, payload, method, type)
       );
       return response.getBody();
 
     } catch (HttpStatusCodeException ex) {
       throw buildDataRetrievalException(ex);
     }
+  }
+
+  private <E> ResponseEntity<E[]> doListRequest(String url, RequestParameters parameters,
+      Object payload, HttpMethod method,
+      Class<E[]> type) {
+    HttpEntity<Object> entity = RequestHelper
+        .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
+    List<E[]> arrays = new ArrayList<>();
+
+    for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
+      arrays.add(restTemplate.exchange(uri, method, entity, type).getBody());
+    }
+
+    E[] body = Merger
+        .ofArrays(arrays)
+        .withDefaultValue(() -> (E[]) Array.newInstance(type.getComponentType(), 0))
+        .merge();
+
+    return new ResponseEntity<>(body, HttpStatus.OK);
+  }
+
+  private <E> ResponseEntity<PageDto<E>> doPageRequest(String url,
+      RequestParameters parameters,
+      Object payload,
+      HttpMethod method,
+      Class<E> type) {
+    HttpEntity<Object> entity = RequestHelper
+        .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
+    ParameterizedTypeReference<PageDto<E>> parameterizedType =
+        new DynamicPageTypeReference<>(type);
+    List<PageDto<E>> pages = new ArrayList<>();
+
+    for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
+      pages.add(restTemplate.exchange(uri, method, entity, parameterizedType).getBody());
+    }
+
+    PageDto<E> body = Merger
+        .ofPages(pages)
+        .withDefaultValue(PageDto::new)
+        .merge();
+
+    return new ResponseEntity<>(body, HttpStatus.OK);
+  }
+
+  protected <P> ResponseEntity<P> runWithTokenRetry(HttpTask<P> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
+        // the token has (most likely) expired - clear the cache and retry once
+        authService.clearTokenCache();
+        return task.run();
+      }
+      throw ex;
+    }
+  }
+
+  protected <P> ResponseEntity<P> runWithRetryAndTokenRetry(HttpTask<P> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (HttpStatus.UNAUTHORIZED == ex.getStatusCode()) {
+        // the token has (most likely) expired - clear the cache and retry once
+        authService.clearTokenCache();
+        return runWithRetry(task);
+      }
+      if (ex.getStatusCode().is4xxClientError() || ex.getStatusCode().is5xxServerError()) {
+        return runWithTokenRetry(task);
+      }
+      throw ex;
+    }
+  }
+
+  private <P> ResponseEntity<P> runWithRetry(HttpTask<P> task) {
+    try {
+      return task.run();
+    } catch (HttpStatusCodeException ex) {
+      if (ex.getStatusCode().is4xxClientError() || ex.getStatusCode().is5xxServerError()) {
+        return task.run();
+      }
+      throw ex;
+    }
+  }
+
+  @FunctionalInterface
+  protected interface HttpTask<T> {
+
+    ResponseEntity<T> run();
+
   }
 
   protected DataRetrievalException buildDataRetrievalException(HttpStatusCodeException ex) {
