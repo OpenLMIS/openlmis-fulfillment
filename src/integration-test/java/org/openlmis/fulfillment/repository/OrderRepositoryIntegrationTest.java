@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -30,6 +31,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -112,64 +114,59 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order four = orderRepository.save(generateInstance(OrderStatus.TRANSFER_FAILED));
     Order five = orderRepository.save(generateInstance(OrderStatus.SHIPPED));
 
+    HashSet<UUID> availableRequestingFacilities = newHashSet(one.getRequestingFacilityId(),
+        two.getRequestingFacilityId(),
+        three.getRequestingFacilityId(), four.getRequestingFacilityId(),
+        five.getRequestingFacilityId());
     Page<Order> list = orderRepository
-        .searchOrders(null, null, null, null, null, pageable, null, null);
+        .searchOrders(null, null, null, null, null, pageable, null,
+            availableRequestingFacilities);
     assertSearchOrders(list, one, two, three, four, five);
 
     list = orderRepository
-        .searchOrders(null, null, null, null, null, new PageRequest(1, 2), null, null);
+        .searchOrders(null, null, null, null, null, new PageRequest(1, 2), null,
+            availableRequestingFacilities);
     assertSearchOrders(list, three, four);
 
-    list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
-            null, null);
-    assertSearchOrders(list, one);
-
-    list = orderRepository
-        .searchOrders(null, two.getRequestingFacilityId(), null, null, null, pageable, null, null);
-    assertSearchOrders(list, two);
-
     list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable,
-        null, null);
+        null, Collections.singleton(three.getRequestingFacilityId()));
     assertSearchOrders(list, three);
 
     list = orderRepository
-        .searchOrders(null, null, null, four.getProcessingPeriodId(), null, pageable, null, null);
+        .searchOrders(null, null, null, four.getProcessingPeriodId(), null, pageable, null,
+            Collections.singleton(four.getRequestingFacilityId()));
     assertSearchOrders(list, four);
 
     list = orderRepository
-        .searchOrders(null, null, null, null, EnumSet.of(five.getStatus()), pageable, null, null);
+        .searchOrders(null, null, null, null, EnumSet.of(five.getStatus()), pageable, null,
+            Collections.singleton(five.getRequestingFacilityId()));
     assertSearchOrders(list, five);
 
     list = orderRepository.searchOrders(
         null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable,
-        null, null);
+        null, newHashSet(one.getRequestingFacilityId(),  four.getRequestingFacilityId()));
     assertSearchOrders(list, one, four);
 
     list = orderRepository.searchOrders(
-        two.getSupplyingFacilityId(),
-        two.getRequestingFacilityId(),
-        null, null, null, pageable, null, null
-    );
-    assertSearchOrders(list, two);
-
-    list = orderRepository.searchOrders(
         one.getSupplyingFacilityId(),
-        null, one.getProgramId(), null, null, pageable, null, null
+        null, one.getProgramId(), null, null, pageable, null,
+        Collections.singleton(one.getRequestingFacilityId())
     );
     assertSearchOrders(list, one);
 
     list = orderRepository.searchOrders(
         two.getSupplyingFacilityId(),
         two.getRequestingFacilityId(),
-        two.getProgramId(), null, null, pageable, null, null
+        two.getProgramId(), null, null, pageable, null,
+        Collections.singleton(two.getRequestingFacilityId())
     );
     assertSearchOrders(list, two);
 
     list = orderRepository.searchOrders(
         null,
         two.getRequestingFacilityId(),
-        two.getProgramId(), null, null, pageable, null, null
+        two.getProgramId(), null, null, pageable, null,
+        Collections.singleton(two.getRequestingFacilityId())
     );
     assertSearchOrders(list, two);
   }
@@ -292,10 +289,14 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(three);
     orderRepository.save(four);
 
+    HashSet<UUID> availablSupplyingFacilities = newHashSet(one.getSupplyingFacilityId(),
+        two.getSupplyingFacilityId(),
+        three.getSupplyingFacilityId(), four.getSupplyingFacilityId());
+
     Page<Order> result = orderRepository.searchOrders(null, null, null, null,
         Collections.singleton(OrderStatus.ORDERED),
         new PageRequest(0, 10, new Sort(Sort.Direction.DESC, "createdDate")),
-        null, null);
+        availablSupplyingFacilities, null);
 
     assertEquals(4, result.getContent().size());
     // They should be returned from the most recent to the least recent
