@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -394,14 +396,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     }
   }
 
-  @Ignore
   @Test
   public void shouldCreateOrder() {
     firstOrder.getOrderLineItems().clear();
     firstOrderDto = OrderDto.newInstance(firstOrder, exporter);
     firstOrderDto.setStatusChanges(sampleStatusChanges());
 
-    given(orderService.createOrder(firstOrderDto, user.getId()))
+    given(orderService.createOrder(any(OrderDto.class), eq(user.getId())))
         .willReturn(firstOrder);
 
     restAssured.given()
@@ -415,34 +416,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
-    verify(orderRepository).save(orderCaptor.capture());
+    ArgumentCaptor<OrderDto> orderCaptor = ArgumentCaptor.forClass(OrderDto.class);
+    verify(orderService, times(1)).createOrder(orderCaptor.capture(), eq(user.getId()));
 
-    Order savedOrder = orderCaptor.getValue();
-    assertThat(savedOrder.getExternalId(), is(firstOrderDto.getExternalId()));
-
-    UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
-        .withUpdaterId(INITIAL_USER_ID)
-        .withUpdatedDate(dateHelper.getCurrentDateTimeWithSystemZone())
-        .build();
-    assertEquals(savedOrder.getUpdateDetails(), updateDetails);
-
-    Base36EncodedOrderNumberGenerator generator = new Base36EncodedOrderNumberGenerator();
-    String expectedCode = "ORDER-" + generator.generate(savedOrder) + "R";
-    assertEquals(expectedCode, savedOrder.getOrderCode());
+    assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
+        is(firstOrderDto.getExternalId()));
   }
 
-  @Ignore
   @Test
   public void shouldCreateMultipleOrders() {
-    firstOrderDto.setId(null);
-    secondOrderDto.setId(null);
-
-    given(orderService.createOrder(firstOrderDto, user.getId()))
+    given(orderService.createOrder(any(OrderDto.class), eq(user.getId())))
         .willReturn(firstOrder);
-    given(orderService.createOrder(secondOrderDto, user.getId()))
-      .willReturn(secondOrder);
-
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -456,7 +440,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     ArgumentCaptor<OrderDto> orderCaptor = ArgumentCaptor.forClass(OrderDto.class);
-    verify(orderService, times(2)).createOrder(orderCaptor.capture(), user.getId());
+    verify(orderService, times(2)).createOrder(orderCaptor.capture(), eq(user.getId()));
 
     assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
         is(firstOrderDto.getExternalId()));
