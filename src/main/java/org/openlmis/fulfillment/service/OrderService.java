@@ -137,15 +137,15 @@ public class OrderService {
    * @return ist of Orders with matched parameters.
    */
   public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
+    XLOGGER.debug("order service search startDate {}", params.getPeriodStartDate());
+    XLOGGER.debug("order service search endDate {}", params.getPeriodEndDate());
+
     UserDto user = authenticationHelper.getCurrentUser();
 
     UUID supplyingFacilityId = params.getSupplyingFacilityId();
     UUID requestingFacilityId = params.getRequestingFacilityId();
 
     Set<UUID> processingPeriodIds = null;
-
-    XLOGGER.debug("order service search startDate {}", params.getPeriodStartDate());
-    XLOGGER.debug("order service search endDate {}", params.getPeriodEndDate());
 
     if (null != params.getPeriodStartDate() || null != params.getPeriodEndDate()) {
       processingPeriodIds = periodService
