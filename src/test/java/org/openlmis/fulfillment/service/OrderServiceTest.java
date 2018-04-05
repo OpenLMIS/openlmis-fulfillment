@@ -388,6 +388,26 @@ public class OrderServiceTest {
   }
 
   @Test
+  public void shouldReturnEmptyPageIfPeriodsSearchReturnsEmptyList() {
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    when(periodReferenceDataService.search(startDate, endDate)).thenReturn(emptyList());
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        null, Sets.newHashSet(order.getStatus().toString()),
+        startDate, endDate);
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
+
+    assertEquals(0, receivedOrders.getContent().size());
+    verify(orderRepository, never())
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
   public void shouldSearchByStartDateAndEndDateAndPeriodId() {
     Order order = generateOrder();
     Pageable pageable = new PageRequest(0, 10);

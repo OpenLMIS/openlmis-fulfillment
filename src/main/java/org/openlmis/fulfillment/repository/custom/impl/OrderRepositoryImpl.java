@@ -83,8 +83,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   public Page<Order> searchOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
       Pageable pageable, Set<UUID> availableSupplyingFacilities,
       Set<UUID> availableRequestingFacilities) {
-    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))
-        || (null != processingPeriodIds && isEmpty(processingPeriodIds))) {
+    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
       return Pagination.getPage(Collections.emptyList(), pageable);
     }
     return search(params, processingPeriodIds,

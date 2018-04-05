@@ -182,9 +182,8 @@ public abstract class BaseCommunicationService<T> {
       HttpMethod method,
       Class<E> type) {
 
-    LOGGER.debug("fulfillment page request url {}", url);
-    LOGGER.debug("fulfillment page request parameters {}", parameters);
-    LOGGER.debug("fulfillment page request method {}", method);
+    LOGGER.debug("fulfillment page request url: {}, parameters: {}, method: {}",
+        url, parameters, method);
 
     HttpEntity<Object> entity = RequestHelper
         .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));

@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
@@ -150,6 +151,9 @@ public class OrderService {
           .stream()
           .map(ProcessingPeriodDto::getId)
           .collect(Collectors.toSet());
+      if (isEmpty(processingPeriodIds)) {
+        return new PageImpl<>(emptyList(), pageable, 0);
+      }
     }
 
     if (null != params.getProcessingPeriodId()) {
