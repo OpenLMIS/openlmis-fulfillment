@@ -24,11 +24,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @EqualsAndHashCode
+@ToString
 public final class RequestParameters {
   private final MultiValueMap<String, String> params;
 

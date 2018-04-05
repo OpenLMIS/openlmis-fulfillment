@@ -31,6 +31,8 @@ import org.openlmis.fulfillment.service.request.RequestHelper;
 import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
 import org.openlmis.fulfillment.util.Merger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -45,6 +47,8 @@ import org.springframework.web.client.RestTemplate;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommunicationService.class);
+
   protected RestOperations restTemplate = new RestTemplate();
 
   @Autowired
@@ -177,6 +181,11 @@ public abstract class BaseCommunicationService<T> {
       Object payload,
       HttpMethod method,
       Class<E> type) {
+
+    LOGGER.debug("fulfillment page request url {}", url);
+    LOGGER.debug("fulfillment page request parameters {}", parameters);
+    LOGGER.debug("fulfillment page request method {}", method);
+
     HttpEntity<Object> entity = RequestHelper
         .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
     ParameterizedTypeReference<PageDto<E>> parameterizedType =

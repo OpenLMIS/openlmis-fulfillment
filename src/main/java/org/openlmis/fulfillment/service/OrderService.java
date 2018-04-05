@@ -144,6 +144,9 @@ public class OrderService {
 
     Set<UUID> processingPeriodIds = null;
 
+    XLOGGER.debug("order service search startDate {}", params.getPeriodStartDate());
+    XLOGGER.debug("order service search endDate {}", params.getPeriodEndDate());
+
     if (null != params.getPeriodStartDate() || null != params.getPeriodEndDate()) {
       processingPeriodIds = periodService
           .search(params.getPeriodStartDate(), params.getPeriodEndDate())
@@ -156,6 +159,7 @@ public class OrderService {
       if (null == processingPeriodIds
           || processingPeriodIds.contains(params.getProcessingPeriodId())) {
         processingPeriodIds = singleton(params.getProcessingPeriodId());
+        XLOGGER.debug("order service search period ids {}", processingPeriodIds);
       } else {
         return new PageImpl<>(emptyList(), pageable, 0);
       }
