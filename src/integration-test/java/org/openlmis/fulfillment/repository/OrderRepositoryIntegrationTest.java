@@ -147,7 +147,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertSearchOrders(list, one, four);
 
     list = orderRepository.searchOrders(
-         two.getSupplyingFacilityId(),
+        two.getSupplyingFacilityId(),
         two.getRequestingFacilityId(),
         null, null, null, pageable, null, null
     );
@@ -172,6 +172,107 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         two.getProgramId(), null, null, pageable, null, null
     );
     assertSearchOrders(list, two);
+  }
+
+  @Test
+  public void shouldFindOrdersBySupplyingFacility() {
+    Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+
+    Page<Order> list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.singleton(one.getSupplyingFacilityId()), Collections.emptySet());
+    assertSearchOrders(list, one);
+
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.emptySet(), Collections.singleton(one.getRequestingFacilityId()));
+    assertSearchOrders(list, one);
+  }
+
+  @Test
+  public void shouldNotFindOrdersBySupplyingFacilityIfNoRightsForOrder() {
+    Order one = prepareOrdersForSearchByFacility();
+
+    Page<Order> list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.singleton(UUID.randomUUID()), Collections.singleton(UUID.randomUUID()));
+    assertEquals(0, list.getNumberOfElements());
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.emptySet(), Collections.singleton(UUID.randomUUID()));
+    assertEquals(0, list.getNumberOfElements());
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.singleton(UUID.randomUUID()), Collections.emptySet());
+    assertEquals(0, list.getNumberOfElements());
+  }
+
+  @Test
+  public void shouldFindOrdersByRequestingFacility() {
+    Order one = prepareOrdersForSearchByFacility();
+
+    Page<Order> list = orderRepository
+        .searchOrders(null, one.getRequestingFacilityId(), null, null, null, pageable,
+            Collections.singleton(one.getSupplyingFacilityId()), Collections.emptySet());
+    assertSearchOrders(list, one);
+
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.emptySet(), Collections.singleton(one.getRequestingFacilityId()));
+    assertSearchOrders(list, one);
+  }
+
+  @Test
+  public void shouldNotFindOrdersByRequestingFacilityIfNoRightsForOrder() {
+    Order one = prepareOrdersForSearchByFacility();
+
+    Page<Order> list = orderRepository
+        .searchOrders(null, one.getRequestingFacilityId(), null, null, null, pageable,
+            Collections.singleton(UUID.randomUUID()), Collections.singleton(UUID.randomUUID()));
+    assertEquals(0, list.getNumberOfElements());
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.emptySet(), Collections.singleton(UUID.randomUUID()));
+    assertEquals(0, list.getNumberOfElements());
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+            Collections.singleton(UUID.randomUUID()), Collections.emptySet());
+    assertEquals(0, list.getNumberOfElements());
+  }
+
+  @Test
+  public void shouldFindOrdersByRequestingAndSupplyingFacility() {
+    Order one = prepareOrdersForSearchByFacility();
+
+    Page<Order> list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
+            null, pageable,  Collections.singleton(one.getSupplyingFacilityId()),
+            Collections.emptySet());
+    assertSearchOrders(list, one);
+
+    list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
+            null, pageable, Collections.emptySet(),
+            Collections.singleton(one.getRequestingFacilityId()));
+    assertSearchOrders(list, one);
+  }
+
+  @Test
+  public void shouldNotFindOrdersByRequestingAndSupplyingFacilityForWrongFacility() {
+    Order one = prepareOrdersForSearchByFacility();
+    Order two = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+
+    Page<Order> list = orderRepository
+        .searchOrders(one.getSupplyingFacilityId(), two.getRequestingFacilityId(), null, null,
+            null, pageable,  Collections.singleton(one.getSupplyingFacilityId()),
+            Collections.emptySet());
+    assertEquals(0, list.getNumberOfElements());
+
+    list = orderRepository
+        .searchOrders(two.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
+            null, pageable, Collections.emptySet(),
+            Collections.singleton(one.getRequestingFacilityId()));
+    assertEquals(0, list.getNumberOfElements());
   }
 
   @Test
@@ -274,6 +375,12 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
       assertThat(uuids, hasSize(2));
       assertThat(uuids, hasItems(order.getRequestingFacilityId(), six.getRequestingFacilityId()));
     }
+  }
+
+  private Order prepareOrdersForSearchByFacility() {
+    orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    return orderRepository.save(generateInstance(OrderStatus.ORDERED));
   }
 
   private void assertSearchOrders(Page<Order> actual, Order... expected) {

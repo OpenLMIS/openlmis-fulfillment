@@ -124,7 +124,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
     predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
 
-    if (availableSupplyingFacilities != null || availableRequestingFacilities != null) {
+    if (!isEmpty(availableSupplyingFacilities) || !isEmpty(availableRequestingFacilities)) {
       Predicate orPredicate = builder.disjunction();
       orPredicate = isOneOfOr(SUPPLYING_FACILITY_ID, availableSupplyingFacilities, root,
           orPredicate, builder);
@@ -155,7 +155,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
   private Predicate isOneOfOr(String field, Collection collection, Root<Order> root,
                             Predicate predicate, CriteriaBuilder builder) {
-    return collection != null
+    return !isEmpty(collection)
         ? builder.or(predicate, root.get(field).in(collection))
         : predicate;
   }
