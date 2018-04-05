@@ -52,8 +52,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   /**
    * Method returns all Orders with matched parameters.
    *
-   * @param supplyingFacilities  set of supplyingFacility of searched Orders.
-   * @param requestingFacilities set of requestingFacility of searched Orders.
+   * @param supplyingFacility    supplyingFacility of searched Orders.
+   * @param requestingFacility   requestingFacility of searched Orders.
    * @param program              program of searched Orders.
    * @param processingPeriod     UUID of processing period
    * @param statuses             order statuses.
@@ -61,17 +61,19 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * @return List of Orders with matched parameters.
    */
   @Override
-  public Page<Order> searchOrders(Set<UUID> supplyingFacilities, Set<UUID> requestingFacilities,
-                                  UUID program, UUID processingPeriod, Set<OrderStatus> statuses,
-                                  Pageable pageable) {
+  public Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
+      UUID program, UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
-    query = prepareQuery(query, supplyingFacilities, requestingFacilities,
-        program, processingPeriod, statuses, pageable, false);
+    query = prepareQuery(query, supplyingFacility, requestingFacility,
+        program, processingPeriod, statuses, pageable, false,
+        availableSupplyingFacilities, availableRequestingFacilities);
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareQuery(countQuery, supplyingFacilities, requestingFacilities,
-        program, processingPeriod, statuses, pageable, true);
+    countQuery = prepareQuery(countQuery, supplyingFacility, requestingFacility,
+        program, processingPeriod, statuses, pageable, true,
+        availableSupplyingFacilities, availableRequestingFacilities);
 
     Pageable page = null != pageable ? pageable : new PageRequest(0, Integer.MAX_VALUE);
 
@@ -106,10 +108,10 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     return entityManager.createQuery(query).getResultList();
   }
 
-  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, Set<UUID> supplyingFacilities,
-                                            Set<UUID> requestingFacilities, UUID program,
-                                            UUID processingPeriod, Set<OrderStatus> statuses,
-                                            Pageable pageable, boolean count) {
+  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, UUID supplyingFacility,
+      UUID requestingFacility, UUID program, UUID processingPeriod,
+      Set<OrderStatus> statuses, Pageable pageable, boolean count,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     Root<Order> root = query.from(Order.class);
 
@@ -119,8 +121,18 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     Predicate predicate = builder.conjunction();
-    predicate = isOneOf(SUPPLYING_FACILITY_ID, supplyingFacilities, root, predicate, builder);
-    predicate = isOneOf(REQUESTING_FACILITY_ID, requestingFacilities, root, predicate, builder);
+    predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
+    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
+
+    if (availableSupplyingFacilities != null || availableRequestingFacilities != null) {
+      Predicate orPredicate = builder.disjunction();
+      orPredicate = isOneOfOr(SUPPLYING_FACILITY_ID, availableSupplyingFacilities, root,
+          orPredicate, builder);
+      orPredicate = isOneOfOr(REQUESTING_FACILITY_ID, availableRequestingFacilities, root,
+          orPredicate, builder);
+      predicate = builder.and(predicate, orPredicate);
+    }
+
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
     predicate = isEqual(PROCESSING_PERIOD_ID, processingPeriod, root, predicate, builder);
     predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
@@ -138,6 +150,13 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                             Predicate predicate, CriteriaBuilder builder) {
     return !isEmpty(collection)
         ? builder.and(predicate, root.get(field).in(collection))
+        : predicate;
+  }
+
+  private Predicate isOneOfOr(String field, Collection collection, Root<Order> root,
+                            Predicate predicate, CriteriaBuilder builder) {
+    return collection != null
+        ? builder.or(predicate, root.get(field).in(collection))
         : predicate;
   }
 

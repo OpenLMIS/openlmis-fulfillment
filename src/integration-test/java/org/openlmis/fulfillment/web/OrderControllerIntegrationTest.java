@@ -374,7 +374,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacility() {
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet(), null, null, null, pageable
+        firstOrder.getSupplyingFacilityId(), null, null, null, null, pageable,
+        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet()
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
@@ -405,9 +406,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacility() {
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
-        null, null, null, pageable
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
+        null, null, null, pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
+
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -445,9 +448,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldFindBySupplyingFacilityAndRequestingFacilityAndProgram() {
     given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), null, null, pageable,
         newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
-        firstOrder.getProgramId(), null, null, pageable
+        newHashSet(firstOrder.getRequestingFacilityId())
+
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -491,9 +497,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
 
     given(orderRepository.searchOrders(
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
+        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK), pageable,
         newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
-        firstOrder.getProgramId(), null, EnumSet.of(READY_TO_PACK), pageable
+        newHashSet(firstOrder.getRequestingFacilityId())
+
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -542,8 +551,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(READY_TO_PACK);
     secondOrder.setStatus(IN_ROUTE);
 
-    given(orderRepository.searchOrders(newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(), null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE), pageable))
+    given(orderRepository.searchOrders(null,
+        null, null, null, EnumSet.of(READY_TO_PACK, IN_ROUTE), pageable,
+        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet()))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder, secondOrder), pageable, 2));
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
@@ -577,10 +587,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setProcessingPeriodId(PERIOD_ID);
 
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
-        EnumSet.of(READY_TO_PACK), pageable
+        EnumSet.of(READY_TO_PACK), pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -636,15 +647,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
-        pageable
+        pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getSupplyingFacilityId())
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
         newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId())
+        newHashSet(firstOrder.getSupplyingFacilityId())
     );
 
     PageDto response = restAssured.given()
@@ -696,10 +708,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
-        pageable
+        pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -756,10 +769,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setCreatedDate(ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
 
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(firstOrder.getRequestingFacilityId()),
+        firstOrder.getSupplyingFacilityId(),
+        firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(), EnumSet.of(READY_TO_PACK),
-        pageable
+        pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet(firstOrder.getRequestingFacilityId())
     )).willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(
@@ -885,7 +899,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldGetAllOrders() {
     given(orderRepository.searchOrders(
-        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet(), null, null, null, pageable))
+        null, null, null, null, null, pageable,
+        newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet()))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 1));
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());
@@ -1154,8 +1169,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     denyUserAllRightsForWarehouse(secondOrder.getSupplyingFacilityId());
 
-    given(orderRepository.searchOrders(newHashSet(firstOrder.getSupplyingFacilityId()),
-        newHashSet(), null, null, null, pageable))
+    given(orderRepository.searchOrders(null,
+        null, null, null, null, pageable, newHashSet(firstOrder.getSupplyingFacilityId()),
+        newHashSet()))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 3));
 
     mockPermissionStrings(newHashSet(firstOrder.getSupplyingFacilityId()), newHashSet());

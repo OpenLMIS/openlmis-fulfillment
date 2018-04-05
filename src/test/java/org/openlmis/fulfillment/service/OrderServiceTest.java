@@ -21,6 +21,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
@@ -42,7 +43,6 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -291,9 +291,10 @@ public class OrderServiceTest {
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
 
     when(orderRepository.searchOrders(
-        newHashSet(order.getSupplyingFacilityId()), newHashSet(order.getRequestingFacilityId()),
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
         order.getProgramId(), order.getProcessingPeriodId(),
-        EnumSet.of(order.getStatus()), pageable)
+        EnumSet.of(order.getStatus()), pageable, newHashSet(order.getSupplyingFacilityId()),
+        newHashSet(order.getRequestingFacilityId()))
     ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
@@ -312,7 +313,8 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject(),
+            anySet(), anySet());
   }
 
   @Test
@@ -322,57 +324,9 @@ public class OrderServiceTest {
     UserDto user = new UserDataBuilder().build();
     PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
     when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
-        .thenReturn(newHashSet(randomUUID()));
+        .thenReturn(Collections.emptySet());
     when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
-        .thenReturn(newHashSet(randomUUID(), randomUUID()));
-
-    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
-    when(authenticationHelper.getCurrentUser()).thenReturn(user);
-
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
-    );
-    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
-
-    assertEquals(0, receivedOrders.getContent().size());
-    verifyZeroInteractions(orderRepository);
-  }
-
-  @Test
-  public void shouldReturnEmptyPageIfUserHasNoRightForSupplyingFacility() {
-    Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
-    UserDto user = new UserDataBuilder().build();
-    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
-    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
-        .thenReturn(newHashSet(randomUUID()));
-    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
-        .thenReturn(newHashSet(order.getRequestingFacilityId()));
-
-    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
-    when(authenticationHelper.getCurrentUser()).thenReturn(user);
-
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
-    );
-    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
-
-    assertEquals(0, receivedOrders.getContent().size());
-    verifyZeroInteractions(orderRepository);
-  }
-
-  @Test
-  public void shouldReturnEmptyPageIfUserHasNoRightForRequestingFacility() {
-    Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
-    UserDto user = new UserDataBuilder().build();
-    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
-    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
-        .thenReturn(newHashSet(order.getSupplyingFacilityId()));
-    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
-        .thenReturn(newHashSet(UUID.randomUUID()));
+        .thenReturn(Collections.emptySet());
 
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
@@ -393,9 +347,10 @@ public class OrderServiceTest {
     Pageable pageable = new PageRequest(0, 10);
 
     when(orderRepository.searchOrders(
-        newHashSet(order.getSupplyingFacilityId()), newHashSet(order.getRequestingFacilityId()),
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
         order.getProgramId(), order.getProcessingPeriodId(),
-        EnumSet.of(order.getStatus()), pageable)
+        EnumSet.of(order.getStatus()), pageable, newHashSet(order.getSupplyingFacilityId()),
+        newHashSet(order.getRequestingFacilityId()))
     ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
@@ -413,7 +368,8 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject(),
+            anySet(), anySet());
 
     verify(permissionService, never()).getPermissionStrings(anyObject());
   }

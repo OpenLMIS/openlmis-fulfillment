@@ -135,51 +135,38 @@ public class OrderService {
   public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
 
-    Set<UUID> supplyingFacilities = new HashSet<>();
-    Set<UUID> requestingFacilities = new HashSet<>();
+    Set<UUID> availableSupplyingFacilities = new HashSet<>();
+    Set<UUID> availableRequestingFacilities = new HashSet<>();
 
     UUID supplyingFacilityId = params.getSupplyingFacilityId();
     UUID requestingFacilityId = params.getRequestingFacilityId();
     if (null != user) {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
-      supplyingFacilities.addAll(
+      availableSupplyingFacilities.addAll(
           handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW)
       );
 
-      if (null != supplyingFacilityId) {
-        if (!supplyingFacilities.contains(supplyingFacilityId)) {
-          return Pagination.getPage(Collections.emptyList(), pageable);
-        }
-        supplyingFacilities.removeIf(id -> !id.equals(supplyingFacilityId));
-      }
+      availableRequestingFacilities.addAll(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW));
 
-      requestingFacilities.addAll(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW));
-
-      if (null != requestingFacilityId) {
-        if (!requestingFacilities.contains(requestingFacilityId)) {
-          return Pagination.getPage(Collections.emptyList(), pageable);
-        }
-        requestingFacilities.removeIf(id -> !id.equals(requestingFacilityId));
-      }
-
-      if (isEmpty(supplyingFacilities) && isEmpty(requestingFacilities)) {
+      if (isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities)) {
         // missing rights
         return Pagination.getPage(Collections.emptyList(), pageable);
       }
     } else {
       Optional
           .ofNullable(supplyingFacilityId)
-          .ifPresent(supplyingFacilities::add);
+          .ifPresent(availableSupplyingFacilities::add);
 
       Optional
           .ofNullable(requestingFacilityId)
-          .ifPresent(requestingFacilities::add);
+          .ifPresent(availableRequestingFacilities::add);
     }
 
     return orderRepository.searchOrders(
-        supplyingFacilities, requestingFacilities, params.getProgramId(),
-        params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable
+        supplyingFacilityId, requestingFacilityId, params.getProgramId(),
+        params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable,
+        availableSupplyingFacilities, availableRequestingFacilities
     );
   }
 
