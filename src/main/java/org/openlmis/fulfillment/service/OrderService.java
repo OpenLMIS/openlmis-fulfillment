@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.service;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
@@ -26,7 +28,9 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -38,7 +42,9 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -49,9 +55,9 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class OrderService {
@@ -72,6 +78,9 @@ public class OrderService {
 
   @Autowired
   private OrderSender orderSender;
+
+  @Autowired
+  private PeriodReferenceDataService periodService;
 
   @Autowired
   private ProgramReferenceDataService programReferenceDataService;
@@ -132,12 +141,32 @@ public class OrderService {
 
     UUID supplyingFacilityId = params.getSupplyingFacilityId();
     UUID requestingFacilityId = params.getRequestingFacilityId();
+
+    Set<UUID> processingPeriodIds = null;
+
+    if (null != params.getPeriodStartDate() || null != params.getPeriodEndDate()) {
+      processingPeriodIds = periodService
+          .search(params.getPeriodStartDate(), params.getPeriodEndDate())
+          .stream()
+          .map(ProcessingPeriodDto::getId)
+          .collect(Collectors.toSet());
+    }
+
+    if (null != params.getProcessingPeriodId()) {
+      if (null == processingPeriodIds
+          || processingPeriodIds.contains(params.getProcessingPeriodId())) {
+        processingPeriodIds = singleton(params.getProcessingPeriodId());
+      } else {
+        return new PageImpl<>(emptyList(), pageable, 0);
+      }
+    }
+
     if (null != user) {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
       return orderRepository.searchOrders(
           supplyingFacilityId, requestingFacilityId, params.getProgramId(),
-          params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable,
+          processingPeriodIds, params.getStatusAsEnum(), pageable,
           handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
           handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)
       );
@@ -145,7 +174,7 @@ public class OrderService {
     } else {
       return orderRepository.searchOrders(
           supplyingFacilityId, requestingFacilityId, params.getProgramId(),
-          params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable
+          processingPeriodIds, params.getStatusAsEnum(), pageable
       );
     }
   }

@@ -15,10 +15,16 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import java.time.LocalDate;
+import java.util.List;
+import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PeriodReferenceDataService extends BaseReferenceDataService<ProcessingPeriodDto> {
+
+  private static final String START_DATE = "startDate";
+  private static final String END_DATE = "endDate";
 
   @Override
   protected String getUrl() {
@@ -35,4 +41,18 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
     return ProcessingPeriodDto[].class;
   }
 
+  /**
+   * Gets filtered Processing Periods by start date and end date.
+   *
+   * @param startDate filter start date value
+   * @param endDate   filter end date value
+   * @return a list of filtered Processing Periods
+   */
+  public List<ProcessingPeriodDto> search(LocalDate startDate, LocalDate endDate) {
+    return getPage(
+        RequestParameters.init()
+            .set(START_DATE, startDate)
+            .set(END_DATE, endDate))
+        .getContent();
+  }
 }

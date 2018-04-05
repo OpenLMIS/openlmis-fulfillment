@@ -16,8 +16,10 @@
 package org.openlmis.fulfillment.service;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -39,6 +41,7 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -156,12 +159,15 @@ public class OrderServiceTest {
 
   private ProgramDto program;
   private FacilityDto facility;
-  private ProcessingPeriodDto period;
+  private ProcessingPeriodDto period1;
+  private ProcessingPeriodDto period2;
   private OrderableDto orderable;
   private OrderNumberConfiguration orderNumberConfiguration;
   private Order order;
   private UserDto userDto;
   private FtpTransferProperties properties;
+  private LocalDate startDate;
+  private LocalDate endDate;
 
   @Before
   public void setUp() {
@@ -291,10 +297,10 @@ public class OrderServiceTest {
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), order.getProcessingPeriodId(),
+        order.getProgramId(), asSet(order.getProcessingPeriodId()),
         EnumSet.of(order.getStatus()), pageable, newHashSet(order.getSupplyingFacilityId()),
-        newHashSet(order.getRequestingFacilityId()))
-    ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+        newHashSet(order.getRequestingFacilityId())))
+        .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
@@ -323,16 +329,15 @@ public class OrderServiceTest {
 
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), order.getProcessingPeriodId(),
-        EnumSet.of(order.getStatus()), pageable)
-    ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+        order.getProgramId(), asSet(order.getProcessingPeriodId()),
+        EnumSet.of(order.getStatus()), pageable))
+        .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
-    );
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(receivedOrders.getContent().get(0).getSupplyingFacilityId(),
@@ -345,6 +350,74 @@ public class OrderServiceTest {
         .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
     verify(permissionService, never()).getPermissionStrings(anyObject());
+  }
+
+  @Test
+  public void shouldSearchByStartDateAndEndDate() {
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+
+    when(orderRepository.searchOrders(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
+        order.getProgramId(), asSet(period1.getId(), period2.getId()),
+        EnumSet.of(order.getStatus()), pageable))
+        .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
+
+    assertEquals(1, receivedOrders.getContent().size());
+    assertEquals(order, receivedOrders.getContent().get(0));
+
+    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject(),
+        anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
+  public void shouldReturnEmptyPageIfFilteredPeriodsAndGivenPeriodIdDoesNotMatch() {
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()),
+        startDate, endDate);
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
+
+    assertEquals(0, receivedOrders.getContent().size());
+    verify(orderRepository, never()).searchOrders(anyObject(), anyObject(), anyObject(),
+            anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
+  public void shouldSearchByStartDateAndEndDateAndPeriodId() {
+    Order order = generateOrder();
+    Pageable pageable = new PageRequest(0, 10);
+
+    when(orderRepository.searchOrders(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
+        order.getProgramId(), asSet(period1.getId()),
+        EnumSet.of(order.getStatus()), pageable))
+        .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
+
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
+    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
+
+    assertEquals(1, receivedOrders.getContent().size());
+    assertEquals(order, receivedOrders.getContent().get(0));
+
+    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject(),
+        anyObject(), anyObject(), anyObject());
   }
 
   private Order generateOrder() {
@@ -379,7 +452,8 @@ public class OrderServiceTest {
     facility = new FacilityDataBuilder()
         .withSupportedPrograms(Collections.singletonList(program))
         .build();
-    period = new ProcessingPeriodDataBuilder().build();
+    period1 = new ProcessingPeriodDataBuilder().build();
+    period2 = new ProcessingPeriodDataBuilder().build();
 
     orderNumberConfiguration = new OrderNumberConfiguration("prefix", true, true, true);
 
@@ -399,19 +473,22 @@ public class OrderServiceTest {
         .withStatus(OrderStatus.IN_ROUTE)
         .withStatusChanges(statusChange)
         .withSupplyingFacilityId(facility.getId())
-        .withProcessingPeriodId(period.getId())
+        .withProcessingPeriodId(period1.getId())
         .withLineItems(orderLineItem)
         .build();
 
     userDto = new UserDataBuilder().build();
 
     properties = new FtpTransferProperties();
+
+    startDate = LocalDate.now();
+    endDate = startDate.plusMonths(1);
   }
 
   private void mockResponses() {
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
-    when(periodReferenceDataService.findOne(period.getId())).thenReturn(period);
+    when(periodReferenceDataService.findOne(period1.getId())).thenReturn(period1);
     when(orderableReferenceDataService.findByIds(any()))
         .thenReturn(Collections.singletonList(orderable));
 
@@ -429,5 +506,8 @@ public class OrderServiceTest {
     when(orderSender.send(order)).thenReturn(true);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
+
+    when(periodReferenceDataService.search(startDate, endDate))
+        .thenReturn(asList(period1, period2));
   }
 }

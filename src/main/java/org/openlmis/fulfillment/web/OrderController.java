@@ -50,9 +50,9 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
-import org.openlmis.fulfillment.web.util.OrderPeriodFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -120,8 +120,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public OrderDto createOrder(@RequestBody OrderDto orderDto,
-                              OAuth2Authentication authentication) {
+  public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
     Order order = createSingleOrder(orderDto, authentication);
     return OrderDto.newInstance(order, exporter);
   }
@@ -137,7 +136,7 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public Iterable<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
-                                                   OAuth2Authentication authentication) {
+      OAuth2Authentication authentication) {
     List<Order> newOrders = orders
         .stream()
         .map(order -> createSingleOrder(order, authentication))
@@ -155,15 +154,19 @@ public class OrderController extends BaseController {
   @GetMapping("/orders")
   @ResponseBody
   public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
+    Profiler profiler = new Profiler("SEARCH_ORDERS");
+    profiler.setLogger(LOGGER);
+
+    profiler.start("SEARCH_ORDERS_IN_SERVICE");
     Page<Order> orders = orderService.searchOrders(params, pageable);
 
-    List<BasicOrderDto> data = BasicOrderDto.newInstance(orders.getContent(), exporter);
-    List<BasicOrderDto> filteredData = data
-        .stream()
-        .filter(new OrderPeriodFilter(params.getPeriodStartDate(), params.getPeriodEndDate()))
-        .collect(Collectors.toList());
+    profiler.start("TO_DTO");
+    Page<BasicOrderDto> dtoPage = new PageImpl<>(
+        BasicOrderDto.newInstance(orders.getContent(), exporter),
+        pageable, orders.getTotalElements());
 
-    return new PageImpl<>(filteredData, pageable, orders.getTotalElements());
+    profiler.stop().log();
+    return dtoPage;
   }
 
   /**
@@ -338,8 +341,7 @@ public class OrderController extends BaseController {
 
       Shipment shipment = new Shipment(
           order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
-          null, items, ImmutableMap.of("external", "true")
-      );
+          null, items, ImmutableMap.of("external", "true"));
 
       shipmentService.save(shipment);
     }

@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.web.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"serviceUrl"})
 public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.Exporter {
 
   @Setter

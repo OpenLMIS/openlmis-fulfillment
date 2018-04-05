@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -118,57 +119,64 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         two.getRequestingFacilityId(),
         three.getRequestingFacilityId(), four.getRequestingFacilityId(),
         five.getRequestingFacilityId());
-    Page<Order> list = orderRepository
+    Page<Order> page = orderRepository
         .searchOrders(null, null, null, null, null, pageable, null,
             availableRequestingFacilities);
-    assertSearchOrders(list, one, two, three, four, five);
+    assertSearchOrders(page, one, two, three, four, five);
 
-    list = orderRepository
+    page = orderRepository
         .searchOrders(null, null, null, null, null, new PageRequest(1, 2), null,
             availableRequestingFacilities);
-    assertSearchOrders(list, three, four);
+    assertSearchOrders(page, three, four);
 
-    list = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable,
+    page = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable,
         null, Collections.singleton(three.getRequestingFacilityId()));
-    assertSearchOrders(list, three);
+    assertSearchOrders(page, three);
 
-    list = orderRepository
-        .searchOrders(null, null, null, four.getProcessingPeriodId(), null, pageable, null,
-            Collections.singleton(four.getRequestingFacilityId()));
-    assertSearchOrders(list, four);
+    page = orderRepository
+        .searchOrders(null, null, null, asSet(four.getProcessingPeriodId()), null, pageable, null,
+        Collections.singleton(four.getRequestingFacilityId()));
+    assertSearchOrders(page, four);
 
-    list = orderRepository
+    page = orderRepository
+        .searchOrders(null, null, null,
+            asSet(four.getProcessingPeriodId(), five.getProcessingPeriodId()),
+            null, pageable, null,
+            asSet(four.getRequestingFacilityId(), five.getRequestingFacilityId()));
+    assertSearchOrders(page, four, five);
+
+    page = orderRepository
         .searchOrders(null, null, null, null, EnumSet.of(five.getStatus()), pageable, null,
             Collections.singleton(five.getRequestingFacilityId()));
-    assertSearchOrders(list, five);
+    assertSearchOrders(page, five);
 
-    list = orderRepository.searchOrders(
+    page = orderRepository.searchOrders(
         null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable,
         null, newHashSet(one.getRequestingFacilityId(), four.getRequestingFacilityId()));
-    assertSearchOrders(list, one, four);
+    assertSearchOrders(page, one, four);
 
-    list = orderRepository.searchOrders(
+    page = orderRepository.searchOrders(
         one.getSupplyingFacilityId(),
         null, one.getProgramId(), null, null, pageable, null,
         Collections.singleton(one.getRequestingFacilityId())
     );
-    assertSearchOrders(list, one);
+    assertSearchOrders(page, one);
 
-    list = orderRepository.searchOrders(
+    page = orderRepository.searchOrders(
         two.getSupplyingFacilityId(),
         two.getRequestingFacilityId(),
         two.getProgramId(), null, null, pageable, null,
         Collections.singleton(two.getRequestingFacilityId())
     );
-    assertSearchOrders(list, two);
+    assertSearchOrders(page, two);
 
-    list = orderRepository.searchOrders(
+    page = orderRepository.searchOrders(
         null,
         two.getRequestingFacilityId(),
         two.getProgramId(), null, null, pageable, null,
         Collections.singleton(two.getRequestingFacilityId())
     );
-    assertSearchOrders(list, two);
+    assertSearchOrders(page, two);
   }
 
   @Test

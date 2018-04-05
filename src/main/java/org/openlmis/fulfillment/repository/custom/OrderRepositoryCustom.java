@@ -26,11 +26,11 @@ import java.util.UUID;
 public interface OrderRepositoryCustom {
 
   Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program,
-      UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable,
+      Set<UUID> processingPeriodIds, Set<OrderStatus> statuses, Pageable pageable,
       Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities);
 
   Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility, UUID program,
-      UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable);
+      Set<UUID> processingPeriodIds, Set<OrderStatus> statuses, Pageable pageable);
 
   List<UUID> getRequestingFacilities(List<UUID> supplyingFacilityIds);
 }
