@@ -342,7 +342,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  @Ignore
   @Test
   public void shouldFindOrdersByAllParameters() {
     OrderSearchParams params = new OrderSearchParams(
@@ -352,7 +351,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         LocalDate.of(2018, 5, 5));
 
     given(orderService.searchOrders(params, pageable))
-        .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder, secondOrder), pageable, 2));
+        .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 2));
 
     PageDto response = restAssured.given()
         .queryParam(SUPPLYING_FACILITY, firstOrder.getSupplyingFacilityId())
@@ -360,8 +359,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PROGRAM, firstOrder.getProgramId())
         .queryParam(PROCESSING_PERIOD, firstOrder.getProcessingPeriodId())
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
-        .queryParam(PERIOD_START_DATE, "2018-4-5")
-        .queryParam(PERIOD_END_DATE, "2018-5-5")
+        .queryParam(PERIOD_START_DATE, "2018-04-05")
+        .queryParam(PERIOD_END_DATE, "2018-05-05")
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -388,12 +387,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
           firstOrder.getProgramId());
       assertEquals(
           order.getStatus(),
-          firstOrder.getStatus()
-      );
+          firstOrder.getStatus());
       assertEquals(
-          order.getProcessingPeriod().getId(),
-          firstOrder.getProcessingPeriodId()
-      );
+          order.getId(),
+          firstOrder.getId());
     }
   }
 
