@@ -142,9 +142,6 @@ public class OrderService {
 
     UserDto user = authenticationHelper.getCurrentUser();
 
-    UUID supplyingFacilityId = params.getSupplyingFacilityId();
-    UUID requestingFacilityId = params.getRequestingFacilityId();
-
     Set<UUID> processingPeriodIds = null;
 
     if (null != params.getPeriodStartDate() || null != params.getPeriodEndDate()) {
@@ -169,17 +166,13 @@ public class OrderService {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
       return orderRepository.searchOrders(
-          supplyingFacilityId, requestingFacilityId, params.getProgramId(),
-          processingPeriodIds, params.getStatusAsEnum(), pageable,
+          params, processingPeriodIds, pageable,
           handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
           handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)
       );
 
     } else {
-      return orderRepository.searchOrders(
-          supplyingFacilityId, requestingFacilityId, params.getProgramId(),
-          processingPeriodIds, params.getStatusAsEnum(), pageable
-      );
+      return orderRepository.searchOrders(params, processingPeriodIds, pageable);
     }
   }
 

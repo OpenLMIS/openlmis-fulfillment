@@ -37,8 +37,8 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
+import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.util.Pagination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -55,19 +55,16 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * Method returns all Orders with matched parameters. This method ignore if user has right for
    * order. Use it only with service based tokens.
    *
-   * @param supplyingFacility   supplyingFacility of searched Orders
-   * @param requestingFacility  requestingFacility of searched Orders
-   * @param program             program of searched Orders.
+   * @param params search params (supplyingFacility, requestingFacility, program, statuses)
    * @param processingPeriodIds set of Processing Period UUIDs
-   * @param statuses            order statuses.
-   * @param pageable            page parameters
+   * @param pageable page parameters
    * @return List of Orders with matched parameters.
    */
   @Override
-  public Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-      UUID program, Set<UUID> processingPeriodIds, Set<OrderStatus> statuses, Pageable pageable) {
-    return search(supplyingFacility, requestingFacility, program,
-        processingPeriodIds, statuses, pageable, Collections.emptySet(), Collections.emptySet());
+  public Page<Order> searchOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Pageable pageable) {
+    return search(params, processingPeriodIds, pageable, Collections.emptySet(),
+        Collections.emptySet());
   }
 
   /**
@@ -75,39 +72,34 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    * part of {@code availableSupplyingFacilities} or {@code availableRequestingFacilities}. If both
    * sets are empty it will result in empty response.
    *
-   * @param supplyingFacility             supplyingFacility of searched Orders
-   * @param requestingFacility            requestingFacility of searched Orders
-   * @param program                       program of searched Orders
-   * @param processingPeriodIds           set of Processing Period UUIDs
-   * @param statuses                      order statuses.
-   * @param pageable                      page parameters
+   * @param params search params (supplyingFacility, requestingFacility, program, statuses)
+   * @param processingPeriodIds set of Processing Period UUIDs
+   * @param pageable page parameters
    * @param availableSupplyingFacilities  a set of supplying facilities user has right for
    * @param availableRequestingFacilities a set of requesting facilities user has right for
    * @return Page of Orders with matched parameters.
    */
   @Override
-  public Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
-      UUID program, Set<UUID> processingPeriodIds, Set<OrderStatus> statuses, Pageable pageable,
-      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
+  public Page<Order> searchOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Pageable pageable, Set<UUID> availableSupplyingFacilities,
+      Set<UUID> availableRequestingFacilities) {
     if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
       return Pagination.getPage(Collections.emptyList(), pageable);
     }
-    return search(supplyingFacility, requestingFacility, program, processingPeriodIds, statuses,
+    return search(params, processingPeriodIds,
         pageable, availableSupplyingFacilities, availableRequestingFacilities);
   }
 
-  private Page<Order> search(UUID supplyingFacility, UUID requestingFacility,
-      UUID program, Set<UUID> processingPeriodIds, Set<OrderStatus> statuses, Pageable pageable,
-      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
+  private Page<Order> search(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Pageable pageable, Set<UUID> availableSupplyingFacilities,
+      Set<UUID> availableRequestingFacilities) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
     CriteriaQuery<Order> query = builder.createQuery(Order.class);
-    query = prepareQuery(query, supplyingFacility, requestingFacility,
-        program, processingPeriodIds, statuses, pageable, false,
+    query = prepareQuery(query, params, processingPeriodIds, pageable, false,
         availableSupplyingFacilities, availableRequestingFacilities);
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
-    countQuery = prepareQuery(countQuery, supplyingFacility, requestingFacility,
-        program, processingPeriodIds, statuses, pageable, true,
+    countQuery = prepareQuery(countQuery, params, processingPeriodIds, pageable, true,
         availableSupplyingFacilities, availableRequestingFacilities);
 
     Pageable page = null != pageable ? pageable : new PageRequest(0, Integer.MAX_VALUE);
@@ -143,9 +135,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     return entityManager.createQuery(query).getResultList();
   }
 
-  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, UUID supplyingFacility,
-      UUID requestingFacility, UUID program, Set<UUID> processingPeriodIds,
-      Set<OrderStatus> statuses, Pageable pageable, boolean count,
+  private <T> CriteriaQuery<T> prepareQuery(CriteriaQuery<T> query, OrderSearchParams params,
+      Set<UUID> processingPeriodIds, Pageable pageable, boolean count,
       Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     Root<Order> root = query.from(Order.class);
@@ -156,8 +147,10 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     Predicate predicate = builder.conjunction();
-    predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
-    predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
+    predicate =
+        isEqual(SUPPLYING_FACILITY_ID, params.getSupplyingFacilityId(), root, predicate, builder);
+    predicate =
+        isEqual(REQUESTING_FACILITY_ID, params.getRequestingFacilityId(), root, predicate, builder);
 
     if (!(isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
       Predicate orPredicate = builder.disjunction();
@@ -168,9 +161,9 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
       predicate = builder.and(predicate, orPredicate);
     }
 
-    predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
+    predicate = isEqual(PROGRAM_ID, params.getProgramId(), root, predicate, builder);
     predicate = isOneOf(PROCESSING_PERIOD_ID, processingPeriodIds, root, predicate, builder);
-    predicate = isOneOf(ORDER_STATUS, statuses, root, predicate, builder);
+    predicate = isOneOf(ORDER_STATUS, params.getStatusAsEnum(), root, predicate, builder);
 
     query.where(predicate);
 

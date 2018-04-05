@@ -69,7 +69,7 @@ public class OrderSearchParams {
    * @throws ValidationException if the field contains a value that cannot be converted to enum.
    */
   @JsonIgnore
-  Set<OrderStatus> getStatusAsEnum() {
+  public Set<OrderStatus> getStatusAsEnum() {
     return !isEmpty(status)
         ? status.stream().filter(StringUtils::isNotBlank).map(TO_ENUM).collect(Collectors.toSet())
         : null;

@@ -31,7 +31,6 @@ import com.google.common.collect.Lists;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -119,61 +119,64 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         two.getRequestingFacilityId(),
         three.getRequestingFacilityId(), four.getRequestingFacilityId(),
         five.getRequestingFacilityId());
+    OrderSearchParams params = new OrderSearchParams();
     Page<Order> page = orderRepository
-        .searchOrders(null, null, null, null, null, pageable, null,
-            availableRequestingFacilities);
+        .searchOrders(params, null, pageable, null, availableRequestingFacilities);
     assertSearchOrders(page, one, two, three, four, five);
 
-    page = orderRepository
-        .searchOrders(null, null, null, null, null, new PageRequest(1, 2), null,
+    page = orderRepository.searchOrders(params, null, new PageRequest(1, 2), null,
             availableRequestingFacilities);
     assertSearchOrders(page, three, four);
 
-    page = orderRepository.searchOrders(null, null, three.getProgramId(), null, null, pageable,
+    params.setProgramId(three.getProgramId());
+    page = orderRepository.searchOrders(params, null, pageable,
         null, Collections.singleton(three.getRequestingFacilityId()));
     assertSearchOrders(page, three);
 
+    params.setProgramId(null);
     page = orderRepository
-        .searchOrders(null, null, null, asSet(four.getProcessingPeriodId()), null, pageable, null,
+        .searchOrders(params, asSet(four.getProcessingPeriodId()), pageable, null,
         Collections.singleton(four.getRequestingFacilityId()));
     assertSearchOrders(page, four);
 
     page = orderRepository
-        .searchOrders(null, null, null,
-            asSet(four.getProcessingPeriodId(), five.getProcessingPeriodId()),
-            null, pageable, null,
+        .searchOrders(params,
+            asSet(four.getProcessingPeriodId(), five.getProcessingPeriodId()), pageable, null,
             asSet(four.getRequestingFacilityId(), five.getRequestingFacilityId()));
     assertSearchOrders(page, four, five);
 
+    params.setStatus(newHashSet(five.getStatus().name()));
     page = orderRepository
-        .searchOrders(null, null, null, null, EnumSet.of(five.getStatus()), pageable, null,
+        .searchOrders(params, null, pageable, null,
             Collections.singleton(five.getRequestingFacilityId()));
     assertSearchOrders(page, five);
 
-    page = orderRepository.searchOrders(
-        null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable,
+    params.setStatus(newHashSet(one.getStatus().name(), four.getStatus().name()));
+    page = orderRepository.searchOrders(params, null, pageable,
         null, newHashSet(one.getRequestingFacilityId(), four.getRequestingFacilityId()));
     assertSearchOrders(page, one, four);
 
+    params.setStatus(null);
+    params.setSupplyingFacilityId(one.getSupplyingFacilityId());
+    params.setProgramId(one.getProgramId());
     page = orderRepository.searchOrders(
-        one.getSupplyingFacilityId(),
-        null, one.getProgramId(), null, null, pageable, null,
+        params, null, pageable, null,
         Collections.singleton(one.getRequestingFacilityId())
     );
     assertSearchOrders(page, one);
 
+    params.setSupplyingFacilityId(two.getSupplyingFacilityId());
+    params.setRequestingFacilityId(two.getRequestingFacilityId());
+    params.setProgramId(two.getProgramId());
     page = orderRepository.searchOrders(
-        two.getSupplyingFacilityId(),
-        two.getRequestingFacilityId(),
-        two.getProgramId(), null, null, pageable, null,
+        params, null, pageable, null,
         Collections.singleton(two.getRequestingFacilityId())
     );
     assertSearchOrders(page, two);
 
+    params.setSupplyingFacilityId(null);
     page = orderRepository.searchOrders(
-        null,
-        two.getRequestingFacilityId(),
-        two.getProgramId(), null, null, pageable, null,
+        params, null, pageable, null,
         Collections.singleton(two.getRequestingFacilityId())
     );
     assertSearchOrders(page, two);
@@ -185,8 +188,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
     orderRepository.save(generateInstance(OrderStatus.FULFILLING));
 
+    OrderSearchParams orderSearchParams = new OrderSearchParams();
     Page<Order> list = orderRepository
-        .searchOrders(null, null, null, null, null, pageable);
+        .searchOrders(orderSearchParams, null, pageable);
     assertEquals(3, list.getNumberOfElements());
   }
 
@@ -196,7 +200,8 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
     orderRepository.save(generateInstance(OrderStatus.FULFILLING));
 
-    Page<Order> list = orderRepository.searchOrders(null, null, null, null, null, pageable,
+    OrderSearchParams orderSearchParams = new OrderSearchParams();
+    Page<Order> list = orderRepository.searchOrders(orderSearchParams, null, pageable,
         Collections.emptySet(), Collections.emptySet());
     assertEquals(0, list.getNumberOfElements());
   }
@@ -205,13 +210,15 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void shouldFindOrdersBySupplyingFacility() {
     Order one = prepareOrdersForSearchByFacility();
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setSupplyingFacilityId(one.getSupplyingFacilityId());
     Page<Order> list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(one.getSupplyingFacilityId()), Collections.emptySet());
     assertSearchOrders(list, one);
 
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.emptySet(), Collections.singleton(one.getRequestingFacilityId()));
     assertSearchOrders(list, one);
   }
@@ -220,16 +227,18 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void shouldNotFindOrdersBySupplyingFacilityIfNoRightsForOrder() {
     Order one = prepareOrdersForSearchByFacility();
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setSupplyingFacilityId(one.getSupplyingFacilityId());
     Page<Order> list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(UUID.randomUUID()), Collections.singleton(UUID.randomUUID()));
     assertEquals(0, list.getNumberOfElements());
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.emptySet(), Collections.singleton(UUID.randomUUID()));
     assertEquals(0, list.getNumberOfElements());
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(UUID.randomUUID()), Collections.emptySet());
     assertEquals(0, list.getNumberOfElements());
   }
@@ -238,13 +247,16 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void shouldFindOrdersByRequestingFacility() {
     Order one = prepareOrdersForSearchByFacility();
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setRequestingFacilityId(one.getRequestingFacilityId());
+
     Page<Order> list = orderRepository
-        .searchOrders(null, one.getRequestingFacilityId(), null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(one.getSupplyingFacilityId()), Collections.emptySet());
     assertSearchOrders(list, one);
 
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.emptySet(), Collections.singleton(one.getRequestingFacilityId()));
     assertSearchOrders(list, one);
   }
@@ -253,16 +265,18 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void shouldNotFindOrdersByRequestingFacilityIfNoRightsForOrder() {
     Order one = prepareOrdersForSearchByFacility();
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setRequestingFacilityId(one.getRequestingFacilityId());
     Page<Order> list = orderRepository
-        .searchOrders(null, one.getRequestingFacilityId(), null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(UUID.randomUUID()), Collections.singleton(UUID.randomUUID()));
     assertEquals(0, list.getNumberOfElements());
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.emptySet(), Collections.singleton(UUID.randomUUID()));
     assertEquals(0, list.getNumberOfElements());
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
+        .searchOrders(params, null, pageable,
             Collections.singleton(UUID.randomUUID()), Collections.emptySet());
     assertEquals(0, list.getNumberOfElements());
   }
@@ -271,15 +285,16 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   public void shouldFindOrdersByRequestingAndSupplyingFacility() {
     Order one = prepareOrdersForSearchByFacility();
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setRequestingFacilityId(one.getRequestingFacilityId());
+    params.setSupplyingFacilityId(one.getSupplyingFacilityId());
     Page<Order> list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
-            null, pageable, Collections.singleton(one.getSupplyingFacilityId()),
+        .searchOrders(params, null, pageable, Collections.singleton(one.getSupplyingFacilityId()),
             Collections.emptySet());
     assertSearchOrders(list, one);
 
     list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
-            null, pageable, Collections.emptySet(),
+        .searchOrders(params, null, pageable, Collections.emptySet(),
             Collections.singleton(one.getRequestingFacilityId()));
     assertSearchOrders(list, one);
   }
@@ -289,16 +304,21 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order one = prepareOrdersForSearchByFacility();
     Order two = orderRepository.save(generateInstance(OrderStatus.ORDERED));
 
+    OrderSearchParams params = new OrderSearchParams();
+    params.setRequestingFacilityId(one.getRequestingFacilityId());
+    params.setSupplyingFacilityId(two.getSupplyingFacilityId());
+
     Page<Order> list = orderRepository
-        .searchOrders(one.getSupplyingFacilityId(), two.getRequestingFacilityId(), null, null,
-            null, pageable, Collections.singleton(one.getSupplyingFacilityId()),
-            Collections.emptySet());
+        .searchOrders(params, null, pageable, newHashSet(one.getSupplyingFacilityId(),
+            two.getSupplyingFacilityId()), Collections.emptySet());
     assertEquals(0, list.getNumberOfElements());
 
+    params.setRequestingFacilityId(two.getRequestingFacilityId());
+    params.setSupplyingFacilityId(one.getSupplyingFacilityId());
+
     list = orderRepository
-        .searchOrders(two.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
-            null, pageable, Collections.emptySet(),
-            Collections.singleton(one.getRequestingFacilityId()));
+        .searchOrders(params, null, pageable, Collections.emptySet(),
+            newHashSet(one.getRequestingFacilityId(), two.getRequestingFacilityId()));
     assertEquals(0, list.getNumberOfElements());
   }
 
@@ -323,8 +343,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         two.getSupplyingFacilityId(),
         three.getSupplyingFacilityId(), four.getSupplyingFacilityId());
 
-    Page<Order> result = orderRepository.searchOrders(null, null, null, null,
-        Collections.singleton(OrderStatus.ORDERED),
+    OrderSearchParams params = new OrderSearchParams();
+    params.setStatus(newHashSet(OrderStatus.ORDERED.name()));
+    Page<Order> result = orderRepository.searchOrders(params, null,
         new PageRequest(0, 10, new Sort(Sort.Direction.DESC, "createdDate")),
         availableSupplyingFacilities, null);
 

@@ -44,7 +44,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
-import java.util.EnumSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -295,19 +294,18 @@ public class OrderServiceTest {
 
     when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
 
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
+    );
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), asSet(order.getProcessingPeriodId()),
-        EnumSet.of(order.getStatus()), pageable, newHashSet(order.getSupplyingFacilityId()),
+        params, asSet(order.getProcessingPeriodId()),
+        pageable, newHashSet(order.getSupplyingFacilityId()),
         newHashSet(order.getRequestingFacilityId())))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
 
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
-    );
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(1, receivedOrders.getContent().size());
@@ -318,8 +316,7 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject(),
-            anySet(), anySet());
+        .searchOrders(anyObject(), anyObject(), anyObject(), anySet(), anySet());
   }
 
   @Test
@@ -327,17 +324,15 @@ public class OrderServiceTest {
     Order order = generateOrder();
     Pageable pageable = new PageRequest(0, 10);
 
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null);
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), asSet(order.getProcessingPeriodId()),
-        EnumSet.of(order.getStatus()), pageable))
+        params, asSet(order.getProcessingPeriodId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(receivedOrders.getContent().get(0).getSupplyingFacilityId(),
@@ -347,7 +342,7 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+        .searchOrders(anyObject(), anyObject(), anyObject());
 
     verify(permissionService, never()).getPermissionStrings(anyObject());
   }
@@ -357,24 +352,21 @@ public class OrderServiceTest {
     Order order = generateOrder();
     Pageable pageable = new PageRequest(0, 10);
 
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), asSet(period1.getId(), period2.getId()),
-        EnumSet.of(order.getStatus()), pageable))
+        params, asSet(period1.getId(), period2.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(1, receivedOrders.getContent().size());
     assertEquals(order, receivedOrders.getContent().get(0));
 
-    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject(),
-        anyObject(), anyObject(), anyObject());
+    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
   }
 
   @Test
@@ -391,8 +383,8 @@ public class OrderServiceTest {
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(0, receivedOrders.getContent().size());
-    verify(orderRepository, never()).searchOrders(anyObject(), anyObject(), anyObject(),
-            anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+    verify(orderRepository, never())
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
   }
 
   @Test
@@ -400,24 +392,21 @@ public class OrderServiceTest {
     Order order = generateOrder();
     Pageable pageable = new PageRequest(0, 10);
 
+    OrderSearchParams params = new OrderSearchParams(
+        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
+        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
     when(orderRepository.searchOrders(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
-        order.getProgramId(), asSet(period1.getId()),
-        EnumSet.of(order.getStatus()), pageable))
+        params, asSet(period1.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(1, receivedOrders.getContent().size());
     assertEquals(order, receivedOrders.getContent().get(0));
 
-    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject(),
-        anyObject(), anyObject(), anyObject());
+    verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
   }
 
   private Order generateOrder() {
