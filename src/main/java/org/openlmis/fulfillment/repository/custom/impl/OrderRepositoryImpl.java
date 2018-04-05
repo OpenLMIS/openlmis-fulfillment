@@ -24,6 +24,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ import javax.persistence.criteria.Root;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
+import org.openlmis.fulfillment.util.Pagination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -50,9 +52,28 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   private EntityManager entityManager;
 
   /**
+   * Method returns all Orders with matched parameters. This method ignore if user has right for
+   * order. Use it only with service based tokens.
+   *
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @param processingPeriod UUID of processing period
+   * @param statuses order statuses.
+   * @param pageable page parameters
+   * @return List of Orders with matched parameters.
+   */
+  @Override
+  public Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
+      UUID program, UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable) {
+    return search(supplyingFacility, requestingFacility, program,
+        processingPeriod, statuses, pageable, Collections.emptySet(), Collections.emptySet());
+  }
+
+  /**
    * Method returns all Orders with matched parameters. It will filter out all orders that are not
-   * part of {@code availableSupplyingFacilities} or {@code availableRequestingFacilities}.
-   * Empty sets will be ignored so make sure to handle this edge case before method call.
+   * part of {@code availableSupplyingFacilities} or {@code availableRequestingFacilities}. If both
+   * sets are empty it will result in empty response.
    *
    * @param supplyingFacility supplyingFacility of searched Orders.
    * @param requestingFacility requestingFacility of searched Orders.
@@ -66,6 +87,16 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
    */
   @Override
   public Page<Order> searchOrders(UUID supplyingFacility, UUID requestingFacility,
+      UUID program, UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
+    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
+      return Pagination.getPage(Collections.emptyList(), pageable);
+    }
+    return search(supplyingFacility, requestingFacility, program, processingPeriod, statuses,
+        pageable, availableSupplyingFacilities, availableRequestingFacilities);
+  }
+
+  private Page<Order> search(UUID supplyingFacility, UUID requestingFacility,
       UUID program, UUID processingPeriod, Set<OrderStatus> statuses, Pageable pageable,
       Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();

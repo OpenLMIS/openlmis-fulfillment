@@ -172,17 +172,26 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
-  public void shouldFindOrdersWhenAvailableFacilitiesAreEmpty() {
+  public void shouldFindOrdersAndIgnoreRights() {
     orderRepository.save(generateInstance(OrderStatus.ORDERED));
     orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
     orderRepository.save(generateInstance(OrderStatus.FULFILLING));
 
     Page<Order> list = orderRepository
-        .searchOrders(null, null, null, null, null, pageable, Collections.emptySet(),
-            Collections.emptySet());
+        .searchOrders(null, null, null, null, null, pageable);
     assertEquals(3, list.getNumberOfElements());
   }
 
+  @Test
+  public void shouldReturnEmptyPageIfUserHasNoRightForSupplyingFacilityAndRequestingFacility() {
+    orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
+    orderRepository.save(generateInstance(OrderStatus.FULFILLING));
+
+    Page<Order> list = orderRepository.searchOrders(null, null, null, null, null, pageable,
+        Collections.emptySet(), Collections.emptySet());
+    assertEquals(0, list.getNumberOfElements());
+  }
 
   @Test
   public void shouldFindOrdersBySupplyingFacility() {
@@ -302,14 +311,14 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     orderRepository.save(three);
     orderRepository.save(four);
 
-    HashSet<UUID> availablSupplyingFacilities = newHashSet(one.getSupplyingFacilityId(),
+    HashSet<UUID> availableSupplyingFacilities = newHashSet(one.getSupplyingFacilityId(),
         two.getSupplyingFacilityId(),
         three.getSupplyingFacilityId(), four.getSupplyingFacilityId());
 
     Page<Order> result = orderRepository.searchOrders(null, null, null, null,
         Collections.singleton(OrderStatus.ORDERED),
         new PageRequest(0, 10, new Sort(Sort.Direction.DESC, "createdDate")),
-        availablSupplyingFacilities, null);
+        availableSupplyingFacilities, null);
 
     assertEquals(4, result.getContent().size());
     // They should be returned from the most recent to the least recent

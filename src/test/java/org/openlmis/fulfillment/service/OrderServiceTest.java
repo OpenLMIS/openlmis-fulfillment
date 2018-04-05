@@ -28,7 +28,6 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -318,30 +317,6 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldReturnEmptyPageIfUserHasNoRightForSupplyingFacilityAndRequestingFacility() {
-    Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
-    UserDto user = new UserDataBuilder().build();
-    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
-    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
-        .thenReturn(Collections.emptySet());
-    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
-        .thenReturn(Collections.emptySet());
-
-    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
-    when(authenticationHelper.getCurrentUser()).thenReturn(user);
-
-    OrderSearchParams params = new OrderSearchParams(
-        order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
-    );
-    Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
-
-    assertEquals(0, receivedOrders.getContent().size());
-    verifyZeroInteractions(orderRepository);
-  }
-
-  @Test
   public void shouldNotCheckPermissionWhenCrossServiceRequest() {
     Order order = generateOrder();
     Pageable pageable = new PageRequest(0, 10);
@@ -349,8 +324,7 @@ public class OrderServiceTest {
     when(orderRepository.searchOrders(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(),
         order.getProgramId(), order.getProcessingPeriodId(),
-        EnumSet.of(order.getStatus()), pageable, newHashSet(order.getSupplyingFacilityId()),
-        newHashSet(order.getRequestingFacilityId()))
+        EnumSet.of(order.getStatus()), pageable)
     ).thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
@@ -368,8 +342,7 @@ public class OrderServiceTest {
     assertEquals(receivedOrders.getContent().get(0).getProgramId(), order.getProgramId());
 
     verify(orderRepository, atLeastOnce())
-        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject(),
-            anySet(), anySet());
+        .searchOrders(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
     verify(permissionService, never()).getPermissionStrings(anyObject());
   }

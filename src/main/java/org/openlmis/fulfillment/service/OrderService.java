@@ -24,12 +24,8 @@ import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -48,7 +44,6 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
-import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -135,39 +130,24 @@ public class OrderService {
   public Page<Order> searchOrders(OrderSearchParams params, Pageable pageable) {
     UserDto user = authenticationHelper.getCurrentUser();
 
-    Set<UUID> availableSupplyingFacilities = new HashSet<>();
-    Set<UUID> availableRequestingFacilities = new HashSet<>();
-
     UUID supplyingFacilityId = params.getSupplyingFacilityId();
     UUID requestingFacilityId = params.getRequestingFacilityId();
     if (null != user) {
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
 
-      availableSupplyingFacilities.addAll(
-          handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW)
+      return orderRepository.searchOrders(
+          supplyingFacilityId, requestingFacilityId, params.getProgramId(),
+          params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable,
+          handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
+          handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)
       );
 
-      availableRequestingFacilities.addAll(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW));
-
-      if (isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities)) {
-        // missing rights
-        return Pagination.getPage(Collections.emptyList(), pageable);
-      }
     } else {
-      Optional
-          .ofNullable(supplyingFacilityId)
-          .ifPresent(availableSupplyingFacilities::add);
-
-      Optional
-          .ofNullable(requestingFacilityId)
-          .ifPresent(availableRequestingFacilities::add);
+      return orderRepository.searchOrders(
+          supplyingFacilityId, requestingFacilityId, params.getProgramId(),
+          params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable
+      );
     }
-
-    return orderRepository.searchOrders(
-        supplyingFacilityId, requestingFacilityId, params.getProgramId(),
-        params.getProcessingPeriodId(), params.getStatusAsEnum(), pageable,
-        availableSupplyingFacilities, availableRequestingFacilities
-    );
   }
 
   /**
