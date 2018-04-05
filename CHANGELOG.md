@@ -47,6 +47,9 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4216](https://openlmis.atlassian.net/browse/OLMIS-4216): Fixed problem with saving an order if supplying facility does not support a program
 * [OLMIS-4281](https://openlmis.atlassian.net/browse/OLMIS-4281): Updated Orderable service to use new reference data API
 * [OLMIS-4500](https://openlmis.atlassian.net/browse/OLMIS-4500): Split huge requests to other services into smaller chunks
+* [OLMIS-4452](https://openlmis.atlassian.net/browse/OLMIS-4452): Fixed filtering Orders by Processing Period start/end date:
+  * Now if any day from period matches filter interval it will be returned.
+  * Fixed issues with result pagination.
 
 6.1.0 / 2017-11-09
 ==================
