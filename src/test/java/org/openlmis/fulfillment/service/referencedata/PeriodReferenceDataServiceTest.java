@@ -15,8 +15,27 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.verify;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.openlmis.fulfillment.util.DynamicPageTypeReference;
+import org.springframework.http.HttpMethod;
+
 public class PeriodReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<ProcessingPeriodDto> {
+
+  private PeriodReferenceDataService service;
 
   @Override
   protected BaseReferenceDataService<ProcessingPeriodDto> getService() {
@@ -27,4 +46,36 @@ public class PeriodReferenceDataServiceTest
   protected ProcessingPeriodDto generateInstance() {
     return new ProcessingPeriodDto();
   }
+
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    service = (PeriodReferenceDataService) prepareService();
+  }
+
+  @Test
+  public void shouldReturnOrderablesById() {
+    ProcessingPeriodDto period = mockPageResponseEntityAndGetDto();
+
+    String startDate = "2018-04-05";
+    String endDate = "2018-05-05";
+    List<ProcessingPeriodDto> response = service
+        .search(LocalDate.parse(startDate), LocalDate.parse(endDate));
+
+    assertThat(response, hasSize(1));
+    assertThat(response, hasItems(period));
+
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
+        refEq(new DynamicPageTypeReference<>(ProcessingPeriodDto.class)));
+
+    URI uri = uriCaptor.getValue();
+    assertEquals(serviceUrl + service.getUrl() + "?startDate=" + startDate + "&endDate=" + endDate,
+        uri.toString());
+
+    assertAuthHeader(entityCaptor.getValue());
+    assertNull(entityCaptor.getValue().getBody());
+  }
+
 }
