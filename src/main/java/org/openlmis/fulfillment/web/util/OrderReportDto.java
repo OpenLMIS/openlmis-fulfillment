@@ -15,20 +15,19 @@
 
 package org.openlmis.fulfillment.web.util;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.GeographicZoneDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-
-public class OrderReportDto extends OrderDto implements Order.Exporter {
+@EqualsAndHashCode(callSuper = true)
+public final class OrderReportDto extends OrderDto implements Order.Exporter {
 
   public static final Integer DISTRICT_LEVEL = 3;
   public static final Integer REGION_LEVEL = 2;

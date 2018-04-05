@@ -13,24 +13,41 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.fulfillment.service.referencedata;
+package org.openlmis.fulfillment.testutils;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import org.openlmis.fulfillment.service.referencedata.RightDto;
+import org.openlmis.fulfillment.service.referencedata.RightType;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RightDto {
+public class RightDataBuilder {
+
+  private static int instanceNumber = 0;
+
   private UUID id;
   private String name;
   private RightType type;
   private String description;
   private Set<RightDto> attachments;
+
+  /**
+   * Builder for {@link RightDataBuilder}.
+   */
+  public RightDataBuilder() {
+    instanceNumber++;
+
+    id = UUID.randomUUID();
+    name = "Right " + instanceNumber;
+    type = RightType.GENERAL_ADMIN;
+    description = "description";
+    attachments = Collections.emptySet();
+  }
+
+  /**
+   * Builds instance of {@link RightDto}.
+   */
+  public RightDto build() {
+    return new RightDto(id, name, type, description, attachments);
+  }
 }
