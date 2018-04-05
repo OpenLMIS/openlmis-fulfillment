@@ -50,14 +50,18 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   private EntityManager entityManager;
 
   /**
-   * Method returns all Orders with matched parameters.
+   * Method returns all Orders with matched parameters. It will filter out all orders that are not
+   * part of {@code availableSupplyingFacilities} or {@code availableRequestingFacilities}.
+   * Empty sets will be ignored so make sure to handle this edge case before method call.
    *
-   * @param supplyingFacility    supplyingFacility of searched Orders.
-   * @param requestingFacility   requestingFacility of searched Orders.
-   * @param program              program of searched Orders.
-   * @param processingPeriod     UUID of processing period
-   * @param statuses             order statuses.
-   * @param pageable             page parameters
+   * @param supplyingFacility supplyingFacility of searched Orders.
+   * @param requestingFacility requestingFacility of searched Orders.
+   * @param program program of searched Orders.
+   * @param processingPeriod UUID of processing period
+   * @param statuses order statuses.
+   * @param pageable page parameters
+   * @param availableSupplyingFacilities a set of supplying facilities user has right for.
+   * @param availableRequestingFacilities a set of requesting facilities user has right for.
    * @return List of Orders with matched parameters.
    */
   @Override
@@ -124,7 +128,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isEqual(SUPPLYING_FACILITY_ID, supplyingFacility, root, predicate, builder);
     predicate = isEqual(REQUESTING_FACILITY_ID, requestingFacility, root, predicate, builder);
 
-    if (!isEmpty(availableSupplyingFacilities) || !isEmpty(availableRequestingFacilities)) {
+    if (!(isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
       Predicate orPredicate = builder.disjunction();
       orPredicate = isOneOfOr(SUPPLYING_FACILITY_ID, availableSupplyingFacilities, root,
           orPredicate, builder);
