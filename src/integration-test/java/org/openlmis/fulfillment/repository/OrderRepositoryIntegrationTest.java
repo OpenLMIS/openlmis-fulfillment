@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.fulfillment.repository;
@@ -80,7 +80,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   private Order generateInstance(OrderStatus status, UUID supplyingFacilityId,
-                                 UUID requestingFacilityId) {
+      UUID requestingFacilityId) {
     return new OrderDataBuilder()
         .withoutId()
         .withoutLineItems()
@@ -144,7 +144,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
     list = orderRepository.searchOrders(
         null, null, null, null, EnumSet.of(one.getStatus(), four.getStatus()), pageable,
-        null, newHashSet(one.getRequestingFacilityId(),  four.getRequestingFacilityId()));
+        null, newHashSet(one.getRequestingFacilityId(), four.getRequestingFacilityId()));
     assertSearchOrders(list, one, four);
 
     list = orderRepository.searchOrders(
@@ -172,8 +172,21 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   }
 
   @Test
+  public void shouldFindOrdersWhenAvailableFacilitiesAreEmpty() {
+    orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
+    orderRepository.save(generateInstance(OrderStatus.FULFILLING));
+
+    Page<Order> list = orderRepository
+        .searchOrders(null, null, null, null, null, pageable, Collections.emptySet(),
+            Collections.emptySet());
+    assertEquals(3, list.getNumberOfElements());
+  }
+
+
+  @Test
   public void shouldFindOrdersBySupplyingFacility() {
-    Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    Order one = prepareOrdersForSearchByFacility();
 
     Page<Order> list = orderRepository
         .searchOrders(one.getSupplyingFacilityId(), null, null, null, null, pageable,
@@ -243,7 +256,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
     Page<Order> list = orderRepository
         .searchOrders(one.getSupplyingFacilityId(), one.getRequestingFacilityId(), null, null,
-            null, pageable,  Collections.singleton(one.getSupplyingFacilityId()),
+            null, pageable, Collections.singleton(one.getSupplyingFacilityId()),
             Collections.emptySet());
     assertSearchOrders(list, one);
 
@@ -261,7 +274,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
     Page<Order> list = orderRepository
         .searchOrders(one.getSupplyingFacilityId(), two.getRequestingFacilityId(), null, null,
-            null, pageable,  Collections.singleton(one.getSupplyingFacilityId()),
+            null, pageable, Collections.singleton(one.getSupplyingFacilityId()),
             Collections.emptySet());
     assertEquals(0, list.getNumberOfElements());
 

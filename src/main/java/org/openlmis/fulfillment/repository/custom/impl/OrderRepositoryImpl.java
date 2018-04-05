@@ -131,9 +131,6 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
       orPredicate = isOneOfOr(REQUESTING_FACILITY_ID, availableRequestingFacilities, root,
           orPredicate, builder);
       predicate = builder.and(predicate, orPredicate);
-    } else {
-      throw new IllegalArgumentException("Available supplying and requesting facilities can't be"
-          + " both empty");
     }
 
     predicate = isEqual(PROGRAM_ID, program, root, predicate, builder);
