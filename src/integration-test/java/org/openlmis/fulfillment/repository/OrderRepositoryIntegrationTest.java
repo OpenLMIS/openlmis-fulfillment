@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.repository;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -319,6 +320,19 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     list = orderRepository
         .searchOrders(params, null, pageable, Collections.emptySet(),
             newHashSet(one.getRequestingFacilityId(), two.getRequestingFacilityId()));
+    assertEquals(0, list.getNumberOfElements());
+  }
+
+  @Test
+  public void searchShouldReturnEmptyPageIfProcessingPeriodIdsIsEmpty() {
+    orderRepository.save(generateInstance());
+    orderRepository.save(generateInstance());
+    orderRepository.save(generateInstance());
+
+    OrderSearchParams params = new OrderSearchParams();
+
+    Page<Order> list = orderRepository
+        .searchOrders(params, emptySet(), pageable, emptySet(), emptySet());
     assertEquals(0, list.getNumberOfElements());
   }
 

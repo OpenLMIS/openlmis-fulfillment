@@ -70,7 +70,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   /**
    * Method returns all Orders with matched parameters. It will filter out all orders that are not
    * part of {@code availableSupplyingFacilities} or {@code availableRequestingFacilities}. If both
-   * sets are empty it will result in empty response.
+   * sets are empty or {@code processingPeriodIds} is empty it will result in empty response.
    *
    * @param params search params (supplyingFacility, requestingFacility, program, statuses)
    * @param processingPeriodIds set of Processing Period UUIDs
@@ -83,7 +83,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   public Page<Order> searchOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
       Pageable pageable, Set<UUID> availableSupplyingFacilities,
       Set<UUID> availableRequestingFacilities) {
-    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
+    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))
+        || (null != processingPeriodIds && isEmpty(processingPeriodIds))) {
       return Pagination.getPage(Collections.emptyList(), pageable);
     }
     return search(params, processingPeriodIds,
