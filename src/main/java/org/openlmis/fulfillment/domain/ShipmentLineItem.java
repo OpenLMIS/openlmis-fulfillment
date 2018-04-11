@@ -15,19 +15,16 @@
 
 package org.openlmis.fulfillment.domain;
 
-import org.hibernate.annotations.Type;
-import org.javers.core.metamodel.annotation.TypeName;
-
+import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.TypeName;
 
 @Entity
 @Table(name = "shipment_line_items")
@@ -67,6 +64,13 @@ public class ShipmentLineItem extends BaseEntity {
         importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
+  }
+
+  /**
+   * Verifies if the given line item has something to shipped.
+   */
+  public boolean isShipped() {
+    return null != quantityShipped && quantityShipped > 0;
   }
 
   /**

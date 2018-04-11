@@ -15,7 +15,9 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
@@ -46,6 +48,23 @@ public class ShipmentLineItemTest {
   public void shouldImplementToString() {
     ShipmentLineItem shipmentLineItem = new ShipmentLineItemDataBuilder().build();
     ToStringTestUtils.verify(ShipmentLineItem.class, shipmentLineItem);
+  }
+
+  @Test
+  public void shouldReturnTrueIfLineItemHasSomethingToShipped() {
+    assertThat(createShipmentLineItem().isShipped(), is(true));
+  }
+
+  @Test
+  public void shouldReturnFalseIfLineItemHasNothingToShipped() {
+    assertThat(
+        new ShipmentLineItemDataBuilder().withQuantityShipped(0L).build().isShipped(),
+        is(false)
+    );
+    assertThat(
+        new ShipmentLineItemDataBuilder().withQuantityShipped(null).build().isShipped(),
+        is(false)
+    );
   }
 
   private ShipmentLineItem createShipmentLineItem() {

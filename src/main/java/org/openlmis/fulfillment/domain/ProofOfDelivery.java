@@ -5,28 +5,18 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.fulfillment.domain;
 
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
-import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.javers.core.metamodel.annotation.TypeName;
-import org.openlmis.fulfillment.i18n.MessageKeys;
-import org.openlmis.fulfillment.web.ValidationException;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -47,6 +36,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.web.ValidationException;
 
 
 @Entity
@@ -187,19 +184,22 @@ public class ProofOfDelivery extends BaseEntity {
   }
 
   /**
-   * Create instance of ProofOfDelivery based on given {@link Shipment} and information about
-   * using vvm status by orderables.
+   * Create instance of ProofOfDelivery based on given {@link Shipment} and information about using
+   * vvm status by orderables.
    *
    * @param shipment instance of {@link Shipment}
-   *                 @param useVvm map that contain information if orderable use vvm status.
+   * @param useVvm map that contain information if orderable use vvm status.
    * @return instance of ProofOfDelivery.
    */
   public static ProofOfDelivery newInstance(Shipment shipment, Map<UUID, Boolean> useVvm) {
     List<ProofOfDeliveryLineItem> items = shipment
         .getLineItems()
         .stream()
+        .filter(ShipmentLineItem::isShipped)
         .map(line -> new ProofOfDeliveryLineItem(line, useVvm.get(line.getOrderableId())))
         .collect(Collectors.toList());
+
+    validateLineItems(items);
 
     return new ProofOfDelivery(shipment, items);
   }
@@ -226,6 +226,7 @@ public class ProofOfDelivery extends BaseEntity {
   }
 
   public interface Exporter {
+
     void setId(UUID id);
 
     void setShipment(Shipment shipment);
@@ -243,6 +244,7 @@ public class ProofOfDelivery extends BaseEntity {
   }
 
   public interface Importer {
+
     UUID getId();
 
     Identifiable getShipment();

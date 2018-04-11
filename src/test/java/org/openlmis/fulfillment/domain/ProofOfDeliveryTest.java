@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED;
 
+import com.google.common.collect.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -89,7 +90,13 @@ public class ProofOfDeliveryTest {
 
   @Test
   public void shouldCreateInstanceBasedOnShipment() {
-    Shipment shipment = new ShipmentDataBuilder().build();
+    Shipment shipment = new ShipmentDataBuilder()
+        .withLineItems(Lists.newArrayList(
+            new ShipmentLineItemDataBuilder().build(),
+            new ShipmentLineItemDataBuilder().build(),
+            new ShipmentLineItemDataBuilder().withQuantityShipped(0L).build()
+        ))
+        .build();
 
     Map<UUID, Boolean> useVvm = shipment
         .getLineItems()
@@ -104,6 +111,7 @@ public class ProofOfDeliveryTest {
     assertThat(pod.getDeliveredBy(), is(nullValue()));
     assertThat(pod.getReceivedBy(), is(nullValue()));
     assertThat(pod.getReceivedDate(), is(nullValue()));
+    assertThat(pod.getLineItems().size(), is(shipment.getLineItems().size() - 1));
 
     for (ProofOfDeliveryLineItem line : pod.getLineItems()) {
       assertThat(
@@ -121,6 +129,18 @@ public class ProofOfDeliveryTest {
       assertThat(line.getRejectionReasonId(), is(nullValue()));
       assertThat(line.getNotes(), is(nullValue()));
     }
+  }
+
+  @Test
+  public void shouldThrowExceptionIfPodWillBeEmpty() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
+
+    Shipment shipment = new ShipmentDataBuilder()
+        .withoutLineItems()
+        .build();
+
+    ProofOfDelivery.newInstance(shipment, Collections.emptyMap());
   }
 
   @Test
