@@ -132,18 +132,6 @@ public class ProofOfDeliveryTest {
   }
 
   @Test
-  public void shouldThrowExceptionIfPodWillBeEmpty() {
-    exception.expect(ValidationException.class);
-    exception.expectMessage(PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
-
-    Shipment shipment = new ShipmentDataBuilder()
-        .withoutLineItems()
-        .build();
-
-    ProofOfDelivery.newInstance(shipment, Collections.emptyMap());
-  }
-
-  @Test
   public void shouldThrowExceptionIfLineItemsAreNotGiven() {
     exception.expect(ValidationException.class);
     exception.expectMessage(PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);

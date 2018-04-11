@@ -199,8 +199,6 @@ public class ProofOfDelivery extends BaseEntity {
         .map(line -> new ProofOfDeliveryLineItem(line, useVvm.get(line.getOrderableId())))
         .collect(Collectors.toList());
 
-    validateLineItems(items);
-
     return new ProofOfDelivery(shipment, items);
   }
 
