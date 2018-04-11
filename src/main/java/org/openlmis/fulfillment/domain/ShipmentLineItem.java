@@ -67,7 +67,7 @@ public class ShipmentLineItem extends BaseEntity {
   }
 
   /**
-   * Verifies if the given line item has something to shipped.
+   * Verifies if the given line item has something to be shipped.
    */
   public boolean isShipped() {
     return null != quantityShipped && quantityShipped > 0;
