@@ -4,14 +4,30 @@ execution:
     scenario: shipment-workflow
 
 scenarios:
+  get-token-for-divo:
+    requests:
+      - if: '${__javaScript(vars.get("divo_access_token") == null)}'
+        then:
+          - url: ${__P(base-uri)}/api/oauth/token
+            method: POST
+            label: GetTokenForDivo
+            headers:
+              Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+            body:
+              grant_type: password
+              username: divo1
+              password: ${__P(password)}
+            extract-jsonpath:
+              divo_access_token:
+                jsonpath: $.access_token
   full-supply-approved-products:
     requests:
-      - include-scenario: get-user-token
+      - include-scenario: get-token-for-divo
       - url: ${__P(base-uri)}/api/facilities/${requesting_facility_id}/approvedProducts?fullSupply=true&programId=${program_id}
         method: GET
         label: GetApprovedFullSupplyProductsForOrder
         headers:
-          Authorization: Bearer ${access_token}
+          Authorization: Bearer ${divo_access_token}
   create-local-order-for-shipment:
     requests:
       - include-scenario: full-supply-approved-products
@@ -19,7 +35,7 @@ scenarios:
         method: POST
         label: CreateLocalOrderForShipment
         headers:
-          Authorization: Bearer ${access_token}
+          Authorization: Bearer ${divo_access_token}
           Content-Type: application/json
         jsr223:
           execute: before
@@ -66,7 +82,7 @@ scenarios:
         method: POST
         label: FinalizeShipment
         headers:
-          Authorization: Bearer ${access_token}
+          Authorization: Bearer ${divo_access_token}
           Content-Type: application/json
         jsr223:
           execute: before
@@ -118,10 +134,11 @@ scenarios:
         method: GET
         label: GetShipment
         headers:
-          Authorization: Bearer ${access_token}
+          Authorization: Bearer ${divo_access_token}
           Content-Type: application/json
 
 reporting:
     - module: passfail
       criteria:
         Finalize Shipment is too slow: p90 of FinalizeShipment>500ms
+        Get Shipment is too slow: p90 of GetShipment>500ms
