@@ -18,6 +18,12 @@ package org.openlmis.fulfillment.web.util;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.EVENT_MISSING_SOURCE_DESTINATION;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -43,13 +49,6 @@ import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class StockEventBuilder {
@@ -90,7 +89,7 @@ public class StockEventBuilder {
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
         shipment.getProgramId(), shipment.getSupplyingFacilityId(),
-        getLineItems(shipment), shipment.getShippedById()
+        getLineItems(shipment, profiler), shipment.getShippedById()
     );
 
     profiler.stop().log();
@@ -111,7 +110,7 @@ public class StockEventBuilder {
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
         proofOfDelivery.getProgramId(), proofOfDelivery.getReceivingFacilityId(),
-        getLineItems(proofOfDelivery), authenticationHelper.getCurrentUser().getId()
+        getLineItems(proofOfDelivery, profiler), authenticationHelper.getCurrentUser().getId()
     );
 
     profiler.stop().log();
@@ -119,38 +118,61 @@ public class StockEventBuilder {
     return stockEventDto;
   }
 
-  private List<StockEventLineItemDto> getLineItems(Shipment shipment) {
-    Map<UUID, OrderableDto> orderables = getOrderables(shipment.getLineItems().stream()
+  private List<StockEventLineItemDto> getLineItems(Shipment shipment, Profiler profiler) {
+    profiler.start("GET_ORDERABLE_IDS");
+    Set<UUID> orderableIds = shipment
+        .getLineItems()
+        .stream()
         .map(ShipmentLineItem::getOrderableId)
-        .collect(Collectors.toSet()));
+        .collect(Collectors.toSet());
 
-    return shipment
-        .getLineItems()
-        .stream()
-        .map(lineItem -> createLineItem(shipment, lineItem, orderables))
-        .collect(Collectors.toList());
-  }
+    profiler.start("GET_ORDERABLES_BY_IDS");
+    Map<UUID, OrderableDto> orderables = getOrderables(orderableIds);
 
-  private List<StockEventLineItemDto> getLineItems(ProofOfDelivery proofOfDelivery) {
-    Map<UUID, OrderableDto> orderables = getOrderables(proofOfDelivery.getLineItems().stream()
-        .map(ProofOfDeliveryLineItem::getOrderableId)
-        .collect(Collectors.toSet()));
-
-    return proofOfDelivery
-        .getLineItems()
-        .stream()
-        .map(lineItem -> createLineItem(proofOfDelivery, lineItem, orderables))
-        .collect(Collectors.toList());
-  }
-
-  private StockEventLineItemDto createLineItem(Shipment shipment, ShipmentLineItem lineItem,
-                                               Map<UUID, OrderableDto> orderables) {
+    profiler.start("GET_DESTINATION_ID");
     UUID destinationId = getDestinationId(
         shipment.getSupplyingFacilityId(),
         shipment.getReceivingFacilityId(),
         shipment.getProgramId()
     );
 
+    profiler.start("CREATE_STOCK_EVENT_LINE_ITEMS");
+    return shipment
+        .getLineItems()
+        .stream()
+        .map(lineItem -> createLineItem(lineItem, orderables, destinationId))
+        .collect(Collectors.toList());
+  }
+
+  private List<StockEventLineItemDto> getLineItems(ProofOfDelivery proofOfDelivery,
+      Profiler profiler) {
+    profiler.start("GET_ORDERABLE_IDS");
+    Set<UUID> orderableIds = proofOfDelivery
+        .getLineItems()
+        .stream()
+        .map(ProofOfDeliveryLineItem::getOrderableId)
+        .collect(Collectors.toSet());
+
+    profiler.start("GET_ORDERABLES_BY_IDS");
+    Map<UUID, OrderableDto> orderables = getOrderables(orderableIds);
+
+    profiler.start("GET_SOURCE_ID");
+    UUID sourceId = getSourceId(
+        proofOfDelivery.getReceivingFacilityId(),
+        proofOfDelivery.getSupplyingFacilityId(),
+        proofOfDelivery.getProgramId()
+    );
+
+    profiler.start("CREATE_STOCK_EVENT_LINE_ITEMS");
+    return proofOfDelivery
+        .getLineItems()
+        .stream()
+        .map(lineItem -> createLineItem(proofOfDelivery, lineItem, orderables, sourceId))
+        .collect(Collectors.toList());
+  }
+
+  private StockEventLineItemDto createLineItem(ShipmentLineItem lineItem,
+      Map<UUID, OrderableDto> orderables, UUID destinationId) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(dateHelper.getCurrentDate());
     dto.setDestinationId(destinationId);
@@ -162,14 +184,7 @@ public class StockEventBuilder {
   }
 
   private StockEventLineItemDto createLineItem(ProofOfDelivery proofOfDelivery,
-                                               ProofOfDeliveryLineItem lineItem,
-                                               Map<UUID, OrderableDto> orderables) {
-    UUID sourceId = getSourceId(
-        proofOfDelivery.getReceivingFacilityId(),
-        proofOfDelivery.getSupplyingFacilityId(),
-        proofOfDelivery.getProgramId()
-    );
-
+      ProofOfDeliveryLineItem lineItem, Map<UUID, OrderableDto> orderables, UUID sourceId) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(proofOfDelivery.getReceivedDate());
     dto.setSourceId(sourceId);
