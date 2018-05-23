@@ -111,7 +111,6 @@ scenarios:
       # vwclerk1
       created_by_id: ce962fad-c872-4244-92fe-2f70995d311a
       # divo1
-      scenario_username: divo1
       shipped_by_id: 560be32a-ea2e-4d12-ae00-1f69376ad535
     requests:
       - include-scenario: finalize-shipment
