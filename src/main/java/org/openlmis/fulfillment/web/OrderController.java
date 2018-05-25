@@ -39,7 +39,6 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderFileTemplateService;
@@ -62,6 +61,7 @@ import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -108,9 +108,6 @@ public class OrderController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private ExporterBuilder exporter;
-
-  @Autowired
   private JasperReportsViewService jasperReportsViewService;
 
   @Autowired
@@ -121,6 +118,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ShipmentService shipmentService;
+
+  @Autowired
+  private OrderDtoBuilder orderDtoBuilder;
 
   @Autowired
   private BasicOrderDtoBuilder basicOrderDtoBuilder;
@@ -149,7 +149,7 @@ public class OrderController extends BaseController {
   @ResponseBody
   public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
     Order order = createSingleOrder(orderDto, authentication);
-    return OrderDto.newInstance(order, exporter);
+    return orderDtoBuilder.build(order);
   }
 
   /**
@@ -168,7 +168,13 @@ public class OrderController extends BaseController {
         .stream()
         .map(order -> createSingleOrder(order, authentication))
         .collect(Collectors.toList());
-    return BasicOrderDto.newInstance(newOrders, exporter);
+    Map<UUID, FacilityDto> facilities = getFacilities(newOrders);
+    Map<UUID, ProgramDto> programs = getPrograms(newOrders);
+    Map<UUID, ProcessingPeriodDto> periods = getPeriods(newOrders);
+    Map<UUID, UserDto> users = getUsers(newOrders);
+    return newOrders.stream().map(
+        order -> basicOrderDtoBuilder.build(order, facilities, programs, periods, users))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -186,13 +192,14 @@ public class OrderController extends BaseController {
 
     profiler.start("SEARCH_ORDERS_IN_SERVICE");
     Page<Order> orders = orderService.searchOrders(params, pageable);
+    List<Order> orderList = orders.getContent();
 
     profiler.start("TO_DTO");
-    Map<UUID, FacilityDto> facilities = getFacilities(orders);
-    Map<UUID, ProgramDto> programs = getPrograms(orders);
-    Map<UUID, ProcessingPeriodDto> periods = getPeriods(orders);
-    Map<UUID, UserDto> users = getUsers(orders);
-    List<BasicOrderDto> dtos = orders.getContent().stream().map(
+    Map<UUID, FacilityDto> facilities = getFacilities(orderList);
+    Map<UUID, ProgramDto> programs = getPrograms(orderList);
+    Map<UUID, ProcessingPeriodDto> periods = getPeriods(orderList);
+    Map<UUID, UserDto> users = getUsers(orderList);
+    List<BasicOrderDto> dtos = orderList.stream().map(
         order -> basicOrderDtoBuilder.build(order, facilities, programs, periods, users))
         .collect(Collectors.toList());
     Page<BasicOrderDto> dtoPage = new PageImpl<>(
@@ -219,7 +226,7 @@ public class OrderController extends BaseController {
       throw new OrderNotFoundException(orderId);
     } else {
       permissionService.canViewOrder(order);
-      OrderDto orderDto = OrderDto.newInstance(order, exporter);
+      OrderDto orderDto = orderDtoBuilder.build(order);
       expandDto(orderDto, expand);
       return orderDto;
     }
@@ -383,7 +390,7 @@ public class OrderController extends BaseController {
     return order;
   }
 
-  private Map<UUID, FacilityDto> getFacilities(Page<Order> orders) {
+  private Map<UUID, FacilityDto> getFacilities(List<Order> orders) {
     Set<UUID> facilityIds = new HashSet<>();
     for (Order order : orders) {
       facilityIds.add(order.getFacilityId());
@@ -397,8 +404,8 @@ public class OrderController extends BaseController {
     ));
   }
 
-  private Map<UUID, ProgramDto> getPrograms(Page<Order> orders) {
-    return orders.getContent().stream().map(Order::getProgramId)
+  private Map<UUID, ProgramDto> getPrograms(List<Order> orders) {
+    return orders.stream().map(Order::getProgramId)
         .collect(Collectors.toSet())
         .stream().collect(Collectors.toMap(
             Function.identity(),
@@ -406,8 +413,8 @@ public class OrderController extends BaseController {
     ));
   }
 
-  private Map<UUID, ProcessingPeriodDto> getPeriods(Page<Order> orders) {
-    return orders.getContent().stream().map(Order::getProcessingPeriodId)
+  private Map<UUID, ProcessingPeriodDto> getPeriods(List<Order> orders) {
+    return orders.stream().map(Order::getProcessingPeriodId)
         .collect(Collectors.toSet())
         .stream().collect(Collectors.toMap(
             Function.identity(),
@@ -415,8 +422,8 @@ public class OrderController extends BaseController {
         ));
   }
 
-  private Map<UUID, UserDto> getUsers(Page<Order> orders) {
-    return orders.getContent().stream().map(Order::getCreatedById)
+  private Map<UUID, UserDto> getUsers(List<Order> orders) {
+    return orders.stream().map(Order::getCreatedById)
         .collect(Collectors.toSet())
         .stream().collect(Collectors.toMap(
             Function.identity(),

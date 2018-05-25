@@ -57,6 +57,7 @@ import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -118,6 +119,9 @@ public class OrderControllerTest {
   @Mock
   private ProgramDto programDto;
 
+  @Mock
+  private OrderDtoBuilder orderDtoBuilder;
+
   private static final String ORDER_NUMBER = "orderNumber";
   private static final String SERVICE_URL = "localhost";
 
@@ -149,6 +153,7 @@ public class OrderControllerTest {
     when(extensionManager.getExtension(any(), any())).thenReturn(orderNumberGenerator);
     when(orderNumberGenerator.generate(any())).thenReturn(ORDER_NUMBER);
     when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
+    when(orderDtoBuilder.build(order)).thenReturn(orderDto);
 
     when(shipmentService.save(any(Shipment.class)))
         .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));

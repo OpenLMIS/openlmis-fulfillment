@@ -56,7 +56,6 @@ import javax.persistence.Table;
 @Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
-@SuppressWarnings("PMD.TooManyMethods")
 public class Order extends BaseEntity {
   public static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
@@ -243,16 +242,6 @@ public class Order extends BaseEntity {
   public void forEachStatusChange(Consumer<StatusChange> consumer) {
     Optional.ofNullable(statusChanges)
             .ifPresent(list -> list.forEach(consumer));
-  }
-
-  /**
-   * Create a new instance of Order based on data from {@link Order.Importer}
-   *
-   * @param importer instance of {@link Order.Importer}
-   * @return new instance of order.
-   */
-  public static Order newInstance(Importer importer) {
-    return newInstance(importer, importer.getUpdateDetails());
   }
 
   /**

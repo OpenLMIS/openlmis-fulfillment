@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.web;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
@@ -83,11 +82,13 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
@@ -196,6 +197,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private FacilityDto facility1;
   private FacilityDto facility2;
 
+  private OrderableDto product1;
+  private OrderableDto product2;
+
   private Pageable pageable = new PageRequest(0, 10);
 
   private UserDto user = new UserDataBuilder().build();
@@ -235,8 +239,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(shipmentRepository.save(any(Shipment.class)))
         .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
 
+    product1 = new OrderableDataBuilder().withId(product1Id).build();
+    product2 = new OrderableDataBuilder().withId(product2Id).build();
+
     when(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
-        .thenReturn(emptyList());
+        .thenReturn(Arrays.asList(product1, product2));
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
