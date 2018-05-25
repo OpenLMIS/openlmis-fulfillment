@@ -68,6 +68,20 @@ public class OrderLineItem extends BaseEntity {
     return orderLineItem;
   }
 
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(OrderLineItem.Exporter exporter, OrderableDto orderable) {
+    exporter.setId(getId());
+    exporter.setOrderedQuantity(getOrderedQuantity());
+    if (orderable != null) {
+      exporter.setOrderable(orderable);
+      exporter.setTotalDispensingUnits(orderable.getNetContent() * getOrderedQuantity());
+    }
+  }
+
   public interface Exporter {
     void setId(UUID id);
 

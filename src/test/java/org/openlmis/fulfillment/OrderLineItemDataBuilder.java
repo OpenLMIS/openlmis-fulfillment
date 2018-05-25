@@ -46,6 +46,11 @@ public class OrderLineItemDataBuilder {
     return this;
   }
 
+  public OrderLineItemDataBuilder withOrder(Order order) {
+    this.order = order;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link OrderLineItem} based on passed data.
    */

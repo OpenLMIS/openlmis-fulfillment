@@ -56,6 +56,7 @@ import javax.persistence.Table;
 @Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("PMD.TooManyMethods")
 public class Order extends BaseEntity {
   public static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
@@ -313,6 +314,24 @@ public class Order extends BaseEntity {
     }
 
     return order;
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Order.Exporter exporter) {
+    exporter.setId(getId());
+    exporter.setExternalId(getExternalId());
+    exporter.setEmergency(getEmergency());
+    exporter.setOrderCode(getOrderCode());
+    exporter.setStatus(getStatus());
+    exporter.setQuotedCost(getQuotedCost());
+    exporter.setCreatedDate(getCreatedDate());
+    if (getUpdateDetails() != null) {
+      exporter.setUpdateDetails(getUpdateDetails());
+    }
   }
 
   public interface Exporter {
