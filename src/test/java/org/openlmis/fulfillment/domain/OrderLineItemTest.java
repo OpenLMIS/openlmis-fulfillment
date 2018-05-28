@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNull;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
@@ -52,5 +53,21 @@ public class OrderLineItemTest {
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
     assertEquals(expected.getOrderableId(), actual.getOrderableId());
+  }
+
+  @Test
+  public void shouldCreateNewInstanceWithoutOrderable() {
+    OrderLineItem expected = new OrderLineItemDataBuilder()
+        .withoutOrderable()
+        .build();
+
+    OrderLineItemDto dto = new OrderLineItemDto();
+    expected.export(dto);
+
+    OrderLineItem actual = OrderLineItem.newInstance(dto);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
+    assertNull(actual.getOrderableId());
   }
 }

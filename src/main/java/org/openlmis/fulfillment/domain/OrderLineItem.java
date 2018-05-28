@@ -23,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +34,7 @@ import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 @Table(name = "order_line_items")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class OrderLineItem extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)

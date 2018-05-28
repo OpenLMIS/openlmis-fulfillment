@@ -36,6 +36,11 @@ public class OrderLineItemDataBuilder {
     return this;
   }
 
+  public OrderLineItemDataBuilder withoutOrderable() {
+    this.orderableId = null;
+    return this;
+  }
+
   public OrderLineItemDataBuilder withRandomOrderedQuantity() {
     orderedQuantity = randomValue();
     return this;

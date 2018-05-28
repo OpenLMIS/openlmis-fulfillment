@@ -54,6 +54,11 @@ public class UserDataBuilder {
     roleAssignments = new HashSet<>();
   }
 
+  public UserDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
+
   /**
    * Builds instance of {@link UserDto}.
    */

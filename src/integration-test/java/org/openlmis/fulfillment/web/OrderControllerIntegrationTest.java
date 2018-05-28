@@ -54,6 +54,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +88,7 @@ import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataServ
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
@@ -179,6 +181,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private OrderService orderService;
 
   @SpyBean
+  private UserReferenceDataService userReferenceDataService;
+
+  @SpyBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
   @Mock
@@ -202,7 +207,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private Pageable pageable = new PageRequest(0, 10);
 
-  private UserDto user = new UserDataBuilder().build();
+  private UserDto user = new UserDataBuilder().withId(INITIAL_USER_ID).build();
 
   @Before
   public void setUp() {
@@ -235,6 +240,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findOne(eq(facilityId))).thenReturn(facility);
     when(facilityService.findOne(eq(facility1Id))).thenReturn(facility1);
     when(facilityService.findOne(eq(facility2Id))).thenReturn(facility2);
+    when(facilityService.findByIds(anySetOf(UUID.class))).thenReturn(Arrays.asList(
+        facility, facility1, facility2));
 
     when(shipmentRepository.save(any(Shipment.class)))
         .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
@@ -244,6 +251,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
         .thenReturn(Arrays.asList(product1, product2));
+
+    when(userReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .thenReturn(Collections.singletonList(user));
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),

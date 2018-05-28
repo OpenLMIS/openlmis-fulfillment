@@ -131,9 +131,9 @@ public class BasicOrderDtoBuilder {
       facilityIds.add(order.getReceivingFacilityId());
       facilityIds.add(order.getRequestingFacilityId());
     }
-    return facilityIds.stream().collect(Collectors.toMap(
-        Function.identity(),
-        id -> getIfPresent(facilityReferenceDataService, id)
+    return facilityReferenceDataService.findByIds(facilityIds).stream().collect(Collectors.toMap(
+        BaseDto::getId,
+        Function.identity()
     ));
   }
 
@@ -156,12 +156,11 @@ public class BasicOrderDtoBuilder {
   }
 
   private Map<UUID, UserDto> getUsers(List<Order> orders) {
-    return orders.stream().map(Order::getCreatedById)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(userReferenceDataService, id)
-        ));
+    Set<UUID> userIds = orders.stream().map(Order::getCreatedById).collect(Collectors.toSet());
+    return userReferenceDataService.findByIds(userIds).stream().collect(Collectors.toMap(
+        BaseDto::getId,
+        Function.identity()
+    ));
   }
 
   private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {
