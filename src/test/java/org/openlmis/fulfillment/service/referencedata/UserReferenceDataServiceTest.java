@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -175,6 +176,16 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
     assertTrue(actualUrl.contains(id2.toString()));
 
     assertAuthHeader(entityCaptor.getValue());
+  }
+
+  @Test
+  public void shouldReturnEmptyListWhenFindingUsersWithNoIdsProvided() {
+    // given
+    checkAuth = false;
+    // when
+    List<UserDto> users = service.findByIds(Collections.emptyList());
+    // then
+    assertThat(users, empty());
   }
 
   /*@Test

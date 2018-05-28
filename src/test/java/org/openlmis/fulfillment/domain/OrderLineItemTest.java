@@ -20,6 +20,7 @@ import static junit.framework.TestCase.assertNull;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
+import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
@@ -74,6 +75,12 @@ public class OrderLineItemTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier.forClass(CreationDetails.class).verify();
+    EqualsVerifier
+        .forClass(OrderLineItem.class)
+        .withRedefinedSuperclass()
+        .withPrefabValues(Order.class,
+            new OrderDataBuilder().build(),
+            new OrderDataBuilder().build())
+        .verify();
   }
 }
