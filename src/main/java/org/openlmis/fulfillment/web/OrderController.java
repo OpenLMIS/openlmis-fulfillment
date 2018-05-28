@@ -22,13 +22,10 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,15 +45,7 @@ import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.TemplateService;
-import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.FacilityDto;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
-import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
@@ -125,18 +114,6 @@ public class OrderController extends BaseController {
   @Autowired
   private BasicOrderDtoBuilder basicOrderDtoBuilder;
 
-  @Autowired
-  private FacilityReferenceDataService facilityReferenceDataService;
-
-  @Autowired
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Autowired
-  private PeriodReferenceDataService periodReferenceDataService;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
   /**
    * Allows creating new orders.
    * If the id is specified, it will be ignored.
@@ -168,13 +145,7 @@ public class OrderController extends BaseController {
         .stream()
         .map(order -> createSingleOrder(order, authentication))
         .collect(Collectors.toList());
-    Map<UUID, FacilityDto> facilities = getFacilities(newOrders);
-    Map<UUID, ProgramDto> programs = getPrograms(newOrders);
-    Map<UUID, ProcessingPeriodDto> periods = getPeriods(newOrders);
-    Map<UUID, UserDto> users = getUsers(newOrders);
-    return newOrders.stream().map(
-        order -> basicOrderDtoBuilder.build(order, facilities, programs, periods, users))
-        .collect(Collectors.toList());
+    return basicOrderDtoBuilder.build(newOrders);
   }
 
   /**
@@ -192,16 +163,9 @@ public class OrderController extends BaseController {
 
     profiler.start("SEARCH_ORDERS_IN_SERVICE");
     Page<Order> orders = orderService.searchOrders(params, pageable);
-    List<Order> orderList = orders.getContent();
 
     profiler.start("TO_DTO");
-    Map<UUID, FacilityDto> facilities = getFacilities(orderList);
-    Map<UUID, ProgramDto> programs = getPrograms(orderList);
-    Map<UUID, ProcessingPeriodDto> periods = getPeriods(orderList);
-    Map<UUID, UserDto> users = getUsers(orderList);
-    List<BasicOrderDto> dtos = orderList.stream().map(
-        order -> basicOrderDtoBuilder.build(order, facilities, programs, periods, users))
-        .collect(Collectors.toList());
+    List<BasicOrderDto> dtos = basicOrderDtoBuilder.build(orders.getContent());
     Page<BasicOrderDto> dtoPage = new PageImpl<>(
         dtos,
         pageable, orders.getTotalElements());
@@ -388,50 +352,5 @@ public class OrderController extends BaseController {
     }
 
     return order;
-  }
-
-  private Map<UUID, FacilityDto> getFacilities(List<Order> orders) {
-    Set<UUID> facilityIds = new HashSet<>();
-    for (Order order : orders) {
-      facilityIds.add(order.getFacilityId());
-      facilityIds.add(order.getSupplyingFacilityId());
-      facilityIds.add(order.getReceivingFacilityId());
-      facilityIds.add(order.getRequestingFacilityId());
-    }
-    return facilityIds.stream().collect(Collectors.toMap(
-        Function.identity(),
-        id -> getIfPresent(facilityReferenceDataService, id)
-    ));
-  }
-
-  private Map<UUID, ProgramDto> getPrograms(List<Order> orders) {
-    return orders.stream().map(Order::getProgramId)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(programReferenceDataService, id)
-    ));
-  }
-
-  private Map<UUID, ProcessingPeriodDto> getPeriods(List<Order> orders) {
-    return orders.stream().map(Order::getProcessingPeriodId)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(periodReferenceDataService, id)
-        ));
-  }
-
-  private Map<UUID, UserDto> getUsers(List<Order> orders) {
-    return orders.stream().map(Order::getCreatedById)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(userReferenceDataService, id)
-        ));
-  }
-
-  private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {
-    return Optional.ofNullable(id).isPresent() ? service.findOne(id) : null;
   }
 }

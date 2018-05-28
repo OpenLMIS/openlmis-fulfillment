@@ -87,6 +87,6 @@ public class BasicOrderDtoBuilderTest {
 
   @Test
   public void shouldReturnNullIfOrderIsNull() {
-    assertNull(orderDtoBuilder.build(null));
+    assertNull(orderDtoBuilder.build((Order) null));
   }
 }

@@ -19,6 +19,8 @@ import static junit.framework.TestCase.assertEquals;
 
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.util.OrderLineItemDto;
 
 public class OrderLineItemTest {
@@ -32,5 +34,23 @@ public class OrderLineItemTest {
 
     assertEquals(lineItem.getId(), dto.getId());
     assertEquals(lineItem.getOrderedQuantity(), dto.getOrderedQuantity());
+  }
+
+  @Test
+  public void shouldCreateNewInstance() {
+    OrderableDto orderable = new OrderableDataBuilder().build();
+    OrderLineItem expected = new OrderLineItemDataBuilder()
+        .withOrderableId(orderable.getId())
+        .build();
+
+    OrderLineItemDto dto = new OrderLineItemDto();
+    expected.export(dto);
+    dto.setOrderable(orderable);
+
+    OrderLineItem actual = OrderLineItem.newInstance(dto);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
+    assertEquals(expected.getOrderableId(), actual.getOrderableId());
   }
 }

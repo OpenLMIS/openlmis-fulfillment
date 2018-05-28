@@ -15,13 +15,24 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -38,6 +49,35 @@ public class BasicOrderDtoBuilder {
 
   @Value("${service.url}")
   private String serviceUrl;
+
+  @Autowired
+  private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
+
+  @Autowired
+  private PeriodReferenceDataService periodReferenceDataService;
+
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
+  /**
+   * Create a list of BasicOrderDtos based on data from the list of {@link Order}s.
+   *
+   * @param orders a list of orders
+   * @return a list of basic order dtos
+   */
+  public List<BasicOrderDto> build(List<Order> orders) {
+    Map<UUID, FacilityDto> facilities = getFacilities(orders);
+    Map<UUID, ProgramDto> programs = getPrograms(orders);
+    Map<UUID, ProcessingPeriodDto> periods = getPeriods(orders);
+    Map<UUID, UserDto> users = getUsers(orders);
+
+    return orders.stream()
+        .map(order -> build(order, facilities, programs, periods, users))
+        .collect(Collectors.toList());
+  }
 
   /**
    * Create a new instance of BasicOrderDto based on data from {@link Order}.
@@ -83,4 +123,48 @@ public class BasicOrderDtoBuilder {
     return orderDto;
   }
 
+  private Map<UUID, FacilityDto> getFacilities(List<Order> orders) {
+    Set<UUID> facilityIds = new HashSet<>();
+    for (Order order : orders) {
+      facilityIds.add(order.getFacilityId());
+      facilityIds.add(order.getSupplyingFacilityId());
+      facilityIds.add(order.getReceivingFacilityId());
+      facilityIds.add(order.getRequestingFacilityId());
+    }
+    return facilityIds.stream().collect(Collectors.toMap(
+        Function.identity(),
+        id -> getIfPresent(facilityReferenceDataService, id)
+    ));
+  }
+
+  private Map<UUID, ProgramDto> getPrograms(List<Order> orders) {
+    return orders.stream().map(Order::getProgramId)
+        .collect(Collectors.toSet())
+        .stream().collect(Collectors.toMap(
+            Function.identity(),
+            id -> getIfPresent(programReferenceDataService, id)
+        ));
+  }
+
+  private Map<UUID, ProcessingPeriodDto> getPeriods(List<Order> orders) {
+    return orders.stream().map(Order::getProcessingPeriodId)
+        .collect(Collectors.toSet())
+        .stream().collect(Collectors.toMap(
+            Function.identity(),
+            id -> getIfPresent(periodReferenceDataService, id)
+        ));
+  }
+
+  private Map<UUID, UserDto> getUsers(List<Order> orders) {
+    return orders.stream().map(Order::getCreatedById)
+        .collect(Collectors.toSet())
+        .stream().collect(Collectors.toMap(
+            Function.identity(),
+            id -> getIfPresent(userReferenceDataService, id)
+        ));
+  }
+
+  private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {
+    return Optional.ofNullable(id).isPresent() ? service.findOne(id) : null;
+  }
 }
