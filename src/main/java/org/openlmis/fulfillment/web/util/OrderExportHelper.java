@@ -123,13 +123,10 @@ public class OrderExportHelper {
       Map<UUID, ProcessingPeriodDto> periods, Map<UUID, UserDto> users) {
 
     if (facilities != null) {
-      orderDto.setFacility(facilities.getOrDefault(order.getFacilityId(), null));
-      orderDto.setRequestingFacility(facilities.getOrDefault(order.getRequestingFacilityId(),
-          null));
-      orderDto.setReceivingFacility(facilities.getOrDefault(order.getReceivingFacilityId(),
-          null));
-      orderDto.setSupplyingFacility(facilities.getOrDefault(order.getSupplyingFacilityId(),
-          null));
+      orderDto.setFacility(facilities.get(order.getFacilityId()));
+      orderDto.setRequestingFacility(facilities.get(order.getRequestingFacilityId()));
+      orderDto.setReceivingFacility(facilities.get(order.getReceivingFacilityId()));
+      orderDto.setSupplyingFacility(facilities.get(order.getSupplyingFacilityId()));
     } else {
       orderDto.setFacility(getIfPresent(facilityReferenceDataService, order.getFacilityId()));
       orderDto.setRequestingFacility(getIfPresent(facilityReferenceDataService,
@@ -140,18 +137,18 @@ public class OrderExportHelper {
           order.getSupplyingFacilityId()));
     }
     if (programs != null) {
-      orderDto.setProgram(programs.getOrDefault(order.getProgramId(), null));
+      orderDto.setProgram(programs.get(order.getProgramId()));
     } else {
       orderDto.setProgram(getIfPresent(programReferenceDataService, order.getProgramId()));
     }
     if (periods != null) {
-      orderDto.setProcessingPeriod(periods.getOrDefault(order.getProcessingPeriodId(), null));
+      orderDto.setProcessingPeriod(periods.get(order.getProcessingPeriodId()));
     } else {
       orderDto.setProcessingPeriod(getIfPresent(periodReferenceDataService,
           order.getProcessingPeriodId()));
     }
     if (users != null) {
-      orderDto.setCreatedBy(users.getOrDefault(order.getCreatedById(), null));
+      orderDto.setCreatedBy(users.get(order.getCreatedById()));
     } else {
       orderDto.setCreatedBy(getIfPresent(userReferenceDataService, order.getCreatedById()));
     }
@@ -174,7 +171,11 @@ public class OrderExportHelper {
     OrderLineItemDto dto = new OrderLineItemDto();
 
     profiler.start("EXPORT_TO_DTO");
-    lineItem.export(dto, orderableDto);
+    lineItem.export(dto);
+    if (orderableDto != null) {
+      dto.setOrderable(orderableDto);
+      dto.setTotalDispensingUnits(orderableDto.getNetContent() * dto.getOrderedQuantity());
+    }
 
     profiler.stop().log();
     XLOGGER.exit(dto);
