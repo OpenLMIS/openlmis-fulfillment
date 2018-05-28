@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -27,9 +28,12 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.PageDto;
@@ -128,6 +132,49 @@ public class UserReferenceDataServiceTest extends BaseReferenceDataServiceTest<U
 
     assertAuthHeader(entityCaptor.getValue());
     assertThat(entityCaptor.getValue().getBody(), is(payload));
+  }
+
+  @Test
+  public void shouldFindUsersByIds() {
+    // given
+    UUID id = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    List<UUID> ids = Arrays.asList(id, id2);
+
+    UserDto user = generateInstance();
+    user.setId(id);
+    UserDto anotherUser = generateInstance();
+    anotherUser.setId(id2);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("id", ids);
+    ResponseEntity response = mock(ResponseEntity.class);
+
+    // when
+    when(response.getBody()).thenReturn(
+        new PageDto<>(new PageImpl<>(Arrays.asList(user, anotherUser)))
+    );
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+        any(ParameterizedTypeReference.class)
+    )).thenReturn(response);
+
+    List<UserDto> users = service.findByIds(ids);
+
+    // then
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+        entityCaptor.capture(), any(ParameterizedTypeReference.class)
+    );
+    assertTrue(users.contains(user));
+    assertTrue(users.contains(anotherUser));
+
+    String actualUrl = uriCaptor.getValue().toString();
+    assertTrue(actualUrl.startsWith(service.getServiceUrl() + service.getUrl()));
+    assertTrue(actualUrl.contains(id.toString()));
+    assertTrue(actualUrl.contains(id2.toString()));
+
+    assertAuthHeader(entityCaptor.getValue());
   }
 
   /*@Test

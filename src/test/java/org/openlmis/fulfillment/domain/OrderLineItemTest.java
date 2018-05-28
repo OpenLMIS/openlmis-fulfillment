@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -69,5 +70,10 @@ public class OrderLineItemTest {
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
     assertNull(actual.getOrderableId());
+  }
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(CreationDetails.class).verify();
   }
 }
