@@ -7,6 +7,7 @@ Improvements:
 * [OLMIS-4354](https://openlmis.atlassian.net/browse/OLMIS-4354): Improved POST /api/shipments endpoint
   * Reduced number of calls to the stock management service
 * [OLMIS-4293](https://openlmis.atlassian.net/browse/OLMIS-4293): Improved performance of get orders
+* [OLMIS-4835](https://openlmis.atlassian.net/browse/OLMIS-4835): Added allowNotify check when sending email notification
 
 7.0.0 / 2018-04-24
 ==================

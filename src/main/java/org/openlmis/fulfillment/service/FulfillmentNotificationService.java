@@ -93,7 +93,13 @@ public class FulfillmentNotificationService {
    * @param order an order that was created
    */
   public void sendOrderCreatedNotification(Order order) {
-    String to = userReferenceDataService.findOne(order.getCreatedById()).getEmail();
+    UserDto creator = userReferenceDataService.findOne(order.getCreatedById());
+
+    if (!creator.isAllowNotify()) {
+      return;
+    }
+
+    String to = creator.getEmail();
     String subject = messageService
         .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
         .getMessage();

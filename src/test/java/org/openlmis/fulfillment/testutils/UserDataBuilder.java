@@ -33,6 +33,7 @@ public class UserDataBuilder {
   private boolean verified;
   private boolean active;
   private boolean loginRestricted;
+  private boolean allowNotify;
   private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
 
@@ -50,6 +51,7 @@ public class UserDataBuilder {
     verified = true;
     active = true;
     loginRestricted = true;
+    allowNotify = true;
     homeFacilityId = UUID.randomUUID();
     roleAssignments = new HashSet<>();
   }
@@ -64,7 +66,7 @@ public class UserDataBuilder {
    */
   public UserDto build() {
     UserDto user = new UserDto(username, firstName, lastName, email, verified, active,
-        loginRestricted, homeFacilityId, roleAssignments);
+        loginRestricted, allowNotify, homeFacilityId, roleAssignments);
     user.setId(id);
     return user;
   }
