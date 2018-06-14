@@ -38,7 +38,6 @@ public class UserDto extends BaseDto {
   private boolean verified;
   private boolean active;
   private boolean loginRestricted;
-  private boolean allowNotify;
   private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
 

@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -45,7 +44,6 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
@@ -85,18 +83,17 @@ public class FulfillmentNotificationServiceTest {
 
   private UUID userId = UUID.randomUUID();
   private ZonedDateTime date = ZonedDateTime.of(2018, 3, 1, 3, 0, 0, 0, ZoneId.systemDefault());
-  private UserDto user = new UserDataBuilder().build();
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     ReflectionTestUtils.setField(fulfillmentNotificationService, "from", FROM_EMAIL);
-    when(userReferenceDataService.findOne(userId)).thenReturn(user);
+    when(userReferenceDataService.findOne(userId)).thenReturn(new UserDataBuilder().build());
     mockMessages();
   }
 
   @Test
-  public void shouldSendOrderCreatedNotificationIfUserAllowsNotifications() {
+  public void shouldSendOrderCreatedNotification() {
     Order order = new OrderDataBuilder()
         .withStatus(OrderStatus.RECEIVED)
         .withCreatedById(userId)
@@ -115,21 +112,6 @@ public class FulfillmentNotificationServiceTest {
     assertThat(notification.getContent(),
         is("Create an order: " + order.getId() + " with status: RECEIVED"));
   }
-
-  @Test
-  public void shouldNotSendOrderCreatedNotificationIfUserDoesNotAllowNotifications() {
-    Order order = new OrderDataBuilder()
-        .withStatus(OrderStatus.RECEIVED)
-        .withCreatedById(userId)
-        .build();
-
-    user.setAllowNotify(false);
-
-    fulfillmentNotificationService.sendOrderCreatedNotification(order);
-
-    verify(notificationService, never()).send(notificationCaptor.capture());
-  }
-
 
   @Test
   public void shouldSendPodConfirmedNotification() {
