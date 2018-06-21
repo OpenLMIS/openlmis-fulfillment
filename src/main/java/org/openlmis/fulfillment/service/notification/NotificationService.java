@@ -57,7 +57,6 @@ public class NotificationService {
     logger.debug("Sending request:"
         + "\n subject:" + request.getSubject()
         + "\n content:" + request.getContent()
-        + "\n from: " + request.getFrom()
         + "\n to: " + request.getUserId());
 
     try {
