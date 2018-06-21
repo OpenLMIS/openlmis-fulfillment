@@ -15,35 +15,58 @@
 
 package org.openlmis.fulfillment.service.notification;
 
-import org.openlmis.fulfillment.service.BaseCommunicationService;
-import org.openlmis.util.NotificationRequest;
+import java.net.URI;
+import org.openlmis.fulfillment.service.AuthService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.request.RequestHeaders;
+import org.openlmis.fulfillment.service.request.RequestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-public class NotificationService extends BaseCommunicationService<NotificationRequest> {
+public class NotificationService {
   private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  @Autowired
+  private AuthService authService;
 
   @Value("${notification.url}")
   private String notificationUrl;
 
+  private RestOperations restTemplate = new RestTemplate();
+
   /**
-   * Send a notification request.
+   * Send an email notification.
    *
-   * @param request details about notification.
+   * @param user    receiver of the notification
+   * @param subject subject of the email
+   * @param content content of the email
    * @return true if success, false if failed.
    */
-  public boolean send(NotificationRequest request) {
-    String url = getServiceUrl() + getUrl();
+  public boolean notify(UserDto user, String subject, String content) {
+    String url = notificationUrl + "/api/v2/notification";
 
-    HttpEntity<NotificationRequest> body = createEntity(request);
+    NotificationDto request = new NotificationDto(user.getId(), subject, content);
+    logger.debug("Sending request:"
+        + "\n subject:" + request.getSubject()
+        + "\n content:" + request.getContent()
+        + "\n from: " + request.getFrom()
+        + "\n to: " + request.getUserId());
 
     try {
-      restTemplate.postForEntity(buildUri(url), body, getResultClass());
+      RequestHeaders headers;
+      headers = RequestHeaders.init().setAuth(authService.obtainAccessToken());
+      URI uri = RequestHelper.createUri(url);
+      HttpEntity<NotificationDto> entity = RequestHelper.createEntity(request, headers);
+
+      restTemplate.postForObject(uri, entity, Object.class);
     } catch (HttpStatusCodeException ex) {
       logger.error(
           "Unable to send notification. Error code: {}, response message: {}",
@@ -53,21 +76,5 @@ public class NotificationService extends BaseCommunicationService<NotificationRe
     }
 
     return true;
-  }
-
-  protected String getServiceUrl() {
-    return notificationUrl;
-  }
-
-  protected String getUrl() {
-    return "/api/notification";
-  }
-
-  protected Class<NotificationRequest> getResultClass() {
-    return NotificationRequest.class;
-  }
-
-  protected Class<NotificationRequest[]> getArrayResultClass() {
-    return NotificationRequest[].class;
   }
 }

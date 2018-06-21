@@ -15,93 +15,81 @@
 
 package org.openlmis.fulfillment.service.notification;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.openlmis.util.NotificationRequest;
-import org.openlmis.fulfillment.service.BaseCommunicationService;
-import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.service.AuthService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
+@RunWith(MockitoJUnitRunner.class)
+public class NotificationServiceTest {
+  private static final String ACCESS_TOKEN = "token";
+  private static final String USER_EMAIL = "test@test.te";
+  private static final String MAIL_SUBJECT = "subject";
+  private static final String MAIL_CONTENT = "content";
+  private static final String BASE_URL = "https://localhost";
+  private static final String NOTIFICATION_URL = BASE_URL + "/api/v2/notification";
 
-public class NotificationServiceTest extends BaseCommunicationServiceTest<NotificationRequest> {
+  @Mock
+  private AuthService authService;
+
+  @Mock
+  private RestTemplate restTemplate;
+
+  @InjectMocks
+  private NotificationService notificationService;
 
   @Captor
-  private ArgumentCaptor<HttpEntity<NotificationRequest>> captor;
+  private ArgumentCaptor<HttpEntity> captor;
 
-  @Test
-  public void shouldSendNotification() {
-    NotificationRequest request = new NotificationRequest("from", "to", "subject", "plainContent");
+  @Before
+  public void setUp() {
+    when(authService.obtainAccessToken()).thenReturn(ACCESS_TOKEN);
 
-    NotificationService service = prepareService();
-    boolean success = service.send(request);
-
-    assertThat(success, is(true));
-
-    verify(restTemplate)
-        .postForEntity(uriCaptor.capture(), captor.capture(), eq(NotificationRequest.class));
-
-    URI uri = uriCaptor.getValue();
-    String url = service.getServiceUrl() + "/api/notification";
-    assertThat(uri.toString(), is(equalTo(url)));
-
-    HttpEntity entity = captor.getValue();
-    Object body = entity.getBody();
-
-    assertThat(body, instanceOf(NotificationRequest.class));
-
-    NotificationRequest sent = (NotificationRequest) body;
-
-    assertThat(sent.getFrom(), is(equalTo(request.getFrom())));
-    assertThat(sent.getTo(), is(equalTo(request.getTo())));
-    assertThat(sent.getSubject(), is(equalTo(request.getSubject())));
-    assertThat(sent.getContent(), is(equalTo(request.getContent())));
+    ReflectionTestUtils.setField(notificationService, "restTemplate", restTemplate);
+    ReflectionTestUtils.setField(notificationService, "notificationUrl", BASE_URL);
   }
 
   @Test
-  public void shouldReturnFalseIfCannotSendNotification() {
-    NotificationRequest request = new NotificationRequest("from", "to", "subject", "plainContent");
+  public void shouldNotifyUser() throws Exception {
+    UserDto user = mock(UserDto.class);
+    when(user.getEmail()).thenReturn(USER_EMAIL);
 
-    when(restTemplate
-        .postForEntity(any(URI.class), any(HttpEntity.class), eq(NotificationRequest.class)))
-        .thenThrow(new HttpServerErrorException(HttpStatus.BAD_GATEWAY));
+    notificationService.notify(user, MAIL_SUBJECT, MAIL_CONTENT);
 
-    NotificationService service = prepareService();
-    boolean success = service.send(request);
+    verify(restTemplate).postForObject(eq(
+        new URI(NOTIFICATION_URL)),
+        captor.capture(), eq(Object.class));
 
-    assertThat(success, is(false));
+    assertEquals(
+        singletonList("Bearer " + ACCESS_TOKEN),
+        captor.getValue().getHeaders()
+            .get(HttpHeaders.AUTHORIZATION));
+    assertTrue(
+        reflectionEquals(getNotificationRequest(user),
+            captor.getValue().getBody()));
   }
 
-  @Override
-  protected BaseCommunicationService<NotificationRequest> getService() {
-    return new NotificationService();
+  private NotificationDto getNotificationRequest(UserDto user) {
+    return new NotificationDto(user.getId(), MAIL_SUBJECT, MAIL_CONTENT);
   }
-
-  @Override
-  protected NotificationRequest generateInstance() {
-    return new NotificationRequest();
-  }
-
-  @Override
-  protected NotificationService prepareService() {
-    BaseCommunicationService service = super.prepareService();
-
-    ReflectionTestUtils.setField(service, "notificationUrl", "http://localhost/notification");
-
-    return (NotificationService) service;
-  }
-
 }

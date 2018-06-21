@@ -15,10 +15,9 @@
 
 package org.openlmis.fulfillment.service;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_CREATION_BODY;
@@ -27,7 +26,9 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_POD_CO
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_POD_CONFIRMED_SUBJECT;
 
 import com.google.common.collect.Lists;
-
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -44,21 +45,15 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.i18n.MessageService;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.Message;
-import org.openlmis.util.NotificationRequest;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.UUID;
 
 public class FulfillmentNotificationServiceTest {
 
-  private static final String FROM_EMAIL = "noreply@openlmis.org";
   private static final String SUBJECT = "New order";
   private static final String KANKAO_HC = "Kankao HC";
 
@@ -79,16 +74,23 @@ public class FulfillmentNotificationServiceTest {
       FulfillmentNotificationService();
 
   @Captor
-  private ArgumentCaptor<NotificationRequest> notificationCaptor;
+  private ArgumentCaptor<String> subjectCaptor;
+
+  @Captor
+  private ArgumentCaptor<String> contentCaptor;
 
   private UUID userId = UUID.randomUUID();
   private ZonedDateTime date = ZonedDateTime.of(2018, 3, 1, 3, 0, 0, 0, ZoneId.systemDefault());
+  private UserDto user;
 
   @Before
   public void setUp() {
+    user = new UserDataBuilder()
+        .withId(userId)
+        .build();
+
     MockitoAnnotations.initMocks(this);
-    ReflectionTestUtils.setField(fulfillmentNotificationService, "from", FROM_EMAIL);
-    when(userReferenceDataService.findOne(userId)).thenReturn(new UserDataBuilder().build());
+    when(userReferenceDataService.findOne(userId)).thenReturn(user);
     mockMessages();
   }
 
@@ -101,16 +103,11 @@ public class FulfillmentNotificationServiceTest {
 
     fulfillmentNotificationService.sendOrderCreatedNotification(order);
 
-    verify(notificationService).send(notificationCaptor.capture());
-
-    NotificationRequest notification = notificationCaptor.getValue();
-    assertThat(notification, is(notNullValue()));
-
-    assertThat(notification.getFrom(), is(FROM_EMAIL));
-    assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), is(SUBJECT));
-    assertThat(notification.getContent(),
-        is("Create an order: " + order.getId() + " with status: RECEIVED"));
+    verify(notificationService).notify(
+        user,
+        SUBJECT,
+        "Create an order: " + order.getId() + " with status: RECEIVED"
+    );
   }
 
   @Test
@@ -126,18 +123,13 @@ public class FulfillmentNotificationServiceTest {
 
     fulfillmentNotificationService.sendPodConfirmedNotification(pod);
 
-    verify(notificationService).send(notificationCaptor.capture());
+    verify(notificationService).notify(eq(user), subjectCaptor.capture(), contentCaptor.capture());
 
-    NotificationRequest notification = notificationCaptor.getValue();
-    assertThat(notification, is(notNullValue()));
-
-    assertThat(notification.getFrom(), is(FROM_EMAIL));
-    assertThat(notification.getTo(), is("user@openlmis.org"));
-    assertThat(notification.getSubject(), stringContainsInOrder(
+    assertThat(subjectCaptor.getValue(), stringContainsInOrder(
         Lists.newArrayList(
             pod.getShipment().getOrder().getOrderCode(),
             KANKAO_HC)));
-    assertThat(notification.getContent(), stringContainsInOrder(
+    assertThat(contentCaptor.getValue(), stringContainsInOrder(
         Lists.newArrayList(
             "John", "Doe",
             pod.getShipment().getOrder().getOrderCode(),

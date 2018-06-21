@@ -21,19 +21,6 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_ORDER_
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_POD_CONFIRMED_BODY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.FULFILLMENT_EMAIL_POD_CONFIRMED_SUBJECT;
 
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
-import org.openlmis.fulfillment.i18n.MessageService;
-import org.openlmis.fulfillment.service.notification.NotificationService;
-import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
-import org.openlmis.fulfillment.util.Message;
-import org.openlmis.util.NotificationRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -42,6 +29,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.i18n.MessageService;
+import org.openlmis.fulfillment.service.notification.NotificationService;
+import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.util.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class FulfillmentNotificationService {
@@ -66,9 +63,6 @@ public class FulfillmentNotificationService {
   @Autowired
   protected MessageService messageService;
 
-  @Value("${email.noreply}")
-  private String from;
-
   /**
    * Send notification to the shipper of the associated Proof of Delivery informing them that the
    * Proof of Delivery has been confirmed.
@@ -84,7 +78,7 @@ public class FulfillmentNotificationService {
     String content = getContent(proofOfDelivery,
         FULFILLMENT_EMAIL_POD_CONFIRMED_BODY, messageParams);
 
-    notificationService.send(new NotificationRequest(from, user.getEmail(), subject, content));
+    notificationService.notify(user, subject, content);
   }
 
   /**
@@ -93,14 +87,14 @@ public class FulfillmentNotificationService {
    * @param order an order that was created
    */
   public void sendOrderCreatedNotification(Order order) {
-    String to = userReferenceDataService.findOne(order.getCreatedById()).getEmail();
+    UserDto user = userReferenceDataService.findOne(order.getCreatedById());
     String subject = messageService
         .localize(new Message(FULFILLMENT_EMAIL_ORDER_CREATION_SUBJECT))
         .getMessage();
 
     String content = getContent(order, FULFILLMENT_EMAIL_ORDER_CREATION_BODY);
 
-    notificationService.send(new NotificationRequest(from, to, subject, content));
+    notificationService.notify(user, subject, content);
   }
 
   private Map<String, String> buildMessageParamsForPodMessage(UserDto user, ProofOfDelivery pod) {
