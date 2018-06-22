@@ -77,7 +77,7 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Get All PODs is too slow: p90 of GetAllProofsOfDelivery>1500ms
+        Get All PODs is too slow: p90 of GetAllProofsOfDelivery>2000ms
         Get POD is too slow: p90 of GetProofOfDelivery>1000ms
         Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>1400ms
         Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>5000ms
