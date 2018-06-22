@@ -13,3 +13,7 @@ scenarios:
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
+reporting:
+    - module: passfail
+      criteria:
+        Get Order File Template is too slow: p90 of GetOrderFileTemplate>1000ms

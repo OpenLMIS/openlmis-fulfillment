@@ -73,3 +73,13 @@ scenarios:
         headers:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
+
+reporting:
+    - module: passfail
+      criteria:
+        Get All PODs is too slow: p90 of GetAllProofsOfDelivery>1200ms
+        Get POD is too slow: p90 of GetProofOfDelivery>1000ms
+        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>1400ms
+        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>5000ms
+        Print POD As Pdf is too slow: p90 of PrintProofOfDeliveryAsPdf>4000ms
+        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>3200ms

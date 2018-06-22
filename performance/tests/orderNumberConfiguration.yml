@@ -39,3 +39,8 @@ scenarios:
 
             vars.put("new_config", JsonOutput.toJson(config));
         body: ${new_config}
+reporting:
+    - module: passfail
+      criteria:
+        Get Order Number Configuration is too slow: p90 of GetOrderNumberConfiguration>800ms
+        Update Order Number Configuration is too slow: p90 of UpdateOrderNumberConfiguration>900ms
