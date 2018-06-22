@@ -141,4 +141,4 @@ reporting:
     - module: passfail
       criteria:
         Finalize Shipment is too slow: p90 of FinalizeShipment>50000ms
-        Get Shipment is too slow: p90 of GetShipment>1100ms
+        Get Shipment is too slow: p90 of GetShipment>1800ms
