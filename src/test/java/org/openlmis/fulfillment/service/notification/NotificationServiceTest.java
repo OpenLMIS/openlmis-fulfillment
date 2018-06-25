@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.service.notification;
 
+import static org.openlmis.fulfillment.service.notification.NotificationChannelDto.EMAIL;
+
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +51,7 @@ public class NotificationServiceTest {
   private static final String MAIL_SUBJECT = "subject";
   private static final String MAIL_CONTENT = "content";
   private static final String BASE_URL = "https://localhost";
-  private static final String NOTIFICATION_URL = BASE_URL + "/api/v2/notification";
+  private static final String NOTIFICATION_URL = BASE_URL + "/api/notifications";
 
   @Mock
   private AuthService authService;
@@ -90,6 +94,9 @@ public class NotificationServiceTest {
   }
 
   private NotificationDto getNotificationRequest(UserDto user) {
-    return new NotificationDto(user.getId(), MAIL_SUBJECT, MAIL_CONTENT);
+    Map<String, MessageDto> messages = new HashMap<>();
+    messages.put(EMAIL.toString(), new MessageDto(MAIL_SUBJECT, MAIL_CONTENT));
+
+    return new NotificationDto(user.getId(), messages);
   }
 }

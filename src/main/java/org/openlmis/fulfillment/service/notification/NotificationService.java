@@ -15,7 +15,11 @@
 
 package org.openlmis.fulfillment.service.notification;
 
+import static org.openlmis.fulfillment.service.notification.NotificationChannelDto.EMAIL;
+
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import org.openlmis.fulfillment.service.AuthService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.request.RequestHeaders;
@@ -51,14 +55,13 @@ public class NotificationService {
    * @return true if success, false if failed.
    */
   public boolean notify(UserDto user, String subject, String content) {
-    String url = notificationUrl + "/api/v2/notification";
-
-    NotificationDto request = new NotificationDto(user.getId(), subject, content);
+    NotificationDto request = buildNotification(user, subject, content);
     logger.debug("Sending request:"
-        + "\n subject:" + request.getSubject()
-        + "\n content:" + request.getContent()
+        + "\n subject:" + request.getMessages().get(EMAIL.toString()).getSubject()
+        + "\n content:" + request.getMessages().get(EMAIL.toString()).getBody()
         + "\n to: " + request.getUserId());
 
+    String url = notificationUrl + "/api/notifications";
     try {
       RequestHeaders headers;
       headers = RequestHeaders.init().setAuth(authService.obtainAccessToken());
@@ -75,5 +78,12 @@ public class NotificationService {
     }
 
     return true;
+  }
+
+  private NotificationDto buildNotification(UserDto user, String subject, String content) {
+    Map<String, MessageDto> messages = new HashMap<>();
+    messages.put(EMAIL.toString(), new MessageDto(subject, content));
+
+    return new NotificationDto(user.getId(), messages);
   }
 }
