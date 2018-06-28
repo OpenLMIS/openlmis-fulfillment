@@ -42,5 +42,5 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Get Order Number Configuration is too slow: p90 of GetOrderNumberConfiguration>800ms
-        Update Order Number Configuration is too slow: p90 of UpdateOrderNumberConfiguration>900ms
+        Get Order Number Configuration is too slow: p90 of GetOrderNumberConfiguration>1000ms
+        Update Order Number Configuration is too slow: p90 of UpdateOrderNumberConfiguration>1000ms
