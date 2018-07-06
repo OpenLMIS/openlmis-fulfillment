@@ -8,6 +8,7 @@ Improvements:
   * Reduced number of calls to the stock management service
 * [OLMIS-4293](https://openlmis.atlassian.net/browse/OLMIS-4293): Improved performance of get orders
 * [OLMIS-4905](https://openlmis.atlassian.net/browse/OLMIS-4905): Updated notification service to use v2 endpoint.
+* [OLMIS-4491](https://openlmis.atlassian.net/browse/OLMIS-4491): Added new demo data loading strategy.
 
 7.0.0 / 2018-04-24
 ==================

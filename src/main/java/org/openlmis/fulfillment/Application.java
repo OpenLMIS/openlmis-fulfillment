@@ -15,13 +15,14 @@
 
 package org.openlmis.fulfillment;
 
+import com.google.gson.internal.bind.TypeAdapters;
 import java.time.Clock;
 import java.time.ZoneId;
-import com.google.gson.internal.bind.TypeAdapters;
+import java.util.Locale;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.callback.FlywayCallback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
 import org.javers.core.diff.ListCompareAlgorithm;
@@ -52,14 +53,12 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
-import java.util.Locale;
-
 @SuppressWarnings("PMD.TooManyMethods")
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
 @EntityScan(basePackageClasses = BaseEntity.class)
 public class Application {
 
-  private Logger logger = LoggerFactory.getLogger(Application.class);
+  private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
   @Value("${defaultLocale}")
   private Locale locale;
@@ -157,18 +156,18 @@ public class Application {
   @Bean
   @Profile("!production")
   public FlywayMigrationStrategy cleanMigrationStrategy() {
-    FlywayMigrationStrategy strategy = new FlywayMigrationStrategy() {
-      @Override
-      public void migrate(Flyway flyway) {
-        logger.info("Using clean-migrate flyway strategy -- production profile not active");
-        flyway.clean();
-        flyway.migrate();
-      }
+    return flyway -> {
+      logger.info("Using clean-migrate flyway strategy -- production profile not active");
+      flyway.setCallbacks(flywayCallback());
+      flyway.clean();
+      flyway.migrate();
     };
-
-    return strategy;
   }
 
+  @Bean
+  public FlywayCallback flywayCallback() {
+    return new ExportSchemaFlywayCallback();
+  }
 
   /**
    * Create and return a UserNameProvider. By default, if we didn't do so, an instance of
@@ -190,7 +189,7 @@ public class Application {
    */
   @Bean
   public Javers javersProvider(ConnectionProvider connectionProvider,
-                               PlatformTransactionManager transactionManager) {
+      PlatformTransactionManager transactionManager) {
     JaversSqlRepository sqlRepository = SqlRepositoryBuilder
         .sqlRepository()
         .withConnectionProvider(connectionProvider)
@@ -220,5 +219,4 @@ public class Application {
         .registerValueGsonTypeAdapter(Float.class, TypeAdapters.FLOAT)
         .build();
   }
-
 }
