@@ -43,8 +43,8 @@ public class TestDataInitializer implements CommandLineRunner {
   private static final String SHIPMENT_LINE_ITEMS = "shipment_line_items";
   private static final String PROOFS_OF_DELIVERY = "proofs_of_delivery";
   private static final String PROOF_OF_DELIVERY_LINE_ITEMS = "proof_of_delivery_line_items";
-  private static final String STATUS_CHANGES = "status_changes"; // maybe to be removed
-  private static final String TRANSFER_PROPERTIES = "transfer_properties"; // maybe to be removed
+  private static final String STATUS_CHANGES = "status_changes";
+  private static final String TRANSFER_PROPERTIES = "transfer_properties";
 
   // database path
   private static final String DB_SCHEMA = "fulfillment.";
