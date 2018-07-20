@@ -138,21 +138,19 @@ public class BasicOrderDtoBuilder {
   }
 
   private Map<UUID, ProgramDto> getPrograms(List<Order> orders) {
-    return orders.stream().map(Order::getProgramId)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(programReferenceDataService, id)
-        ));
+    Set<UUID> programIds = orders.stream().map(Order::getProgramId).collect(Collectors.toSet());
+    return programReferenceDataService.findByIds(programIds).stream().collect(Collectors.toMap(
+        BaseDto::getId,
+        Function.identity()
+    ));
   }
 
   private Map<UUID, ProcessingPeriodDto> getPeriods(List<Order> orders) {
-    return orders.stream().map(Order::getProcessingPeriodId)
-        .collect(Collectors.toSet())
-        .stream().collect(Collectors.toMap(
-            Function.identity(),
-            id -> getIfPresent(periodReferenceDataService, id)
-        ));
+    Set<UUID> periodIds = orders.stream().map(Order::getProcessingPeriodId).collect(Collectors.toSet());
+    return periodReferenceDataService.findByIds(periodIds).stream().collect(Collectors.toMap(
+        BaseDto::getId,
+        Function.identity()
+    ));
   }
 
   private Map<UUID, UserDto> getUsers(List<Order> orders) {
@@ -161,9 +159,5 @@ public class BasicOrderDtoBuilder {
         BaseDto::getId,
         Function.identity()
     ));
-  }
-
-  private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {
-    return Optional.ofNullable(id).isPresent() ? service.findOne(id) : null;
   }
 }
