@@ -60,6 +60,12 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
         .getContent();
   }
 
+  /**
+   * Finds processing periods by their ids.
+   *
+   * @param ids ids to look for.
+   * @return a page of processing periods
+   */
   public List<ProcessingPeriodDto> findByIds(Collection<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Collections.emptyList();
