@@ -41,12 +41,6 @@ public class ProgramReferenceDataService extends BaseReferenceDataService<Progra
     return ProgramDto[].class;
   }
 
-  /**
-   * Finds programs by their ids.
-   *
-   * @param ids ids to look for.
-   * @return a page of programs
-   */
   public List<ProgramDto> findByIds(Collection<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Collections.emptyList();

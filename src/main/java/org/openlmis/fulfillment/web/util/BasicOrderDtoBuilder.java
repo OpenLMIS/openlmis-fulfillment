@@ -18,11 +18,13 @@ package org.openlmis.fulfillment.web.util;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
@@ -144,8 +146,7 @@ public class BasicOrderDtoBuilder {
   }
 
   private Map<UUID, ProcessingPeriodDto> getPeriods(List<Order> orders) {
-    Set<UUID> periodIds = orders.stream().map(Order::getProcessingPeriodId)
-        .collect(Collectors.toSet());
+    Set<UUID> periodIds = orders.stream().map(Order::getProcessingPeriodId).collect(Collectors.toSet());
     return periodReferenceDataService.findByIds(periodIds).stream().collect(Collectors.toMap(
         BaseDto::getId,
         Function.identity()
