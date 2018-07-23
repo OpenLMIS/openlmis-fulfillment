@@ -44,7 +44,7 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
    * Finds facilities by their ids.
    *
    * @param ids ids to look for.
-   * @return a page of facilities
+   * @return a page of facilitiesg
    */
   public Collection<FacilityDto> findByIds(Collection<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
