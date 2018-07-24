@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -230,7 +231,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     program2 = new ProgramDataBuilder().withId(program2Id).build();
 
     period1 = new ProcessingPeriodDataBuilder().withId(period1Id).build();
-    period2 = new ProcessingPeriodDataBuilder().withId(period1Id).build();
+    period2 = new ProcessingPeriodDataBuilder().withId(period2Id).build();
 
     facility = new FacilityDataBuilder()
         .withId(facilityId)
@@ -268,8 +269,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(userReferenceDataService.findByIds(anySetOf(UUID.class)))
         .thenReturn(Collections.singletonList(user));
 
-    when(periodReferenceDataService.findByIds(anySetOf(UUID.class)))
+    when(periodReferenceDataService.findByIds(anyCollectionOf(UUID.class)))
         .thenReturn(Arrays.asList(period1, period2));
+
+    when(periodReferenceDataService.findOne(period1Id))
+        .thenReturn(period1);
+
+    when(periodReferenceDataService.findOne(period2Id))
+        .thenReturn(period2);
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
@@ -579,7 +586,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     for (OrderLineItem lineItem : secondOrder.getOrderLineItems()) {
       String string = StringUtils.joinWith(",", secondOrder.getOrderCode(), facility2.getCode(),
-          "Product Code", "Product Name", lineItem.getOrderedQuantity(), "01/17", orderDate);
+          "Product Code", "Product Name", lineItem.getOrderedQuantity(),
+          period1.getStartDate().format(DateTimeFormatter.ofPattern("MM/yy")), orderDate);
       assertThat(csvContent, containsString(string));
     }
   }

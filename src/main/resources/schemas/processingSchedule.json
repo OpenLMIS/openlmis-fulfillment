@@ -17,7 +17,7 @@
       "title": "description"
     },
     "modifiedDate": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "title": "modifiedDate"
     },
     "name": {
