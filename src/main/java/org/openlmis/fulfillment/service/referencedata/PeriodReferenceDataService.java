@@ -16,9 +16,13 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class PeriodReferenceDataService extends BaseReferenceDataService<ProcessingPeriodDto> {
@@ -54,5 +58,18 @@ public class PeriodReferenceDataService extends BaseReferenceDataService<Process
             .set(START_DATE, startDate)
             .set(END_DATE, endDate))
         .getContent();
+  }
+
+  /**
+   * Finds periods by their ids.
+   *
+   * @param ids ids to look for.
+   * @return a page of periods
+   */
+  public List<ProcessingPeriodDto> findByIds(Collection<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Collections.emptyList();
+    }
+    return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
 }

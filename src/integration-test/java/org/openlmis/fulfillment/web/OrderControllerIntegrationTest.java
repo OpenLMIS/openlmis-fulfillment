@@ -85,12 +85,15 @@ import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
+import org.openlmis.fulfillment.testutils.ProcessingPeriodDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
@@ -186,6 +189,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @SpyBean
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @SpyBean
+  private PeriodReferenceDataService periodReferenceDataService;
+
   @Mock
   private DateHelper dateHelper;
 
@@ -201,6 +207,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private FacilityDto facility;
   private FacilityDto facility1;
   private FacilityDto facility2;
+  private ProcessingPeriodDto period1;
+  private ProcessingPeriodDto period2;
 
   private OrderableDto product1;
   private OrderableDto product2;
@@ -221,6 +229,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     program1 = new ProgramDataBuilder().withId(program1Id).build();
     program2 = new ProgramDataBuilder().withId(program2Id).build();
 
+    period1 = new ProcessingPeriodDataBuilder().withId(period1Id).build();
+    period2 = new ProcessingPeriodDataBuilder().withId(period1Id).build();
+
     facility = new FacilityDataBuilder()
         .withId(facilityId)
         .withSupportedPrograms(Arrays.asList(program1, program2))
@@ -236,6 +247,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(programService.findOne(eq(program1Id))).thenReturn(program1);
     when(programService.findOne(eq(program2Id))).thenReturn(program2);
+    when(programService.findByIds(anySetOf(UUID.class))).thenReturn(Arrays.asList(
+        program1, program2));
 
     when(facilityService.findOne(eq(facilityId))).thenReturn(facility);
     when(facilityService.findOne(eq(facility1Id))).thenReturn(facility1);
@@ -254,6 +267,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(userReferenceDataService.findByIds(anySetOf(UUID.class)))
         .thenReturn(Collections.singletonList(user));
+
+    when(periodReferenceDataService.findByIds(anySetOf(UUID.class)))
+        .thenReturn(Arrays.asList(period1, period2));
 
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),

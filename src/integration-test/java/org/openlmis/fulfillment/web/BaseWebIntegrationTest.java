@@ -126,6 +126,10 @@ public abstract class BaseWebIntegrationTest {
       + " \"showNonFullSupplyTab\": false,"
       + " \"periodsSkippable\":true"
       + "}";
+
+  protected static final String MOCK_SEARCH_PROGRAMS = "["
+      + MOCK_FIND_PROGRAM_RESULT + "]";
+
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"" + FACILITY_ID + "\",\n"
       + " \"code\":\"facilityCode\",\n"
@@ -159,6 +163,7 @@ public abstract class BaseWebIntegrationTest {
       + "}";
   protected static final String MOCK_SEARCH_SUPPLYING_FACILITY_RESULT = "["
       + MOCK_FIND_FACILITY_RESULT + "]";
+
   private static final String MOCK_FIND_STOCK_ADJUSTMENT_REASONS_RESULT = "[{"
       + " \"id\":\"62c44f68-9200-1de2-22ea-34b5f98f121a\",\n"
       + " \"programId\":\"5c5a6f68-8658-11e6-ae22-56b6b6499611\",\n"
@@ -265,8 +270,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"maxPeriodsOfStock\": 2"
       + "}]";
 
-  private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
-      + "" + MOCK_FIND_PROCESSING_PERIOD
+  private static final String MOCK_SEARCH_PROCESSING_PERIODS = "[" +
+        MOCK_FIND_PROCESSING_PERIOD
       + "]";
 
   private static final String MOCK_SEARCH_FACILITIES_WITH_SIMILAR_CODE_OR_NAME = "["
@@ -365,11 +370,11 @@ public abstract class BaseWebIntegrationTest {
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("[" + MOCK_FIND_FACILITY_RESULT + "]")));
 
-    // This mocks for find one program
-    wireMockRule.stubFor(get(urlMatching("/api/programs/" + UUID_REGEX + ".*"))
+    // This mocks for find programs
+    wireMockRule.stubFor(get(urlMatching("/api/programs.*"))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_FIND_PROGRAM_RESULT)));
+            .withBody(MOCK_SEARCH_PROGRAMS)));
 
     // This mocks for find stock adjustment reasons for program
     wireMockRule.stubFor(get(urlMatching("/api/stockAdjustmentReasons/search.*"))
@@ -412,12 +417,6 @@ public abstract class BaseWebIntegrationTest {
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withBody(MOCK_FIND_PROCESSING_SCHEDULE)));
-
-    // This mocks searching for processingPeriods
-    wireMockRule.stubFor(get(urlMatching("/api/processingPeriods/" + UUID_REGEX + ".*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_FIND_PROCESSING_PERIOD)));
 
     // This mocks searching for supplyLines
     wireMockRule.stubFor(get(urlMatching("/api/supplyLines/searchByUUID.*"))

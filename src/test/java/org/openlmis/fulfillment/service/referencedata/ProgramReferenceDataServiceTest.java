@@ -15,7 +15,34 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.openlmis.fulfillment.service.PageDto;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+
 public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTest<ProgramDto> {
+
+  private ProgramReferenceDataService service;
 
   @Override
   protected BaseReferenceDataService<ProgramDto> getService() {
@@ -25,5 +52,65 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
   @Override
   protected ProgramDto generateInstance() {
     return new ProgramDto();
+  }
+
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    service = (ProgramReferenceDataService) prepareService();
+  }
+
+  @Test
+  public void shouldFindProgramsByIds() {
+    // given
+    UUID id = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    List<UUID> ids = Arrays.asList(id, id2);
+
+    ProgramDto program = generateInstance();
+    program.setId(id);
+    ProgramDto anotherProgram = generateInstance();
+    anotherProgram.setId(id2);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("id", ids);
+    ResponseEntity response = mock(ResponseEntity.class);
+
+    // when
+    when(response.getBody()).thenReturn(
+        new PageDto<>(new PageImpl<>(Arrays.asList(program, anotherProgram)))
+    );
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+        any(ParameterizedTypeReference.class)
+    )).thenReturn(response);
+
+    List<ProgramDto> programs = service.findByIds(ids);
+
+    // then
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+        entityCaptor.capture(), any(ParameterizedTypeReference.class)
+    );
+    assertTrue(programs.contains(program));
+    assertTrue(programs.contains(anotherProgram));
+
+    String actualUrl = uriCaptor.getValue().toString();
+    assertTrue(actualUrl.startsWith(service.getServiceUrl() + service.getUrl()));
+    assertTrue(actualUrl.contains(id.toString()));
+    assertTrue(actualUrl.contains(id2.toString()));
+
+    assertAuthHeader(entityCaptor.getValue());
+  }
+
+  @Test
+  public void shouldReturnEmptyListWhenFindingProgramsWithNoIdsProvided() {
+    // given
+    checkAuth = false;
+    // when
+    List<ProgramDto> programs = service.findByIds(Collections.emptyList());
+    // then
+    assertThat(programs, empty());
   }
 }

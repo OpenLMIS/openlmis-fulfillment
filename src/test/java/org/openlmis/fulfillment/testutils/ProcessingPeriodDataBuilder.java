@@ -50,4 +50,9 @@ public class ProcessingPeriodDataBuilder {
     period.setId(id);
     return period;
   }
+
+  public ProcessingPeriodDataBuilder withId(UUID id) {
+    this.id = id;
+    return this;
+  }
 }

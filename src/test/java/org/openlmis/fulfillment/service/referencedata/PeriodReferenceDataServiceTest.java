@@ -16,21 +16,37 @@
 package org.openlmis.fulfillment.service.referencedata;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 public class PeriodReferenceDataServiceTest
     extends BaseReferenceDataServiceTest<ProcessingPeriodDto> {
@@ -78,4 +94,56 @@ public class PeriodReferenceDataServiceTest
     assertNull(entityCaptor.getValue().getBody());
   }
 
+  @Test
+  public void shouldFindPeriodsByIds() {
+    // given
+    UUID id = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    List<UUID> ids = Arrays.asList(id, id2);
+
+    ProcessingPeriodDto period = generateInstance();
+    period.setId(id);
+    ProcessingPeriodDto anotherPeriod = generateInstance();
+    anotherPeriod.setId(id2);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("id", ids);
+    ResponseEntity response = mock(ResponseEntity.class);
+
+    // when
+    when(response.getBody()).thenReturn(
+        new PageDto<>(new PageImpl<>(Arrays.asList(period, anotherPeriod)))
+    );
+    when(restTemplate.exchange(
+        any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+        any(ParameterizedTypeReference.class)
+    )).thenReturn(response);
+
+    List<ProcessingPeriodDto> periods = service.findByIds(ids);
+
+    // then
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET),
+        entityCaptor.capture(), any(ParameterizedTypeReference.class)
+    );
+    assertTrue(periods.contains(period));
+    assertTrue(periods.contains(anotherPeriod));
+
+    String actualUrl = uriCaptor.getValue().toString();
+    assertTrue(actualUrl.startsWith(service.getServiceUrl() + service.getUrl()));
+    assertTrue(actualUrl.contains(id.toString()));
+    assertTrue(actualUrl.contains(id2.toString()));
+
+    assertAuthHeader(entityCaptor.getValue());
+  }
+
+  @Test
+  public void shouldReturnEmptyListWhenFindingPeriodsWithNoIdsProvided() {
+    // given
+    checkAuth = false;
+    // when
+    List<ProcessingPeriodDto> periods = service.findByIds(Collections.emptyList());
+    // then
+    Assert.assertThat(periods, empty());
+  }
 }
