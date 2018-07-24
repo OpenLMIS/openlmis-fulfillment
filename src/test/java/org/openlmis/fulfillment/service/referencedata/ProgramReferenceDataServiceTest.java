@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,9 +34,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.fulfillment.service.PageDto;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -78,20 +76,19 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
     ResponseEntity response = mock(ResponseEntity.class);
 
     // when
-    when(response.getBody()).thenReturn(
-        new PageDto<>(new PageImpl<>(Arrays.asList(program, anotherProgram)))
-    );
+    when(response.getBody()).thenReturn(new ProgramDto[]{program, anotherProgram});
+
     when(restTemplate.exchange(
         any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
-        any(ParameterizedTypeReference.class)
+        eq(service.getArrayResultClass())
     )).thenReturn(response);
 
-    List<ProgramDto> programs = service.findByIds(ids);
+    Collection<ProgramDto> programs = service.findByIds(ids);
 
     // then
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), any(ParameterizedTypeReference.class)
+        entityCaptor.capture(), eq(service.getArrayResultClass())
     );
     assertTrue(programs.contains(program));
     assertTrue(programs.contains(anotherProgram));
@@ -109,7 +106,7 @@ public class ProgramReferenceDataServiceTest extends BaseReferenceDataServiceTes
     // given
     checkAuth = false;
     // when
-    List<ProgramDto> programs = service.findByIds(Collections.emptyList());
+    Collection<ProgramDto> programs = service.findByIds(Collections.emptyList());
     // then
     assertThat(programs, empty());
   }
