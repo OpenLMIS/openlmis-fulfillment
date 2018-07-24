@@ -270,7 +270,8 @@ public abstract class BaseWebIntegrationTest {
       + " \"maxPeriodsOfStock\": 2"
       + "}]";
 
-  private static final String MOCK_SEARCH_PROCESSING_PERIODS = "[" +
+  private static final String MOCK_SEARCH_PROCESSING_PERIODS = "["
+      +
         MOCK_FIND_PROCESSING_PERIOD
       + "]";
 
