@@ -127,9 +127,6 @@ public abstract class BaseWebIntegrationTest {
       + " \"periodsSkippable\":true"
       + "}";
 
-  protected static final String MOCK_SEARCH_PROGRAMS = "["
-      + MOCK_FIND_PROGRAM_RESULT + "]";
-
   private static final String MOCK_FIND_FACILITY_RESULT = "{"
       + " \"id\":\"" + FACILITY_ID + "\",\n"
       + " \"code\":\"facilityCode\",\n"
@@ -370,12 +367,6 @@ public abstract class BaseWebIntegrationTest {
             .willReturn(aResponse()
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .withBody("[" + MOCK_FIND_FACILITY_RESULT + "]")));
-
-    // This mocks for find programs
-    wireMockRule.stubFor(get(urlMatching("/api/programs.*"))
-        .willReturn(aResponse()
-            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .withBody(MOCK_SEARCH_PROGRAMS)));
 
     // This mocks for find stock adjustment reasons for program
     wireMockRule.stubFor(get(urlMatching("/api/stockAdjustmentReasons/search.*"))
