@@ -9,7 +9,7 @@ Improvements:
 * [OLMIS-4293](https://openlmis.atlassian.net/browse/OLMIS-4293): Improved performance of get orders
 * [OLMIS-4905](https://openlmis.atlassian.net/browse/OLMIS-4905): Updated notification service to use v2 endpoint.
 * [OLMIS-4491](https://openlmis.atlassian.net/browse/OLMIS-4491): Added new demo data loading strategy.
-* [OLMIS-4820](https://openlmis.atlassian.net/browse/OLMIS-4820): Update BasicOrderDtoBuilder to fetch programs and periods in bulk.
+* [OLMIS-4820](https://openlmis.atlassian.net/browse/OLMIS-4820): Updated BasicOrderDtoBuilder to fetch programs and periods in bulk.
 
 7.0.0 / 2018-04-24
 ==================
