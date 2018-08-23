@@ -15,14 +15,13 @@
 
 package org.openlmis.fulfillment.repository;
 
+import java.util.UUID;
 import org.openlmis.fulfillment.domain.TransferProperties;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.util.UUID;
-
 public interface TransferPropertiesRepository
-    extends PagingAndSortingRepository<TransferProperties, UUID> {
+    extends JpaRepository<TransferProperties, UUID> {
 
   TransferProperties findFirstByFacilityId(@Param("facilityId") UUID facilityId);
 

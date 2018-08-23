@@ -133,7 +133,9 @@ public class TransferPropertiesController extends BaseController {
     TransferProperties entity = TransferPropertiesFactory.newInstance(properties);
 
     if (!Objects.equals(entity.getClass(), toUpdate.getClass())) {
+      LOGGER.debug("Removed old Transfer Properties with id: {}", id);
       transferPropertiesRepository.delete(toUpdate);
+      transferPropertiesRepository.flush();
     }
 
     List<Message.LocalizedMessage> errors = validate(entity);
