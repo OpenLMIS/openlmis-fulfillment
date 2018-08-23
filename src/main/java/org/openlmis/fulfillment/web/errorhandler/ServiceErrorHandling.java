@@ -20,6 +20,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREA
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_REFERENCE_DATA_RETRIEVE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_DRAT_ORDER_DUPLICATE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_DUPLICATE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_PROPERTIES_DUPLICATE;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 import net.sf.jasperreports.engine.JRException;
@@ -57,6 +58,7 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   static {
     CONSTRAINT_MAP.put("shipments_order_unq", SHIPMENT_ORDER_DUPLICATE);
     CONSTRAINT_MAP.put("shipment_drafts_orderid_unq", SHIPMENT_DRAT_ORDER_DUPLICATE);
+    CONSTRAINT_MAP.put("transfer_properties_facility_id_unique", TRANSFER_PROPERTIES_DUPLICATE);
   }
 
   @ExceptionHandler(OrderFileException.class)
