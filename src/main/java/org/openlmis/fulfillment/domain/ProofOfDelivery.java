@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.domain;
 
-
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 import java.time.LocalDate;
@@ -44,7 +43,6 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
-
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -156,7 +154,7 @@ public class ProofOfDelivery extends BaseEntity {
   }
 
   /**
-   * Create instance of ProofOfDelivery based on given {@link ProofOfDelivery.Importer}
+   * Create instance of ProofOfDelivery based on given {@link ProofOfDelivery.Importer}.
    *
    * @param importer instance of {@link ProofOfDelivery.Importer}
    * @return instance of ProofOfDelivery.

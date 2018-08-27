@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.fulfillment.web.errorhandler;
@@ -23,16 +23,18 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_DUPLICATE
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_PROPERTIES_DUPLICATE;
 import static org.springframework.http.HttpStatus.CONFLICT;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.sf.jasperreports.engine.JRException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
-import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.util.Message;
 import org.openlmis.fulfillment.web.ServerException;
 import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
@@ -43,8 +45,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controller advice responsible for handling errors from service layer.

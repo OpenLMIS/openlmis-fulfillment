@@ -5,12 +5,12 @@
  * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Affero General Public License for more details. You should have received a copy of
  * the GNU Affero General Public License along with this program. If not, see
- * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
+ * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
 package org.openlmis.fulfillment.domain;
@@ -20,23 +20,20 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITI
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
 
-import org.hibernate.annotations.Type;
-import org.javers.core.metamodel.annotation.TypeName;
-import org.openlmis.fulfillment.domain.naming.VvmStatus;
-import org.openlmis.fulfillment.web.ValidationException;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.web.ValidationException;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -131,7 +128,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   /**
    * Create new instance of ProofOfDeliveryLineItem based on given
-   * {@link ProofOfDeliveryLineItem.Importer}
+   * {@link ProofOfDeliveryLineItem.Importer}.
    * @param importer instance of {@link ProofOfDeliveryLineItem.Importer}
    * @return instance of ProofOfDeliveryLineItem.
    */
