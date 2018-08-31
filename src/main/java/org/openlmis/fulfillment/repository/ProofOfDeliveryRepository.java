@@ -19,12 +19,16 @@ import java.util.List;
 import java.util.UUID;
 import org.javers.spring.annotation.JaversSpringDataAuditable;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 @JaversSpringDataAuditable
-public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
+public interface ProofOfDeliveryRepository extends
+    JpaRepository<ProofOfDelivery, UUID>,
+    BaseAuditableRepository<ProofOfDelivery, UUID> {
 
   @Query("SELECT p FROM ProofOfDelivery AS p WHERE p.shipment.id = :shipmentId")
   List<ProofOfDelivery> findByShipmentId(@Param("shipmentId") UUID shipmentId);
@@ -32,5 +36,22 @@ public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery
   @Query("SELECT p FROM ProofOfDelivery AS p WHERE p.shipment.order.id = :orderId")
   List<ProofOfDelivery> findByOrderId(@Param("orderId") UUID orderId);
 
+  @Query(value = "SELECT\n"
+      + "    p.*\n"
+      + "FROM\n"
+      + "    fulfillment.proofs_of_delivery p\n"
+      + "WHERE\n"
+      + "    id NOT IN (\n"
+      + "        SELECT\n"
+      + "            id\n"
+      + "        FROM\n"
+      + "            fulfillment.proofs_of_delivery p\n"
+      + "            INNER JOIN fulfillment.jv_global_id g "
+      + "ON CAST(p.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
+      + "            INNER JOIN fulfillment.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
+      + "    )\n"
+      + " ORDER BY ?#{#pageable}",
+      nativeQuery = true)
+  Page<ProofOfDelivery> findAllWithoutSnapshots(Pageable pageable);
 }
 

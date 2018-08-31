@@ -22,12 +22,33 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 @JaversSpringDataAuditable
-public interface ShipmentDraftRepository extends PagingAndSortingRepository<ShipmentDraft, UUID> {
+public interface ShipmentDraftRepository extends
+    PagingAndSortingRepository<ShipmentDraft, UUID>,
+    BaseAuditableRepository<ShipmentDraft, UUID> {
 
   Collection<ShipmentDraft> findByOrder(Order order);
 
   Page<ShipmentDraft> findByOrder(Order order, Pageable pageable);
+
+  @Query(value = "SELECT\n"
+      + "    d.*\n"
+      + "FROM\n"
+      + "    fulfillment.shipment_drafts d\n"
+      + "WHERE\n"
+      + "    id NOT IN (\n"
+      + "        SELECT\n"
+      + "            id\n"
+      + "        FROM\n"
+      + "            fulfillment.shipment_drafts d\n"
+      + "            INNER JOIN fulfillment.jv_global_id g "
+      + "ON CAST(d.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
+      + "            INNER JOIN fulfillment.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
+      + "    )\n"
+      + " ORDER BY ?#{#pageable}",
+      nativeQuery = true)
+  Page<ShipmentDraft> findAllWithoutSnapshots(Pageable pageable);
 }

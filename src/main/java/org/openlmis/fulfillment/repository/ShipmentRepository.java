@@ -21,10 +21,31 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 @JaversSpringDataAuditable
-public interface ShipmentRepository extends PagingAndSortingRepository<Shipment, UUID> {
+public interface ShipmentRepository extends
+    PagingAndSortingRepository<Shipment, UUID>,
+    BaseAuditableRepository<Shipment, UUID> {
 
   Page<Shipment> findByOrder(Order order, Pageable pageable);
+
+  @Query(value = "SELECT\n"
+      + "    sh.*\n"
+      + "FROM\n"
+      + "    fulfillment.shipments sh\n"
+      + "WHERE\n"
+      + "    id NOT IN (\n"
+      + "        SELECT\n"
+      + "            id\n"
+      + "        FROM\n"
+      + "            fulfillment.shipments sh\n"
+      + "            INNER JOIN fulfillment.jv_global_id g "
+      + "ON CAST(sh.id AS varchar) = SUBSTRING(g.local_id, 2, 36)\n"
+      + "            INNER JOIN fulfillment.jv_snapshot s  ON g.global_id_pk = s.global_id_fk\n"
+      + "    )\n"
+      + " ORDER BY ?#{#pageable}",
+      nativeQuery = true)
+  Page<Shipment> findAllWithoutSnapshots(Pageable pageable);
 }

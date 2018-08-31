@@ -5,6 +5,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4442](https://openlmis.atlassian.net/browse/OLMIS-4442): Fixed problem with changing transfer properties type.
   * Added user friendly message for facility duplication in transfer properties.
 * [OLMIS-4295](https://openlmis.atlassian.net/browse/OLMIS-4295): Updated checkstyle to use newest google style.
+* [OLMIS-3078](https://openlmis.atlassian.net/browse/OLMIS-3078): Made Javers log initializer not iterate over all items, only those without logs.
 
 7.0.1 / 2018-08-16
 ==================
