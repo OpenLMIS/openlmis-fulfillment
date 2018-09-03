@@ -129,5 +129,4 @@ public class AuditLogInitializer implements CommandLineRunner {
           baseEntity.getClass(), baseEntity.getId());
     }
   }
-
 }

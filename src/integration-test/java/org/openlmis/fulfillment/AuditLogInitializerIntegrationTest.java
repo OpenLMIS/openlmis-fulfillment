@@ -34,7 +34,6 @@ import org.javers.core.metamodel.object.InstanceId;
 import org.javers.repository.jql.QueryBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
@@ -207,21 +206,13 @@ public class AuditLogInitializerIntegrationTest {
     return orderRepository.save(order);
   }
 
-  private CreationDetails addShipmentDetails() {
-    CreationDetails shipDetails = new CreationDetailsDataBuilder()
-        .build();
-    return shipDetails;
-  }
-
   private Shipment addShipment() {
-    CreationDetails shipDetails = addShipmentDetails();
-    Order order = addOrder();
-
     Shipment shipment = new ShipmentDataBuilder()
         .withoutId()
         .withoutLineItems()
-        .withShipDetails(shipDetails)
-        .withOrder(order)
+        .withShipDetails(new CreationDetailsDataBuilder()
+            .build())
+        .withOrder(addOrder())
         .build();
 
     return shipmentRepository.save(shipment);
