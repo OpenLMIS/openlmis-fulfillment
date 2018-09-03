@@ -38,6 +38,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * AuditLogInitializer runs after its associated Spring application has loaded.
@@ -48,6 +49,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Profile("refresh-db")
 @Order(20)
+@Transactional
 public class AuditLogInitializer implements CommandLineRunner {
   private static final XLogger LOGGER = XLoggerFactory.getXLogger(AuditLogInitializer.class);
 
