@@ -1,5 +1,8 @@
-7.0.2 WIP
+7.0.2 / WIP
 ==================
+
+New functionality added in a backwards-compatible manner:
+* [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added currency, number and date settings to application properties.
 
 Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4442](https://openlmis.atlassian.net/browse/OLMIS-4442): Fixed problem with changing transfer properties type.
