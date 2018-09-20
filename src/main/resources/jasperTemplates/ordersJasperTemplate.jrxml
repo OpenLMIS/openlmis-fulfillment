@@ -13,6 +13,7 @@
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<property name="reportType" value="Timeliness Report"/>
 	<import value="org.openlmis.fulfillment.web.util.*"/>
+	<import value="java.text.DecimalFormat"/>
 	<style name="Row" mode="Transparent">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
@@ -25,6 +26,7 @@
 	<parameter name="loggedInUser" class="java.lang.String">
 		<property name="displayName" value="LoggedInUser"/>
 	</parameter>
+	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -245,7 +247,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalDispensingUnits}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{decimalFormat}.format($F{totalDispensingUnits}).toString()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="50" height="25" uuid="28c1bf9c-6c13-4551-abf3-82481d555ab9"/>
@@ -291,7 +293,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{orderedQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{decimalFormat}.format($F{orderedQuantity}).toString()]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

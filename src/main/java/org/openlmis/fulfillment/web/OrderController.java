@@ -21,6 +21,8 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STAT
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -113,6 +116,15 @@ public class OrderController extends BaseController {
 
   @Autowired
   private BasicOrderDtoBuilder basicOrderDtoBuilder;
+
+  @Value("${groupingSeparator}")
+  private String groupingSeparator;
+
+  @Value("${groupingSize}")
+  private String groupingSize;
+
+  @Value("${dateTimeFormat}")
+  private String dateTimeFormat;
 
   /**
    * Allows creating new orders.
@@ -235,11 +247,18 @@ public class OrderController extends BaseController {
     try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
       templateService.createTemplateParameters(template, fis);
     }
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsView(template, request);
 
     Map<String, Object> params = new HashMap<>();
     params.put("format", format);
+    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+    decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
+    DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
+    decimalFormat.setGroupingSize(Integer.parseInt(groupingSize));
+    params.put("decimalFormat", decimalFormat);
+    params.put("dateFormat", dateTimeFormat);
+
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService
+        .getJasperReportsView(template, request);
 
     return jasperReportsViewService.getOrderJasperReportView(jasperView, params, order);
   }

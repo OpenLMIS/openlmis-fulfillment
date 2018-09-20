@@ -22,12 +22,16 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Clock;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JasperFillManager;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -59,6 +63,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -116,6 +121,9 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private FulfillmentNotificationService fulfillmentNotificationService;
+
+  @Value("${dateFormat}")
+  private String dateFormat;
 
   /**
    * Get all proofs of delivery.
@@ -303,6 +311,7 @@ public class ProofOfDeliveryController extends BaseController {
     Map<String, Object> params = new HashMap<>();
     params.put("format", "pdf");
     params.put("id", proofOfDelivery.getId());
+    params.put("dateFormat", dateFormat);
 
     ModelAndView modelAndView = new ModelAndView(jasperView, params);
 

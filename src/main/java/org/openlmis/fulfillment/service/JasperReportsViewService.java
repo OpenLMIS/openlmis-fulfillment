@@ -59,7 +59,6 @@ public class JasperReportsViewService {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
-
   /**
    * Create Jasper Report View.
    * Create Jasper Report (".jasper" file) from bytes from Template entity.
