@@ -6,6 +6,7 @@
   <import value="java.text.DecimalFormat"/>
   <import value="java.time.ZonedDateTime"/>
   <import value="java.time.LocalDate"/>
+  <import value="java.time.ZoneId"/>
   <import value="java.time.format.DateTimeFormatter"/>
   <parameter name="id" class="java.lang.String">
     <property name="displayName" value="Proof of Delivery"/>
@@ -18,6 +19,9 @@
   </parameter>
   <parameter name="dateFormat" class="java.lang.String" isForPrompting="false">
     <property name="displayName" value="DateFormat"/>
+  </parameter>
+  <parameter name="timeZoneId" class="java.lang.String" isForPrompting="false">
+    <property name="displayName" value="TimeZoneId"/>
   </parameter>
   <queryString language="SQL">
     <![CDATA[SELECT DISTINCT ON (orderProductName, productname, lotcode)
@@ -620,7 +624,8 @@ ORDER BY
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" x="420" y="24" width="110" height="20" uuid="bce52b53-860d-4071-b91e-88c902b244f2"/>
           <textFieldExpression>
-            <![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(ZonedDateTime.parse($F{orderdate}.toString()))]]>
+            <![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
+            ZonedDateTime.ofInstant($F{orderdate}.toInstant(), ZoneId.of($P{timeZoneId})))]]>
           </textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">

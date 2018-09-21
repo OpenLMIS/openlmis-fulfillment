@@ -132,6 +132,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Value("${groupingSize}")
   private String groupingSize;
 
+  @Value("${time.zoneId}")
+  private String timeZoneId;
+
   /**
    * Get all proofs of delivery.
    *
@@ -323,6 +326,7 @@ public class ProofOfDeliveryController extends BaseController {
     decimalFormat.setGroupingSize(Integer.parseInt(groupingSize));
     params.put("decimalFormat", decimalFormat);
     params.put("dateTimeFormat", dateTimeFormat);
+    params.put("timeZoneId", timeZoneId);
 
     JasperReportsMultiFormatView jasperView = jasperReportsViewService
         .getJasperReportsView(template, request);
