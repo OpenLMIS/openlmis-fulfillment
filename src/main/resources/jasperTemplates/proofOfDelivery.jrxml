@@ -839,7 +839,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityaccepted}).toString()]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$F{quantityaccepted} != null ? $P{decimalFormat}.format($F{quantityaccepted}).toString() : ""]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="550" y="0" width="70" height="20" uuid="a313b3f1-4386-4e49-bc65-cf3e9cc4f4b2">
@@ -853,7 +853,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityreturned}).toString()]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$F{quantityreturned} != null ? $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="70" height="20" uuid="12c21d58-5a3e-4b22-be39-ae601e5baece">
