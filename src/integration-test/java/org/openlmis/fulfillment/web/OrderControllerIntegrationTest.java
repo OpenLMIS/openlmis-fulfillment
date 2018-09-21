@@ -103,7 +103,6 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageImpl;
@@ -218,15 +217,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Pageable pageable = new PageRequest(0, 10);
 
   private UserDto user = new UserDataBuilder().withId(INITIAL_USER_ID).build();
-
-  @Value("${groupingSeparator}")
-  private String groupingSeparator;
-
-  @Value("${groupingSize}")
-  private String groupingSize;
-
-  @Value("${dateTimeFormat}")
-  private String dateTimeFormat;
 
   @Before
   public void setUp() {
