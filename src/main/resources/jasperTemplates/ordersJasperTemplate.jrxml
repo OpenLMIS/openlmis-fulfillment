@@ -14,6 +14,8 @@
 	<property name="reportType" value="Timeliness Report"/>
 	<import value="org.openlmis.fulfillment.web.util.*"/>
 	<import value="java.text.DecimalFormat"/>
+	<import value="java.time.ZonedDateTime"/>
+	<import value="java.time.format.DateTimeFormatter"/>
 	<style name="Row" mode="Transparent">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
@@ -26,7 +28,12 @@
 	<parameter name="loggedInUser" class="java.lang.String">
 		<property name="displayName" value="LoggedInUser"/>
 	</parameter>
-	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false"/>
+	<parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
+		<property name="displayName" value="DecimalFormat"/>
+	</parameter>
+	<parameter name="dateTimeFormat" class="java.lang.String" isForPrompting="false">
+		<property name="displayName" value="DateTimeFormat"/>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -419,7 +426,8 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getAuthorizedStatusChange().printDate();]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getAuthorizedStatusChange().getCreatedDate())]]>
+				</textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="380" y="100" width="40" height="20" uuid="c8adb3e0-3283-482a-96a4-9898a6beb3a9"/>
@@ -439,7 +447,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getApprovedStatusChange().printDate();]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getApprovedStatusChange().getCreatedDate())]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="380" y="120" width="40" height="20" uuid="992fcd9b-f17f-4ee8-8aee-cf95482ae224"/>
@@ -459,7 +467,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getReleasedStatusChange().printDate();]]></textFieldExpression>
+				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getReleasedStatusChange().getCreatedDate())]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="430" y="140" width="122" height="20" uuid="2308393b-b536-4676-a4f7-8bd83528b662"/>

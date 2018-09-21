@@ -255,7 +255,7 @@ public class OrderController extends BaseController {
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
     decimalFormat.setGroupingSize(Integer.parseInt(groupingSize));
     params.put("decimalFormat", decimalFormat);
-    params.put("dateFormat", dateTimeFormat);
+    params.put("dateTimeFormat", dateTimeFormat);
 
     JasperReportsMultiFormatView jasperView = jasperReportsViewService
         .getJasperReportsView(template, request);

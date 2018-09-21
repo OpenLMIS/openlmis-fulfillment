@@ -22,16 +22,14 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Clock;
-import java.time.ZoneId;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JasperFillManager;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -124,6 +122,15 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Value("${dateFormat}")
   private String dateFormat;
+
+  @Value("${dateTimeFormat}")
+  private String dateTimeFormat;
+
+  @Value("${groupingSeparator}")
+  private String groupingSeparator;
+
+  @Value("${groupingSize}")
+  private String groupingSize;
 
   /**
    * Get all proofs of delivery.
@@ -305,13 +312,20 @@ public class ProofOfDeliveryController extends BaseController {
       templateService.createTemplateParameters(template, fis);
     }
     profiler.start("GENERATE_JASPER_VIEW");
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsView(template, request);
 
     Map<String, Object> params = new HashMap<>();
     params.put("format", "pdf");
     params.put("id", proofOfDelivery.getId());
     params.put("dateFormat", dateFormat);
+    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+    decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
+    DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
+    decimalFormat.setGroupingSize(Integer.parseInt(groupingSize));
+    params.put("decimalFormat", decimalFormat);
+    params.put("dateTimeFormat", dateTimeFormat);
+
+    JasperReportsMultiFormatView jasperView = jasperReportsViewService
+        .getJasperReportsView(template, request);
 
     ModelAndView modelAndView = new ModelAndView(jasperView, params);
 

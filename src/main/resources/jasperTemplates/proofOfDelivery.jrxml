@@ -3,8 +3,21 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proofOfDelivery" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="c9b88bba-e685-4f37-89f1-8175e056a730">
   <property name="com.jaspersoft.studio.data.defaultdataadapter" value="localDataAdapter.xml"/>
   <property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+  <import value="java.text.DecimalFormat"/>
+  <import value="java.time.ZonedDateTime"/>
+  <import value="java.time.LocalDate"/>
+  <import value="java.time.format.DateTimeFormatter"/>
   <parameter name="id" class="java.lang.String">
     <property name="displayName" value="Proof of Delivery"/>
+  </parameter>
+  <parameter name="decimalFormat" class="java.text.DecimalFormat" isForPrompting="false">
+    <property name="displayName" value="DecimalFormat"/>
+  </parameter>
+  <parameter name="dateTimeFormat" class="java.lang.String" isForPrompting="false">
+    <property name="displayName" value="DateTimeFormat"/>
+  </parameter>
+  <parameter name="dateFormat" class="java.lang.String" isForPrompting="false">
+    <property name="displayName" value="DateFormat"/>
   </parameter>
   <queryString language="SQL">
     <![CDATA[SELECT DISTINCT ON (orderProductName, productname, lotcode)
@@ -163,10 +176,10 @@ ORDER BY
   <field name="orderdate" class="java.sql.Timestamp">
     <property name="com.jaspersoft.studio.field.label" value="orderdate"/>
   </field>
-  <field name="periodstartdate" class="java.sql.Date">
+  <field name="periodstartdate" class="java.lang.String">
     <property name="com.jaspersoft.studio.field.label" value="periodstartdate"/>
   </field>
-  <field name="periodenddate" class="java.sql.Date">
+  <field name="periodenddate" class="java.lang.String">
     <property name="com.jaspersoft.studio.field.label" value="periodenddate"/>
   </field>
   <field name="supplyingfacility" class="java.lang.String">
@@ -205,7 +218,7 @@ ORDER BY
   <field name="receivedby" class="java.lang.String">
     <property name="com.jaspersoft.studio.field.label" value="receivedby"/>
   </field>
-  <field name="receiveddate" class="java.sql.Date">
+  <field name="receiveddate" class="java.lang.String">
     <property name="com.jaspersoft.studio.field.label" value="receiveddate"/>
   </field>
   <field name="orderProductName" class="java.lang.String"/>
@@ -255,7 +268,7 @@ ORDER BY
             <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
           </box>
           <textElement verticalAlignment="Middle"/>
-          <textFieldExpression><![CDATA[$F{quantityordered}]]></textFieldExpression>
+          <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityordered}).toString()]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="620" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="fee7ae94-a0b2-4ffe-84d0-9624f2b76451">
@@ -604,13 +617,17 @@ ORDER BY
           </reportElement>
           <textFieldExpression><![CDATA[$F{orderingfacilitycode} + " - " + $F{orderingfacility}]]></textFieldExpression>
         </textField>
-        <textField isStretchWithOverflow="true" pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="true">
+        <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" x="420" y="24" width="110" height="20" uuid="bce52b53-860d-4071-b91e-88c902b244f2"/>
-          <textFieldExpression><![CDATA[$F{orderdate}]]></textFieldExpression>
+          <textFieldExpression>
+            <![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(ZonedDateTime.parse($F{orderdate}.toString()))]]>
+          </textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" x="540" y="24" width="130" height="20" uuid="e22e66f2-d7be-4f05-99b4-57cacf3a7567"/>
-          <textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($F{periodstartdate}) + " - " + new SimpleDateFormat("dd/MM/yyyy").format($F{periodenddate})]]></textFieldExpression>
+          <textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.parse($F{periodstartdate}))
+           + " - " + DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.parse($F{periodenddate}))]]>
+          </textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" x="680" y="24" width="110" height="20" uuid="d5d4d509-c122-4414-b010-23283f1ab8a1"/>
@@ -774,7 +791,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$F{quantityshipped}]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityshipped}).toString()]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="700" y="0" width="100" height="20" uuid="3d74a886-184c-4912-9be8-d505876fe76c">
@@ -817,7 +834,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$F{quantityaccepted}]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityaccepted}).toString()]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="550" y="0" width="70" height="20" uuid="a313b3f1-4386-4e49-bc65-cf3e9cc4f4b2">
@@ -831,7 +848,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$F{quantityreturned}]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityreturned}).toString()]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="70" height="20" uuid="12c21d58-5a3e-4b22-be39-ae601e5baece">
@@ -963,7 +980,7 @@ ORDER BY
           </textElement>
           <text><![CDATA[Delivered By]]></text>
         </staticText>
-        <textField isStretchWithOverflow="true" pattern="dd/MM/yyyy" isBlankWhenNull="true">
+        <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement key="" stretchType="RelativeToTallestObject" x="570" y="20" width="210" height="15" uuid="3ba2d258-9b3f-458d-af70-589b63aeee9e">
             <property name="com.jaspersoft.studio.unit.x" value="pixel"/>
             <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -978,7 +995,7 @@ ORDER BY
           <textElement verticalAlignment="Middle">
             <font size="10"/>
           </textElement>
-          <textFieldExpression><![CDATA[$F{receiveddate}]]></textFieldExpression>
+          <textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.parse($F{receiveddate}))]]></textFieldExpression>
         </textField>
         <staticText>
           <reportElement x="299" y="5" width="100" height="15" uuid="394ecbca-a192-4d4d-855f-7a2b29775a1f">
