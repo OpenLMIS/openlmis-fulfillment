@@ -19,12 +19,12 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.openlmis.fulfillment.domain.OrderFileColumn;
+import org.openlmis.fulfillment.domain.CsvFileColumn;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderFileColumnDto implements OrderFileColumn.Importer, OrderFileColumn.Exporter {
+public class CsvFileColumnDto implements CsvFileColumn.Importer, CsvFileColumn.Exporter {
 
   private UUID id;
   private Boolean openLmisField;
@@ -39,13 +39,13 @@ public class OrderFileColumnDto implements OrderFileColumn.Importer, OrderFileCo
   private String relatedKeyPath;
 
   /**
-   * Create new instance of OrderFileColumnDto based on given {@link OrderFileColumn}.
-   * @param orderFileColumn instance of Template
+   * Create new instance of CsvFileColumnDto based on given {@link CsvFileColumn}.
+   * @param csvFileColumn instance of Template
    * @return new instance of TemplateDto.
    */
-  public static OrderFileColumnDto newInstance(OrderFileColumn orderFileColumn) {
-    OrderFileColumnDto orderFileColumnDto = new OrderFileColumnDto();
-    orderFileColumn.export(orderFileColumnDto);
-    return orderFileColumnDto;
+  public static CsvFileColumnDto newInstance(CsvFileColumn csvFileColumn) {
+    CsvFileColumnDto csvFileColumnDto = new CsvFileColumnDto();
+    csvFileColumn.export(csvFileColumnDto);
+    return csvFileColumnDto;
   }
 }

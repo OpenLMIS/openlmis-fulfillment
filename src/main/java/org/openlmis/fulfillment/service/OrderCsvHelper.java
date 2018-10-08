@@ -25,9 +25,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.jxpath.JXPathContext;
+import org.openlmis.fulfillment.domain.CsvFileColumn;
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderFileColumn;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -67,30 +67,30 @@ public class OrderCsvHelper {
   /**
    * Exporting order to csv.
    */
-  public void writeCsvFile(Order order, OrderFileTemplate orderFileTemplate, Writer writer)
+  public void writeCsvFile(Order order, CsvFileTemplate csvFileTemplate, Writer writer)
       throws IOException {
-    List<OrderFileColumn> orderFileColumns = orderFileTemplate.getOrderFileColumns();
-    removeExcludedColumns(orderFileColumns);
-    if (orderFileTemplate.getHeaderInFile()) {
-      writeHeader(orderFileColumns, writer);
+    List<CsvFileColumn> csvFileColumns = csvFileTemplate.getCsvFileColumns();
+    removeExcludedColumns(csvFileColumns);
+    if (csvFileTemplate.getHeaderInFile()) {
+      writeHeader(csvFileColumns, writer);
     }
 
-    writeLineItems(order, order.getOrderLineItems(), orderFileColumns, writer);
+    writeLineItems(order, order.getOrderLineItems(), csvFileColumns, writer);
   }
 
-  private void removeExcludedColumns(List<OrderFileColumn> orderFileColumns) {
-    filter(orderFileColumns, object -> ((OrderFileColumn) object).getInclude());
+  private void removeExcludedColumns(List<CsvFileColumn> csvFileColumns) {
+    filter(csvFileColumns, object -> ((CsvFileColumn) object).getInclude());
   }
 
-  private void writeHeader(List<OrderFileColumn> orderFileColumns, Writer writer)
+  private void writeHeader(List<CsvFileColumn> csvFileColumns, Writer writer)
       throws IOException {
-    for (OrderFileColumn column : orderFileColumns) {
+    for (CsvFileColumn column : csvFileColumns) {
       String columnLabel = column.getColumnLabel();
       if (columnLabel == null) {
         columnLabel = "";
       }
       writer.write(columnLabel);
-      if (orderFileColumns.indexOf(column) == (orderFileColumns.size() - 1)) {
+      if (csvFileColumns.indexOf(column) == (csvFileColumns.size() - 1)) {
         writer.write(LINE_SEPARATOR);
         break;
       }
@@ -99,92 +99,92 @@ public class OrderCsvHelper {
   }
 
   private void writeLineItems(Order order, List<OrderLineItem> orderLineItems,
-                              List<OrderFileColumn> orderFileColumns, Writer writer)
+                              List<CsvFileColumn> csvFileColumns, Writer writer)
       throws IOException {
     int counter = 1;
     for (OrderLineItem orderLineItem : orderLineItems) {
       if (includeZeroQuantity || orderLineItem.getOrderedQuantity() > 0) {
-        writeCsvLineItem(order, orderLineItem, orderFileColumns, writer, counter++);
+        writeCsvLineItem(order, orderLineItem, csvFileColumns, writer, counter++);
         writer.write(LINE_SEPARATOR);
       }
     }
   }
 
   private void writeCsvLineItem(Order order, OrderLineItem orderLineItem,
-                                List<OrderFileColumn> orderFileColumns, Writer writer, int counter)
+                                List<CsvFileColumn> csvFileColumns, Writer writer, int counter)
       throws IOException {
     JXPathContext orderContext = JXPathContext.newContext(order);
     JXPathContext lineItemContext = JXPathContext.newContext(orderLineItem);
-    for (OrderFileColumn orderFileColumn : orderFileColumns) {
-      if (orderFileColumn.getNested() == null || orderFileColumn.getNested().isEmpty()) {
-        if (orderFileColumns.indexOf(orderFileColumn) < orderFileColumns.size() - 1) {
+    for (CsvFileColumn csvFileColumn : csvFileColumns) {
+      if (csvFileColumn.getNested() == null || csvFileColumn.getNested().isEmpty()) {
+        if (csvFileColumns.indexOf(csvFileColumn) < csvFileColumns.size() - 1) {
           writer.write(",");
         }
         continue;
       }
-      Object columnValue = getColumnValue(counter, orderContext, lineItemContext, orderFileColumn);
+      Object columnValue = getColumnValue(counter, orderContext, lineItemContext, csvFileColumn);
 
       if (columnValue instanceof ZonedDateTime) {
-        columnValue = ((ZonedDateTime) columnValue).format(ofPattern(orderFileColumn.getFormat()));
+        columnValue = ((ZonedDateTime) columnValue).format(ofPattern(csvFileColumn.getFormat()));
       } else if (columnValue instanceof LocalDate) {
-        columnValue = ((LocalDate) columnValue).format(ofPattern(orderFileColumn.getFormat()));
+        columnValue = ((LocalDate) columnValue).format(ofPattern(csvFileColumn.getFormat()));
       }
       if (ENCLOSE_VALUES_WITH_QUOTES) {
         writer.write("\"" + (columnValue).toString() + "\"");
       } else {
         writer.write((columnValue).toString());
       }
-      if (orderFileColumns.indexOf(orderFileColumn) < orderFileColumns.size() - 1) {
+      if (csvFileColumns.indexOf(csvFileColumn) < csvFileColumns.size() - 1) {
         writer.write(",");
       }
     }
   }
 
   private Object getColumnValue(int counter, JXPathContext orderContext,
-                                JXPathContext lineItemContext, OrderFileColumn orderFileColumn) {
+                                JXPathContext lineItemContext, CsvFileColumn csvFileColumn) {
     Object columnValue;
 
-    switch (orderFileColumn.getNested()) {
+    switch (csvFileColumn.getNested()) {
       case STRING:
-        columnValue = orderFileColumn.getKeyPath();
+        columnValue = csvFileColumn.getKeyPath();
         break;
       case LINE_NO:
         columnValue = counter;
         break;
       case ORDER:
-        columnValue = orderContext.getValue(orderFileColumn.getKeyPath());
+        columnValue = orderContext.getValue(csvFileColumn.getKeyPath());
         break;
       default:
-        columnValue = lineItemContext.getValue(orderFileColumn.getKeyPath());
+        columnValue = lineItemContext.getValue(csvFileColumn.getKeyPath());
         break;
     }
 
-    if (orderFileColumn.getRelated() != null && !orderFileColumn.getRelated().isEmpty()) {
-      columnValue = getRelatedColumnValue((UUID) columnValue, orderFileColumn);
+    if (csvFileColumn.getRelated() != null && !csvFileColumn.getRelated().isEmpty()) {
+      columnValue = getRelatedColumnValue((UUID) columnValue, csvFileColumn);
     }
 
     return columnValue == null ? "" : columnValue;
   }
 
-  private Object getRelatedColumnValue(UUID relatedId, OrderFileColumn orderFileColumn) {
+  private Object getRelatedColumnValue(UUID relatedId, CsvFileColumn csvFileColumn) {
     if (relatedId == null) {
       return null;
     }
 
     Object columnValue;
 
-    switch (orderFileColumn.getRelated()) {
+    switch (csvFileColumn.getRelated()) {
       case FACILITY:
         FacilityDto facility = facilityReferenceDataService.findOne(relatedId);
-        columnValue = getValue(facility, orderFileColumn.getRelatedKeyPath());
+        columnValue = getValue(facility, csvFileColumn.getRelatedKeyPath());
         break;
       case PRODUCT:
         OrderableDto product = orderableReferenceDataService.findOne(relatedId);
-        columnValue = getValue(product, orderFileColumn.getRelatedKeyPath());
+        columnValue = getValue(product, csvFileColumn.getRelatedKeyPath());
         break;
       case PERIOD:
         ProcessingPeriodDto period = periodReferenceDataService.findOne(relatedId);
-        columnValue = getValue(period, orderFileColumn.getRelatedKeyPath());
+        columnValue = getValue(period, csvFileColumn.getRelatedKeyPath());
         break;
       default:
         columnValue = null;

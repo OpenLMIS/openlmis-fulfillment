@@ -20,6 +20,8 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -30,10 +32,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "order_file_templates")
+@Table(name = "csv_file_templates")
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderFileTemplate extends BaseEntity {
+public class CsvFileTemplate extends BaseEntity {
 
   @Column(nullable = false)
   @Getter
@@ -45,33 +47,40 @@ public class OrderFileTemplate extends BaseEntity {
   @Setter
   private Boolean headerInFile;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  private CsvTemplateType templateType;
+
   @OneToMany(
-      mappedBy = "orderFileTemplate",
+      mappedBy = "csvFileTemplate",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
       orphanRemoval = true)
   @OrderBy("position ASC")
   @Getter
   @Setter
-  private List<OrderFileColumn> orderFileColumns;
+  private List<CsvFileColumn> csvFileColumns;
 
   /**
-   * Updates itself using data from {@link OrderFileTemplate.Importer}.
+   * Updates itself using data from {@link CsvFileTemplate.Importer}.
    *
-   * @param importer instance of {@link OrderFileTemplate.Importer}
+   * @param importer instance of {@link CsvFileTemplate.Importer}
    */
   public void importDto(Importer importer) {
     id = importer.getId();
     filePrefix = importer.getFilePrefix();
     headerInFile = importer.getHeaderInFile();
+    templateType = importer.getTemplateType();
 
-    orderFileColumns.clear();
-    if (importer.getOrderFileColumns() != null) {
-      for (OrderFileColumn.Importer columnImporter : importer.getOrderFileColumns()) {
-        OrderFileColumn column = OrderFileColumn.newInstance(columnImporter);
-        column.setOrderFileTemplate(this);
+    csvFileColumns.clear();
+    if (importer.getCsvFileColumns() != null) {
+      for (CsvFileColumn.Importer columnImporter : importer.getCsvFileColumns()) {
+        CsvFileColumn column = CsvFileColumn.newInstance(columnImporter);
+        column.setCsvFileTemplate(this);
 
-        orderFileColumns.add(column);
+        csvFileColumns.add(column);
       }
     }
   }
@@ -85,6 +94,7 @@ public class OrderFileTemplate extends BaseEntity {
     exporter.setId(id);
     exporter.setFilePrefix(filePrefix);
     exporter.setHeaderInFile(headerInFile);
+    exporter.setTemplateType(templateType);
   }
 
   public interface Exporter {
@@ -93,6 +103,8 @@ public class OrderFileTemplate extends BaseEntity {
     void setFilePrefix(String filePrefix);
 
     void setHeaderInFile(Boolean headerInFile);
+
+    void setTemplateType(CsvTemplateType templateType);
 
   }
 
@@ -103,7 +115,9 @@ public class OrderFileTemplate extends BaseEntity {
 
     Boolean getHeaderInFile();
 
-    List<OrderFileColumn.Importer> getOrderFileColumns();
+    List<CsvFileColumn.Importer> getCsvFileColumns();
+
+    CsvTemplateType getTemplateType();
 
   }
 }

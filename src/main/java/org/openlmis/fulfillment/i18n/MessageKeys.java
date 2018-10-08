@@ -28,7 +28,7 @@ public abstract class MessageKeys {
   private static final String USER = "user";
   private static final String ORDER = "order";
   private static final String ORDER_RETRY = "orderRetry";
-  private static final String ORDER_FILE_TEMPLATE = "orderFileTemplate";
+  private static final String ORDER_FILE_TEMPLATE = "csvFileTemplate";
   private static final String REFERENCE_DATA = "referenceData";
   private static final String REPORTING = "reporting";
   private static final String TRANSFER_PROPERTIES = "transferProperties";

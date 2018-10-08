@@ -16,10 +16,17 @@
 package org.openlmis.fulfillment.repository;
 
 import java.util.UUID;
-import org.openlmis.fulfillment.domain.OrderFileColumn;
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.CsvTemplateType;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
-public interface OrderFileColumnRepository extends
-    PagingAndSortingRepository<OrderFileColumn, UUID> {
+
+public interface CsvFileTemplateRepository extends
+    PagingAndSortingRepository<CsvFileTemplate, UUID> {
+
+  @Query("SELECT t FROM CsvFileTemplate AS t JOIN FETCH t.csvFileColumns "
+      + "WHERE t.templateType = :templateType")
+  CsvFileTemplate findFirstByTemplateType(@Param("templateType") CsvTemplateType templateType);
 }
-

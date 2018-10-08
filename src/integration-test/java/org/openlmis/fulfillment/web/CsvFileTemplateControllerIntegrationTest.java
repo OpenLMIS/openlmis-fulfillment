@@ -29,45 +29,48 @@ import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.fulfillment.domain.OrderFileColumn;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.service.OrderFileTemplateService;
-import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
+import org.openlmis.fulfillment.domain.CsvFileColumn;
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.CsvTemplateType;
+import org.openlmis.fulfillment.service.CsvFileTemplateService;
+import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/orderFileTemplates";
+  private static final String RESOURCE_URL = "/api/csvFileTemplates";
+  private static final String ORDER = "ORDER";
 
-  private OrderFileTemplate orderFileTemplate = new OrderFileTemplate();
-  private OrderFileTemplateDto orderFileTemplateDto;
+  private CsvFileTemplate csvFileTemplate = new CsvFileTemplate();
+  private CsvFileTemplateDto csvFileTemplateDto;
 
   @MockBean
-  private OrderFileTemplateService orderFileTemplateService;
+  private CsvFileTemplateService csvFileTemplateService;
 
   @Before
   public void setUp() {
-    orderFileTemplate.setId(UUID.randomUUID());
-    orderFileTemplate.setFilePrefix("prefix");
-    orderFileTemplate.setHeaderInFile(false);
-    orderFileTemplate.setOrderFileColumns(new ArrayList<>());
+    csvFileTemplate.setId(UUID.randomUUID());
+    csvFileTemplate.setFilePrefix("prefix");
+    csvFileTemplate.setHeaderInFile(false);
+    csvFileTemplate.setTemplateType(CsvTemplateType.ORDER);
+    csvFileTemplate.setCsvFileColumns(new ArrayList<>());
 
-    given(orderFileTemplateRepository.save(any(OrderFileTemplate.class)))
-        .willAnswer(new SaveAnswer<OrderFileTemplate>());
+    given(csvFileTemplateRepository.save(any(CsvFileTemplate.class)))
+        .willAnswer(new SaveAnswer<CsvFileTemplate>());
   }
 
   // POST /api/orderFileTemplates
 
   @Test
   public void shouldNotCreateNewOrderFileTemplate() {
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -79,56 +82,57 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
   @Test
   public void shouldUpdateOrderFileTemplate() {
     // given
-    OrderFileTemplate originalTemplate = new OrderFileTemplate();
-    originalTemplate.setOrderFileColumns(new ArrayList<>());
-    originalTemplate.setId(orderFileTemplate.getId());
+    CsvFileTemplate originalTemplate = new CsvFileTemplate();
+    originalTemplate.setCsvFileColumns(new ArrayList<>());
+    originalTemplate.setId(csvFileTemplate.getId());
 
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
 
-    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+        .thenReturn(originalTemplate);
 
     // when
-    OrderFileTemplateDto result = restAssured.given()
+    CsvFileTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract()
-        .as(OrderFileTemplateDto.class);
+        .as(CsvFileTemplateDto.class);
 
     // then
-    verify(orderFileTemplateRepository, atLeastOnce()).save(eq(originalTemplate));
-    assertEquals(orderFileTemplateDto.getFilePrefix(), result.getFilePrefix());
-    assertEquals(orderFileTemplateDto.getHeaderInFile(), result.getHeaderInFile());
+    verify(csvFileTemplateRepository, atLeastOnce()).save(eq(originalTemplate));
+    assertEquals(csvFileTemplateDto.getFilePrefix(), result.getFilePrefix());
+    assertEquals(csvFileTemplateDto.getHeaderInFile(), result.getHeaderInFile());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenOrderFileColumnContainsWrongFormat() {
-    OrderFileColumn orderFileColumn = new OrderFileColumn();
-    orderFileColumn.setDataFieldLabel("label");
-    orderFileColumn.setColumnLabel("label");
-    orderFileColumn.setNested("nested");
-    orderFileColumn.setKeyPath("key");
-    orderFileColumn.setRelated("yes");
-    orderFileColumn.setRelatedKeyPath("yes");
-    orderFileColumn.setId(UUID.randomUUID());
-    orderFileColumn.setFormat("dddd-mmm-yy");
-    orderFileColumn.setInclude(true);
-    orderFileColumn.setPosition(1);
-    orderFileColumn.setOpenLmisField(true);
-    orderFileTemplate.getOrderFileColumns().add(orderFileColumn);
+    CsvFileColumn csvFileColumn = new CsvFileColumn();
+    csvFileColumn.setDataFieldLabel("label");
+    csvFileColumn.setColumnLabel("label");
+    csvFileColumn.setNested("nested");
+    csvFileColumn.setKeyPath("key");
+    csvFileColumn.setRelated("yes");
+    csvFileColumn.setRelatedKeyPath("yes");
+    csvFileColumn.setId(UUID.randomUUID());
+    csvFileColumn.setFormat("dddd-mmm-yy");
+    csvFileColumn.setInclude(true);
+    csvFileColumn.setPosition(1);
+    csvFileColumn.setOpenLmisField(true);
+    csvFileTemplate.getCsvFileColumns().add(csvFileColumn);
 
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
@@ -140,12 +144,12 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
   @Test
   public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
     denyUserAllRights();
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
@@ -158,25 +162,26 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenIdNotMatching() {
     // given
-    OrderFileTemplate originalTemplate = new OrderFileTemplate();
-    originalTemplate.setOrderFileColumns(new ArrayList<>());
-    originalTemplate.setId(getNonMatchingUuid(orderFileTemplate.getId()));
+    CsvFileTemplate originalTemplate = new CsvFileTemplate();
+    originalTemplate.setCsvFileColumns(new ArrayList<>());
+    originalTemplate.setId(getNonMatchingUuid(csvFileTemplate.getId()));
 
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
 
-    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+        .thenReturn(originalTemplate);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(400)
         .extract()
-        .as(OrderFileTemplateDto.class);
+        .as(CsvFileTemplateDto.class);
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -185,38 +190,41 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenIdNull() {
     // given
-    OrderFileTemplate originalTemplate = new OrderFileTemplate();
-    originalTemplate.setOrderFileColumns(new ArrayList<>());
-    originalTemplate.setId(orderFileTemplate.getId());
+    CsvFileTemplate originalTemplate = new CsvFileTemplate();
+    originalTemplate.setCsvFileColumns(new ArrayList<>());
+    originalTemplate.setId(csvFileTemplate.getId());
 
-    orderFileTemplateDto = OrderFileTemplateDto.newInstance(orderFileTemplate);
-    orderFileTemplateDto.setId(null);
+    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    csvFileTemplateDto.setId(null);
 
-    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(originalTemplate);
+    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+        .thenReturn(originalTemplate);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(orderFileTemplateDto)
+        .body(csvFileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(400)
         .extract()
-        .as(OrderFileTemplateDto.class);
+        .as(CsvFileTemplateDto.class);
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // GET /api/orderFileTemplates
+  // GET /api/csvFileTemplates
 
   @Test
   public void shouldReturnOrderFileTemplate() {
-    given(orderFileTemplateService.getOrderFileTemplate()).willReturn(orderFileTemplate);
+    given(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+        .willReturn(csvFileTemplate);
 
-    OrderFileTemplateDto result = restAssured.given()
+    CsvFileTemplateDto result = restAssured.given()
+        .queryParam("templateType", ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -224,17 +232,18 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
         .then()
         .statusCode(200)
         .extract()
-        .as(OrderFileTemplateDto.class);
+        .as(CsvFileTemplateDto.class);
 
-    assertEquals(orderFileTemplate.getId(),result.getId());
+    assertEquals(csvFileTemplate.getId(),result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotReturnOrderFileTemplateIfItDoesNotExist() {
-    given(orderFileTemplateService.getOrderFileTemplate()).willReturn(null);
+    given(csvFileTemplateService.getOrderFileTemplate()).willReturn(null);
 
     restAssured.given()
+        .queryParam("templateType", ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -250,6 +259,7 @@ public class OrderFileTemplateControllerIntegrationTest extends BaseWebIntegrati
     denyUserAllRights();
 
     restAssured.given()
+        .queryParam("templateType", ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()

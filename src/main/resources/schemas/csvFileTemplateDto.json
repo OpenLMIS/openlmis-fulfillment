@@ -1,7 +1,7 @@
 {   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderFileTemplateDto",
-  "description": "A single orderFileTemplate",
+  "title": "CsvFileTemplateDto",
+  "description": "A single csvFileTemplate",
   "properties": {
     "id": {
       "type": ["string", "null"],
@@ -15,12 +15,12 @@
       "type": "boolean",
       "title": "headerInFile"
     },
-    "orderFileColumns": {
+    "csvFileColumns": {
       "type": "array",
-      "title": "orderFileColumns",
+      "title": "csvFileColumns",
       "items": {
         "type": "object",
-        "$ref": "orderFileColumnDto.json"
+        "$ref": "csvFileColumnDto.json"
       },
       "uniqueItems": false
     }

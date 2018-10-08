@@ -1,7 +1,7 @@
 { "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "OrderFileColumnDto",
-  "description": "A single orderFileColumn",
+  "title": "CsvFileColumnDto",
+  "description": "A single csvFileColumn",
   "properties": {
     "id": {
       "type": "string",

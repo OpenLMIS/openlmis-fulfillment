@@ -30,8 +30,8 @@ schemas:
             "type": "array",
             "items": { "type": "object", "$ref": "schemas/orderLineItemDto.json" }
         }
-  - orderFileColumnDto: !include schemas/orderFileColumnDto.json
-  - orderFileTemplateDto: !include schemas/orderFileTemplateDto.json
+  - csvFileColumnDto: !include schemas/csvFileColumnDto.json
+  - csvFileTemplateDto: !include schemas/csvFileTemplateDto.json
   - proofOfDeliveryDto: !include schemas/proofOfDeliveryDto.json
   - proofOfDeliveryPage: !include schemas/proofOfDeliveryPage.json
   - proofOfDeliveryLineItemDto: !include schemas/proofOfDeliveryLineItemDto.json
@@ -631,16 +631,23 @@ resourceTypes:
                           schema: localizedMessage
       /{id}/auditLog:
           type: instanceAuditLog
-  /orderFileTemplates:
-      displayName: OrderFileTemplate
+  /csvFileTemplates:
+      displayName: CsvFileTemplate
       get:
           is: [ secured ]
-          description: Get OrderFileTemplate.
+          description: Get CsvFileTemplate.
+          queryParameters:
+              templateType:
+                  displayName: templateType
+                  description: Template Type
+                  type: string
+                  required: false
+                  repeat: false
           responses:
               200:
                   body:
                     application/json:
-                      schema: orderFileTemplateDto
+                      schema: csvFileTemplateDto
               404:
               403:
                   body:
@@ -648,15 +655,15 @@ resourceTypes:
                       schema: localizedMessage
       put:
           is: [ secured ]
-          description: Update orderFileTemplate.
+          description: Update csvFileTemplate.
           body:
               application/json:
-                schema: orderFileTemplateDto
+                schema: csvFileTemplateDto
           responses:
               200:
                   body:
                     application/json:
-                      schema: orderFileTemplateDto
+                      schema: csvFileTemplateDto
               400:
                   body:
                     application/json:

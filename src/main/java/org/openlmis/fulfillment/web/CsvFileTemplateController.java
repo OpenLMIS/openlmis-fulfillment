@@ -18,12 +18,14 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_FILE_TEMPLATE_CREATION;
 
 import javax.validation.Valid;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
-import org.openlmis.fulfillment.repository.OrderFileTemplateRepository;
-import org.openlmis.fulfillment.service.OrderFileTemplateService;
+
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.CsvTemplateType;
+import org.openlmis.fulfillment.repository.CsvFileTemplateRepository;
+import org.openlmis.fulfillment.service.CsvFileTemplateService;
 import org.openlmis.fulfillment.service.PermissionService;
-import org.openlmis.fulfillment.web.util.OrderFileTemplateDto;
-import org.openlmis.fulfillment.web.validator.OrderFileTemplateValidator;
+import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
+import org.openlmis.fulfillment.web.validator.CsvFileTemplateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,20 +39,21 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @Transactional
-public class OrderFileTemplateController extends BaseController {
+public class CsvFileTemplateController extends BaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OrderFileTemplateController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CsvFileTemplateController.class);
 
   @Autowired
-  private OrderFileTemplateValidator validator;
+  private CsvFileTemplateValidator validator;
   @Autowired
-  private OrderFileTemplateRepository orderFileTemplateRepository;
+  private CsvFileTemplateRepository csvFileTemplateRepository;
   @Autowired
-  private OrderFileTemplateService orderFileTemplateService;
+  private CsvFileTemplateService csvFileTemplateService;
   @Autowired
   private PermissionService permissionService;
 
@@ -62,13 +65,13 @@ public class OrderFileTemplateController extends BaseController {
   /**
    * Allows updating order file templates.
    *
-   * @param orderFileTemplateDto An order file template bound to the request body
-   * @return ResponseEntity containing saved orderFileTemplate
+   * @param csvFileTemplateDto An order file template bound to the request body
+   * @return ResponseEntity containing saved csvFileTemplate
    */
-  @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.PUT)
+  @RequestMapping(value = "/csvFileTemplates", method = RequestMethod.PUT)
   @ResponseBody
-  public OrderFileTemplateDto savedOrderFileTemplate(
-      @RequestBody @Valid OrderFileTemplateDto orderFileTemplateDto, BindingResult bindingResult) {
+  public CsvFileTemplateDto saveCsvFileTemplate(
+          @RequestBody @Valid CsvFileTemplateDto csvFileTemplateDto, BindingResult bindingResult) {
     LOGGER.debug("Checking right to update order file template");
     permissionService.canManageSystemSettings();
 
@@ -76,35 +79,37 @@ public class OrderFileTemplateController extends BaseController {
       throw new ValidationException(bindingResult.getAllErrors().get(0).getDefaultMessage());
     }
 
-    OrderFileTemplate template = orderFileTemplateService.getOrderFileTemplate();
-    if (!template.getId().equals(orderFileTemplateDto.getId())) {
+    CsvFileTemplate template = csvFileTemplateService.getCsvFileTemplate(csvFileTemplateDto
+        .getTemplateType());
+    if (!template.getId().equals(csvFileTemplateDto.getId())) {
       throw new ValidationException(ERROR_ORDER_FILE_TEMPLATE_CREATION);
     }
 
-    LOGGER.debug("Saving Order File Template");
-    template.importDto(orderFileTemplateDto);
-    template = orderFileTemplateRepository.save(template);
+    LOGGER.debug("Saving CSV File Template");
+    template.importDto(csvFileTemplateDto);
+    template = csvFileTemplateRepository.save(template);
 
-    LOGGER.debug("Saved Order File Template with id: " + template.getId());
-    return OrderFileTemplateDto.newInstance(template);
+    LOGGER.debug("Saved CSV File Template with id: " + template.getId());
+    return CsvFileTemplateDto.newInstance(template);
   }
 
   /**
-   * Get orderFileTemplate.
+   * Get csvFileTemplate.
    *
-   * @return OrderFileTemplate.
+   * @return CsvFileTemplate.
    */
-  @RequestMapping(value = "/orderFileTemplates", method = RequestMethod.GET)
-  public ResponseEntity<OrderFileTemplateDto> getOrderFileTemplate() {
+  @RequestMapping(value = "/csvFileTemplates", method = RequestMethod.GET)
+  public ResponseEntity<CsvFileTemplateDto> getCsvFileTemplate(
+      @RequestParam(name = "templateType", required = false, defaultValue = "ORDER") CsvTemplateType templateType) {
 
     LOGGER.debug("Checking right to view order file template");
     permissionService.canManageSystemSettings();
 
-    OrderFileTemplate orderFileTemplate = orderFileTemplateService.getOrderFileTemplate();
-    if (orderFileTemplate == null) {
+    CsvFileTemplate csvFileTemplate = csvFileTemplateService.getCsvFileTemplate(templateType);
+    if (csvFileTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(OrderFileTemplateDto.newInstance(orderFileTemplate),
+      return new ResponseEntity<>(CsvFileTemplateDto.newInstance(csvFileTemplate),
           HttpStatus.OK);
     }
   }

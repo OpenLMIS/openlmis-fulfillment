@@ -16,9 +16,10 @@
 package org.openlmis.fulfillment.repository;
 
 import java.util.UUID;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
+import org.openlmis.fulfillment.domain.CsvFileColumn;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface OrderFileTemplateRepository extends
-    PagingAndSortingRepository<OrderFileTemplate, UUID> {
+public interface CsvFileColumnRepository extends
+    PagingAndSortingRepository<CsvFileColumn, UUID> {
 }
+

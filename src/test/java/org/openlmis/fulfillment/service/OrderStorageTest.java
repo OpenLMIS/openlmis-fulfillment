@@ -37,9 +37,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderFileTemplate;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -61,7 +61,7 @@ public class OrderStorageTest {
   private OrderCsvHelper csvHelper;
 
   @Mock
-  private OrderFileTemplateService orderFileTemplateService;
+  private CsvFileTemplateService csvFileTemplateService;
 
   @Mock
   private TransferPropertiesRepository transferPropertiesRepository;
@@ -73,7 +73,7 @@ public class OrderStorageTest {
   private Order order;
 
   @Mock
-  private OrderFileTemplate template;
+  private CsvFileTemplate template;
 
   @Mock
   private BufferedWriter writer;
@@ -88,7 +88,7 @@ public class OrderStorageTest {
     PowerMockito.mockStatic(Files.class);
 
     when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
-    when(orderFileTemplateService.getOrderFileTemplate()).thenReturn(template);
+    when(csvFileTemplateService.getOrderFileTemplate()).thenReturn(template);
     when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
 
     when(order.getOrderCode()).thenReturn(ORDER_CODE);
@@ -100,7 +100,7 @@ public class OrderStorageTest {
   public void shouldStoreAnOrder() throws Exception {
     orderFileStorage.store(order);
 
-    verify(orderFileTemplateService).getOrderFileTemplate();
+    verify(csvFileTemplateService).getOrderFileTemplate();
     verify(csvHelper).writeCsvFile(order, template, writer);
 
     ArgumentCaptor<Path> captor = ArgumentCaptor.forClass(Path.class);
@@ -131,7 +131,7 @@ public class OrderStorageTest {
     orderFileStorage.store(order);
 
     verify(transferPropertiesRepository).findFirstByFacilityId(order.getFacilityId());
-    verifyZeroInteractions(orderFileTemplateService, csvHelper);
+    verifyZeroInteractions(csvFileTemplateService, csvHelper);
   }
 
   @Test

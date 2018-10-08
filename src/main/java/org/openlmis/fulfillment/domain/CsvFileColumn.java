@@ -28,10 +28,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "order_file_columns")
+@Table(name = "csv_file_columns")
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderFileColumn extends BaseEntity {
+public class CsvFileColumn extends BaseEntity {
 
   @Column(nullable = false)
   @Getter
@@ -77,31 +77,31 @@ public class OrderFileColumn extends BaseEntity {
   private String relatedKeyPath;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
-  @JoinColumn(name = "orderFileTemplateId", nullable = false)
+  @JoinColumn(name = "csvFileTemplateId", nullable = false)
   @Getter
   @Setter
-  private OrderFileTemplate orderFileTemplate;
+  private CsvFileTemplate csvFileTemplate;
 
   /**
-   * Creates new OrderFileColumn object based on data from {@link OrderFileColumn.Importer}.
+   * Creates new CsvFileColumn object based on data from {@link CsvFileColumn.Importer}.
    *
-   * @param importer instance of {@link OrderFileColumn.Importer}
-   * @return new instance of OrderFileColumn.
+   * @param importer instance of {@link CsvFileColumn.Importer}
+   * @return new instance of CsvFileColumn.
    */
-  public static OrderFileColumn newInstance(Importer importer) {
-    OrderFileColumn orderFileColumn = new OrderFileColumn();
-    orderFileColumn.setId(importer.getId());
-    orderFileColumn.setOpenLmisField(importer.getOpenLmisField());
-    orderFileColumn.setDataFieldLabel(importer.getDataFieldLabel());
-    orderFileColumn.setColumnLabel(importer.getColumnLabel());
-    orderFileColumn.setInclude(importer.getInclude());
-    orderFileColumn.setPosition(importer.getPosition());
-    orderFileColumn.setNested(importer.getNested());
-    orderFileColumn.setKeyPath(importer.getKeyPath());
-    orderFileColumn.setRelated(importer.getRelated());
-    orderFileColumn.setRelatedKeyPath(importer.getRelatedKeyPath());
-    orderFileColumn.setFormat(importer.getFormat());
-    return orderFileColumn;
+  public static CsvFileColumn newInstance(Importer importer) {
+    CsvFileColumn csvFileColumn = new CsvFileColumn();
+    csvFileColumn.setId(importer.getId());
+    csvFileColumn.setOpenLmisField(importer.getOpenLmisField());
+    csvFileColumn.setDataFieldLabel(importer.getDataFieldLabel());
+    csvFileColumn.setColumnLabel(importer.getColumnLabel());
+    csvFileColumn.setInclude(importer.getInclude());
+    csvFileColumn.setPosition(importer.getPosition());
+    csvFileColumn.setNested(importer.getNested());
+    csvFileColumn.setKeyPath(importer.getKeyPath());
+    csvFileColumn.setRelated(importer.getRelated());
+    csvFileColumn.setRelatedKeyPath(importer.getRelatedKeyPath());
+    csvFileColumn.setFormat(importer.getFormat());
+    return csvFileColumn;
   }
 
   /**
