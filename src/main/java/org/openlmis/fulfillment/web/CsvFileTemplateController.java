@@ -100,7 +100,8 @@ public class CsvFileTemplateController extends BaseController {
    */
   @RequestMapping(value = "/csvFileTemplates", method = RequestMethod.GET)
   public ResponseEntity<CsvFileTemplateDto> getCsvFileTemplate(
-      @RequestParam(name = "templateType", required = false, defaultValue = "ORDER") CsvTemplateType templateType) {
+      @RequestParam(name = "templateType", required = false, defaultValue = "ORDER")
+          CsvTemplateType templateType) {
 
     LOGGER.debug("Checking right to view order file template");
     permissionService.canManageSystemSettings();
