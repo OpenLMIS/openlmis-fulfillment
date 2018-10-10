@@ -46,7 +46,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OrderFileStorage.class})
+@PrepareForTest({OrderFileStorage.class, CsvFileTemplate.class})
 public class OrderStorageTest {
   private static final String FILE_PREFIX = "prefix-";
   private static final String ORDER_CODE = "order-code-123";

@@ -27,6 +27,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +36,8 @@ import lombok.Setter;
 @Table(name = "csv_file_templates")
 @NoArgsConstructor
 @AllArgsConstructor
-public class CsvFileTemplate extends BaseEntity {
+@EqualsAndHashCode(callSuper = true)
+public final class CsvFileTemplate extends BaseEntity {
 
   @Column(nullable = false)
   @Getter

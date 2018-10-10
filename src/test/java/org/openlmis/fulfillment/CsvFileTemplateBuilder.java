@@ -13,44 +13,34 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.web.util;
+package org.openlmis.fulfillment;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import org.openlmis.fulfillment.domain.CsvFileColumn;
+import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.CsvTemplateType;
 
-@Getter
-@Setter
-@EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
-public final class CsvFileColumnDto implements CsvFileColumn.Importer, CsvFileColumn.Exporter {
+public class CsvFileTemplateBuilder {
 
-  private UUID id;
-  private Boolean openLmisField;
-  private String dataFieldLabel;
-  private String columnLabel;
-  private Boolean include;
-  private Integer position;
-  private String format;
-  private String nested;
-  private String keyPath;
-  private String related;
-  private String relatedKeyPath;
+  private UUID id = UUID.randomUUID();
+  private String filePrefix = "O";
+  private Boolean headerInFile = true;
+  private CsvTemplateType templateType = CsvTemplateType.ORDER;
+  private List<CsvFileColumn> csvFileColumns = new ArrayList<>();
 
   /**
-   * Create new instance of CsvFileColumnDto based on given {@link CsvFileColumn}.
-   * @param csvFileColumn instance of Template
-   * @return new instance of TemplateDto.
+   * Creates a new CsvFileTemplate object.
+   * @return @CsvFileTemplate
    */
-  public static CsvFileColumnDto newInstance(CsvFileColumn csvFileColumn) {
-    CsvFileColumnDto csvFileColumnDto = new CsvFileColumnDto();
-    csvFileColumn.export(csvFileColumnDto);
-    return csvFileColumnDto;
+  public CsvFileTemplate build() {
+    CsvFileTemplate template = new CsvFileTemplate(filePrefix, headerInFile, templateType,
+        csvFileColumns);
+    template.setId(id);
+    return template;
   }
+
 }

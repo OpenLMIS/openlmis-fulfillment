@@ -23,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,7 +32,8 @@ import lombok.Setter;
 @Table(name = "csv_file_columns")
 @NoArgsConstructor
 @AllArgsConstructor
-public class CsvFileColumn extends BaseEntity {
+@EqualsAndHashCode(callSuper = true)
+public final class CsvFileColumn extends BaseEntity {
 
   @Column(nullable = false)
   @Getter

@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,7 +32,8 @@ import org.openlmis.fulfillment.domain.CsvTemplateType;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class CsvFileTemplateDto implements CsvFileTemplate.Importer,
+@EqualsAndHashCode
+public final class CsvFileTemplateDto implements CsvFileTemplate.Importer,
     CsvFileTemplate.Exporter {
 
   @Getter
