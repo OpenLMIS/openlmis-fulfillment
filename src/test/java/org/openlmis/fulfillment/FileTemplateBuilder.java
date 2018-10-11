@@ -18,27 +18,40 @@ package org.openlmis.fulfillment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
+import lombok.experimental.Wither;
+import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.TemplateType;
 
 @NoArgsConstructor
-public class CsvFileTemplateBuilder {
+@AllArgsConstructor
+public class FileTemplateBuilder {
 
+  @Wither
   private UUID id = UUID.randomUUID();
+
+  @Wither
   private String filePrefix = "O";
+
+  @Wither
   private Boolean headerInFile = true;
-  private CsvTemplateType templateType = CsvTemplateType.ORDER;
-  private List<CsvFileColumn> csvFileColumns = new ArrayList<>();
+
+  @Wither
+  private TemplateType templateType = TemplateType.ORDER;
+
+  @Wither
+  private List<FileColumn> fileColumns = new ArrayList<>();
 
   /**
-   * Creates a new CsvFileTemplate object.
-   * @return @CsvFileTemplate
+   * Creates a new FileTemplate object.
+   *
+   * @return @FileTemplate
    */
-  public CsvFileTemplate build() {
-    CsvFileTemplate template = new CsvFileTemplate(filePrefix, headerInFile, templateType,
-        csvFileColumns);
+  public FileTemplate build() {
+    FileTemplate template = new FileTemplate(filePrefix, headerInFile, templateType,
+        fileColumns);
     template.setId(id);
     return template;
   }

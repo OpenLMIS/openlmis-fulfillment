@@ -21,15 +21,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import org.openlmis.fulfillment.domain.CsvFileColumn;
+import org.openlmis.fulfillment.domain.FileColumn;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public final class CsvFileColumnDto implements CsvFileColumn.Importer, CsvFileColumn.Exporter {
+public final class FileColumnDto implements FileColumn.Importer, FileColumn.Exporter {
 
   private UUID id;
   private Boolean openLmisField;
@@ -44,13 +43,14 @@ public final class CsvFileColumnDto implements CsvFileColumn.Importer, CsvFileCo
   private String relatedKeyPath;
 
   /**
-   * Create new instance of CsvFileColumnDto based on given {@link CsvFileColumn}.
-   * @param csvFileColumn instance of Template
+   * Create new instance of FileColumnDto based on given {@link FileColumn}.
+   *
+   * @param fileColumn instance of Template
    * @return new instance of TemplateDto.
    */
-  public static CsvFileColumnDto newInstance(CsvFileColumn csvFileColumn) {
-    CsvFileColumnDto csvFileColumnDto = new CsvFileColumnDto();
-    csvFileColumn.export(csvFileColumnDto);
-    return csvFileColumnDto;
+  public static FileColumnDto newInstance(FileColumn fileColumn) {
+    FileColumnDto fileColumnDto = new FileColumnDto();
+    fileColumn.export(fileColumnDto);
+    return fileColumnDto;
   }
 }

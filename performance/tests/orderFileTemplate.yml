@@ -7,7 +7,7 @@ scenarios:
   get-order-file-template:
     requests:
       - include-scenario: get-user-token
-      - url: ${__P(base-uri)}/api/csvFileTemplates
+      - url: ${__P(base-uri)}/api/fileTemplates
         method: GET
         label: GetOrderFileTemplate
         headers:

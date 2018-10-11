@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -46,7 +46,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OrderFileStorage.class, CsvFileTemplate.class})
+@PrepareForTest({OrderFileStorage.class, FileTemplate.class})
 public class OrderStorageTest {
   private static final String FILE_PREFIX = "prefix-";
   private static final String ORDER_CODE = "order-code-123";
@@ -61,7 +61,7 @@ public class OrderStorageTest {
   private OrderCsvHelper csvHelper;
 
   @Mock
-  private CsvFileTemplateService csvFileTemplateService;
+  private FileTemplateService fileTemplateService;
 
   @Mock
   private TransferPropertiesRepository transferPropertiesRepository;
@@ -73,7 +73,7 @@ public class OrderStorageTest {
   private Order order;
 
   @Mock
-  private CsvFileTemplate template;
+  private FileTemplate template;
 
   @Mock
   private BufferedWriter writer;
@@ -88,7 +88,7 @@ public class OrderStorageTest {
     PowerMockito.mockStatic(Files.class);
 
     when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
-    when(csvFileTemplateService.getOrderFileTemplate()).thenReturn(template);
+    when(fileTemplateService.getOrderFileTemplate()).thenReturn(template);
     when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
 
     when(order.getOrderCode()).thenReturn(ORDER_CODE);
@@ -100,7 +100,7 @@ public class OrderStorageTest {
   public void shouldStoreAnOrder() throws Exception {
     orderFileStorage.store(order);
 
-    verify(csvFileTemplateService).getOrderFileTemplate();
+    verify(fileTemplateService).getOrderFileTemplate();
     verify(csvHelper).writeCsvFile(order, template, writer);
 
     ArgumentCaptor<Path> captor = ArgumentCaptor.forClass(Path.class);
@@ -131,7 +131,7 @@ public class OrderStorageTest {
     orderFileStorage.store(order);
 
     verify(transferPropertiesRepository).findFirstByFacilityId(order.getFacilityId());
-    verifyZeroInteractions(csvFileTemplateService, csvHelper);
+    verifyZeroInteractions(fileTemplateService, csvHelper);
   }
 
   @Test

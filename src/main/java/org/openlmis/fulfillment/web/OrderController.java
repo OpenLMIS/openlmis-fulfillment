@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.fulfillment.domain.CreationDetails;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.service.CsvFileTemplateService;
+import org.openlmis.fulfillment.service.FileTemplateService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderSearchParams;
@@ -94,7 +94,7 @@ public class OrderController extends BaseController {
   private OrderCsvHelper csvHelper;
 
   @Autowired
-  private CsvFileTemplateService csvFileTemplateService;
+  private FileTemplateService fileTemplateService;
 
   @Autowired
   private PermissionService permissionService;
@@ -294,9 +294,9 @@ public class OrderController extends BaseController {
 
     permissionService.canViewOrder(order);
 
-    CsvFileTemplate csvFileTemplate = csvFileTemplateService.getOrderFileTemplate();
+    FileTemplate fileTemplate = fileTemplateService.getOrderFileTemplate();
 
-    if (csvFileTemplate == null) {
+    if (fileTemplate == null) {
       String msg = "Could not export Order, because Order Template File not found";
       LOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
@@ -305,10 +305,10 @@ public class OrderController extends BaseController {
 
     response.setContentType("text/csv");
     response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-        DISPOSITION_BASE + csvFileTemplate.getFilePrefix() + order.getOrderCode() + ".csv");
+        DISPOSITION_BASE + fileTemplate.getFilePrefix() + order.getOrderCode() + ".csv");
 
     try {
-      csvHelper.writeCsvFile(order, csvFileTemplate, response.getWriter());
+      csvHelper.writeCsvFile(order, fileTemplate, response.getWriter());
     } catch (IOException ex) {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
           "Error occurred while exporting order to csv.");

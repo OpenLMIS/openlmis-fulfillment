@@ -18,14 +18,14 @@ package org.openlmis.fulfillment.web.validator;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
+import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.web.util.FileTemplateDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
-public class CsvFileTemplateValidator implements Validator {
+public class FileTemplateValidator implements Validator {
 
   private static final String INVALID_FORMAT_DATE = "Invalid date format";
 
@@ -37,20 +37,20 @@ public class CsvFileTemplateValidator implements Validator {
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return CsvFileTemplateDto.class.equals(clazz);
+    return FileTemplateDto.class.equals(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
-    CsvFileTemplateDto orderFileTemplate = (CsvFileTemplateDto) target;
-    List<CsvFileColumn.Importer> columns = orderFileTemplate.getCsvFileColumns();
+    FileTemplateDto orderFileTemplate = (FileTemplateDto) target;
+    List<FileColumn.Importer> columns = orderFileTemplate.getFileColumns();
     List<String> acceptedValues = Arrays.asList(ACCEPTED_VALUES);
 
     for (int i = 0; i < columns.size(); i++) {
-      CsvFileColumn.Importer orderFileColumn = columns.get(i);
+      FileColumn.Importer orderFileColumn = columns.get(i);
       if ((orderFileColumn.getFormat() != null)
           && (!acceptedValues.contains(orderFileColumn.getFormat()))) {
-        errors.rejectValue("csvFileColumns[" + i + "].format",
+        errors.rejectValue("fileColumns[" + i + "].format",
             INVALID_FORMAT_DATE, INVALID_FORMAT_DATE);
       }
     }

@@ -2,7 +2,7 @@
 ==================
 
 Contract breaking changes:
-* [OLMIS-5479](https://openlmis.atlassian.net/browse/OLMIS-5479): Refactored /api/orderFileTemplate API into /api/csvFileTemplate that persists config for both order and shipment templates.
+* [OLMIS-5479](https://openlmis.atlassian.net/browse/OLMIS-5479): Refactored /api/orderFileTemplate API into /api/fileTemplate that persists config for both order and shipment templates.
 
 
 Bug fixes and improvements added in a backwards-compatible manner:

@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
+import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -40,7 +40,7 @@ public class OrderFileStorage implements OrderStorage {
   private OrderCsvHelper csvHelper;
 
   @Autowired
-  private CsvFileTemplateService csvFileTemplateService;
+  private FileTemplateService fileTemplateService;
 
   @Autowired
   private TransferPropertiesRepository transferPropertiesRepository;
@@ -59,7 +59,7 @@ public class OrderFileStorage implements OrderStorage {
     }
 
     // retrieve order file template
-    CsvFileTemplate template = csvFileTemplateService.getOrderFileTemplate();
+    FileTemplate template = fileTemplateService.getOrderFileTemplate();
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
     Path path;
 
@@ -91,7 +91,7 @@ public class OrderFileStorage implements OrderStorage {
 
   @Override
   public Path getOrderAsPath(Order order) {
-    CsvFileTemplate template = csvFileTemplateService.getOrderFileTemplate();
+    FileTemplate template = fileTemplateService.getOrderFileTemplate();
     TransferProperties properties = transferPropertiesRepository
         .findFirstByFacilityId(order.getSupplyingFacilityId());
 

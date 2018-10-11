@@ -22,29 +22,29 @@ import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.fulfillment.CsvFileTemplateBuilder;
-import org.openlmis.fulfillment.web.util.CsvFileColumnDto;
+import org.openlmis.fulfillment.FileTemplateBuilder;
+import org.openlmis.fulfillment.web.util.FileColumnDto;
 
-public class CsvFileColumnTest {
+public class FileColumnTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier.forClass(CsvFileColumn.class)
+    EqualsVerifier.forClass(FileColumn.class)
         .suppress(Warning.NONFINAL_FIELDS)
         .withRedefinedSuperclass()
-        .withPrefabValues(CsvFileTemplate.class,
-            new CsvFileTemplateBuilder().build(),
-            new CsvFileTemplateBuilder().build())
+        .withPrefabValues(FileTemplate.class,
+            new FileTemplateBuilder().build(),
+            new FileTemplateBuilder().build())
         .verify();
   }
 
   @Test
   public void shouldImportFromDto() {
 
-    CsvFileColumnDto columnDto = new CsvFileColumnDto(UUID.randomUUID(), false, "Label2",
+    FileColumnDto columnDto = new FileColumnDto(UUID.randomUUID(), false, "Label2",
         "KeyPath", false, 5, "Format", "x.y.z", "p.a.t.h", "r.e.l.a.t.e", "p.a.t.h");
 
-    CsvFileColumn domainColumn = CsvFileColumn.newInstance(columnDto);
+    FileColumn domainColumn = FileColumn.newInstance(columnDto);
 
     assertThat(domainColumn.getColumnLabel(), is(columnDto.getColumnLabel()));
     assertThat(domainColumn.getFormat(), is(columnDto.getFormat()));

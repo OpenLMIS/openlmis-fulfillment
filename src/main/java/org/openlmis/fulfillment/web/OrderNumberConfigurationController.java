@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Transactional
 public class OrderNumberConfigurationController extends BaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CsvFileTemplateController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileTemplateController.class);
 
 
   @Autowired

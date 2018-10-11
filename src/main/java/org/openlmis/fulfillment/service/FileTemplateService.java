@@ -15,44 +15,34 @@
 
 package org.openlmis.fulfillment.service;
 
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
-import org.openlmis.fulfillment.repository.CsvFileTemplateRepository;
+import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.repository.FileTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CsvFileTemplateService {
+public class FileTemplateService {
 
   @Autowired
-  private CsvFileTemplateRepository csvFileTemplateRepository;
+  private FileTemplateRepository fileTemplateRepository;
 
   /**
-   * Get order file CsvFileTemplate.
+   * Get order file FileTemplate.
    *
-   * @return CsvFileTemplate.
+   * @return FileTemplate.
    */
-  public CsvFileTemplate getOrderFileTemplate() {
-    return csvFileTemplateRepository.findFirstByTemplateType(CsvTemplateType.ORDER);
+  public FileTemplate getOrderFileTemplate() {
+    return fileTemplateRepository.findFirstByTemplateType(TemplateType.ORDER);
   }
 
   /**
-   * Get Shipment file CsvFileTemplate.
+   * Get File Template Object by template type.
    *
-   * @return CsvFileTemplate.
+   * @return FileTemplate.
    */
-  public CsvFileTemplate getShipmentFileTemplate() {
-    return csvFileTemplateRepository.findFirstByTemplateType(CsvTemplateType.SHIPMENT);
-  }
-
-
-  /**
-   * Get Shipment file CsvFileTemplate.
-   *
-   * @return CsvFileTemplate.
-   */
-  public CsvFileTemplate getCsvFileTemplate(CsvTemplateType templateType) {
-    return csvFileTemplateRepository.findFirstByTemplateType(templateType);
+  public FileTemplate getFileTemplate(TemplateType templateType) {
+    return fileTemplateRepository.findFirstByTemplateType(templateType);
   }
 
 

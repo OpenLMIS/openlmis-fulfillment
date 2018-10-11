@@ -18,14 +18,13 @@ package org.openlmis.fulfillment.web;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ORDER_FILE_TEMPLATE_CREATION;
 
 import javax.validation.Valid;
-
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
-import org.openlmis.fulfillment.repository.CsvFileTemplateRepository;
-import org.openlmis.fulfillment.service.CsvFileTemplateService;
+import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.repository.FileTemplateRepository;
+import org.openlmis.fulfillment.service.FileTemplateService;
 import org.openlmis.fulfillment.service.PermissionService;
-import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
-import org.openlmis.fulfillment.web.validator.CsvFileTemplateValidator;
+import org.openlmis.fulfillment.web.util.FileTemplateDto;
+import org.openlmis.fulfillment.web.validator.FileTemplateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +43,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @Transactional
-public class CsvFileTemplateController extends BaseController {
+public class FileTemplateController extends BaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CsvFileTemplateController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileTemplateController.class);
 
   @Autowired
-  private CsvFileTemplateValidator validator;
+  private FileTemplateValidator validator;
   @Autowired
-  private CsvFileTemplateRepository csvFileTemplateRepository;
+  private FileTemplateRepository fileTemplateRepository;
   @Autowired
-  private CsvFileTemplateService csvFileTemplateService;
+  private FileTemplateService fileTemplateService;
   @Autowired
   private PermissionService permissionService;
 
@@ -65,13 +64,13 @@ public class CsvFileTemplateController extends BaseController {
   /**
    * Allows updating order file templates.
    *
-   * @param csvFileTemplateDto An order file template bound to the request body
-   * @return ResponseEntity containing saved csvFileTemplate
+   * @param fileTemplateDto An order file template bound to the request body
+   * @return ResponseEntity containing saved fileTemplate
    */
-  @RequestMapping(value = "/csvFileTemplates", method = RequestMethod.PUT)
+  @RequestMapping(value = "/fileTemplates", method = RequestMethod.PUT)
   @ResponseBody
-  public CsvFileTemplateDto saveCsvFileTemplate(
-          @RequestBody @Valid CsvFileTemplateDto csvFileTemplateDto, BindingResult bindingResult) {
+  public FileTemplateDto saveCsvFileTemplate(
+          @RequestBody @Valid FileTemplateDto fileTemplateDto, BindingResult bindingResult) {
     LOGGER.debug("Checking right to update order file template");
     permissionService.canManageSystemSettings();
 
@@ -79,38 +78,38 @@ public class CsvFileTemplateController extends BaseController {
       throw new ValidationException(bindingResult.getAllErrors().get(0).getDefaultMessage());
     }
 
-    CsvFileTemplate template = csvFileTemplateService.getCsvFileTemplate(csvFileTemplateDto
+    FileTemplate template = fileTemplateService.getFileTemplate(fileTemplateDto
         .getTemplateType());
-    if (!template.getId().equals(csvFileTemplateDto.getId())) {
+    if (!template.getId().equals(fileTemplateDto.getId())) {
       throw new ValidationException(ERROR_ORDER_FILE_TEMPLATE_CREATION);
     }
 
     LOGGER.debug("Saving CSV File Template");
-    template.importDto(csvFileTemplateDto);
-    template = csvFileTemplateRepository.save(template);
+    template.importDto(fileTemplateDto);
+    template = fileTemplateRepository.save(template);
 
     LOGGER.debug("Saved CSV File Template with id: " + template.getId());
-    return CsvFileTemplateDto.newInstance(template);
+    return FileTemplateDto.newInstance(template);
   }
 
   /**
-   * Get csvFileTemplate.
+   * Get fileTemplate.
    *
-   * @return CsvFileTemplate.
+   * @return FileTemplate.
    */
-  @RequestMapping(value = "/csvFileTemplates", method = RequestMethod.GET)
-  public ResponseEntity<CsvFileTemplateDto> getCsvFileTemplate(
+  @RequestMapping(value = "/fileTemplates", method = RequestMethod.GET)
+  public ResponseEntity<FileTemplateDto> getCsvFileTemplate(
       @RequestParam(name = "templateType", required = false, defaultValue = "ORDER")
-          CsvTemplateType templateType) {
+          TemplateType templateType) {
 
     LOGGER.debug("Checking right to view order file template");
     permissionService.canManageSystemSettings();
 
-    CsvFileTemplate csvFileTemplate = csvFileTemplateService.getCsvFileTemplate(templateType);
-    if (csvFileTemplate == null) {
+    FileTemplate fileTemplate = fileTemplateService.getFileTemplate(templateType);
+    if (fileTemplate == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(CsvFileTemplateDto.newInstance(csvFileTemplate),
+      return new ResponseEntity<>(FileTemplateDto.newInstance(fileTemplate),
           HttpStatus.OK);
     }
   }

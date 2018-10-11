@@ -33,11 +33,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "csv_file_templates")
+@Table(name = "file_templates")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public final class CsvFileTemplate extends BaseEntity {
+public final class FileTemplate extends BaseEntity {
 
   @Column(nullable = false)
   @Getter
@@ -53,22 +53,22 @@ public final class CsvFileTemplate extends BaseEntity {
   @Column(nullable = false)
   @Getter
   @Setter
-  private CsvTemplateType templateType;
+  private TemplateType templateType;
 
   @OneToMany(
-      mappedBy = "csvFileTemplate",
+      mappedBy = "fileTemplate",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.EAGER,
       orphanRemoval = true)
   @OrderBy("position ASC")
   @Getter
   @Setter
-  private List<CsvFileColumn> csvFileColumns;
+  private List<FileColumn> fileColumns;
 
   /**
-   * Updates itself using data from {@link CsvFileTemplate.Importer}.
+   * Updates itself using data from {@link FileTemplate.Importer}.
    *
-   * @param importer instance of {@link CsvFileTemplate.Importer}
+   * @param importer instance of {@link FileTemplate.Importer}
    */
   public void importDto(Importer importer) {
     id = importer.getId();
@@ -76,13 +76,13 @@ public final class CsvFileTemplate extends BaseEntity {
     headerInFile = importer.getHeaderInFile();
     templateType = importer.getTemplateType();
 
-    csvFileColumns.clear();
-    if (importer.getCsvFileColumns() != null) {
-      for (CsvFileColumn.Importer columnImporter : importer.getCsvFileColumns()) {
-        CsvFileColumn column = CsvFileColumn.newInstance(columnImporter);
-        column.setCsvFileTemplate(this);
+    fileColumns.clear();
+    if (importer.getFileColumns() != null) {
+      for (FileColumn.Importer columnImporter : importer.getFileColumns()) {
+        FileColumn column = FileColumn.newInstance(columnImporter);
+        column.setFileTemplate(this);
 
-        csvFileColumns.add(column);
+        fileColumns.add(column);
       }
     }
   }
@@ -106,7 +106,7 @@ public final class CsvFileTemplate extends BaseEntity {
 
     void setHeaderInFile(Boolean headerInFile);
 
-    void setTemplateType(CsvTemplateType templateType);
+    void setTemplateType(TemplateType templateType);
 
   }
 
@@ -117,9 +117,9 @@ public final class CsvFileTemplate extends BaseEntity {
 
     Boolean getHeaderInFile();
 
-    List<CsvFileColumn.Importer> getCsvFileColumns();
+    List<FileColumn.Importer> getFileColumns();
 
-    CsvTemplateType getTemplateType();
+    TemplateType getTemplateType();
 
   }
 }

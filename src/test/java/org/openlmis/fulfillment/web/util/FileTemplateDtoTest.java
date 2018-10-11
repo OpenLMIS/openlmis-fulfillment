@@ -13,20 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.web.util;
 
-import java.util.UUID;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 
+import org.junit.Test;
 
-public interface CsvFileTemplateRepository extends
-    PagingAndSortingRepository<CsvFileTemplate, UUID> {
+public class FileTemplateDtoTest {
 
-  @Query("SELECT t FROM CsvFileTemplate AS t JOIN FETCH t.csvFileColumns "
-      + "WHERE t.templateType = :templateType")
-  CsvFileTemplate findFirstByTemplateType(@Param("templateType") CsvTemplateType templateType);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(FileTemplateDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
 }

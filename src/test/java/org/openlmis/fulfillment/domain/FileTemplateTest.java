@@ -22,19 +22,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.openlmis.fulfillment.web.util.CsvFileColumnDto;
-import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
+import org.openlmis.fulfillment.FileColumnBuilder;
+import org.openlmis.fulfillment.web.util.FileColumnDto;
+import org.openlmis.fulfillment.web.util.FileTemplateDto;
 
-public class CsvFileTemplateTest {
+public class FileTemplateTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(FileTemplate.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .withRedefinedSuperclass()
+        .withPrefabValues(FileColumn.class,
+            new FileColumnBuilder().build(),
+            new FileColumnBuilder().build())
+        .verify();
+  }
 
   @Test
   public void shouldExport() {
-    CsvFileTemplate template = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
+    FileTemplate template = new FileTemplate("O", false, TemplateType.ORDER,
         Collections.emptyList());
 
-    CsvFileTemplateDto dto = new CsvFileTemplateDto();
+    FileTemplateDto dto = new FileTemplateDto();
     template.export(dto);
 
     assertThat(dto.getFilePrefix(), is(template.getFilePrefix()));
@@ -44,20 +58,20 @@ public class CsvFileTemplateTest {
 
   @Test
   public void shouldImport() {
-    CsvFileColumnDto columnDto = new CsvFileColumnDto(UUID.randomUUID(), false, "Label2",
+    FileColumnDto columnDto = new FileColumnDto(UUID.randomUUID(), false, "Label2",
         "KeyPath", false, 5, "Format", "m.y.z", "p.a.t.h", "r.e.l.a.t.e", "p.a.t.h");
-    CsvFileTemplateDto templateDto = new CsvFileTemplateDto(UUID.randomUUID(), "O", false,
-        asList(columnDto), CsvTemplateType.ORDER);
+    FileTemplateDto templateDto = new FileTemplateDto(UUID.randomUUID(), "O", false,
+        asList(columnDto), TemplateType.ORDER);
 
-    CsvFileTemplate template = new CsvFileTemplate();
-    template.setCsvFileColumns(new ArrayList<>());
+    FileTemplate template = new FileTemplate();
+    template.setFileColumns(new ArrayList<>());
     template.importDto(templateDto);
 
     assertThat(templateDto.getFilePrefix(), is(template.getFilePrefix()));
     assertThat(templateDto.getHeaderInFile(), is(template.getHeaderInFile()));
     assertThat(templateDto.getTemplateType().name(), is(template.getTemplateType().name()));
 
-    CsvFileColumn domainColumn = template.getCsvFileColumns().get(0);
+    FileColumn domainColumn = template.getFileColumns().get(0);
     assertThat(domainColumn.getColumnLabel(), Matchers.is(columnDto.getColumnLabel()));
     assertThat(domainColumn.getFormat(), Matchers.is(columnDto.getFormat()));
     assertThat(domainColumn.getDataFieldLabel(), Matchers.is(columnDto.getDataFieldLabel()));

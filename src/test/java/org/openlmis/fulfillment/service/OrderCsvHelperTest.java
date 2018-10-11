@@ -37,11 +37,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
+import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.referencedata.DispensableDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -98,46 +98,60 @@ public class OrderCsvHelperTest {
 
   @Test
   public void shouldIncludeHeadersIfRequired() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, "", ORDER_NUMBER, true, 1, null,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "", ORDER_NUMBER, true, 1, null,
         ORDER, "orderCode", null, null, null));
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", true, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", true, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     assertThat(csv, startsWith(ORDER_NUMBER));
 
-    csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER, csvFileColumns);
+    fileTemplate = new FileTemplate("O", false, TemplateType.ORDER, fileColumns);
 
-    csv = writeCsvFile(order, csvFileTemplate);
+    csv = writeCsvFile(order, fileTemplate);
     assertThat(csv, not(startsWith(ORDER_NUMBER)));
   }
 
   @Test
   public void shouldExportOrderFields() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, "header.order.number", ORDER_NUMBER,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     assertThat(csv, startsWith(order.getOrderCode()));
   }
 
   @Test
+  public void shouldExportStringFields() throws IOException {
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "header.order.number", ORDER_NUMBER,
+        true, 1, null, "string", "STR_VALUE", null, null, null));
+
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
+
+    String csv = writeCsvFile(order, fileTemplate);
+    assertThat(csv, startsWith("STR_VALUE"));
+  }
+
+
+  @Test
   public void shouldExportOrderLineItemFields() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.quantity.ordered", ORDERED_QUANTITY,
+    fileColumns.add(new FileColumn(true, "header.quantity.ordered", ORDERED_QUANTITY,
         true, 2, null, LINE_ITEM, "orderedQuantity", null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
 
     OrderLineItem lineItem = order.getOrderLineItems().get(0);
     assertThat(
@@ -150,14 +164,14 @@ public class OrderCsvHelperTest {
   public void shouldExcludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
     ReflectionTestUtils.setField(orderCsvHelper, "includeZeroQuantity", false);
 
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     int numberOfLines = csv.split(System.lineSeparator()).length;
 
     assertThat(numberOfLines, is(1));
@@ -167,14 +181,14 @@ public class OrderCsvHelperTest {
   public void shouldIncludeZeroQuantityLineItemsIfConfiguredSo() throws IOException {
     ReflectionTestUtils.setField(orderCsvHelper, "includeZeroQuantity", true);
 
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     int numberOfLines = csv.split(System.lineSeparator()).length;
 
     assertThat(numberOfLines, is(2));
@@ -182,64 +196,64 @@ public class OrderCsvHelperTest {
 
   @Test
   public void shouldExportOnlyIncludedColumns() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, "header.order.number", ORDER_NUMBER,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "header.order.number", ORDER_NUMBER,
         true, 1, null, ORDER, "orderCode", null, null, null));
-    csvFileColumns.add(new CsvFileColumn(true, HEADER_ORDERABLE, PRODUCT,
+    fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
         true, 2, null, LINE_ITEM, ORDERABLE, null, null, null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.ordered.quantity", ORDERED_QUANTITY,
+    fileColumns.add(new FileColumn(true, "header.ordered.quantity", ORDERED_QUANTITY,
         false, 3, null, LINE_ITEM, "orderedQuantity", null, null, null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.order.date", ORDER_DATE,
+    fileColumns.add(new FileColumn(true, "header.order.date", ORDER_DATE,
         false, 5, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", true, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", true, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     assertThat(csv, startsWith(ORDER_NUMBER + ",Product"));
   }
 
   @Test
   public void shouldExportRelatedFields() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, "header.facility.code", "Facility code",
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "header.facility.code", "Facility code",
         true, 1, null, ORDER, "facilityId", "Facility", "code", null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.product.code", PRODUCT_CODE,
+    fileColumns.add(new FileColumn(true, "header.product.code", PRODUCT_CODE,
         true, 2, null, LINE_ITEM, ORDERABLE, "Orderable", "productCode", null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.product.name", "Product name",
+    fileColumns.add(new FileColumn(true, "header.product.name", "Product name",
         true, 3, null, LINE_ITEM, ORDERABLE, "Orderable", "fullProductName", null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.period", PERIOD, true, 4,
+    fileColumns.add(new FileColumn(true, "header.period", PERIOD, true, 4,
         "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     assertThat(csv, startsWith("facilityCode,productCode,productName,01/16"));
   }
 
   @Test
   public void shouldFormatDates() throws IOException {
-    List<CsvFileColumn> csvFileColumns = new ArrayList<>();
-    csvFileColumns.add(new CsvFileColumn(true, "header.period", PERIOD, true, 1,
+    List<FileColumn> fileColumns = new ArrayList<>();
+    fileColumns.add(new FileColumn(true, "header.period", PERIOD, true, 1,
         "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null));
-    csvFileColumns.add(new CsvFileColumn(true, "header.order.date", ORDER_DATE,
+    fileColumns.add(new FileColumn(true, "header.order.date", ORDER_DATE,
         true, 2, "dd/MM/yy", ORDER, "createdDate", null, null, null));
 
-    CsvFileTemplate csvFileTemplate = new CsvFileTemplate("O", false, CsvTemplateType.ORDER,
-        csvFileColumns);
+    FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
+        fileColumns);
 
-    String csv = writeCsvFile(order, csvFileTemplate);
+    String csv = writeCsvFile(order, fileTemplate);
     String date = order.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     assertThat(csv, startsWith("01/16," + date));
   }
 
-  private String writeCsvFile(Order order, CsvFileTemplate csvFileTemplate)
+  private String writeCsvFile(Order order, FileTemplate fileTemplate)
       throws IOException {
     StringWriter writer = new StringWriter();
 
-    orderCsvHelper.writeCsvFile(order, csvFileTemplate, writer);
+    orderCsvHelper.writeCsvFile(order, fileTemplate, writer);
 
     return writer.toString();
   }

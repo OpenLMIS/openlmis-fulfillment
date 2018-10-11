@@ -29,48 +29,49 @@ import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
-import org.openlmis.fulfillment.service.CsvFileTemplateService;
-import org.openlmis.fulfillment.web.util.CsvFileTemplateDto;
+import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.service.FileTemplateService;
+import org.openlmis.fulfillment.web.util.FileTemplateDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
+public class FileTemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
-  private static final String RESOURCE_URL = "/api/csvFileTemplates";
+  private static final String RESOURCE_URL = "/api/fileTemplates";
   private static final String ORDER = "ORDER";
+  private static final String TEMPLATE_TYPE = "templateType";
 
-  private CsvFileTemplate csvFileTemplate = new CsvFileTemplate();
-  private CsvFileTemplateDto csvFileTemplateDto;
+  private FileTemplate fileTemplate = new FileTemplate();
+  private FileTemplateDto fileTemplateDto;
 
   @MockBean
-  private CsvFileTemplateService csvFileTemplateService;
+  private FileTemplateService fileTemplateService;
 
   @Before
   public void setUp() {
-    csvFileTemplate.setId(UUID.randomUUID());
-    csvFileTemplate.setFilePrefix("prefix");
-    csvFileTemplate.setHeaderInFile(false);
-    csvFileTemplate.setTemplateType(CsvTemplateType.ORDER);
-    csvFileTemplate.setCsvFileColumns(new ArrayList<>());
+    fileTemplate.setId(UUID.randomUUID());
+    fileTemplate.setFilePrefix("prefix");
+    fileTemplate.setHeaderInFile(false);
+    fileTemplate.setTemplateType(TemplateType.ORDER);
+    fileTemplate.setFileColumns(new ArrayList<>());
 
-    given(csvFileTemplateRepository.save(any(CsvFileTemplate.class)))
-        .willAnswer(new SaveAnswer<CsvFileTemplate>());
+    given(fileTemplateRepository.save(any(FileTemplate.class)))
+        .willAnswer(new SaveAnswer<FileTemplate>());
   }
 
   // POST /api/orderFileTemplates
 
   @Test
   public void shouldNotCreateNewOrderFileTemplate() {
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .post(RESOURCE_URL)
         .then()
@@ -82,57 +83,57 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldUpdateOrderFileTemplate() {
     // given
-    CsvFileTemplate originalTemplate = new CsvFileTemplate();
-    originalTemplate.setCsvFileColumns(new ArrayList<>());
-    originalTemplate.setId(csvFileTemplate.getId());
+    FileTemplate originalTemplate = new FileTemplate();
+    originalTemplate.setFileColumns(new ArrayList<>());
+    originalTemplate.setId(fileTemplate.getId());
 
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
 
-    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+    when(fileTemplateService.getFileTemplate(TemplateType.ORDER))
         .thenReturn(originalTemplate);
 
     // when
-    CsvFileTemplateDto result = restAssured.given()
+    FileTemplateDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(200)
         .extract()
-        .as(CsvFileTemplateDto.class);
+        .as(FileTemplateDto.class);
 
     // then
-    verify(csvFileTemplateRepository, atLeastOnce()).save(eq(originalTemplate));
-    assertEquals(csvFileTemplateDto.getFilePrefix(), result.getFilePrefix());
-    assertEquals(csvFileTemplateDto.getHeaderInFile(), result.getHeaderInFile());
+    verify(fileTemplateRepository, atLeastOnce()).save(eq(originalTemplate));
+    assertEquals(fileTemplateDto.getFilePrefix(), result.getFilePrefix());
+    assertEquals(fileTemplateDto.getHeaderInFile(), result.getHeaderInFile());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenOrderFileColumnContainsWrongFormat() {
-    CsvFileColumn csvFileColumn = new CsvFileColumn();
-    csvFileColumn.setDataFieldLabel("label");
-    csvFileColumn.setColumnLabel("label");
-    csvFileColumn.setNested("nested");
-    csvFileColumn.setKeyPath("key");
-    csvFileColumn.setRelated("yes");
-    csvFileColumn.setRelatedKeyPath("yes");
-    csvFileColumn.setId(UUID.randomUUID());
-    csvFileColumn.setFormat("dddd-mmm-yy");
-    csvFileColumn.setInclude(true);
-    csvFileColumn.setPosition(1);
-    csvFileColumn.setOpenLmisField(true);
-    csvFileTemplate.getCsvFileColumns().add(csvFileColumn);
+    FileColumn fileColumn = new FileColumn();
+    fileColumn.setDataFieldLabel("label");
+    fileColumn.setColumnLabel("label");
+    fileColumn.setNested("nested");
+    fileColumn.setKeyPath("key");
+    fileColumn.setRelated("yes");
+    fileColumn.setRelatedKeyPath("yes");
+    fileColumn.setId(UUID.randomUUID());
+    fileColumn.setFormat("dddd-mmm-yy");
+    fileColumn.setInclude(true);
+    fileColumn.setPosition(1);
+    fileColumn.setOpenLmisField(true);
+    fileTemplate.getFileColumns().add(fileColumn);
 
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
@@ -144,12 +145,12 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldReturn403WhenUserHasNoRightsToUpdateOrderFileTemplate() {
     denyUserAllRights();
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
@@ -162,26 +163,26 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenIdNotMatching() {
     // given
-    CsvFileTemplate originalTemplate = new CsvFileTemplate();
-    originalTemplate.setCsvFileColumns(new ArrayList<>());
-    originalTemplate.setId(getNonMatchingUuid(csvFileTemplate.getId()));
+    FileTemplate originalTemplate = new FileTemplate();
+    originalTemplate.setFileColumns(new ArrayList<>());
+    originalTemplate.setId(getNonMatchingUuid(fileTemplate.getId()));
 
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
 
-    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+    when(fileTemplateService.getFileTemplate(TemplateType.ORDER))
         .thenReturn(originalTemplate);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(400)
         .extract()
-        .as(CsvFileTemplateDto.class);
+        .as(FileTemplateDto.class);
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -190,27 +191,27 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
   @Test
   public void shouldNotUpdateOrderFileTemplateWhenIdNull() {
     // given
-    CsvFileTemplate originalTemplate = new CsvFileTemplate();
-    originalTemplate.setCsvFileColumns(new ArrayList<>());
-    originalTemplate.setId(csvFileTemplate.getId());
+    FileTemplate originalTemplate = new FileTemplate();
+    originalTemplate.setFileColumns(new ArrayList<>());
+    originalTemplate.setId(fileTemplate.getId());
 
-    csvFileTemplateDto = CsvFileTemplateDto.newInstance(csvFileTemplate);
-    csvFileTemplateDto.setId(null);
+    fileTemplateDto = FileTemplateDto.newInstance(fileTemplate);
+    fileTemplateDto.setId(null);
 
-    when(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
+    when(fileTemplateService.getFileTemplate(TemplateType.ORDER))
         .thenReturn(originalTemplate);
 
     // when
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .body(csvFileTemplateDto)
+        .body(fileTemplateDto)
         .when()
         .put(RESOURCE_URL)
         .then()
         .statusCode(400)
         .extract()
-        .as(CsvFileTemplateDto.class);
+        .as(FileTemplateDto.class);
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -220,11 +221,11 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldReturnOrderFileTemplate() {
-    given(csvFileTemplateService.getCsvFileTemplate(CsvTemplateType.ORDER))
-        .willReturn(csvFileTemplate);
+    given(fileTemplateService.getFileTemplate(TemplateType.ORDER))
+        .willReturn(fileTemplate);
 
-    CsvFileTemplateDto result = restAssured.given()
-        .queryParam("templateType", ORDER)
+    FileTemplateDto result = restAssured.given()
+        .queryParam(TEMPLATE_TYPE, ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -232,18 +233,18 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
         .then()
         .statusCode(200)
         .extract()
-        .as(CsvFileTemplateDto.class);
+        .as(FileTemplateDto.class);
 
-    assertEquals(csvFileTemplate.getId(),result.getId());
+    assertEquals(fileTemplate.getId(),result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotReturnOrderFileTemplateIfItDoesNotExist() {
-    given(csvFileTemplateService.getOrderFileTemplate()).willReturn(null);
+    given(fileTemplateService.getOrderFileTemplate()).willReturn(null);
 
     restAssured.given()
-        .queryParam("templateType", ORDER)
+        .queryParam(TEMPLATE_TYPE, ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()
@@ -259,7 +260,7 @@ public class CsvFileTemplateControllerIntegrationTest extends BaseWebIntegration
     denyUserAllRights();
 
     restAssured.given()
-        .queryParam("templateType", ORDER)
+        .queryParam(TEMPLATE_TYPE, ORDER)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .when()

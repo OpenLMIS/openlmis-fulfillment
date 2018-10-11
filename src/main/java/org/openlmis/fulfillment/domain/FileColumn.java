@@ -29,11 +29,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "csv_file_columns")
+@Table(name = "file_columns")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public final class CsvFileColumn extends BaseEntity {
+public final class FileColumn extends BaseEntity {
 
   @Column(nullable = false)
   @Getter
@@ -79,31 +79,31 @@ public final class CsvFileColumn extends BaseEntity {
   private String relatedKeyPath;
 
   @ManyToOne(cascade = CascadeType.REFRESH)
-  @JoinColumn(name = "csvFileTemplateId", nullable = false)
+  @JoinColumn(name = "fileTemplateId", nullable = false)
   @Getter
   @Setter
-  private CsvFileTemplate csvFileTemplate;
+  private FileTemplate fileTemplate;
 
   /**
-   * Creates new CsvFileColumn object based on data from {@link CsvFileColumn.Importer}.
+   * Creates new FileColumn object based on data from {@link FileColumn.Importer}.
    *
-   * @param importer instance of {@link CsvFileColumn.Importer}
-   * @return new instance of CsvFileColumn.
+   * @param importer instance of {@link FileColumn.Importer}
+   * @return new instance of FileColumn.
    */
-  public static CsvFileColumn newInstance(Importer importer) {
-    CsvFileColumn csvFileColumn = new CsvFileColumn();
-    csvFileColumn.setId(importer.getId());
-    csvFileColumn.setOpenLmisField(importer.getOpenLmisField());
-    csvFileColumn.setDataFieldLabel(importer.getDataFieldLabel());
-    csvFileColumn.setColumnLabel(importer.getColumnLabel());
-    csvFileColumn.setInclude(importer.getInclude());
-    csvFileColumn.setPosition(importer.getPosition());
-    csvFileColumn.setNested(importer.getNested());
-    csvFileColumn.setKeyPath(importer.getKeyPath());
-    csvFileColumn.setRelated(importer.getRelated());
-    csvFileColumn.setRelatedKeyPath(importer.getRelatedKeyPath());
-    csvFileColumn.setFormat(importer.getFormat());
-    return csvFileColumn;
+  public static FileColumn newInstance(Importer importer) {
+    FileColumn fileColumn = new FileColumn();
+    fileColumn.setId(importer.getId());
+    fileColumn.setOpenLmisField(importer.getOpenLmisField());
+    fileColumn.setDataFieldLabel(importer.getDataFieldLabel());
+    fileColumn.setColumnLabel(importer.getColumnLabel());
+    fileColumn.setInclude(importer.getInclude());
+    fileColumn.setPosition(importer.getPosition());
+    fileColumn.setNested(importer.getNested());
+    fileColumn.setKeyPath(importer.getKeyPath());
+    fileColumn.setRelated(importer.getRelated());
+    fileColumn.setRelatedKeyPath(importer.getRelatedKeyPath());
+    fileColumn.setFormat(importer.getFormat());
+    return fileColumn;
   }
 
   /**

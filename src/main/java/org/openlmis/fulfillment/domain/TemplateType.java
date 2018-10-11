@@ -16,7 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 
-public enum CsvTemplateType {
+public enum TemplateType {
   ORDER,
   SHIPMENT
 }

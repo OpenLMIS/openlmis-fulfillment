@@ -13,13 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.web.util;
 
-import java.util.UUID;
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-public interface CsvFileColumnRepository extends
-    PagingAndSortingRepository<CsvFileColumn, UUID> {
+public class FileColumnDtoTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(FileColumnDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
+
 }
-

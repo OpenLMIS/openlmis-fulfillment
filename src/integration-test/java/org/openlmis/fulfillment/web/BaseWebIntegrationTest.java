@@ -46,12 +46,12 @@ import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.openlmis.fulfillment.domain.BaseEntity;
-import org.openlmis.fulfillment.domain.CsvFileColumn;
-import org.openlmis.fulfillment.domain.CsvFileTemplate;
-import org.openlmis.fulfillment.domain.CsvTemplateType;
+import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
-import org.openlmis.fulfillment.repository.CsvFileColumnRepository;
-import org.openlmis.fulfillment.repository.CsvFileTemplateRepository;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.repository.FileColumnRepository;
+import org.openlmis.fulfillment.repository.FileTemplateRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -302,10 +302,10 @@ public abstract class BaseWebIntegrationTest {
   protected OrderNumberConfigurationRepository orderNumberConfigurationRepository;
 
   @MockBean
-  protected CsvFileTemplateRepository csvFileTemplateRepository;
+  protected FileTemplateRepository fileTemplateRepository;
 
   @MockBean
-  protected CsvFileColumnRepository csvFileColumnRepository;
+  protected FileColumnRepository fileColumnRepository;
 
   @Autowired
   ExporterBuilder exporter;
@@ -470,39 +470,39 @@ public abstract class BaseWebIntegrationTest {
   @Before
   public void setUpBootstrapData() {
     // data from bootstrap.sql
-    CsvFileTemplate template = addOrderFileTemplate();
-    CsvFileColumn column1 = addOrderFileColumn(
+    FileTemplate template = addOrderFileTemplate();
+    FileColumn column1 = addOrderFileColumn(
         "33b2d2e9-3167-46b0-95d4-1295be9afc21", true, "fulfillment.header.order.number",
         "Order number", true, 1, null, ORDER, "orderCode", null, null, template
     );
-    CsvFileColumn column2 = addOrderFileColumn(
+    FileColumn column2 = addOrderFileColumn(
         "6b8d331b-a0dd-4a1f-aafb-40e6a72ab9f6", true, "fulfillment.header.facility.code",
         "Facility code", true, 2, null, ORDER, "facilityId", "Facility", "code", template
     );
-    CsvFileColumn column3 = addOrderFileColumn(
+    FileColumn column3 = addOrderFileColumn(
         "752cda76-0db5-4b6e-bb79-0f531ab78e2e", true, "fulfillment.header.product.code",
         "Product code", true, 3, null, "lineItem", "orderableId", "Orderable",
         "productCode", template
     );
-    CsvFileColumn column4 = addOrderFileColumn(
+    FileColumn column4 = addOrderFileColumn(
         "9e825396-269d-4873-baa4-89054e2722f5", true, "fulfillment.header.product.name",
         "Product name", true, 4, null, "lineItem", "orderableId", "Orderable",
         "fullProductName", template
     );
-    CsvFileColumn column5 = addOrderFileColumn(
+    FileColumn column5 = addOrderFileColumn(
         "cd57f329-f549-4717-882e-ecbf98122c39", true, "fulfillment.header.ordered.quantity",
         "Ordered quantity", true, 5, null, "lineItem", "orderedQuantity", null, null, template
     );
-    CsvFileColumn column6 = addOrderFileColumn(
+    FileColumn column6 = addOrderFileColumn(
         "d0e1aec7-1556-4dc1-8e21-d80a2d76b678", true, "fulfillment.header.period", "Period", true,
         6, "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", template
     );
-    CsvFileColumn column7 = addOrderFileColumn(
+    FileColumn column7 = addOrderFileColumn(
         "dab6eec0-4cb4-4d4c-94b7-820308da73ff", true, "fulfillment.header.order.date", "Order date",
         true, 7, "dd/MM/yy", ORDER, "createdDate", null, null, template
     );
 
-    given(csvFileColumnRepository.findAll()).willReturn(Lists.newArrayList(
+    given(fileColumnRepository.findAll()).willReturn(Lists.newArrayList(
         column1, column2, column3, column4, column5, column6, column7
     ));
 
@@ -523,28 +523,28 @@ public abstract class BaseWebIntegrationTest {
     return configuration;
   }
 
-  private CsvFileTemplate addOrderFileTemplate() {
-    CsvFileTemplate template = new CsvFileTemplate();
+  private FileTemplate addOrderFileTemplate() {
+    FileTemplate template = new FileTemplate();
     template.setId(UUID.fromString("457ed5b0-80d7-4cb6-af54-e3f6138c8128"));
     template.setFilePrefix("O");
     template.setHeaderInFile(true);
-    template.setTemplateType(CsvTemplateType.ORDER);
-    template.setCsvFileColumns(Lists.newArrayList());
+    template.setTemplateType(TemplateType.ORDER);
+    template.setFileColumns(Lists.newArrayList());
 
-    given(csvFileTemplateRepository.findOne(template.getId())).willReturn(template);
-    given(csvFileTemplateRepository.findAll()).willReturn(Lists.newArrayList(template));
-    given(csvFileTemplateRepository.findFirstByTemplateType(CsvTemplateType.ORDER))
+    given(fileTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(fileTemplateRepository.findAll()).willReturn(Lists.newArrayList(template));
+    given(fileTemplateRepository.findFirstByTemplateType(TemplateType.ORDER))
         .willReturn(template);
 
     return template;
   }
 
-  private CsvFileColumn addOrderFileColumn(String id, boolean openLmisField,
+  private FileColumn addOrderFileColumn(String id, boolean openLmisField,
                                            String dataFieldLabel, String columnLabel,
                                            boolean include, int position, String format,
                                            String nested, String keyPath, String related,
-                                           String relatedKeyPath, CsvFileTemplate template) {
-    CsvFileColumn column = new CsvFileColumn();
+                                           String relatedKeyPath, FileTemplate template) {
+    FileColumn column = new FileColumn();
     column.setId(UUID.fromString(id));
     column.setOpenLmisField(openLmisField);
     column.setDataFieldLabel(dataFieldLabel);
@@ -556,11 +556,11 @@ public abstract class BaseWebIntegrationTest {
     column.setKeyPath(keyPath);
     column.setRelated(related);
     column.setRelatedKeyPath(relatedKeyPath);
-    column.setCsvFileTemplate(template);
+    column.setFileTemplate(template);
 
-    template.getCsvFileColumns().add(column);
+    template.getFileColumns().add(column);
 
-    given(csvFileColumnRepository.findOne(column.getId())).willReturn(column);
+    given(fileColumnRepository.findOne(column.getId())).willReturn(column);
 
     return column;
   }
