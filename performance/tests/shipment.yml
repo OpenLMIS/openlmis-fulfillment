@@ -1,144 +1,144 @@
-execution:
-  - concurrency: 1
-    hold-for: 2m
-    scenario: shipment-workflow
-
-scenarios:
-  get-token-for-divo:
-    requests:
-      - if: '${__javaScript(vars.get("divo_access_token") == null)}'
-        then:
-          - url: ${__P(base-uri)}/api/oauth/token
-            method: POST
-            label: GetTokenForDivo
-            headers:
-              Authorization: Basic ${__base64Encode(${__P(user-auth)})}
-            body:
-              grant_type: password
-              username: divo1
-              password: ${__P(password)}
-            extract-jsonpath:
-              divo_access_token:
-                jsonpath: $.access_token
-  full-supply-approved-products:
-    requests:
-      - include-scenario: get-token-for-divo
-      - url: ${__P(base-uri)}/api/facilities/${requesting_facility_id}/approvedProducts?fullSupply=true&programId=${program_id}
-        method: GET
-        label: GetApprovedFullSupplyProductsForOrder
-        headers:
-          Authorization: Bearer ${divo_access_token}
-  create-local-order-for-shipment:
-    requests:
-      - include-scenario: full-supply-approved-products
-      - url: ${__P(base-uri)}/api/orders
-        method: POST
-        label: CreateLocalOrderForShipment
-        headers:
-          Authorization: Bearer ${divo_access_token}
-          Content-Type: application/json
-        jsr223:
-          execute: before
-          script-text: |
-            import groovy.json.JsonSlurper
-            import groovy.json.JsonOutput
-
-            def jsonSlurper = new JsonSlurper()
-            def random = new Random()
-
-            def response = prev.getResponseDataAsString()
-            def products = jsonSlurper.parseText(response)
-
-            def orderLineItems = [];
-            products.content.each { product ->
-              orderLineItems.add([
-                orderable: [ id: product.orderable.id ],
-                orderedQuantity: 10
-              ])
-            }
-
-            def order = [
-              emergency: false,
-              externalId: UUID.randomUUID().toString(),
-              facility: [ id: vars.get("requesting_facility_id") ],
-              processingPeriod: [ id: vars.get("processing_period_id") ],
-              createdBy: [ id: vars.get("created_by_id") ],
-              program: [ id: vars.get("program_id") ],
-              requestingFacility: [ id: vars.get("requesting_facility_id") ],
-              receivingFacility: [ id: vars.get("requesting_facility_id") ],
-              supplyingFacility: [ id: vars.get("supplying_facility_id") ],
-              quotedCost: 0,
-              orderLineItems: orderLineItems
-            ]
-
-            vars.put("order", JsonOutput.toJson(order))
-        body: ${order}
-        extract-jsonpath:
-          order_id: $.id
-  finalize-shipment:
-    requests:
-      - include-scenario: create-local-order-for-shipment
-      - url: ${__P(base-uri)}/api/shipments
-        method: POST
-        label: FinalizeShipment
-        headers:
-          Authorization: Bearer ${divo_access_token}
-          Content-Type: application/json
-        jsr223:
-          execute: before
-          script-text: |
-            import groovy.json.JsonSlurper
-            import groovy.json.JsonOutput
-
-            def jsonSlurper = new JsonSlurper()
-            def random = new Random()
-
-            def order = jsonSlurper.parseText(vars.get("order"))
-
-            def lineItems = []
-            order.orderLineItems.each { line ->
-              lineItems.add([
-                orderable: [ id: line.orderable.id ],
-                quantityShipped: 0
-              ])
-            }
-
-            def shipment = [
-              order: [ id: vars.get("order_id") ],
-              shippedBy: [ id: vars.get("shipped_by_id") ],
-              notes: "Performance test shipment",
-              lineItems: lineItems
-            ]
-
-            vars.put("shipment", JsonOutput.toJson(shipment))
-        body: ${shipment}
-        extract-jsonpath:
-          shipment_id: $.id
-  shipment-workflow:
-    variables:
-      # Lurio, Cuamba
-      requesting_facility_id: 4774fc63-a0c8-4a29-a01d-5b6b48632175
-      # Depósito Distrital Cuamba
-      supplying_facility_id: c62dea9b-6974-4101-ba39-b09914165967
-      # Feb2017
-      processing_period_id: 04ec3c83-a086-4792-b7a3-c46559b7f6cd
-      # EPI
-      program_id: 418bdc1d-c303-4bd0-b2d3-d8901150a983
-      # vwclerk1
-      created_by_id: ce962fad-c872-4244-92fe-2f70995d311a
-      # divo1
-      shipped_by_id: 560be32a-ea2e-4d12-ae00-1f69376ad535
-    requests:
-      - include-scenario: finalize-shipment
-      - url: ${__P(base-uri)}/api/shipments/${shipment_id}
-        method: GET
-        label: GetShipment
-        headers:
-          Authorization: Bearer ${divo_access_token}
-          Content-Type: application/json
-
-reporting:
-    - module: passfail
-      criteria:
-        Finalize Shipment is too slow: p90 of FinalizeShipment>120000ms
-        Get Shipment is too slow: p90 of GetShipment>1800ms
+#execution:
+#  - concurrency: 1
+#    hold-for: 2m
+#    scenario: shipment-workflow
+#
+#scenarios:
+#  get-token-for-divo:
+#    requests:
+#      - if: '${__javaScript(vars.get("divo_access_token") == null)}'
+#        then:
+#          - url: ${__P(base-uri)}/api/oauth/token
+#            method: POST
+#            label: GetTokenForDivo
+#            headers:
+#              Authorization: Basic ${__base64Encode(${__P(user-auth)})}
+#            body:
+#              grant_type: password
+#              username: divo1
+#              password: ${__P(password)}
+#            extract-jsonpath:
+#              divo_access_token:
+#                jsonpath: $.access_token
+#  full-supply-approved-products:
+#    requests:
+#      - include-scenario: get-token-for-divo
+#      - url: ${__P(base-uri)}/api/facilities/${requesting_facility_id}/approvedProducts?fullSupply=true&programId=${program_id}
+#        method: GET
+#        label: GetApprovedFullSupplyProductsForOrder
+#        headers:
+#          Authorization: Bearer ${divo_access_token}
+#  create-local-order-for-shipment:
+#    requests:
+#      - include-scenario: full-supply-approved-products
+#      - url: ${__P(base-uri)}/api/orders
+#        method: POST
+#        label: CreateLocalOrderForShipment
+#        headers:
+#          Authorization: Bearer ${divo_access_token}
+#          Content-Type: application/json
+#        jsr223:
+#          execute: before
+#          script-text: |
+#            import groovy.json.JsonSlurper
+#            import groovy.json.JsonOutput
+#
+#            def jsonSlurper = new JsonSlurper()
+#            def random = new Random()
+#
+#            def response = prev.getResponseDataAsString()
+#            def products = jsonSlurper.parseText(response)
+#
+#            def orderLineItems = [];
+#            products.content.each { product ->
+#              orderLineItems.add([
+#                orderable: [ id: product.orderable.id ],
+#                orderedQuantity: 10
+#              ])
+#            }
+#
+#            def order = [
+#              emergency: false,
+#              externalId: UUID.randomUUID().toString(),
+#              facility: [ id: vars.get("requesting_facility_id") ],
+#              processingPeriod: [ id: vars.get("processing_period_id") ],
+#              createdBy: [ id: vars.get("created_by_id") ],
+#              program: [ id: vars.get("program_id") ],
+#              requestingFacility: [ id: vars.get("requesting_facility_id") ],
+#              receivingFacility: [ id: vars.get("requesting_facility_id") ],
+#              supplyingFacility: [ id: vars.get("supplying_facility_id") ],
+#              quotedCost: 0,
+#              orderLineItems: orderLineItems
+#            ]
+#
+#            vars.put("order", JsonOutput.toJson(order))
+#        body: ${order}
+#        extract-jsonpath:
+#          order_id: $.id
+#  finalize-shipment:
+#    requests:
+#      - include-scenario: create-local-order-for-shipment
+#      - url: ${__P(base-uri)}/api/shipments
+#        method: POST
+#        label: FinalizeShipment
+#        headers:
+#          Authorization: Bearer ${divo_access_token}
+#          Content-Type: application/json
+#        jsr223:
+#          execute: before
+#          script-text: |
+#            import groovy.json.JsonSlurper
+#            import groovy.json.JsonOutput
+#
+#            def jsonSlurper = new JsonSlurper()
+#            def random = new Random()
+#
+#            def order = jsonSlurper.parseText(vars.get("order"))
+#
+#            def lineItems = []
+#            order.orderLineItems.each { line ->
+#              lineItems.add([
+#                orderable: [ id: line.orderable.id ],
+#                quantityShipped: 0
+#              ])
+#            }
+#
+#            def shipment = [
+#              order: [ id: vars.get("order_id") ],
+#              shippedBy: [ id: vars.get("shipped_by_id") ],
+#              notes: "Performance test shipment",
+#              lineItems: lineItems
+#            ]
+#
+#            vars.put("shipment", JsonOutput.toJson(shipment))
+#        body: ${shipment}
+#        extract-jsonpath:
+#          shipment_id: $.id
+#  shipment-workflow:
+#    variables:
+#      # Lurio, Cuamba
+#      requesting_facility_id: 4774fc63-a0c8-4a29-a01d-5b6b48632175
+#      # Depósito Distrital Cuamba
+#      supplying_facility_id: c62dea9b-6974-4101-ba39-b09914165967
+#      # Feb2017
+#      processing_period_id: 04ec3c83-a086-4792-b7a3-c46559b7f6cd
+#      # EPI
+#      program_id: 418bdc1d-c303-4bd0-b2d3-d8901150a983
+#      # vwclerk1
+#      created_by_id: ce962fad-c872-4244-92fe-2f70995d311a
+#      # divo1
+#      shipped_by_id: 560be32a-ea2e-4d12-ae00-1f69376ad535
+#    requests:
+#      - include-scenario: finalize-shipment
+#      - url: ${__P(base-uri)}/api/shipments/${shipment_id}
+#        method: GET
+#        label: GetShipment
+#        headers:
+#          Authorization: Bearer ${divo_access_token}
+#          Content-Type: application/json
+#
+#reporting:
+#    - module: passfail
+#      criteria:
+#        Finalize Shipment is too slow: p90 of FinalizeShipment>120000ms
+#        Get Shipment is too slow: p90 of GetShipment>1800ms
