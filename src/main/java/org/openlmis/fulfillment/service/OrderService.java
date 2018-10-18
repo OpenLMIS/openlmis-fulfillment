@@ -36,6 +36,7 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
@@ -197,7 +198,8 @@ public class OrderService {
     orderStorage.store(saved);
 
     TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityId(order.getSupplyingFacilityId());
+        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+            TransferType.ORDER);
 
     if (properties instanceof FtpTransferProperties) {
       boolean success = orderSender.send(saved);
@@ -233,7 +235,8 @@ public class OrderService {
         order.prepareToLocalFulfill();
       } else {
         TransferProperties properties = transferPropertiesRepository
-            .findFirstByFacilityId(order.getSupplyingFacilityId());
+            .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+                TransferType.ORDER);
 
         if (null == properties) {
           // Set order status as TRANSFER_FAILED

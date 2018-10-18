@@ -66,6 +66,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.StatusChange;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
@@ -489,6 +490,7 @@ public class OrderServiceTest {
     userDto = new UserDataBuilder().build();
 
     properties = new FtpTransferProperties();
+    properties.setTransferType(TransferType.ORDER);
 
     startDate = LocalDate.now();
     endDate = startDate.plusMonths(1);
@@ -509,7 +511,9 @@ public class OrderServiceTest {
     when(extensionManager.getExtension(OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class))
         .thenReturn(new Base36EncodedOrderNumberGenerator());
 
-    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(),any()))
+        .thenReturn(properties);
 
     when(orderRepository.save(any(Order.class))).thenReturn(order);
     when(orderSender.send(order)).thenReturn(true);

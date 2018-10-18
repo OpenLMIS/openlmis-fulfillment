@@ -109,6 +109,7 @@ public class ExporterBuilder {
                      LocalTransferProperties.Exporter exporter) {
     exporter.setId(properties.getId());
     exporter.setFacility(getIfPresent(facilities, properties.getFacilityId()));
+    exporter.setTransferType(properties.getTransferType());
     exporter.setPath(properties.getPath());
   }
 
@@ -120,6 +121,7 @@ public class ExporterBuilder {
                      FtpTransferProperties.Exporter exporter) {
     exporter.setId(properties.getId());
     exporter.setFacility(getIfPresent(facilities, properties.getFacilityId()));
+    exporter.setTransferType(properties.getTransferType());
     exporter.setProtocol(properties.getProtocol().name());
     exporter.setUsername(properties.getUsername());
     exporter.setServerHost(properties.getServerHost());

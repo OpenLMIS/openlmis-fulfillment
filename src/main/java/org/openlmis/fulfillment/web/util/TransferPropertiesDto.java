@@ -21,6 +21,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -37,5 +38,9 @@ public abstract class TransferPropertiesDto
   @Getter
   @Setter
   private FacilityDto facility;
+
+  @Getter
+  @Setter
+  private TransferType transferType;
 
 }

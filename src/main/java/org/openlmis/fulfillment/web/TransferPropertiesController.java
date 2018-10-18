@@ -23,6 +23,7 @@ import java.util.UUID;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
@@ -196,12 +197,15 @@ public class TransferPropertiesController extends BaseController {
    * @return transfer properties related with the given facility
    */
   @RequestMapping(value = "/transferProperties/search", method = RequestMethod.GET)
-  public ResponseEntity search(@RequestParam("facility") UUID facility) {
+  public ResponseEntity search(@RequestParam("facility") UUID facility,
+      @RequestParam(value = "transferType", required = false, defaultValue = "ORDER")
+          TransferType transferType) {
 
     LOGGER.debug("Checking right to view transfer properties");
     permissionService.canManageSystemSettings();
 
-    TransferProperties properties = transferPropertiesRepository.findFirstByFacilityId(facility);
+    TransferProperties properties = transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(facility, transferType);
 
     if (properties == null) {
       return ResponseEntity.notFound().build();

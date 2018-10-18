@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -56,7 +57,8 @@ public class TransferPropertiesServiceTest {
 
     when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(null);
 
     // when
@@ -75,7 +77,8 @@ public class TransferPropertiesServiceTest {
 
     when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(duplicate);
 
     // when
@@ -88,7 +91,8 @@ public class TransferPropertiesServiceTest {
     TransferProperties properties = randomSetting();
 
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(null);
 
     // when
@@ -100,11 +104,13 @@ public class TransferPropertiesServiceTest {
     // given
     TransferProperties properties = randomSetting();
 
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(properties);
 
     // when
-    TransferProperties result = transferPropertiesService.getByFacility(properties.getFacilityId());
+    TransferProperties result = transferPropertiesService
+        .getByFacility(properties.getFacilityId(), TransferType.ORDER);
 
     // then
     assertEquals(result.getId(), properties.getId());
@@ -115,11 +121,13 @@ public class TransferPropertiesServiceTest {
     // given
     TransferProperties properties = randomSetting();
 
-    when(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(null);
 
     // when
-    TransferProperties result = transferPropertiesService.getByFacility(properties.getFacilityId());
+    TransferProperties result = transferPropertiesService
+        .getByFacility(properties.getFacilityId(), TransferType.ORDER);
 
     // then
     assertNull(result);

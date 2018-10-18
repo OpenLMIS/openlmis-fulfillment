@@ -863,6 +863,12 @@ resourceTypes:
                       type: string
                       required: true
                       repeat: false
+                  transferType:
+                      displayName: transferType
+                      description: Transfer Type with default value of ORDER.
+                      type: string
+                      required: false
+                      repeat: false
               responses:
                   200:
                       body:

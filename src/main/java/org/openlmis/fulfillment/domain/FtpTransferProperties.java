@@ -91,6 +91,7 @@ public class FtpTransferProperties extends TransferProperties {
     Optional.ofNullable(importer.getFacility())
         .ifPresent(facility -> ftp.facilityId = facility.getId());
 
+    ftp.transferType = importer.getTransferType();
     ftp.protocol = FtpProtocol.fromString(importer.getProtocol());
     ftp.username = importer.getUsername();
     ftp.password = importer.getPassword();

@@ -21,6 +21,8 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
@@ -42,11 +44,19 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
   @Setter
   protected UUID facilityId;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  @Getter
+  @Setter
+  protected TransferType transferType = TransferType.ORDER;
+
   public interface BaseExporter {
 
     void setId(UUID id);
 
     void setFacility(FacilityDto facility);
+
+    void setTransferType(TransferType transferType);
 
   }
 
@@ -55,6 +65,8 @@ public abstract class TransferProperties extends BaseEntity implements Storable 
     UUID getId();
 
     FacilityDto getFacility();
+
+    TransferType getTransferType();
 
   }
 

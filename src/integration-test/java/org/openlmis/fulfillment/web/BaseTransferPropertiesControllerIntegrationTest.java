@@ -23,6 +23,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
@@ -252,7 +253,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   @Test
   public void shouldFindPropertiesByFacilityId() {
     T properties = generateProperties();
-    given(transferPropertiesRepository.findFirstByFacilityId(properties.getFacilityId()))
+    given(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(properties.getFacilityId(), TransferType.ORDER))
         .willReturn(properties);
 
     TransferPropertiesDto response = restAssured.given()
@@ -270,7 +272,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
 
   @Test
   public void shouldReturnEmptyListIfPropertiesCannotBeFound() {
-    given(transferPropertiesRepository.findFirstByFacilityId(any(UUID.class)))
+    given(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .willReturn(null);
 
     restAssured.given()

@@ -3,6 +3,7 @@
 
 Contract breaking changes:
 * [OLMIS-5479](https://openlmis.atlassian.net/browse/OLMIS-5479): Refactored /api/orderFileTemplate API into /api/fileTemplate that persists config for both order and shipment templates.
+* [OLMIS-5480](https://openlmis.atlassian.net/browse/OLMIS-5480): Updated Transfer properties so that it can also be used to persist transfer properties for shipment files imports.
 
 
 Bug fixes and improvements added in a backwards-compatible manner:

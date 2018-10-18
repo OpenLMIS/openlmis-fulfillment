@@ -40,6 +40,7 @@ import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -89,7 +90,9 @@ public class OrderStorageTest {
 
     when(Files.newBufferedWriter(any(Path.class))).thenReturn(writer);
     when(fileTemplateService.getOrderFileTemplate()).thenReturn(template);
-    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(properties);
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(properties);
 
     when(order.getOrderCode()).thenReturn(ORDER_CODE);
     when(template.getFilePrefix()).thenReturn(FILE_PREFIX);
@@ -125,12 +128,14 @@ public class OrderStorageTest {
 
   @Test
   public void shouldHandleSituationWhenPropertiesDoesNotExist() throws OrderStorageException {
-    when(transferPropertiesRepository.findFirstByFacilityId(order.getFacilityId()))
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(order.getFacilityId(), TransferType.ORDER))
         .thenReturn(null);
 
     orderFileStorage.store(order);
 
-    verify(transferPropertiesRepository).findFirstByFacilityId(order.getFacilityId());
+    verify(transferPropertiesRepository)
+        .findFirstByFacilityIdAndTransferType(order.getFacilityId(), TransferType.ORDER);
     verifyZeroInteractions(fileTemplateService, csvHelper);
   }
 

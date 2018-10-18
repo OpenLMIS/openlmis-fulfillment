@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,8 @@ public class OrderFileStorage implements OrderStorage {
   @Override
   public void store(Order order) {
     TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityId(order.getSupplyingFacilityId());
+        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+            TransferType.ORDER);
 
     if (null == properties) {
       LOGGER.warn(
@@ -93,7 +95,8 @@ public class OrderFileStorage implements OrderStorage {
   public Path getOrderAsPath(Order order) {
     FileTemplate template = fileTemplateService.getOrderFileTemplate();
     TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityId(order.getSupplyingFacilityId());
+        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+            TransferType.ORDER);
 
     String fileName = template.getFilePrefix() + order.getOrderCode() + ".csv";
 

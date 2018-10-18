@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.springframework.http.HttpHeaders;
@@ -128,6 +129,7 @@ public class FtpTransferPropertiesControllerIntegrationTest
     ftp.setUsername("username");
     ftp.setPassword("password");
     ftp.setPassiveMode(true);
+    ftp.setTransferType(TransferType.ORDER);
 
     return ftp;
   }

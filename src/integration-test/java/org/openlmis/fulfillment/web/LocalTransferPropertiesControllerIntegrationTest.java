@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.web.util.FtpTransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesDto;
 import org.openlmis.fulfillment.web.util.TransferPropertiesFactory;
@@ -134,6 +135,7 @@ public class LocalTransferPropertiesControllerIntegrationTest
     local.setId(UUID.randomUUID());
     local.setFacilityId(UUID.fromString(FACILITY_ID));
     local.setPath(LOCAL_DIR);
+    local.setTransferType(TransferType.ORDER);
 
     return local;
   }

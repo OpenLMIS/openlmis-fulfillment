@@ -46,6 +46,7 @@ public class LocalTransferProperties extends TransferProperties {
     Optional.ofNullable(importer.getFacility())
         .ifPresent(facility -> local.setFacilityId(facility.getId()));
 
+    local.transferType = importer.getTransferType();
     local.path = importer.getPath();
 
     return local;

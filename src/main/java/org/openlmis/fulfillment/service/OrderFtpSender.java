@@ -25,6 +25,7 @@ import org.apache.camel.ProducerTemplate;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,8 @@ public class OrderFtpSender implements OrderSender {
   public boolean send(Order order) {
     Path path = orderStorage.getOrderAsPath(order);
     TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityId(order.getSupplyingFacilityId());
+        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+            TransferType.ORDER);
 
     return properties instanceof FtpTransferProperties
         && send(order, path, (FtpTransferProperties) properties);

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpProtocol;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
@@ -64,7 +65,8 @@ public class TransferPropertiesRepositoryIntegrationTest
 
     transferPropertiesRepository.save(setting);
 
-    TransferProperties found = transferPropertiesRepository.findFirstByFacilityId(facilityId);
+    TransferProperties found = transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(facilityId, TransferType.ORDER);
 
     assertThat(found.getId(), is(setting.getId()));
   }

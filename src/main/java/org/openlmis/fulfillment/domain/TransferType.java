@@ -13,18 +13,9 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.domain;
 
-import java.util.UUID;
-import org.openlmis.fulfillment.domain.TransferProperties;
-import org.openlmis.fulfillment.domain.TransferType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
-
-public interface TransferPropertiesRepository
-    extends JpaRepository<TransferProperties, UUID> {
-
-  TransferProperties findFirstByFacilityIdAndTransferType(@Param("facilityId") UUID facilityId,
-      @Param("transferType") TransferType transferType);
-
+public enum TransferType {
+  ORDER,
+  SHIPMENT
 }

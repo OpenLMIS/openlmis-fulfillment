@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service;
 import java.util.UUID;
 import org.apache.commons.lang.NullArgumentException;
 import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,13 @@ public class TransferPropertiesService {
    * @param facilityId id of facility.
    * @return TransferProperties entity with matching facility.
    */
-  public TransferProperties getByFacility(UUID facilityId) {
+  public TransferProperties getByFacility(UUID facilityId, TransferType transferType) {
     if (facilityId == null) {
       throw new NullArgumentException("facilityId");
     }
 
-    return transferPropertiesRepository.findFirstByFacilityId(facilityId);
+    return transferPropertiesRepository.findFirstByFacilityIdAndTransferType(facilityId,
+        transferType);
   }
 
   /**
@@ -56,7 +58,7 @@ public class TransferPropertiesService {
       throw new IllegalArgumentException("Facility with given ID does not exist.");
     }
 
-    TransferProperties existent = getByFacility(setting.getFacilityId());
+    TransferProperties existent = getByFacility(setting.getFacilityId(), setting.getTransferType());
     if (existent != null && existent.getId() != setting.getId()) {
       throw new DuplicateTransferPropertiesException();
     }

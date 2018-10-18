@@ -37,6 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.FtpProtocol;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,9 +77,11 @@ public class OrderSenderTest {
     setting.setUsername("username");
     setting.setPassword("password");
     setting.setPassiveMode(true);
+    setting.setTransferType(TransferType.ORDER);
 
     when(orderStorage.getOrderAsPath(order)).thenReturn(path);
-    when(transferPropertiesRepository.findFirstByFacilityId(any())).thenReturn(setting);
+    when(transferPropertiesRepository.findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(setting);
 
     when(path.toFile()).thenReturn(file);
   }
