@@ -26,20 +26,22 @@ import javax.persistence.Enumerated;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 
 @Entity
-@Table(name = "transfer_properties")
+@Table(name = "transfer_properties",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"facilityId", "transferType"}))
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue("abstract")
 @NoArgsConstructor
 public abstract class TransferProperties extends BaseEntity implements Storable {
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   @Getter
   @Setter
   protected UUID facilityId;
