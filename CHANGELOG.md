@@ -13,6 +13,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-3078](https://openlmis.atlassian.net/browse/OLMIS-3078): Made Javers log initializer not iterate over all items, only those without logs.
 * [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added currency, number and date settings to application properties.
 * [OLMIS-4943](https://openlmis.atlassian.net/browse/OLMIS-4943): Fixed Jasper reports to use service locale settings.
+* [OLMIS-5668](https://openlmis.atlassian.net/browse/OLMIS-5668): Removed loginRestricted from the UserDto class.
 
 7.0.1 / 2018-08-16
 ==================

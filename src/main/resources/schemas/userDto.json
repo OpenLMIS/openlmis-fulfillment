@@ -41,10 +41,6 @@
       "type": "boolean",
       "title": "active"
     },
-    "loginRestricted": {
-      "type": "boolean",
-      "title": "loginRestricted"
-    },
     "roleAssignments": {
       "type": ["array", "null"],
       "title": "roleAssignments",
@@ -65,7 +61,6 @@
     "lastName",
     "email",
     "verified",
-    "active",
-    "loginRestricted"
+    "active"
   ]
 }

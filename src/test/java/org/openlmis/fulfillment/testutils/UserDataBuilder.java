@@ -32,7 +32,6 @@ public class UserDataBuilder {
   private String email;
   private boolean verified;
   private boolean active;
-  private boolean loginRestricted;
   private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
 
@@ -49,7 +48,6 @@ public class UserDataBuilder {
     email = "user@openlmis.org";
     verified = true;
     active = true;
-    loginRestricted = true;
     homeFacilityId = UUID.randomUUID();
     roleAssignments = new HashSet<>();
   }
@@ -64,7 +62,7 @@ public class UserDataBuilder {
    */
   public UserDto build() {
     UserDto user = new UserDto(username, firstName, lastName, email, verified, active,
-        loginRestricted, homeFacilityId, roleAssignments);
+        homeFacilityId, roleAssignments);
     user.setId(id);
     return user;
   }

@@ -172,7 +172,6 @@ public abstract class BaseWebIntegrationTest {
       + "\"email\":\"example@mail.com\","
       + "\"verified\":false,"
       + "\"active\": true,"
-      + "\"loginRestricted\": false,"
       + "\"homeFacilityId\": \"" + FACILITY_ID + "\","
       + "\"fulfillmentFacilities\": [" + MOCK_FIND_FACILITY_RESULT + "]"
       + "}";

@@ -37,7 +37,6 @@ public class UserDto extends BaseDto {
   private String email;
   private boolean verified;
   private boolean active;
-  private boolean loginRestricted;
   private UUID homeFacilityId;
   private Set<RoleAssignmentDto> roleAssignments;
 
