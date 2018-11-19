@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.repository;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
@@ -69,6 +70,22 @@ public class TransferPropertiesRepositoryIntegrationTest
         .findFirstByFacilityIdAndTransferType(facilityId, TransferType.ORDER);
 
     assertThat(found.getId(), is(setting.getId()));
+  }
+
+  @Test
+  public void shouldFindByTransferType() {
+    UUID facilityId = UUID.randomUUID();
+
+    TransferProperties setting = generateInstance();
+    setting.setFacilityId(facilityId);
+
+    transferPropertiesRepository.save(setting);
+
+    List<TransferProperties> found = transferPropertiesRepository
+        .findByTransferType(TransferType.ORDER);
+
+    assertThat(found.size(), is(1));
+    assertThat(found.get(0).getId(), is(setting.getId()));
   }
 
 }

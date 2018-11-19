@@ -15,10 +15,12 @@
 
 package org.openlmis.fulfillment.repository;
 
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TransferPropertiesRepository
@@ -27,4 +29,6 @@ public interface TransferPropertiesRepository
   TransferProperties findFirstByFacilityIdAndTransferType(@Param("facilityId") UUID facilityId,
       @Param("transferType") TransferType transferType);
 
+  @Query("select p from TransferProperties p where p.transferType = :transferType")
+  List<TransferProperties> findByTransferType(@Param("transferType") TransferType transferType);
 }
