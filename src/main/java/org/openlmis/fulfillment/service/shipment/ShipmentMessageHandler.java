@@ -15,35 +15,75 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import lombok.NoArgsConstructor;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
+import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.service.FileTemplateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.stereotype.Component;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @NoArgsConstructor
 public class ShipmentMessageHandler {
 
-  private static final XLogger LOGGER = XLoggerFactory.getXLogger(ShipmentMessageHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShipmentMessageHandler.class);
 
+  private FileTemplate currentTemplate;
+
+  @Autowired
+  FileTemplateService templateService;
+
+  @Autowired
+  ShipmentCsvFileParser shipmentParser;
+
+  @Autowired
+  ShipmentPersistenceHelper shipmentPersistenceHelper;
+
+  @Autowired
+  ApplicationContext context;
 
   /**
    * A message handler endpoint that processes incoming shipment files.
    *
    * @param message a file message.
    */
-  public void process(Message message) {
-    LOGGER.info("A message was received. " + message.getHeaders().getId());
+  public void process(Message message) throws IOException {
+    FileTemplate template = getTemplate();
+    LOGGER.info("A shipment file received. " + message.getHeaders().getId());
+
+    try {
+      // parse file
+      List<Object[]> records = shipmentParser.parse((File) message.getPayload(), template);
+      shipmentPersistenceHelper.createShipment(template, records);
+      archiveFile(message, "archiveFtpChannel");
+    } catch (RuntimeException exception) {
+      LOGGER.warn(exception.getLocalizedMessage(), exception);
+      archiveFile(message, "errorChannel");
+    }
   }
 
-  /**
-   * A message handler that handle error messages.
-   *
-   * @param mesage Error message that needs to be handled.
-   */
-  public void processError(Message mesage) {
-    LOGGER.info("An error found: " + mesage.getHeaders().getId());
+  private void archiveFile(Message message, String archiveFtpChannel) {
+    MessageChannel archiveChannel = (MessageChannel) context.getBean(archiveFtpChannel);
+    Message<File> archiveMessage = MessageBuilder
+        .withPayload((File) message.getPayload()).build();
+    archiveChannel.send(archiveMessage);
+  }
+
+  private FileTemplate getTemplate() {
+    //Cache the template object so it is not loaded from the database every time it is used.
+    if (currentTemplate == null) {
+      currentTemplate = templateService.getFileTemplate(TemplateType.SHIPMENT);
+    }
+    return currentTemplate;
   }
 
 }

@@ -20,6 +20,8 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -125,7 +127,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertSearchOrders(page, one, two, three, four, five);
 
     page = orderRepository.searchOrders(params, null, new PageRequest(1, 2), null,
-            availableRequestingFacilities);
+        availableRequestingFacilities);
     assertSearchOrders(page, three, four);
 
     params.setProgramId(three.getProgramId());
@@ -136,7 +138,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     params.setProgramId(null);
     page = orderRepository
         .searchOrders(params, asSet(four.getProcessingPeriodId()), pageable, null,
-        Collections.singleton(four.getRequestingFacilityId()));
+            Collections.singleton(four.getRequestingFacilityId()));
     assertSearchOrders(page, four);
 
     page = orderRepository
@@ -427,6 +429,15 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
       assertThat(uuids, hasSize(2));
       assertThat(uuids, hasItems(order.getRequestingFacilityId(), six.getRequestingFacilityId()));
     }
+  }
+
+  @Test
+  public void shouldRetrieveOrderByOrderCode() {
+    Order one = orderRepository.save(generateInstance());
+
+    Order found = orderRepository.findByOrderCode(one.getOrderCode());
+    assertThat(found, notNullValue());
+    assertThat(found.getId(), is(one.getId()));
   }
 
   private Order prepareOrdersForSearchByFacility() {

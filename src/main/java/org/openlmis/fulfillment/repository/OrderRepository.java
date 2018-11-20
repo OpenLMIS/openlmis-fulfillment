@@ -18,8 +18,14 @@ package org.openlmis.fulfillment.repository;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>,
     OrderRepositoryCustom {
+
+  @Query("select o from Order o where o.orderCode = :orderCode")
+  Order findByOrderCode(@Param("orderCode") String orderNumber);
+
 }

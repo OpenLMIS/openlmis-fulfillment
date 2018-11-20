@@ -14,6 +14,8 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4942](https://openlmis.atlassian.net/browse/OLMIS-4942): Added currency, number and date settings to application properties.
 * [OLMIS-4943](https://openlmis.atlassian.net/browse/OLMIS-4943): Fixed Jasper reports to use service locale settings.
 * [OLMIS-5668](https://openlmis.atlassian.net/browse/OLMIS-5668): Removed loginRestricted from the UserDto class.
+* [OLMIS-5670](https://openlmis.atlassian.net/browse/OLMIS-5670): Added spring integration code to configure message channels to poll ftp servers for shipment files.
+* [OLMIS-5473](https://openlmis.atlassian.net/browse/OLMIS-5673): Parse, create and persist shipment objects from csv files 
 
 7.0.1 / 2018-08-16
 ==================
