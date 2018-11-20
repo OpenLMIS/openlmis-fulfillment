@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 public class ShipmentCsvFileParser {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(ShipmentCsvFileParser.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShipmentCsvFileParser.class);
 
   /**
    * Parse CSV shipment files and return List of Object Array.
