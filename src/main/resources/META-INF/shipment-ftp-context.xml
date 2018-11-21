@@ -42,8 +42,6 @@
     <property name="port" value="${port}"/>
     <property name="username" value="${user}"/>
     <property name="password" value="${password}"/>
-    <property name="connectTimeout" value="100"/>
-    <property name="dataTimeout" value="100"/>
   </bean>
 
   <int-ftp:inbound-channel-adapter id="ftpInboundAdapter"
