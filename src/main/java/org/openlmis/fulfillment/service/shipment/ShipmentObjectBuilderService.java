@@ -15,12 +15,15 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.NoArgsConstructor;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileColumn;
@@ -30,7 +33,6 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
-import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,11 +40,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @NoArgsConstructor
-public class ShipmentPersistenceHelper {
+public class ShipmentObjectBuilderService {
 
   private static final String ORDER_CODE = "orderCode";
   private static final String ORDERABLE_ID = "orderableId";
   private static final String QUANTITY_SHIPPED = "quantityShipped";
+
+  private static final List<String> REQUIRED_FIELDS = asList(ORDER_CODE,
+      ORDERABLE_ID, QUANTITY_SHIPPED);
 
   @Value("${shipment.shippedById}")
   UUID shippedById;
@@ -51,45 +56,64 @@ public class ShipmentPersistenceHelper {
   OrderRepository orderRepository;
 
   @Autowired
-  ShipmentService shipmentService;
-
-  @Autowired
   DateHelper dateHelper;
+
+  Map<String, Integer> requiredFieldKeys;
+
+  Map<String, Integer> extraDataFields;
 
   /**
    * Creates a shipment domain object from parsed shipment csv data.
    */
-  @Transactional
-  public void createShipment(FileTemplate template, List<Object[]> parsedData) {
+  public Shipment build(FileTemplate template, List<Object[]> parsedData) {
     if (parsedData.isEmpty()) {
       throw new FulfillmentException("Parsed data is empty");
     }
 
-    Map<String, Integer> headers = template
-        .getFileColumns().stream().collect(
-            Collectors.toMap(FileColumn::getKeyPath, FileColumn::getPosition));
+    initializeFieldIndexes(template);
 
     //find the order number
     Object[] firstRow = parsedData.get(0);
-    String orderCode = firstRow[headers.get(ORDER_CODE)].toString().trim();
+    String orderCode = firstRow[requiredFieldKeys.get(ORDER_CODE)].toString().trim();
     Order order = orderRepository.findByOrderCode(orderCode);
 
     if (order == null) {
-      throw new FulfillmentException("Order not found");
+      throw new FulfillmentException("Order not found with code: " + orderCode);
     }
 
     List<ShipmentLineItem> lineItems = new ArrayList<>();
     for (Object[] row : parsedData) {
-      UUID orderableId = UUID.fromString(row[headers.get(ORDERABLE_ID)].toString().trim());
-      Long quantityShipped = Long.parseLong(row[headers.get(QUANTITY_SHIPPED)].toString().trim());
-      ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped);
+      UUID orderableId = UUID
+          .fromString(row[requiredFieldKeys.get(ORDERABLE_ID)].toString().trim());
+      Long quantityShipped = Long
+          .parseLong(row[requiredFieldKeys.get(QUANTITY_SHIPPED)].toString().trim());
+      Map<String, String> extraData = extractExtraData(row, extraDataFields);
+      ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped, extraData);
       lineItems.add(lineItem);
     }
 
-    Shipment shipment = new Shipment(order,
+    return new Shipment(order,
         new CreationDetails(shippedById,
             dateHelper.getCurrentDateTimeWithSystemZone()), null, lineItems, null);
+  }
 
-    shipmentService.save(shipment);
+  private void initializeFieldIndexes(FileTemplate template) {
+    requiredFieldKeys = template
+        .getFileColumns().stream().filter(i -> REQUIRED_FIELDS.contains(i.getKeyPath())).collect(
+            Collectors.toMap(FileColumn::getKeyPath, FileColumn::getPosition));
+
+    extraDataFields = template
+        .getFileColumns().stream().filter(i -> !REQUIRED_FIELDS.contains(i.getKeyPath())).collect(
+            Collectors.toMap(FileColumn::getKeyPath, FileColumn::getPosition));
+  }
+
+  private Map<String, String> extractExtraData(Object[] row, Map<String, Integer> headers) {
+    Map<String, String> extraData = new HashMap<>();
+    if (headers.size() > 0) {
+      for (Entry<String, Integer> entry : headers.entrySet()) {
+        extraData.put(entry.getKey(), row[entry.getValue()].toString());
+      }
+    }
+    return extraData;
   }
 }

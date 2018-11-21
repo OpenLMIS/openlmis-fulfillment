@@ -15,16 +15,18 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +37,11 @@ import org.openlmis.fulfillment.FileColumnBuilder;
 import org.openlmis.fulfillment.FileTemplateBuilder;
 import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.FileTemplateService;
+import org.openlmis.fulfillment.service.ShipmentService;
+import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -54,7 +59,7 @@ public class ShipmentMessageHandlerTest {
   ShipmentCsvFileParser shipmentParser;
 
   @Mock
-  ShipmentPersistenceHelper shipmentPersistenceHelper;
+  ShipmentObjectBuilderService shipmentPersistenceHelper;
 
   @Mock
   MessageChannel errorChannel;
@@ -64,6 +69,9 @@ public class ShipmentMessageHandlerTest {
 
   @Mock
   ApplicationContext context;
+
+  @Mock
+  ShipmentService shipmentService;
 
   @InjectMocks
   ShipmentMessageHandler messageHandler;
@@ -112,8 +120,8 @@ public class ShipmentMessageHandlerTest {
   }
 
   @Test
-  public void shouldSendFileToErrorChannelWhenErrorPersistingShipmentFile() throws Exception {
-    doThrow(new RuntimeException()).when(shipmentPersistenceHelper).createShipment(any(), any());
+  public void shouldSendFileToErrorChannelWhenErrorBuildingShipmentFile() throws Exception {
+    doThrow(new RuntimeException()).when(shipmentPersistenceHelper).build(any(), any());
 
     Message<File> fileMessage = MessageBuilder
         .withPayload(new File(NEW_MESSAGE_CSV)).build();
@@ -123,14 +131,53 @@ public class ShipmentMessageHandlerTest {
   }
 
   @Test
-  public void shouldSendFileToArchiveChannelWhenThereIsNoError() throws Exception {
-    when(shipmentParser.parse(any(), any())).thenReturn(new ArrayList<>());
-    doNothing().when(shipmentPersistenceHelper).createShipment(any(), any());
+  public void shouldSendFileToErrorChannelWhenErrorPersistingShipmentFile() throws Exception {
+    when(shipmentParser.parse(any(), any())).thenReturn(createParsedData());
+    when(shipmentPersistenceHelper.build(any(), any()))
+        .thenReturn(new ShipmentDataBuilder().build());
+    when(shipmentService.save(any())).thenThrow(new RuntimeException());
+    Message<File> fileMessage = MessageBuilder
+        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+
+    messageHandler.process(fileMessage);
+    verify(errorChannel).send(any());
+    verify(archiveChannel, never()).send(any());
+  }
+
+
+  @Test
+  public void shouldSaveFileToArchiveChannelWhenThereIsNoError() throws Exception {
+    when(shipmentParser.parse(any(), any())).thenReturn(createParsedData());
+    when(shipmentPersistenceHelper.build(any(), any()))
+        .thenReturn(new ShipmentDataBuilder().build());
 
     Message<File> fileMessage = MessageBuilder
         .withPayload(new File(NEW_MESSAGE_CSV)).build();
 
     messageHandler.process(fileMessage);
     verify(archiveChannel).send(any());
+    verify(errorChannel, never()).send(any());
+  }
+
+  @Test
+  public void shouldSaveShipmentWhenThereIsNoError() throws Exception {
+    Shipment shipment = new ShipmentDataBuilder().build();
+    when(shipmentPersistenceHelper.build(any(), any()))
+        .thenReturn(shipment);
+    when(shipmentParser.parse(any(), any())).thenReturn(createParsedData());
+    when(shipmentService.save(shipment)).thenReturn(shipment);
+
+    Message<File> fileMessage = MessageBuilder
+        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+
+    messageHandler.process(fileMessage);
+
+    verify(shipmentService).save(any());
+  }
+
+  private List<Object[]> createParsedData() {
+    List<Object[]> parsedData = new ArrayList<>();
+    parsedData.add(asList("O111", UUID.randomUUID().toString(), "1000").toArray());
+    return parsedData;
   }
 }

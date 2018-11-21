@@ -19,6 +19,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
@@ -30,6 +32,7 @@ public class ShipmentLineItemTest {
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
+  private Map<String, String> extraData = new HashMap<>();
 
   @Test
   public void shouldExportValues() {
@@ -42,6 +45,7 @@ public class ShipmentLineItemTest {
     assertEquals(orderableId, exporter.getOrderableId());
     assertEquals(lotId, exporter.getLotId());
     assertEquals(quantityShipped, exporter.getQuantityShipped());
+    assertEquals(extraData, exporter.getExtraData());
   }
 
   @Test
@@ -73,6 +77,7 @@ public class ShipmentLineItemTest {
         .withLotId(lotId)
         .withOrderableId(orderableId)
         .withQuantityShipped(quantityShipped)
+        .withExtraData(extraData)
         .build();
   }
 

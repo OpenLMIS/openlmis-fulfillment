@@ -16,6 +16,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-5668](https://openlmis.atlassian.net/browse/OLMIS-5668): Removed loginRestricted from the UserDto class.
 * [OLMIS-5670](https://openlmis.atlassian.net/browse/OLMIS-5670): Added spring integration code to configure message channels to poll ftp servers for shipment files.
 * [OLMIS-5473](https://openlmis.atlassian.net/browse/OLMIS-5673): Parse, create and persist shipment objects from csv files 
+* [OLMIS-5674](https://openlmis.atlassian.net/browse/OLMIS-5674): Add extraData column on shipment Line Item. Persist any extra column defined in shipment file template.
 
 7.0.1 / 2018-08-16
 ==================

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,5 +33,6 @@ public class DummyShipmentLineItemDto
   private UUID orderableId;
   private UUID lotId;
   private Long quantityShipped;
+  private Map<String, String> extraData;
 
 }

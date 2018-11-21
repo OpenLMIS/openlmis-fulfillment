@@ -15,8 +15,10 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import lombok.AccessLevel;
@@ -46,11 +48,21 @@ public class ShipmentLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private Long quantityShipped;
 
+  @Column(name = "extradata", columnDefinition = "jsonb")
+  @Convert(converter = ExtraDataConverter.class)
+  @Getter
+  private Map<String, String> extraData;
+
   // Constructor needed by framework. Use all args constructor to create new instance.
-  private ShipmentLineItem() {}
+  private ShipmentLineItem() {
+  }
 
   public ShipmentLineItem(UUID orderableId, Long quantityShipped) {
-    this(orderableId, null, quantityShipped);
+    this(orderableId, null, quantityShipped, null);
+  }
+
+  public ShipmentLineItem(UUID orderableId, Long quantityShipped, Map<String, String> extraData) {
+    this(orderableId, null, quantityShipped, extraData);
   }
 
   /**
@@ -61,7 +73,8 @@ public class ShipmentLineItem extends BaseEntity {
    */
   protected static ShipmentLineItem newInstance(Importer importer) {
     ShipmentLineItem shipmentLineItem = new ShipmentLineItem(
-        importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped());
+        importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped(),
+        importer.getExtraData());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
   }
@@ -74,27 +87,29 @@ public class ShipmentLineItem extends BaseEntity {
   }
 
   /**
-   * Exports data from the given shipment to the instance that implement
-   * {@link Exporter} interface.
+   * Exports data from the given shipment to the instance that implement {@link Exporter}
+   * interface.
    */
   public void export(Exporter exporter) {
     exporter.setId(getId());
     exporter.setOrderableId(orderableId);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
+    exporter.setExtraData(extraData);
   }
 
   /**
    * Returns a copy of line item.
    */
   public ShipmentLineItem copy() {
-    ShipmentLineItem clone = new ShipmentLineItem(orderableId, lotId, quantityShipped);
+    ShipmentLineItem clone = new ShipmentLineItem(orderableId, lotId, quantityShipped, extraData);
     clone.setId(id);
 
     return clone;
   }
 
   public interface Exporter {
+
     void setId(UUID id);
 
     void setOrderableId(UUID orderableId);
@@ -102,9 +117,12 @@ public class ShipmentLineItem extends BaseEntity {
     void setLotId(UUID lotId);
 
     void setQuantityShipped(Long quantityShipped);
+
+    void setExtraData(Map<String, String> extraData);
   }
 
   public interface Importer {
+
     UUID getId();
 
     UUID getOrderableId();
@@ -112,5 +130,7 @@ public class ShipmentLineItem extends BaseEntity {
     UUID getLotId();
 
     Long getQuantityShipped();
+
+    Map<String, String> getExtraData();
   }
 }

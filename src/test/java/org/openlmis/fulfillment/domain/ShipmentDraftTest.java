@@ -22,7 +22,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
@@ -43,6 +45,7 @@ public class ShipmentDraftTest {
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
+  private Map<String, String> extraData = new HashMap<>();
   private List<ShipmentDraftLineItem> lineItems =
       Collections.singletonList(new ShipmentDraftLineItemDataBuilder()
           .withId(lineItemId)
@@ -56,7 +59,8 @@ public class ShipmentDraftTest {
     ShipmentDraft expected = createShipment();
     DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes,
         Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)));
+            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped,
+                extraData)));
 
     ShipmentDraft actual = ShipmentDraft.newInstance(shipmentDraftDto);
 

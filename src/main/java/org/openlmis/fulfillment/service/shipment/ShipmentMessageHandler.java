@@ -18,10 +18,13 @@ package org.openlmis.fulfillment.service.shipment;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import javax.transaction.Transactional;
 import lombok.NoArgsConstructor;
 import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.FileTemplateService;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +49,10 @@ public class ShipmentMessageHandler {
   ShipmentCsvFileParser shipmentParser;
 
   @Autowired
-  ShipmentPersistenceHelper shipmentPersistenceHelper;
+  ShipmentService shipmentService;
+
+  @Autowired
+  ShipmentObjectBuilderService shipmentPersistenceHelper;
 
   @Autowired
   ApplicationContext context;
@@ -56,6 +62,7 @@ public class ShipmentMessageHandler {
    *
    * @param message a file message.
    */
+  @Transactional
   public void process(Message message) throws IOException {
     FileTemplate template = getTemplate();
     LOGGER.info("A shipment file received. " + message.getHeaders().getId());
@@ -63,7 +70,8 @@ public class ShipmentMessageHandler {
     try {
       // parse file
       List<Object[]> records = shipmentParser.parse((File) message.getPayload(), template);
-      shipmentPersistenceHelper.createShipment(template, records);
+      Shipment shipment = shipmentPersistenceHelper.build(template, records);
+      shipmentService.save(shipment);
       archiveFile(message, "archiveFtpChannel");
     } catch (RuntimeException exception) {
       LOGGER.warn(exception.getLocalizedMessage(), exception);

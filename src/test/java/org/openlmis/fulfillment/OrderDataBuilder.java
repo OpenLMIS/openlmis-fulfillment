@@ -88,6 +88,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withOrderCode(String orderCode) {
+    this.orderCode = orderCode;
+    return this;
+  }
+
   public OrderDataBuilder withEmergencyFlag() {
     emergency = true;
     return this;

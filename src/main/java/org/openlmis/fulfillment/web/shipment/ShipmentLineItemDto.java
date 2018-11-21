@@ -19,6 +19,7 @@ import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
 import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -54,6 +55,10 @@ public final class ShipmentLineItemDto
   @Getter
   @Setter
   private Long quantityShipped;
+
+  @Getter
+  @Setter
+  private Map<String, String> extraData;
 
   @Override
   @JsonIgnore

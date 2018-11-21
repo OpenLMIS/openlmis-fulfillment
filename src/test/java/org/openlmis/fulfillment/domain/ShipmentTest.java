@@ -62,7 +62,8 @@ public class ShipmentTest {
     Shipment expected = createShipment();
     DummyShipmentDto shipmentDto =
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped)), null);
+            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped,
+                null)), null);
 
     Shipment actual = Shipment.newInstance(shipmentDto, order);
 
