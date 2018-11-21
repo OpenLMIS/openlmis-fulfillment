@@ -433,7 +433,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
   @Test
   public void shouldRetrieveOrderByOrderCode() {
+
     Order one = orderRepository.save(generateInstance());
+    Order two = orderRepository.save(generateInstance());
 
     Order found = orderRepository.findByOrderCode(one.getOrderCode());
     assertThat(found, notNullValue());
