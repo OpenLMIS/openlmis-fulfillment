@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.service;
 
-import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang.NullArgumentException;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TransferPropertiesService {
+
   @Autowired
   private TransferPropertiesRepository transferPropertiesRepository;
 
@@ -67,14 +67,4 @@ public class TransferPropertiesService {
     return transferPropertiesRepository.save(setting);
   }
 
-
-  /**
-   * Returns all transfer properties that are of transfer type in parameter.
-   * @param transferType
-   *
-   * @return {@link List} of {@link TransferProperties}
-   */
-  public List<TransferProperties> getByTransferType(TransferType transferType) {
-    return transferPropertiesRepository.findByTransferType(transferType);
-  }
 }

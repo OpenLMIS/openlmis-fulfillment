@@ -43,6 +43,10 @@ public class TransferPropertiesRepositoryIntegrationTest
 
   @Override
   protected TransferProperties generateInstance() {
+    return generateInstance(TransferType.ORDER);
+  }
+
+  protected TransferProperties generateInstance(TransferType transferType) {
     FtpTransferProperties setting = new FtpTransferProperties();
     setting.setProtocol(FtpProtocol.FTP);
     setting.setFacilityId(UUID.randomUUID());
@@ -53,6 +57,7 @@ public class TransferPropertiesRepositoryIntegrationTest
     setting.setUsername(RandomStringUtils.random(10));
     setting.setPassword(RandomStringUtils.random(10));
     setting.setPassiveMode(true);
+    setting.setTransferType(transferType);
 
     return setting;
   }
@@ -61,7 +66,7 @@ public class TransferPropertiesRepositoryIntegrationTest
   public void shouldFindSettingByFacilityId() {
     UUID facilityId = UUID.randomUUID();
 
-    TransferProperties setting = generateInstance();
+    TransferProperties setting = generateInstance(TransferType.ORDER);
     setting.setFacilityId(facilityId);
 
     transferPropertiesRepository.save(setting);
@@ -74,18 +79,17 @@ public class TransferPropertiesRepositoryIntegrationTest
 
   @Test
   public void shouldFindByTransferType() {
-    UUID facilityId = UUID.randomUUID();
+    TransferProperties setting1 = generateInstance(TransferType.ORDER);
+    TransferProperties setting2 = generateInstance(TransferType.SHIPMENT);
 
-    TransferProperties setting = generateInstance();
-    setting.setFacilityId(facilityId);
-
-    transferPropertiesRepository.save(setting);
+    transferPropertiesRepository.save(setting1);
+    transferPropertiesRepository.save(setting2);
 
     List<TransferProperties> found = transferPropertiesRepository
         .findByTransferType(TransferType.ORDER);
 
     assertThat(found.size(), is(1));
-    assertThat(found.get(0).getId(), is(setting.getId()));
+    assertThat(found.get(0).getId(), is(setting1.getId()));
   }
 
 }

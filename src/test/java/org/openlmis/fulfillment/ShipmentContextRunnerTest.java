@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
-import org.openlmis.fulfillment.service.TransferPropertiesService;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -37,7 +37,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class ShipmentContextRunnerTest {
 
   @Mock
-  TransferPropertiesService transferPropertiesService;
+  TransferPropertiesRepository transferPropertiesRepository;
 
   @InjectMocks
   ShipmentContextRunner shipmentChannelConfig;
@@ -52,7 +52,7 @@ public class ShipmentContextRunnerTest {
   @Test
   public void shouldNotInitializeCustomContextForLocalTransferType() throws Exception {
     TransferProperties localTransferProperties = createLocalTransferProperty(TransferType.SHIPMENT);
-    when(transferPropertiesService.getByTransferType(TransferType.SHIPMENT))
+    when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
         .thenReturn(asList(localTransferProperties));
 
     shipmentChannelConfig.run();

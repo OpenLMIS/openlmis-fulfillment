@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
-import org.openlmis.fulfillment.service.TransferPropertiesService;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.shipment.ShipmentMessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +52,7 @@ public class ShipmentContextRunner implements CommandLineRunner {
   private String shippedById;
 
   @Autowired
-  TransferPropertiesService transferPropertiesService;
+  TransferPropertiesRepository transferPropertiesService;
 
   @Autowired
   ShipmentMessageHandler messageHandler;
@@ -89,7 +89,7 @@ public class ShipmentContextRunner implements CommandLineRunner {
    */
   private void createFtpChannels() {
     List<TransferProperties> propertiesList = transferPropertiesService
-        .getByTransferType(TransferType.SHIPMENT);
+        .findByTransferType(TransferType.SHIPMENT);
     for (TransferProperties property : propertiesList) {
       if (FtpTransferProperties.class.equals(property.getClass())) {
         createFtpChannel((FtpTransferProperties) property);
