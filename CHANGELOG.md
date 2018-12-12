@@ -1,4 +1,4 @@
-8.0.0 / WIP
+8.0.0 / 2018-12-12
 ==================
 
 Contract breaking changes:
