@@ -1,3 +1,9 @@
+8.0.1 / WIP
+==================
+
+Improvements: 
+* [OLMIS-5832](https://openlmis.atlassian.net/browse/OLMIS-5832): Validate shipment file templates for expected presence of required columns
+
 8.0.0 / 2018-12-12
 ==================
 

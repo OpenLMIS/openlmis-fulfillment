@@ -59,6 +59,8 @@ public abstract class MessageKeys {
   private static final String INCORRECT_TYPE = "incorrectType";
   private static final String EXISTS = "exists";
   private static final String DUPLICATE = "duplicate";
+  private static final String COLUMN = "column";
+  private static final String FOUND = "found";
 
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
@@ -89,6 +91,12 @@ public abstract class MessageKeys {
 
   public static final String ERROR_ORDER_FILE_TEMPLATE_CREATION =
       join(ERROR_PREFIX, ORDER_FILE_TEMPLATE, CREATION);
+  public static final String ERROR_MISSING_REQUIRED_COLUMN =
+      join(ERROR_PREFIX, ORDER_FILE_TEMPLATE, REQUIRED, COLUMN, MISSING);
+
+  public static final String ERROR_DUPLICATE_COLUMN_FOUND =
+      join(ERROR_PREFIX, ORDER_FILE_TEMPLATE, DUPLICATE, COLUMN, FOUND);
+
 
   public static final String ERROR_REFERENCE_DATA_RETRIEVE =
       join(ERROR_PREFIX, REFERENCE_DATA, "retrieve");

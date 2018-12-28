@@ -15,17 +15,19 @@
 
 package org.openlmis.fulfillment.web.validator;
 
-import java.util.Arrays;
-import java.util.List;
+import static java.util.Arrays.asList;
 
+import java.util.List;
 import org.openlmis.fulfillment.domain.FileColumn;
+import org.openlmis.fulfillment.domain.TemplateType;
+import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.util.FileTemplateDto;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
-public class FileTemplateValidator implements Validator {
+public class FileTemplateValidator extends BaseValidator implements Validator {
 
   private static final String INVALID_FORMAT_DATE = "Invalid date format";
 
@@ -35,6 +37,10 @@ public class FileTemplateValidator implements Validator {
       "yyyy-MM-dd", "MMyy", "MMyyyy", "yyMM", "yyyyMM", "ddMMyy", "ddMMyyyy", "MMddyy", "MMddyyyy",
       "yyMMdd", "yyyyMMdd"};
 
+  private static final List<String> ORDERABLE_COLUMN_NAMES = asList("orderableId", "productCode");
+  private static final List<String> ORDER_IDENTIFIER_COLUMN_NAMES = asList("orderCode", "orderId");
+  private static final List<String> SHIPPED_QUANTITY_COLUMN_NAMES = asList("quantityShipped");
+
   @Override
   public boolean supports(Class<?> clazz) {
     return FileTemplateDto.class.equals(clazz);
@@ -42,9 +48,9 @@ public class FileTemplateValidator implements Validator {
 
   @Override
   public void validate(Object target, Errors errors) {
-    FileTemplateDto orderFileTemplate = (FileTemplateDto) target;
-    List<FileColumn.Importer> columns = orderFileTemplate.getFileColumns();
-    List<String> acceptedValues = Arrays.asList(ACCEPTED_VALUES);
+    FileTemplateDto fileTemplate = (FileTemplateDto) target;
+    List<FileColumn.Importer> columns = fileTemplate.getFileColumns();
+    List<String> acceptedValues = asList(ACCEPTED_VALUES);
 
     for (int i = 0; i < columns.size(); i++) {
       FileColumn.Importer orderFileColumn = columns.get(i);
@@ -53,6 +59,36 @@ public class FileTemplateValidator implements Validator {
         errors.rejectValue("fileColumns[" + i + "].format",
             INVALID_FORMAT_DATE, INVALID_FORMAT_DATE);
       }
+    }
+    if (TemplateType.SHIPMENT.equals(fileTemplate.getTemplateType())) {
+      validateShipmentTemplate(fileTemplate, errors);
+    }
+  }
+
+  private void validateShipmentTemplate(FileTemplateDto shipmentTemplate, Errors errors) {
+    validateColumnPresence(shipmentTemplate, ORDER_IDENTIFIER_COLUMN_NAMES, errors);
+    validateColumnPresence(shipmentTemplate, ORDERABLE_COLUMN_NAMES, errors);
+    validateColumnPresence(shipmentTemplate, SHIPPED_QUANTITY_COLUMN_NAMES, errors);
+  }
+
+  private void validateColumnPresence(FileTemplateDto shipmentTemplate,
+      List<String> expectedColumnKeys, Errors errors) {
+    long columnCount = shipmentTemplate
+        .getFileColumns()
+        .stream()
+        .filter(c -> expectedColumnKeys.contains(c.getKeyPath()))
+        .count();
+    if (columnCount == 0L) {
+      errors.reject(MessageKeys.ERROR_MISSING_REQUIRED_COLUMN,
+          null,
+          getErrorMessage(MessageKeys.ERROR_MISSING_REQUIRED_COLUMN,
+              String.join("/", expectedColumnKeys)).getMessage()
+      );
+    } else if (columnCount > 1) {
+      errors.reject(MessageKeys.ERROR_DUPLICATE_COLUMN_FOUND,
+          null,
+          getErrorMessage(MessageKeys.ERROR_DUPLICATE_COLUMN_FOUND,
+              String.join("/", expectedColumnKeys)).getMessage());
     }
   }
 }

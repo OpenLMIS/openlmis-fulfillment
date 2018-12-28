@@ -50,7 +50,7 @@ abstract class BaseValidator {
     }
   }
 
-  private Message.LocalizedMessage getErrorMessage(String key, Object... params) {
+  protected Message.LocalizedMessage getErrorMessage(String key, Object... params) {
     return messageService.localize(new Message(key, params));
   }
 
