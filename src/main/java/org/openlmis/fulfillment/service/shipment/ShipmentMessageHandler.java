@@ -43,19 +43,19 @@ public class ShipmentMessageHandler {
   private FileTemplate currentTemplate;
 
   @Autowired
-  FileTemplateService templateService;
+  private FileTemplateService templateService;
 
   @Autowired
-  ShipmentCsvFileParser shipmentParser;
+  private ShipmentCsvFileParser shipmentParser;
 
   @Autowired
-  ShipmentService shipmentService;
+  private ShipmentService shipmentService;
 
   @Autowired
-  ShipmentObjectBuilderService shipmentPersistenceHelper;
+  private ShipmentObjectBuilderService shipmentPersistenceHelper;
 
   @Autowired
-  ApplicationContext context;
+  private ApplicationContext context;
 
   /**
    * A message handler endpoint that processes incoming shipment files.

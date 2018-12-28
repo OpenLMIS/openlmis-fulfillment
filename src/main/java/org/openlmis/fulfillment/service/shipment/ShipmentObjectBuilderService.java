@@ -50,17 +50,17 @@ public class ShipmentObjectBuilderService {
       ORDERABLE_ID, QUANTITY_SHIPPED);
 
   @Value("${shipment.shippedById}")
-  UUID shippedById;
+  private UUID shippedById;
 
   @Autowired
-  OrderRepository orderRepository;
+  private OrderRepository orderRepository;
 
   @Autowired
-  DateHelper dateHelper;
+  private DateHelper dateHelper;
 
-  Map<String, Integer> requiredFieldKeys;
+  private Map<String, Integer> requiredFieldKeys;
 
-  Map<String, Integer> extraDataFields;
+  private Map<String, Integer> extraDataFields;
 
   /**
    * Creates a shipment domain object from parsed shipment csv data.
