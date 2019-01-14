@@ -19,17 +19,18 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.FileColumnBuilder;
 import org.openlmis.fulfillment.FileTemplateBuilder;
 import org.openlmis.fulfillment.OrderDataBuilder;
@@ -37,25 +38,27 @@ import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.util.FileColumnKeyPath;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ShipmentObjectBuilderServiceTest {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(CSVRecord.class)
+public class ShipmentBuilderTest {
 
   private static final String ORDERABLE_ID = "e3fc3cf3-da18-44b0-a220-77c985202e06";
   private static final String ORDER_CODE = "O0001";
   private static final String QUANTITY_SHIPPED = "1000";
-  private static final String BATCH_NUMBER = "1234";
   private static final UUID SHIPPED_BY_ID = UUID.randomUUID();
 
-  private static final String ORDER_CODE_FIELD_KEY = "orderCode";
-  private static final String ORDERABLE_ID_FIELD_KEY = "orderableId";
-  private static final String QUANTITY_SHIPPED_FIELD_KEY = "quantityShipped";
   private static final String BATCH_NUMBER_FIELD_KEY = "batchNumber";
 
   @Value("${shipment.shippedById}")
@@ -67,12 +70,15 @@ public class ShipmentObjectBuilderServiceTest {
   @Mock
   DateHelper dateHelper;
 
+  @Mock
+  ShipmentLineItemBuilder lineItemBuilder;
+
   @InjectMocks
-  ShipmentObjectBuilderService builderService;
+  ShipmentBuilder builderService;
 
-  FileTemplate template;
+  private Order order;
 
-  Order order;
+  private CSVRecord csvRecord = PowerMockito.mock(CSVRecord.class);
 
   @Before
   public void setup() {
@@ -80,11 +86,15 @@ public class ShipmentObjectBuilderServiceTest {
 
     ReflectionTestUtils.setField(builderService, "shippedById",
         SHIPPED_BY_ID);
+    List<ShipmentLineItem> lineItems = new ArrayList<>();
+    when(lineItemBuilder.build(any(), any())).thenReturn(lineItems);
+    when(csvRecord.get(0)).thenReturn(ORDER_CODE);
   }
 
   @Test(expected = FulfillmentException.class)
   public void shouldThrowFulfillmentExceptionWhenParsedDataIsEmpty() {
-    List<Object[]> parsedData = new ArrayList<>();
+    FileTemplate template = mockTemplate(false);
+    List<CSVRecord> parsedData = new ArrayList<>();
 
     builderService.build(template, parsedData);
   }
@@ -92,63 +102,41 @@ public class ShipmentObjectBuilderServiceTest {
 
   @Test(expected = FulfillmentException.class)
   public void shouldThrowFulfillmentExceptionWhenOrderIsNotFound() {
-    mockTemplate(false);
+    FileTemplate template = mockTemplate(false);
     when(orderRepository.findByOrderCode(ORDER_CODE)).thenReturn(null);
 
-    List<Object[]> parsedData = new ArrayList<>();
-    parsedData.add(asList(ORDER_CODE, ORDERABLE_ID, QUANTITY_SHIPPED).toArray());
-
-    builderService.build(template, parsedData);
+    builderService.build(template, asList(csvRecord));
   }
 
   @Test
   public void shouldCreateShipmentWithRequiredFieldsProperties() {
-    mockTemplate(false);
+    FileTemplate template = mockTemplate(false);
     when(orderRepository.findByOrderCode(ORDER_CODE)).thenReturn(order);
 
-    List<Object[]> parsedData = new ArrayList<>();
-    parsedData.add(asList(ORDER_CODE, ORDERABLE_ID, QUANTITY_SHIPPED).toArray());
+    Shipment shipment = builderService.build(template, asList(csvRecord));
 
-    Shipment shipment = builderService.build(template, parsedData);
-    assertThat(shipment.getLineItems().size(), is(equalTo(1)));
     assertThat(shipment.getOrder(), is(equalTo(order)));
-    assertThat(shipment.getShippedById(), is(equalTo(SHIPPED_BY_ID)));
-    assertThat(shipment.getLineItems().get(0).getOrderableId().toString(),
-        is(equalTo(ORDERABLE_ID)));
-    assertThat(shipment.getLineItems().get(0).getExtraData().size(),
-        is(equalTo(0)));
   }
 
 
-  @Test
-  public void shouldCreateShipmentWithExtraData() {
-    mockTemplate(true);
-    when(orderRepository.findByOrderCode(ORDER_CODE)).thenReturn(order);
-
-    List<Object[]> parsedData = new ArrayList<>();
-    parsedData.add(asList(ORDER_CODE, ORDERABLE_ID, QUANTITY_SHIPPED, BATCH_NUMBER).toArray());
-
-    Shipment shipment = builderService.build(template, parsedData);
-    assertThat(shipment.getLineItems().get(0).getExtraData().size(),
-        is(equalTo(1)));
-    assertThat(shipment.getLineItems().get(0).getExtraData().get(BATCH_NUMBER_FIELD_KEY),
-        is(equalTo(BATCH_NUMBER)));
-  }
-
-  private void mockTemplate(Boolean includeExtraData) {
+  private FileTemplate mockTemplate(Boolean includeExtraData) {
     FileTemplateBuilder templateBuilder = new FileTemplateBuilder();
     FileColumnBuilder columnBuilder = new FileColumnBuilder();
 
     FileColumn orderCode = columnBuilder
-        .withPosition(0).withKeyPath(ORDER_CODE_FIELD_KEY).build();
+        .withPosition(0).withNested("order")
+        .withKeyPath(FileColumnKeyPath.ORDER_CODE.toString()).build();
     FileColumn orderableId = columnBuilder
-        .withPosition(1).withKeyPath(ORDERABLE_ID_FIELD_KEY).build();
+        .withPosition(1).withNested("lineItem")
+        .withKeyPath(FileColumnKeyPath.ORDERABLE_ID.toString()).build();
     FileColumn quantityShipped = columnBuilder
-        .withPosition(2).withKeyPath(QUANTITY_SHIPPED_FIELD_KEY).build();
+        .withPosition(2).withNested("lineItem")
+        .withKeyPath(FileColumnKeyPath.QUANTITY_SHIPPED.toString()).build();
     FileColumn batchNumber = columnBuilder
-        .withPosition(3).withKeyPath(BATCH_NUMBER_FIELD_KEY).build();
+        .withPosition(3).withNested("lineItem")
+        .withKeyPath(BATCH_NUMBER_FIELD_KEY).build();
 
-    template = templateBuilder
+    return templateBuilder
         .withTemplateType(TemplateType.SHIPMENT)
         .withFileColumns(
             (includeExtraData)

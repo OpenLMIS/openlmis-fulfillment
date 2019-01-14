@@ -2,7 +2,8 @@
 ==================
 
 Improvements: 
-* [OLMIS-5832](https://openlmis.atlassian.net/browse/OLMIS-5832): Validate shipment file templates for expected presence of required columns
+* [OLMIS-5832](https://openlmis.atlassian.net/browse/OLMIS-5832): Validate shipment file templates for expected presence of required columns.
+* [OLMIS-5834](https://openlmis.atlassian.net/browse/OLMIS-5834): Support parsing shipment files when shipment template is configured to use order code field.
 
 8.0.0 / 2018-12-12
 ==================

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.NoArgsConstructor;
+import org.apache.commons.csv.CSVRecord;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.TemplateType;
@@ -52,7 +53,7 @@ public class ShipmentMessageHandler {
   private ShipmentService shipmentService;
 
   @Autowired
-  private ShipmentObjectBuilderService shipmentPersistenceHelper;
+  private ShipmentBuilder shipmentBuilder;
 
   @Autowired
   private ApplicationContext context;
@@ -65,12 +66,12 @@ public class ShipmentMessageHandler {
   @Transactional
   public void process(Message message) throws IOException {
     FileTemplate template = getTemplate();
-    LOGGER.info("A shipment file received. " + message.getHeaders().getId());
+    LOGGER.info("A shipment file received. {}", message.getHeaders().getId());
 
     try {
       // parse file
-      List<Object[]> records = shipmentParser.parse((File) message.getPayload(), template);
-      Shipment shipment = shipmentPersistenceHelper.build(template, records);
+      List<CSVRecord> records = shipmentParser.parse((File) message.getPayload(), template);
+      Shipment shipment = shipmentBuilder.build(template, records);
       shipmentService.save(shipment);
       archiveFile(message, "archiveFtpChannel");
     } catch (RuntimeException exception) {
