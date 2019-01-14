@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,6 +32,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.util.FileColumnKeyPath;
 
 @Entity
 @Table(name = "file_templates")
@@ -99,6 +101,17 @@ public final class FileTemplate extends BaseEntity {
     exporter.setTemplateType(templateType);
   }
 
+  /**
+   * Returns columns matching key path.
+   * @param keyPaths keyPaths
+   * @return Optional FileColumn
+   */
+  public Optional<FileColumn> findColumn(List<FileColumnKeyPath> keyPaths) {
+    return this.fileColumns.stream()
+        .filter(column -> keyPaths.contains(FileColumnKeyPath.fromString(column.getKeyPath())))
+        .findFirst();
+  }
+
   public interface Exporter {
     void setId(UUID id);
 
@@ -111,6 +124,7 @@ public final class FileTemplate extends BaseEntity {
   }
 
   public interface Importer {
+
     UUID getId();
 
     String getFilePrefix();

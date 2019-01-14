@@ -27,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.util.FileColumnKeyPath;
 
 @Entity
 @Table(name = "file_columns")
@@ -84,6 +85,10 @@ public final class FileColumn extends BaseEntity {
   @Setter
   private FileTemplate fileTemplate;
 
+  public FileColumnKeyPath getFileColumnKeyPathEnum() {
+    return FileColumnKeyPath.fromString(this.keyPath);
+  }
+
   /**
    * Creates new FileColumn object based on data from {@link FileColumn.Importer}.
    *
@@ -127,6 +132,7 @@ public final class FileColumn extends BaseEntity {
   }
 
   public interface Exporter {
+
     void setId(UUID id);
 
     void setOpenLmisField(Boolean openLmisField);
@@ -152,6 +158,7 @@ public final class FileColumn extends BaseEntity {
   }
 
   public interface Importer {
+
     UUID getId();
 
     Boolean getOpenLmisField();
