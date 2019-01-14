@@ -20,12 +20,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.NoArgsConstructor;
-import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,34 +44,36 @@ public class ShipmentCsvFileParser {
    * @param file csv file
    * @throws IOException Exception.
    */
-  public List<Object[]> parse(File file, FileTemplate template)
+  public List<CSVRecord> parse(File file, FileTemplate template)
       throws IOException {
-    LOGGER.info("Parse shipment file: " + file.getName());
+    LOGGER.info("Parse shipment file: {}", file.getName());
 
-    Reader targetReader = new FileReader(file);
-
-    try {
+    try (Reader targetReader = new FileReader(file)) {
       CSVParser parser = getCsvFormat(template).parse(targetReader);
       // read data rows
-      List<Object[]> shipmentLineItems = new ArrayList<>();
-      for (CSVRecord shipmentRow : parser.getRecords()) {
-        if (!shipmentRow.isConsistent()) {
-          throw new IllegalArgumentException("Shipment record inconsistent: " + shipmentRow);
+      List<CSVRecord> lines = new ArrayList<>();
+      for (CSVRecord row : parser.getRecords()) {
+        if (!row.isConsistent()) {
+          throw new IllegalArgumentException(
+              String.format("Shipment record inconsistent: %s", row));
         }
-
-        List theRow = IteratorUtils.toList(shipmentRow.iterator());
-        shipmentLineItems.add(theRow.toArray());
+        lines.add(row);
       }
-      LOGGER.info("Finished parsing shipment file: " + file.getName());
-      return shipmentLineItems;
-
-    } finally {
-      targetReader.close();
+      LOGGER.info("Finished parsing shipment file: {}", file.getName());
+      return lines;
     }
   }
 
   private CSVFormat getCsvFormat(FileTemplate template) {
-    return (template.getHeaderInFile()) ? CSVFormat.DEFAULT.withHeader().withNullString("") :
-        CSVFormat.DEFAULT.withNullString("");
+    String[] columns = template
+        .getFileColumns()
+        .stream()
+        .sorted(Comparator.comparingLong(FileColumn::getPosition))
+        .map(column -> String.format("%s.%s", column.getNested(), column.getKeyPath()))
+        .toArray(String[]::new);
+
+    return CSVFormat.DEFAULT.withTrim(true)
+        .withHeader(columns)
+        .withNullString("").withSkipHeaderRecord(template.getHeaderInFile());
   }
 }

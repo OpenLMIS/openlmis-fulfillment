@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -23,72 +23,83 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.FileColumnBuilder;
 import org.openlmis.fulfillment.FileTemplateBuilder;
 import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.springframework.util.ResourceUtils;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ShipmentCsvFileParserTest {
 
-  ShipmentCsvFileParser parser = new ShipmentCsvFileParser();
+  private ShipmentCsvFileParser parser = new ShipmentCsvFileParser();
 
-  FileTemplate template;
+  private FileTemplate template;
 
   @Test(expected = IOException.class)
   public void shouldThrowIoExceptionWhenFileCannotBeRead() throws Exception {
     template = new FileTemplateBuilder().withHeaderInFile(true).build();
-
     parser.parse(new File("xxxxx"), template);
   }
 
-  @Test()
+  @Test
   public void shouldIgnoreFirstRowIfTemplateHasHeader() throws Exception {
-    FileColumn orderCodeColumn = new FileColumnBuilder().withKeyPath("orderCode").build();
-
-    template = new FileTemplateBuilder()
-        .withFileColumns(asList(orderCodeColumn))
-        .withHeaderInFile(true).build();
+    generateTemplate(true);
 
     File file = ResourceUtils.getFile(this.getClass()
         .getResource("/shipment_file_with_header.csv"));
-    List<Object[]> response = parser.parse(file, template);
+    List<CSVRecord> response = parser.parse(file, template);
 
     assertNotNull(response);
-    assertThat(response.get(0)[0].toString(),
+    assertThat(response.get(0).get(0),
         is("ORDER-00000000-0000-0000-0000-000000000010R"));
   }
 
   @Test
   public void shouldReadFirstRowIfTemplateHasNoHeader() throws Exception {
-    FileColumn orderCodeColumn = new FileColumnBuilder().withKeyPath("orderCode").build();
-
-    template = new FileTemplateBuilder()
-        .withFileColumns(asList(orderCodeColumn))
-        .withHeaderInFile(false).build();
+    generateTemplate(false);
 
     File file = ResourceUtils.getFile(this.getClass()
         .getResource("/shipment_file_with_header.csv"));
-    List<Object[]> response = parser.parse(file, template);
+    List<CSVRecord> response = parser.parse(file, template);
 
     assertNotNull(response);
-    assertThat(response.get(0)[0].toString(), is("orderId"));
+    assertThat(response.get(0).get(0), is("orderId"));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionIfRowIsInconsistent() throws Exception {
-    FileColumn orderCodeColumn = new FileColumnBuilder().withKeyPath("orderCode").build();
-
-    template = new FileTemplateBuilder()
-        .withFileColumns(asList(orderCodeColumn))
-        .withHeaderInFile(true).build();
+    generateTemplate(true);
 
     File file = ResourceUtils.getFile(this.getClass()
         .getResource("/shipment_file_inconsistent.csv"));
-    List<Object[]> response = parser.parse(file, template);
+    List<CSVRecord> response = parser.parse(file, template);
 
     assertNotNull(response);
+  }
+
+  private void generateTemplate(boolean headerInFile) {
+    FileColumn orderId = new FileColumnBuilder()
+        .withPosition(0).withKeyPath("orderId").build();
+    FileColumn orderableId = new FileColumnBuilder()
+        .withPosition(1).withKeyPath("orderableId")
+        .build();
+    FileColumn facilityId = new FileColumnBuilder()
+        .withPosition(2).withKeyPath("facilityId")
+        .build();
+    FileColumn orderAmount = new FileColumnBuilder()
+        .withPosition(3).withKeyPath("orderAmount")
+        .build();
+    FileColumn shippedQuantity = new FileColumnBuilder()
+        .withPosition(4).withKeyPath("shippedQuantity").build();
+
+    template = new FileTemplateBuilder()
+        .withFileColumns(asList(orderId, orderableId, facilityId, orderAmount, shippedQuantity))
+        .withHeaderInFile(headerInFile).build();
   }
 
 }
