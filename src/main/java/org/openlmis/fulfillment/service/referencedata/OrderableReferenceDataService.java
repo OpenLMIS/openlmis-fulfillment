@@ -54,4 +54,8 @@ public class OrderableReferenceDataService
     }
     return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
+
+  public List<OrderableDto> findAll() {
+    return getPage(RequestParameters.init()).getContent();
+  }
 }
