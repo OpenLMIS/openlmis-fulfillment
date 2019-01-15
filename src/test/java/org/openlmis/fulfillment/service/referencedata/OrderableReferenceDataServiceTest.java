@@ -86,4 +86,20 @@ public class OrderableReferenceDataServiceTest
     assertTrue(response.isEmpty());
   }
 
+  @Test
+  public void shouldReturnAllProductsWhenFindAll() {
+    OrderableDto product = mockPageResponseEntityAndGetDto();
+
+    List<OrderableDto> response = service.findAll();
+
+    assertThat(response, hasSize(1));
+
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
+        refEq(new DynamicPageTypeReference<>(OrderableDto.class)));
+
+    URI uri = uriCaptor.getValue();
+    assertEquals(serviceUrl + service.getUrl(), uri.toString());
+  }
+
 }

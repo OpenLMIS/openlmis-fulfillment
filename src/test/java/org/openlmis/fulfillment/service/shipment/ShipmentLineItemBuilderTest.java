@@ -69,9 +69,11 @@ public class ShipmentLineItemBuilderTest {
   public void setUp() throws Exception {
     template = mockTemplate(FileColumnKeyPath.ORDERABLE_ID);
 
-    OrderableDto dto1 = OrderableDto.builder().productCode(PRODUCT_CODE).build();
+    OrderableDto dto1 = new OrderableDto();
+    dto1.setProductCode(PRODUCT_CODE);
     dto1.setId(UUID.fromString(ORDERABLE_ID));
-    OrderableDto dto2 = OrderableDto.builder().productCode(PRODUCT_CODE_2).build();
+    OrderableDto dto2 = new OrderableDto();
+    dto2.setProductCode(PRODUCT_CODE_2);
     dto2.setId(UUID.randomUUID());
 
     when(orderableReferenceDataService.findAll()).thenReturn(asList(dto1, dto2));

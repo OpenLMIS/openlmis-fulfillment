@@ -40,12 +40,6 @@ public class ShipmentLineItemBuilder {
   @Autowired
   private OrderableReferenceDataService orderableService;
 
-  private List<FileColumn> extraDataFields;
-
-  private Map<String, OrderableDto> productCodeOrderableMap;
-
-  private Map<UUID, OrderableDto> uuidOrderableMap;
-
   /**
    * Builds shipment line item objects from parsed CSV data.
    *
@@ -54,6 +48,7 @@ public class ShipmentLineItemBuilder {
    * @return List of ShipmentLineItems
    */
   public List<ShipmentLineItem> build(FileTemplate template, List<CSVRecord> lines) {
+    // find required columns.
     FileColumn orderableColumn = template
         .findColumn(FileColumnKeyPath.ORDERABLE_COLUMN_PATHS).orElse(null);
     FileColumn orderColumn = template
@@ -67,18 +62,34 @@ public class ShipmentLineItemBuilder {
     }
 
     // Initialize and cache variables that would be used repeatedly for each row.
-    initializeOrderableMaps();
-    initializeExtraFields(template);
+    List<OrderableDto> orderables = orderableService.findAll();
+    Map<String, OrderableDto> productCodeOrderableMap = orderables.stream()
+        .collect(toMap(OrderableDto::getProductCode, orderable -> orderable));
+    Map<UUID, OrderableDto> uuidOrderableMap = orderables.stream()
+        .collect(toMap(OrderableDto::getId, orderable -> orderable));
+
+    List<FileColumn> extraDataFields = template.getFileColumns()
+        .stream()
+        .filter(i -> !FileColumnKeyPath.ALL_REQUIRED_COLUMN_PATHS
+            .contains(i.getFileColumnKeyPathEnum()))
+        .collect(toList());
+
+    // read the first order identifier to check subsequent order identifiers against it.
     String orderIdentifier = lines.get(0).get(orderColumn.getPosition());
 
     List<ShipmentLineItem> lineItems = new ArrayList<>();
+
     for (CSVRecord row : lines) {
       validateOrderIdentifer(orderColumn, orderIdentifier, row);
-      UUID orderableId = extractOrderableId(orderableColumn, row);
+
+      UUID orderableId = extractOrderableId(orderableColumn, row,
+          uuidOrderableMap, productCodeOrderableMap);
       String quantityShippedString = row.get(quantityShippedColumn.getPosition());
       Long quantityShipped = Long.parseLong(quantityShippedString);
-      Map<String, String> extraData = extractExtraData(row);
+      Map<String, String> extraData = extractExtraData(extraDataFields, row);
+
       validateOrderableAndQuantity(orderableId, quantityShipped);
+
       ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped, extraData);
       lineItems.add(lineItem);
     }
@@ -93,24 +104,6 @@ public class ShipmentLineItemBuilder {
     }
   }
 
-  private void initializeExtraFields(FileTemplate template) {
-    extraDataFields = template
-        .getFileColumns().stream()
-        .filter(i -> !FileColumnKeyPath.ALL_REQUIRED_COLUMN_PATHS
-            .contains(i.getFileColumnKeyPathEnum()))
-        .collect(toList());
-  }
-
-  private void initializeOrderableMaps() {
-    List<OrderableDto> orderables = orderableService.findAll();
-
-    productCodeOrderableMap = orderables.stream()
-        .collect(toMap(OrderableDto::getProductCode, orderable -> orderable));
-
-    uuidOrderableMap = orderables.stream()
-        .collect(toMap(OrderableDto::getId, orderable -> orderable));
-  }
-
   private void validateOrderableAndQuantity(UUID orderableId, Long quantityShipped) {
     if (orderableId == null) {
       throw new FulfillmentException("Orderable not found for line Item.");
@@ -122,7 +115,8 @@ public class ShipmentLineItemBuilder {
     }
   }
 
-  private UUID extractOrderableId(FileColumn orderableColumn, CSVRecord row) {
+  private UUID extractOrderableId(FileColumn orderableColumn, CSVRecord row,
+      Map<UUID, OrderableDto> uuidOrderableMap, Map<String, OrderableDto> productCodeOrderableMap) {
     if (FileColumnKeyPath.ORDERABLE_ID.equals(orderableColumn.getFileColumnKeyPathEnum())) {
       String orderableIdString = row.get(orderableColumn.getPosition());
       UUID orderableId = UUID.fromString(orderableIdString);
@@ -135,7 +129,7 @@ public class ShipmentLineItemBuilder {
     return null;
   }
 
-  private Map<String, String> extractExtraData(CSVRecord row) {
+  private Map<String, String> extractExtraData(List<FileColumn> extraDataFields, CSVRecord row) {
     Map<String, String> extraData = new HashMap<>();
     if (!extraDataFields.isEmpty()) {
       for (FileColumn column : extraDataFields) {
