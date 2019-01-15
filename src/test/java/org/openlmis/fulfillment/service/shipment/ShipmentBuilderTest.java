@@ -54,9 +54,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 @PrepareForTest(CSVRecord.class)
 public class ShipmentBuilderTest {
 
-  private static final String ORDERABLE_ID = "e3fc3cf3-da18-44b0-a220-77c985202e06";
   private static final String ORDER_CODE = "O0001";
-  private static final String QUANTITY_SHIPPED = "1000";
   private static final UUID SHIPPED_BY_ID = UUID.randomUUID();
 
   private static final String BATCH_NUMBER_FIELD_KEY = "batchNumber";
