@@ -41,8 +41,6 @@ public class ShipmentMessageHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ShipmentMessageHandler.class);
 
-  private FileTemplate currentTemplate;
-
   @Autowired
   private FileTemplateService templateService;
 
@@ -65,7 +63,7 @@ public class ShipmentMessageHandler {
    */
   @Transactional
   public void process(Message message) throws IOException {
-    FileTemplate template = getTemplate();
+    FileTemplate template = templateService.getFileTemplate(TemplateType.SHIPMENT);
     LOGGER.info("A shipment file received. {}", message.getHeaders().getId());
 
     try {
@@ -87,12 +85,5 @@ public class ShipmentMessageHandler {
     archiveChannel.send(archiveMessage);
   }
 
-  private FileTemplate getTemplate() {
-    //Cache the template object so it is not loaded from the database every time it is used.
-    if (currentTemplate == null) {
-      currentTemplate = templateService.getFileTemplate(TemplateType.SHIPMENT);
-    }
-    return currentTemplate;
-  }
 
 }

@@ -17,7 +17,6 @@ package org.openlmis.fulfillment.service.shipment;
 
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -99,18 +98,6 @@ public class ShipmentMessageHandlerTest {
 
     when(context.getBean("errorChannel")).thenReturn(errorChannel);
     when(context.getBean("archiveFtpChannel")).thenReturn(archiveChannel);
-  }
-
-  @Test
-  public void shouldUseCachedFileTemplate() throws Exception {
-    Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
-
-    messageHandler.process(fileMessage);
-    messageHandler.process(fileMessage);
-    messageHandler.process(fileMessage);
-
-    verify(templateService, atMost(1)).getFileTemplate(TemplateType.SHIPMENT);
   }
 
   @Test
