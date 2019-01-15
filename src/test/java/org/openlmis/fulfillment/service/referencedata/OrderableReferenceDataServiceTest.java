@@ -93,6 +93,7 @@ public class OrderableReferenceDataServiceTest
     List<OrderableDto> response = service.findAll();
 
     assertThat(response, hasSize(1));
+    assertThat(response, hasItem(product));
 
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
