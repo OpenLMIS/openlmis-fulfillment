@@ -15,8 +15,6 @@
 
 package org.openlmis.fulfillment.util;
 
-import static java.util.Arrays.asList;
-
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 
@@ -31,25 +29,17 @@ public enum FileColumnKeyPath {
 
   private String columnPath;
 
-  public static final ImmutableList<FileColumnKeyPath> ORDERABLE_COLUMN_PATHS = new ImmutableList
-      .Builder<FileColumnKeyPath>()
-      .addAll(asList(ORDERABLE_ID, PRODUCT_CODE))
-      .build();
+  public static final ImmutableList<FileColumnKeyPath> ORDERABLE_COLUMN_PATHS = ImmutableList
+      .of(ORDERABLE_ID, PRODUCT_CODE);
 
-  public static final ImmutableList<FileColumnKeyPath> ORDER_COLUMN_PATHS = new ImmutableList
-      .Builder<FileColumnKeyPath>()
-      .addAll(asList(ORDER_ID, ORDER_CODE))
-      .build();
+  public static final ImmutableList<FileColumnKeyPath> ORDER_COLUMN_PATHS = ImmutableList
+      .of(ORDER_ID, ORDER_CODE);
 
-  public static final ImmutableList<FileColumnKeyPath> QUANTITY_SHIPPED_PATHS = new ImmutableList
-      .Builder<FileColumnKeyPath>()
-      .addAll(asList(QUANTITY_SHIPPED))
-      .build();
+  public static final ImmutableList<FileColumnKeyPath> QUANTITY_SHIPPED_PATHS = ImmutableList
+      .of(QUANTITY_SHIPPED);
 
-  public static final ImmutableList<FileColumnKeyPath> ALL_REQUIRED_COLUMN_PATHS = new ImmutableList
-      .Builder<FileColumnKeyPath>()
-      .addAll(asList(ORDERABLE_ID, PRODUCT_CODE, ORDER_ID, ORDER_CODE, QUANTITY_SHIPPED))
-      .build();
+  public static final ImmutableList<FileColumnKeyPath> ALL_REQUIRED_COLUMN_PATHS = ImmutableList
+      .of(ORDERABLE_ID, PRODUCT_CODE, ORDER_ID, ORDER_CODE, QUANTITY_SHIPPED);
 
   FileColumnKeyPath(String columnPath) {
     this.columnPath = columnPath;
