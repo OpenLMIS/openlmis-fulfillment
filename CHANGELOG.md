@@ -1,10 +1,11 @@
 8.0.1 / WIP
 ==================
 
-Improvements: 
+Bug fixes and improvements:
 * [OLMIS-5832](https://openlmis.atlassian.net/browse/OLMIS-5832): Validate shipment file templates for expected presence of required columns.
 * [OLMIS-5833](https://openlmis.atlassian.net/browse/OLMIS-5833): Support parsing shipment files when shipment template is configured to use product code or orderable id column. Improve line item validations.
 * [OLMIS-5834](https://openlmis.atlassian.net/browse/OLMIS-5834): Support parsing shipment files when shipment template is configured to use order code field.
+* [OLMIS-5912](https://openlmis.atlassian.net/browse/OLMIS-5912): Fixed issue with converting requisition to order when status message was too long.
 
 8.0.0 / 2018-12-12
 ==================
