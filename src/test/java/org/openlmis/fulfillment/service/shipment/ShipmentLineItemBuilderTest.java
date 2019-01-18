@@ -45,6 +45,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CSVRecord.class)
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentLineItemBuilderTest {
 
   private static final String ORDERABLE_ID = "e3fc3cf3-da18-44b0-a220-77c985202e06";
@@ -156,6 +157,20 @@ public class ShipmentLineItemBuilderTest {
   @Test(expected = FulfillmentException.class)
   public void throwsExceptionWhenQuantityShippedIsLessThan0() {
     when(csvRecord1.get(2)).thenReturn("-100");
+
+    builder.build(template, asList(csvRecord1));
+  }
+
+  @Test(expected = FulfillmentException.class)
+  public void throwsExceptionWhenQuantityShippedEmptyString() {
+    when(csvRecord1.get(2)).thenReturn("");
+
+    builder.build(template, asList(csvRecord1));
+  }
+
+  @Test(expected = FulfillmentException.class)
+  public void throwsExceptionWhenQuantityShippedIsNotNumeric() {
+    when(csvRecord1.get(2)).thenReturn("emahoy");
 
     builder.build(template, asList(csvRecord1));
   }

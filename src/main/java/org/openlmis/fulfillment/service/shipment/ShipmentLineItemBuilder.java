@@ -15,8 +15,16 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
+import static java.lang.Long.parseLong;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.openlmis.fulfillment.util.FileColumnKeyPath.ALL_REQUIRED_COLUMN_PATHS;
+import static org.openlmis.fulfillment.util.FileColumnKeyPath.ORDERABLE_COLUMN_PATHS;
+import static org.openlmis.fulfillment.util.FileColumnKeyPath.ORDER_COLUMN_PATHS;
+import static org.openlmis.fulfillment.util.FileColumnKeyPath.PRODUCT_CODE;
+import static org.openlmis.fulfillment.util.FileColumnKeyPath.QUANTITY_SHIPPED_PATHS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +38,13 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.fulfillment.util.FileColumnKeyPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ShipmentLineItemBuilder {
+
+  private static final String LINE_ITEM = "lineItem";
 
   @Autowired
   private OrderableReferenceDataService orderableService;
@@ -49,29 +58,27 @@ public class ShipmentLineItemBuilder {
    */
   public List<ShipmentLineItem> build(FileTemplate template, List<CSVRecord> lines) {
     // find required columns.
-    FileColumn orderableColumn = template
-        .findColumn(FileColumnKeyPath.ORDERABLE_COLUMN_PATHS).orElse(null);
-    FileColumn orderColumn = template
-        .findColumn(FileColumnKeyPath.ORDER_COLUMN_PATHS).orElse(null);
-    FileColumn quantityShippedColumn = template
-        .findColumn(FileColumnKeyPath.QUANTITY_SHIPPED_PATHS).orElse(null);
+    FileColumn orderableColumn = template.findColumn(ORDERABLE_COLUMN_PATHS).orElse(null);
+    FileColumn orderColumn = template.findColumn(ORDER_COLUMN_PATHS).orElse(null);
+    FileColumn quantityShippedColumn = template.findColumn(QUANTITY_SHIPPED_PATHS).orElse(null);
 
     if (orderColumn == null || orderableColumn == null || quantityShippedColumn == null) {
       throw new FulfillmentException(
-          "Required columns Orderable and/or quantity shipped not found in template.");
+          "Required shipment template columns not found.");
     }
 
     // Initialize and cache variables that would be used repeatedly for each row.
     List<OrderableDto> orderables = orderableService.findAll();
-    Map<String, OrderableDto> productCodeOrderableMap = orderables.stream()
-        .collect(toMap(OrderableDto::getProductCode, orderable -> orderable));
-    Map<UUID, OrderableDto> uuidOrderableMap = orderables.stream()
-        .collect(toMap(OrderableDto::getId, orderable -> orderable));
+    Map<String, OrderableDto> orderableDtoMap = orderables
+        .stream()
+        .collect(toMap(orderable -> (PRODUCT_CODE.equals(orderableColumn.getFileColumnKeyPathEnum())
+            ? orderable.getProductCode() : orderable.getId().toString()), orderable -> orderable));
 
     List<FileColumn> extraDataFields = template.getFileColumns()
         .stream()
-        .filter(i -> !FileColumnKeyPath.ALL_REQUIRED_COLUMN_PATHS
-            .contains(i.getFileColumnKeyPathEnum()))
+        .filter(column -> !ALL_REQUIRED_COLUMN_PATHS
+            .contains(column.getFileColumnKeyPathEnum())
+            && LINE_ITEM.equals(column.getNested()))
         .collect(toList());
 
     // read the first order identifier to check subsequent order identifiers against it.
@@ -80,15 +87,14 @@ public class ShipmentLineItemBuilder {
     List<ShipmentLineItem> lineItems = new ArrayList<>();
 
     for (CSVRecord row : lines) {
-      validateOrderIdentifer(orderColumn, orderIdentifier, row);
+      validateOrderIdentifier(orderColumn, orderIdentifier, row);
 
-      UUID orderableId = extractOrderableId(orderableColumn, row,
-          uuidOrderableMap, productCodeOrderableMap);
+      UUID orderableId = extractOrderableId(orderableColumn, row, orderableDtoMap);
       String quantityShippedString = row.get(quantityShippedColumn.getPosition());
-      Long quantityShipped = Long.parseLong(quantityShippedString);
-      Map<String, String> extraData = extractExtraData(extraDataFields, row);
+      validateOrderableAndQuantity(orderableId, quantityShippedString);
 
-      validateOrderableAndQuantity(orderableId, quantityShipped);
+      Long quantityShipped = parseLong(quantityShippedString);
+      Map<String, String> extraData = extractExtraData(extraDataFields, row);
 
       ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped, extraData);
       lineItems.add(lineItem);
@@ -96,7 +102,7 @@ public class ShipmentLineItemBuilder {
     return lineItems;
   }
 
-  private void validateOrderIdentifer(FileColumn orderColumn, String orderIdentifier,
+  private void validateOrderIdentifier(FileColumn orderColumn, String orderIdentifier,
       CSVRecord row) {
     String orderIdForRow = row.get(orderColumn.getPosition());
     if (!orderIdentifier.equals(orderIdForRow)) {
@@ -104,29 +110,25 @@ public class ShipmentLineItemBuilder {
     }
   }
 
-  private void validateOrderableAndQuantity(UUID orderableId, Long quantityShipped) {
+  private void validateOrderableAndQuantity(UUID orderableId, String quantityShippedString) {
     if (orderableId == null) {
       throw new FulfillmentException("Orderable not found for line Item.");
     }
+    if (isEmpty(quantityShippedString) || !isNumeric(quantityShippedString)) {
+      throw new FulfillmentException("Quantity Shipped value should be a valid number.");
+    }
+    long quantityShipped = parseLong(quantityShippedString);
     if (quantityShipped < 0) {
-      throw new FulfillmentException(String
-          .format("Quantity Shipped for %s should be number greater than or equal to 0.",
-              orderableId));
+      throw new FulfillmentException(
+          "Quantity Shipped should be number greater than or equal to 0.");
     }
   }
 
   private UUID extractOrderableId(FileColumn orderableColumn, CSVRecord row,
-      Map<UUID, OrderableDto> uuidOrderableMap, Map<String, OrderableDto> productCodeOrderableMap) {
-    if (FileColumnKeyPath.ORDERABLE_ID.equals(orderableColumn.getFileColumnKeyPathEnum())) {
-      String orderableIdString = row.get(orderableColumn.getPosition());
-      UUID orderableId = UUID.fromString(orderableIdString);
-      return (uuidOrderableMap.containsKey(orderableId)) ? orderableId : null;
-    } else if (FileColumnKeyPath.PRODUCT_CODE.equals(orderableColumn.getFileColumnKeyPathEnum())) {
-      String productCode = row.get(orderableColumn.getPosition());
-      OrderableDto orderableDto = productCodeOrderableMap.get(productCode);
-      return (orderableDto != null) ? orderableDto.getId() : null;
-    }
-    return null;
+      Map<String, OrderableDto> orderableDtoMap) {
+    String orderableIdentifier = row.get(orderableColumn.getPosition());
+    OrderableDto orderableDto = orderableDtoMap.get(orderableIdentifier);
+    return (orderableDto != null) ? orderableDto.getId() : null;
   }
 
   private Map<String, String> extractExtraData(List<FileColumn> extraDataFields, CSVRecord row) {
