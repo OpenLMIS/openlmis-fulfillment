@@ -50,7 +50,6 @@ import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagemen
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
-import org.openlmis.fulfillment.web.shipment.ShipmentController;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
@@ -83,7 +82,7 @@ import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiForm
 @Transactional
 public class ProofOfDeliveryController extends BaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProofOfDeliveryController.class);
-  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentController.class);
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ProofOfDeliveryController.class);
 
   private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
 
@@ -166,10 +165,11 @@ public class ProofOfDeliveryController extends BaseController {
     UserDto user = authenticationHelper.getCurrentUser();
 
     if (null != user) {
-      profiler.start(CHECK_PERMISSION);
+      profiler.start("GET_PERMISSION_STRINGS");
       PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
       Set<PermissionStringDto> permissionStrings = handler.get();
 
+      profiler.start(CHECK_PERMISSION);
       content.removeIf(proofOfDelivery -> {
         UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
         UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
