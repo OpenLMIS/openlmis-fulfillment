@@ -19,7 +19,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.ShipmentContextRunner;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
@@ -40,11 +43,15 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransferPropertiesServiceTest {
+
   @Mock
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Mock
+  private ShipmentContextRunner shipmentContextRunner;
 
   @InjectMocks
   private TransferPropertiesService transferPropertiesService;
@@ -52,27 +59,50 @@ public class TransferPropertiesServiceTest {
   @Test
   public void shouldSaveSetting() {
     // given
-    final TransferProperties properties = randomSetting();
+    final TransferProperties properties = randomSetting(TransferType.ORDER);
     final FacilityDto facility = mock(FacilityDto.class);
 
+    doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
     when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
         .thenReturn(null);
-
+    when(transferPropertiesRepository.save(properties)).thenReturn(properties);
     // when
     transferPropertiesService.save(properties);
 
     // then
     verify(transferPropertiesRepository, atLeastOnce()).save(properties);
+    verify(shipmentContextRunner, never()).reCreateShipmentChannel(any());
+  }
+
+  @Test
+  public void saveShouldReCreateShipmentChannelForShipmentTransferProperties() {
+    // given
+    final TransferProperties properties = randomSetting(TransferType.SHIPMENT);
+    final FacilityDto facility = mock(FacilityDto.class);
+
+    doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
+    when(facility.getId()).thenReturn(UUID.randomUUID());
+    when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
+        .thenReturn(null);
+    when(transferPropertiesRepository.save(properties)).thenReturn(properties);
+
+    // when
+    transferPropertiesService.save(properties);
+
+    // then
+    verify(shipmentContextRunner, atLeastOnce()).reCreateShipmentChannel(any());
   }
 
   @Test(expected = DuplicateTransferPropertiesException.class)
   public void shouldNotSaveSettingIfFacilityIdDuplicated() {
     // given
-    final TransferProperties properties = randomSetting();
-    final TransferProperties duplicate = randomSetting();
+    final TransferProperties properties = randomSetting(TransferType.ORDER);
+    final TransferProperties duplicate = randomSetting(TransferType.ORDER);
     FacilityDto facility = mock(FacilityDto.class);
 
     when(facility.getId()).thenReturn(UUID.randomUUID());
@@ -88,8 +118,9 @@ public class TransferPropertiesServiceTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotSaveSettingIfFacilityDoesNotExist() {
     // given
-    TransferProperties properties = randomSetting();
+    final TransferProperties properties = randomSetting(TransferType.ORDER);
 
+    doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -102,7 +133,7 @@ public class TransferPropertiesServiceTest {
   @Test
   public void shouldGetByFacility() {
     // given
-    TransferProperties properties = randomSetting();
+    TransferProperties properties = randomSetting(TransferType.ORDER);
 
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -119,7 +150,7 @@ public class TransferPropertiesServiceTest {
   @Test
   public void shouldNotGetByFacilityIfFacilityDoesNotExist() {
     // given
-    TransferProperties properties = randomSetting();
+    TransferProperties properties = randomSetting(TransferType.ORDER);
 
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -133,7 +164,7 @@ public class TransferPropertiesServiceTest {
     assertNull(result);
   }
 
-  private FtpTransferProperties randomSetting() {
+  private FtpTransferProperties randomSetting(TransferType transferType) {
     FtpTransferProperties properties = new FtpTransferProperties();
     properties.setId(UUID.randomUUID());
     properties.setFacilityId(UUID.randomUUID());
@@ -142,7 +173,7 @@ public class TransferPropertiesServiceTest {
     properties.setRemoteDirectory(RandomStringUtils.random(10));
     properties.setUsername(RandomStringUtils.random(10));
     properties.setPassword(RandomStringUtils.random(10));
-
+    properties.setTransferType(transferType);
     return properties;
   }
 }

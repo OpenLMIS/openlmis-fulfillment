@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
-import org.openlmis.fulfillment.service.shipment.ShipmentMessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -34,7 +32,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.stereotype.Component;
 
 @Order(30)
@@ -43,7 +40,7 @@ public class ShipmentContextRunner implements CommandLineRunner {
 
   private static final String INCOMING = "/incoming";
   private static final String ERROR = "/error";
-  public static final String ARCHIVE = "/archive";
+  private static final String ARCHIVE = "/archive";
 
   @Value("${shipment.polling.rate}")
   private String pollingRate;
@@ -52,27 +49,29 @@ public class ShipmentContextRunner implements CommandLineRunner {
   private String shippedById;
 
   @Autowired
-  TransferPropertiesRepository transferPropertiesService;
+  private TransferPropertiesRepository transferPropertiesService;
 
   @Autowired
-  ShipmentMessageHandler messageHandler;
-
-  @Autowired
-  ApplicationContext applicationContext;
+  private ApplicationContext applicationContext;
 
   private final Map<UUID, ConfigurableApplicationContext> contexts = new HashMap<>();
 
-  public void run(String... args) throws IOException {
+  public void run(String... args) {
     createFtpChannels();
   }
 
   /**
-   * Returns an initialized context for a transfer property.
+   * Create/re-create the application context for the transfer property that was updated/created.
    *
-   * @param transferPropertyId transfer property id
+   * @param transferProperty transfer property that was created or updated.
    */
-  public ConfigurableApplicationContext getContext(UUID transferPropertyId) {
-    return contexts.get(transferPropertyId);
+  public void reCreateShipmentChannel(TransferProperties transferProperty) {
+    if (contexts.containsKey(transferProperty.getId())) {
+      ConfigurableApplicationContext oldContext = contexts.get(transferProperty.getId());
+      oldContext.close();
+      contexts.remove(transferProperty.getId());
+    }
+    createFtpChannel((FtpTransferProperties) transferProperty);
   }
 
   private synchronized void createFtpChannel(FtpTransferProperties transferProperties) {
@@ -99,7 +98,11 @@ public class ShipmentContextRunner implements CommandLineRunner {
 
   private void setEnvironmentForFtpShipmentSource(ConfigurableApplicationContext ctx,
       FtpTransferProperties ftp) {
+    Properties props = buildProperties(ftp);
+    ctx.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("ftp", props));
+  }
 
+  private Properties buildProperties(FtpTransferProperties ftp) {
     Properties props = new Properties();
     props.setProperty("host", ftp.getServerHost());
     props.setProperty("user", ftp.getUsername());
@@ -115,10 +118,7 @@ public class ShipmentContextRunner implements CommandLineRunner {
     props.setProperty("remote.error.directory", ftp.getRemoteDirectory() + ERROR);
 
     props.setProperty("local.directory", ftp.getLocalDirectory() + INCOMING);
-
-    StandardEnvironment env = new StandardEnvironment();
-    env.getPropertySources().addLast(new PropertiesPropertySource("ftp", props));
-    ctx.setEnvironment(env);
+    return props;
   }
 
 }

@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service;
 
 import java.util.UUID;
 import org.apache.commons.lang.NullArgumentException;
+import org.openlmis.fulfillment.ShipmentContextRunner;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -32,6 +33,9 @@ public class TransferPropertiesService {
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private ShipmentContextRunner shipmentContextRunner;
 
   /**
    * Retrieves TransferProperties for given facility.
@@ -64,7 +68,11 @@ public class TransferPropertiesService {
       throw new DuplicateTransferPropertiesException();
     }
 
-    return transferPropertiesRepository.save(setting);
+    TransferProperties persistedSetting = transferPropertiesRepository.save(setting);
+    if (TransferType.SHIPMENT.equals(persistedSetting.getTransferType())) {
+      shipmentContextRunner.reCreateShipmentChannel(persistedSetting);
+    }
+    return persistedSetting;
   }
 
 }
