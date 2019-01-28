@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -346,9 +347,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
         null,
         null,
-        null,
-        null,
-        null,
+        emptySet(),
+        emptySet(),
+        emptySet(),
         createPageable(Integer.MAX_VALUE, 0));
 
     for (ProofOfDelivery proofOfDelivery : list) {

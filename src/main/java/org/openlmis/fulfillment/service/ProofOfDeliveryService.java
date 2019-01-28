@@ -103,6 +103,9 @@ public class ProofOfDeliveryService {
             || permissionString.getRightName().equals(PODS_VIEW)
             || permissionString.getRightName().equals(SHIPMENTS_EDIT))
         .forEach(permissionString -> {
+          if (permissionString.getProgramId() == null || permissionString.getFacilityId() == null) {
+            XLOGGER.debug("found permission string with null values: {}", permissionString);
+          }
           programIds.add(permissionString.getProgramId());
           if (PODS_MANAGE.equals(permissionString.getRightName())
               || PODS_VIEW.equals(permissionString.getRightName())) {

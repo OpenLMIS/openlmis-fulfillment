@@ -33,12 +33,17 @@ import javax.persistence.TypedQuery;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.custom.ProofOfDeliveryRepositoryCustom;
 import org.openlmis.fulfillment.util.Pagination;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryCustom {
+
+  private static final XLogger XLOGGER =
+      XLoggerFactory.getXLogger(ProofOfDeliveryRepositoryImpl.class);
 
   private static final String POD_SELECT = "SELECT DISTINCT p"
       + " FROM ProofOfDelivery AS p"
@@ -84,12 +89,11 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
 
     TypedQuery countQuery = prepareQuery(POD_COUNT, shipmentId, orderId, receivingFacilityIds,
         supplyingFacilityIds, programIds, pageable, true);
-    TypedQuery searchQuery = prepareQuery(POD_SELECT, shipmentId, orderId, receivingFacilityIds,
-        supplyingFacilityIds, programIds, pageable, false);
-
     Long count = (Long) countQuery.getSingleResult();
 
     if (count > 0) {
+      TypedQuery searchQuery = prepareQuery(POD_SELECT, shipmentId, orderId, receivingFacilityIds,
+          supplyingFacilityIds, programIds, pageable, false);
       List<ProofOfDelivery> pods = searchQuery
           .setMaxResults(pageable.getPageSize())
           .setFirstResult(pageable.getOffset())
@@ -145,6 +149,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
     Class resultClass = count ? Long.class : ProofOfDelivery.class;
 
     TypedQuery typedQuery = entityManager.createQuery(query, resultClass);
+    XLOGGER.debug("POD search repository params: {}", params);
     params.forEach(typedQuery::setParameter);
     return typedQuery;
   }
