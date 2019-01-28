@@ -147,9 +147,9 @@ public class ProofOfDeliveryController extends BaseController {
     profiler.setLogger(XLOGGER);
 
     profiler.start("SEARCH_PODS_SERVICE");
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(orderId, shipmentId, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(shipmentId, orderId, pageable);
 
-    profiler.start("BUILD_DTOS");
+    profiler.start("BUILD_DTO_PAGE");
     Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dtoBuilder.build(result.getContent()),
         pageable, result.getTotalElements());
 

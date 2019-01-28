@@ -55,16 +55,16 @@ public class ProofOfDeliveryService {
 
   /**
    * Searches for PODs using shipment and order ids (both are optional).
-   * If request was made by logged user then POD will be returned if user has following permissions:
+   * If request was made by user then POD will be returned if user has any following permissions:
    * SHIPMENT_EDIT right with program and supplying facility from given POD,
    * POD_EDIT right with program and requesting facility from given POD,
-   * VIEW_EDIT right with program and requesting facility from given POD,
+   * POD_VIEW right with program and requesting facility from given POD,
    * If it was cross-service request then all PODs that met parameter criteria will be returned,
    * regardless of permissions.
    *
    * @param shipmentId UUID of shipment associated with POD, optional
    * @param orderId    UUID of order associated with POD, optional
-   * @param pageable   pagination paramters
+   * @param pageable   pagination parameters
    * @return page of filtered PODs.
    */
   public Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Pageable pageable) {

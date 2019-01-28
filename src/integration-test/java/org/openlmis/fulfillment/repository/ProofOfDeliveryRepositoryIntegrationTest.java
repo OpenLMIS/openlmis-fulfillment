@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.repository;
 
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
@@ -329,6 +330,30 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
       assertEquals(1, found.getTotalElements());
       assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
+  }
+
+  @Test
+  public void shouldFindAllProofOfDelivery() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        null,
+        null,
+        null,
+        null,
+        null,
+        createPageable(Integer.MAX_VALUE, 0));
+
+    for (ProofOfDelivery proofOfDelivery : list) {
+      assertThat(found.getTotalElements(), greaterThanOrEqualTo((long) list.size()));
+      assertThat(found.getContent(), hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
     }
   }
 

@@ -116,11 +116,10 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private String serviceUrl;
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
+  private Pageable pageable = new PageRequest(0, 10);
 
   @Before
   public void setUp() {
-    Pageable pageable = new PageRequest(0, 10);
-
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(true);
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
@@ -147,6 +146,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .queryParam("page", pageable.getPageNumber())
+        .queryParam("size", pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -156,6 +157,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(proofOfDeliveryService).search(null, null, pageable);
   }
 
   @Test
@@ -164,6 +166,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("shipmentId", proofOfDelivery.getShipment().getId())
+        .queryParam("page", pageable.getPageNumber())
+        .queryParam("size", pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -171,7 +175,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .as(PageDto.class);
 
-    assertEquals(2000, response.getSize()); // default size
     assertEquals(0, response.getNumber());
     assertEquals(1, response.getContent().size());
     assertEquals(1, response.getNumberOfElements());
@@ -179,8 +182,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     assertEquals(1, response.getTotalPages());
 
     assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
-
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(proofOfDeliveryService).search(proofOfDelivery.getShipment().getId(), null, pageable);
   }
 
   @Test
@@ -189,6 +192,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("orderId", proofOfDelivery.getShipment().getOrder().getId())
+        .queryParam("page", pageable.getPageNumber())
+        .queryParam("size", pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -196,7 +201,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .extract()
         .as(PageDto.class);
 
-    assertEquals(2000, response.getSize()); // default size
     assertEquals(0, response.getNumber());
     assertEquals(1, response.getContent().size());
     assertEquals(1, response.getNumberOfElements());
@@ -206,6 +210,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(proofOfDeliveryService)
+        .search(null, proofOfDelivery.getShipment().getOrder().getId(), pageable);
   }
 
   @Test

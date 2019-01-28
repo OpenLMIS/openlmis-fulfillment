@@ -81,7 +81,7 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldSearchAllProofsOfDeliveryWithoutCheckingPermissions() {
+  public void shouldSearchAllProofsOfDeliveryForServiceRequest() {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
@@ -94,7 +94,7 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldSearchProofsOfDeliveryByShipmentIdWithoutCheckingPermissions() {
+  public void shouldSearchProofsOfDeliveryByShipmentIdForServiceRequest() {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
@@ -107,7 +107,7 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldSearchProofsOfDeliveryByOrderIdWithoutCheckingPermissions() {
+  public void shouldSearchProofsOfDeliveryByOrderIdForServiceRequest() {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
@@ -133,7 +133,7 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldSearchProofsOfDeliveryUsingPermissions() {
+  public void shouldSearchProofsOfDeliveryUsingUserPermissions() {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(userDto);
     when(permissionStringsHandler.get())
@@ -157,7 +157,7 @@ public class ProofOfDeliveryServiceTest {
   }
 
   @Test
-  public void shouldSearchProofsOfDeliveryByAllParams() {
+  public void shouldSearchProofsOfDeliveryByAllParamsAndUserPermissions() {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(userDto);
     when(permissionStringsHandler.get())
