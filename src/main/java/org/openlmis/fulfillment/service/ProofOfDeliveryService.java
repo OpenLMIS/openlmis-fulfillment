@@ -98,15 +98,16 @@ public class ProofOfDeliveryService {
 
   private void populateIdsFromPermissionStrings(Set<PermissionStringDto> permissionStrings,
       Set<UUID> programIds, Set<UUID> receivingFacilitiesIds, Set<UUID> supplyingFacilitiesIds) {
+    boolean hasPermissionForAllPrograms = permissionStrings.stream()
+        .filter(this::isPodSearchRight)
+        .anyMatch(permissionString -> permissionString.getProgramId() == null);
+
     permissionStrings.stream()
-        .filter(permissionString -> permissionString.getRightName().equals(PODS_MANAGE)
-            || permissionString.getRightName().equals(PODS_VIEW)
-            || permissionString.getRightName().equals(SHIPMENTS_EDIT))
+        .filter(this::isPodSearchRight)
         .forEach(permissionString -> {
-          if (permissionString.getProgramId() == null || permissionString.getFacilityId() == null) {
-            XLOGGER.debug("found permission string with null values: {}", permissionString);
+          if (!hasPermissionForAllPrograms) {
+            programIds.add(permissionString.getProgramId());
           }
-          programIds.add(permissionString.getProgramId());
           if (PODS_MANAGE.equals(permissionString.getRightName())
               || PODS_VIEW.equals(permissionString.getRightName())) {
             receivingFacilitiesIds.add(permissionString.getFacilityId());
@@ -115,5 +116,11 @@ public class ProofOfDeliveryService {
             supplyingFacilitiesIds.add(permissionString.getFacilityId());
           }
         });
+  }
+
+  private boolean isPodSearchRight(PermissionStringDto permissionString) {
+    return permissionString.getRightName().equals(PODS_MANAGE)
+        || permissionString.getRightName().equals(PODS_VIEW)
+        || permissionString.getRightName().equals(SHIPMENTS_EDIT);
   }
 }

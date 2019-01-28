@@ -33,17 +33,12 @@ import javax.persistence.TypedQuery;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.custom.ProofOfDeliveryRepositoryCustom;
 import org.openlmis.fulfillment.util.Pagination;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryCustom {
-
-  private static final XLogger XLOGGER =
-      XLoggerFactory.getXLogger(ProofOfDeliveryRepositoryImpl.class);
 
   private static final String POD_SELECT = "SELECT DISTINCT p"
       + " FROM ProofOfDelivery AS p"
@@ -149,7 +144,6 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
     Class resultClass = count ? Long.class : ProofOfDelivery.class;
 
     TypedQuery typedQuery = entityManager.createQuery(query, resultClass);
-    XLOGGER.debug("POD search repository params: {}", params);
     params.forEach(typedQuery::setParameter);
     return typedQuery;
   }

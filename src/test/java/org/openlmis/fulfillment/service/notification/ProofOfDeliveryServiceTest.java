@@ -179,4 +179,30 @@ public class ProofOfDeliveryServiceTest {
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
+
+  @Test
+  public void shouldSearchWithEmptyListOfProgramIdsWhenAtLeastOnePermissionHasNoProgramId() {
+    PermissionStringDto permissionWithoutProgram = PermissionStringDto
+        .from(SHIPMENTS_EDIT + "|" + proofOfDelivery.getSupplyingFacilityId().toString());
+
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(userDto);
+    when(permissionStringsHandler.get())
+        .thenReturn(asSet(
+            PermissionStringDto.create(PODS_MANAGE, proofOfDelivery.getReceivingFacilityId(),
+                proofOfDelivery.getProgramId()),
+            permissionWithoutProgram));
+    when(proofOfDeliveryRepository.search(
+        eq(orderId),
+        eq(shipmentId),
+        eq(singleton(proofOfDelivery.getReceivingFacilityId())),
+        eq(singleton(proofOfDelivery.getSupplyingFacilityId())),
+        eq(emptySet()),
+        eq(pageable)))
+        .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
+
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(orderId, shipmentId, pageable);
+
+    assertThat(result.getContent(), hasItems(proofOfDelivery));
+  }
 }
