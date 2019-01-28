@@ -358,8 +358,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
         emptySet(),
         createPageable(Integer.MAX_VALUE, 0));
 
+    assertThat(found.getTotalElements(), equalTo((long) list.size()));
     for (ProofOfDelivery proofOfDelivery : list) {
-      assertThat(found.getTotalElements(), equalTo((long) list.size()));
       assertThat(found.getContent(), hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
     }
   }
