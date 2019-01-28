@@ -6,6 +6,7 @@ Bug fixes and improvements:
 * [OLMIS-5833](https://openlmis.atlassian.net/browse/OLMIS-5833): Support parsing shipment files when shipment template is configured to use product code or orderable id column. Improve line item validations.
 * [OLMIS-5834](https://openlmis.atlassian.net/browse/OLMIS-5834): Support parsing shipment files when shipment template is configured to use order code field.
 * [OLMIS-5912](https://openlmis.atlassian.net/browse/OLMIS-5912): Fixed issue with converting requisition to order when status message was too long.
+* [OLMIS-5912](https://openlmis.atlassian.net/browse/OLMIS-3496): Fixed performance issues with GET /api/proofsOfDelivery endpoint.
 
 8.0.0 / 2018-12-12
 ==================

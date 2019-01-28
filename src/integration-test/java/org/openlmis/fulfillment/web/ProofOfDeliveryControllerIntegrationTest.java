@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.web;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -33,14 +32,10 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
-import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
-import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
-import java.util.Collections;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRParameter;
@@ -61,22 +56,21 @@ import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ProofOfDeliveryService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
-import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
-import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -90,6 +84,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @MockBean
+  private ProofOfDeliveryService proofOfDeliveryService;
 
   @MockBean
   private ShipmentRepository shipmentRepository;
@@ -115,9 +112,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @MockBean
   private JasperReportsViewService jasperReportsViewService;
 
-  @SpyBean
-  private AuthenticationHelper authenticationHelper;
-
   @Value("${service.url}")
   private String serviceUrl;
 
@@ -125,17 +119,17 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Before
   public void setUp() {
+    Pageable pageable = new PageRequest(0, 10);
+
     given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
     given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(true);
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
         .willAnswer(new SaveAnswer<>());
-    given(proofOfDeliveryRepository.findAll()).willReturn(Lists.newArrayList(proofOfDelivery));
-    given(proofOfDeliveryRepository.findByShipmentId(eq(proofOfDelivery.getShipment().getId())))
-        .willReturn(Lists.newArrayList(proofOfDelivery));
-    given(proofOfDeliveryRepository
-        .findByOrderId(eq(proofOfDelivery.getShipment().getOrder().getId())))
-        .willReturn(Lists.newArrayList(proofOfDelivery));
-
+    given(proofOfDeliveryService.search(
+        any(UUID.class),
+        any(UUID.class),
+        any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
     given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
         .willReturn(proofOfDelivery.getShipment());
 
@@ -162,114 +156,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldReturnEmptyListForGetAllProofsOfDeliveryIfUserHasNoRight() {
-    given(permissionStringsHandler.get()).willReturn(Collections.emptySet());
-
-    PageDto response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageDto.class);
-
-    assertThat(response.getContent().isEmpty(), is(true));
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetAllProofsOfDeliveryIfUserHasPodManageRight() {
-    given(permissionStringsHandler.get())
-        .willReturn(singleton(PermissionStringDto.create(PODS_MANAGE, proofOfDelivery
-            .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
-
-    PageDto response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageDto.class);
-
-    assertTrue(response.getContent().iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetAllProofsOfDeliveryIfUserHasPodViewRight() {
-    given(permissionStringsHandler.get())
-        .willReturn(singleton(PermissionStringDto.create(PODS_VIEW, proofOfDelivery
-            .getReceivingFacilityId(), proofOfDelivery.getProgramId())));
-
-    PageDto response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageDto.class);
-
-    assertTrue(response.getContent().iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetProofsOfDeliveryIfUserHasShipmentEditRight() {
-    given(permissionStringsHandler.get())
-        .willReturn(singleton(PermissionStringDto.create(SHIPMENTS_EDIT, proofOfDelivery
-            .getSupplyingFacilityId(), null)));
-
-    PageDto response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageDto.class);
-
-    assertTrue(response.getContent().iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-  }
-
-  @Test
-  public void shouldGetAllProofsOfDeliveryIfAnotherServiceAskForThem() {
-    // I get NPE in the given method without those settings
-    SecurityContext context = new SecurityContextImpl();
-    context.setAuthentication(new OAuth2AuthenticationDataBuilder().buildServiceAuthentication());
-
-    SecurityContextHolder.setContext(context);
-
-    given(authenticationHelper.getCurrentUser()).willReturn(null);
-
-    PageDto response = restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .when()
-        .get(RESOURCE_URL)
-        .then()
-        .statusCode(200)
-        .extract()
-        .as(PageDto.class);
-
-    assertTrue(response.getContent().iterator().hasNext());
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verifyZeroInteractions(permissionService, permissionStringsHandler);
   }
 
   @Test

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -49,6 +51,7 @@ import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -276,10 +279,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
-      List<ProofOfDelivery> found = proofOfDeliveryRepository
-          .findByShipmentId(proofOfDelivery.getShipment().getId());
+      Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+          proofOfDelivery.getShipment().getId(), null, null, null, null, createPageable(10, 0));
 
-      assertThat(found, hasSize(1));
+      assertEquals(1, found.getTotalElements());
       assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
     }
   }
@@ -295,10 +298,36 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
-      List<ProofOfDelivery> found = proofOfDeliveryRepository
-          .findByOrderId(proofOfDelivery.getShipment().getOrder().getId());
+      Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null,
+          createPageable(10, 0));
 
-      assertThat(found, hasSize(1));
+      assertEquals(1, found.getTotalElements());
+      assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveryByAllParameters() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    for (ProofOfDelivery proofOfDelivery : list) {
+
+      Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+          proofOfDelivery.getShipment().getId(),
+          proofOfDelivery.getShipment().getOrder().getId(),
+          singleton(proofOfDelivery.getReceivingFacilityId()),
+          singleton(proofOfDelivery.getSupplyingFacilityId()),
+          singleton(proofOfDelivery.getProgramId()),
+          createPageable(10, 0));
+
+      assertEquals(1, found.getTotalElements());
       assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
     }
   }

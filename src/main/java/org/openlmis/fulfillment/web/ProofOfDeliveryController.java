@@ -16,16 +16,12 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
-import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
-import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
-import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -42,10 +38,8 @@ import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ProofOfDeliveryService;
 import org.openlmis.fulfillment.service.TemplateService;
-import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
-import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
-import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -119,6 +113,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private FulfillmentNotificationService fulfillmentNotificationService;
 
+  @Autowired
+  private ProofOfDeliveryService proofOfDeliveryService;
+
   @Value("${dateFormat}")
   private String dateFormat;
 
@@ -149,45 +146,12 @@ public class ProofOfDeliveryController extends BaseController {
     Profiler profiler = new Profiler("GET_PODS");
     profiler.setLogger(XLOGGER);
 
-    List<ProofOfDelivery> content;
-
-    if (null == shipmentId && null == orderId) {
-      profiler.start("GET_ALL_PODS");
-      content = proofOfDeliveryRepository.findAll();
-    } else if (null != shipmentId) {
-      profiler.start("FIND_PODS_BY_SHIPMENT_ID");
-      content = proofOfDeliveryRepository.findByShipmentId(shipmentId);
-    } else {
-      profiler.start("FIND_PODS_BY_ORDER_ID");
-      content = proofOfDeliveryRepository.findByOrderId(orderId);
-    }
-
-    UserDto user = authenticationHelper.getCurrentUser();
-
-    if (null != user) {
-      profiler.start("GET_PERMISSION_STRINGS");
-      PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
-      Set<PermissionStringDto> permissionStrings = handler.get();
-
-      profiler.start(CHECK_PERMISSION);
-      content.removeIf(proofOfDelivery -> {
-        UUID receivingFacilityId = proofOfDelivery.getReceivingFacilityId();
-        UUID supplyingFacilityId = proofOfDelivery.getSupplyingFacilityId();
-        UUID programId = proofOfDelivery.getProgramId();
-
-        return permissionStrings
-            .stream()
-            .noneMatch(elem -> elem.match(PODS_MANAGE, receivingFacilityId, programId)
-                || elem.match(PODS_VIEW, receivingFacilityId, programId)
-                || elem.match(SHIPMENTS_EDIT, supplyingFacilityId, null));
-      });
-    }
+    profiler.start("SEARCH_PODS_SERVICE");
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(orderId, shipmentId, pageable);
 
     profiler.start("BUILD_DTOS");
-    List<ProofOfDeliveryDto> dto = dtoBuilder.build(content);
-
-    profiler.start("BUILD_DTO_PAGE");
-    Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dto, pageable);
+    Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dtoBuilder.build(result.getContent()),
+        pageable, result.getTotalElements());
 
     profiler.stop().log();
     XLOGGER.exit(dtoPage);
