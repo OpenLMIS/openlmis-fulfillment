@@ -17,13 +17,15 @@ package org.openlmis.fulfillment.repository;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,6 +56,10 @@ import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -353,8 +359,58 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
         createPageable(Integer.MAX_VALUE, 0));
 
     for (ProofOfDelivery proofOfDelivery : list) {
-      assertThat(found.getTotalElements(), greaterThanOrEqualTo((long) list.size()));
+      assertThat(found.getTotalElements(), equalTo((long) list.size()));
       assertThat(found.getContent(), hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyPageIfSearchParamsAreNotMet() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        UUID.randomUUID(),
+        null,
+        emptySet(),
+        emptySet(),
+        emptySet(),
+        createPageable(Integer.MAX_VALUE, 0));
+
+    assertThat(found.getContent(), empty());
+  }
+
+  @Test
+  public void shouldSortPods() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance());
+    }
+
+    Pageable pageable = new PageRequest(0, 10, new Sort(Direction.ASC, "id"));
+
+    proofOfDeliveryRepository.save(list);
+
+    Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        null,
+        null,
+        emptySet(),
+        emptySet(),
+        emptySet(),
+        pageable);
+
+    ProofOfDelivery lastPod = null;
+    for (ProofOfDelivery pod : found.getContent()) {
+      if (null != lastPod) {
+        assertThat(lastPod.getId(), lessThanOrEqualTo(lastPod.getId()));
+      }
+      lastPod = pod;
     }
   }
 

@@ -136,7 +136,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
     }
 
     String query = Joiner.on(' ').join(sql);
-    if (count && pageable.getSort() != null) {
+    if (!count && pageable.getSort() != null) {
       query = Joiner.on(' ').join(Lists.newArrayList(query, ORDER_BY,
           getOrderPredicate(pageable)));
     }
