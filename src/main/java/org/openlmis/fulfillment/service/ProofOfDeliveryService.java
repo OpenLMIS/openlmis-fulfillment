@@ -92,8 +92,11 @@ public class ProofOfDeliveryService {
       }
     }
     profiler.start("FIND_PODS");
-    return proofOfDeliveryRepository.search(shipmentId, orderId, receivingFacilitiesIds,
-        supplyingFacilitiesIds, programIds, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryRepository.search(shipmentId, orderId,
+        receivingFacilitiesIds, supplyingFacilitiesIds, programIds, pageable);
+
+    profiler.stop().log();
+    return result;
   }
 
   private void populateIdsFromPermissionStrings(Set<PermissionStringDto> permissionStrings,
