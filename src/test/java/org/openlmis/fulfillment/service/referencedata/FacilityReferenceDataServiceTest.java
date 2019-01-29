@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.fulfillment.service.PageDto;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -73,12 +76,13 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
     payload.put("id", ids);
     ResponseEntity response = mock(ResponseEntity.class);
 
-    // when
-    when(response.getBody()).thenReturn(new FacilityDto[]{facility, anotherFacility});
+    when(response.getBody()).thenReturn(
+        new PageDto<>(new PageImpl<>(Arrays.asList(facility, anotherFacility)))
+    );
 
     when(restTemplate.exchange(
         any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
-        eq(service.getArrayResultClass())
+        any(ParameterizedTypeReference.class)
     )).thenReturn(response);
 
     Collection<FacilityDto> facilities = service.findByIds(ids);
@@ -86,7 +90,7 @@ public class FacilityReferenceDataServiceTest extends BaseReferenceDataServiceTe
     // then
     verify(restTemplate).exchange(
         uriCaptor.capture(), eq(HttpMethod.GET),
-        entityCaptor.capture(), eq(service.getArrayResultClass())
+        entityCaptor.capture(), any(ParameterizedTypeReference.class)
     );
     assertTrue(facilities.contains(facility));
     assertTrue(facilities.contains(anotherFacility));

@@ -1,6 +1,9 @@
 8.0.1 / WIP
 ==================
 
+Contract breaking changes:
+* [OLMIS-3773](https://openlmis.atlassian.net/browse/OLMIS-3773): Adjusted facility search by ids after changing return type to page.
+
 Bug fixes and improvements:
 * [OLMIS-5832](https://openlmis.atlassian.net/browse/OLMIS-5832): Validate shipment file templates for expected presence of required columns.
 * [OLMIS-5833](https://openlmis.atlassian.net/browse/OLMIS-5833): Support parsing shipment files when shipment template is configured to use product code or orderable id column. Improve line item validations.

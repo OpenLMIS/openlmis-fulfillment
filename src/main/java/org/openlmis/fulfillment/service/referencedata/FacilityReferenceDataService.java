@@ -50,6 +50,6 @@ public class FacilityReferenceDataService extends BaseReferenceDataService<Facil
     if (CollectionUtils.isEmpty(ids)) {
       return Collections.emptyList();
     }
-    return findAll("", RequestParameters.init().set("id", ids));
+    return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
 }
