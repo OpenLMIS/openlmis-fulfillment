@@ -18,35 +18,21 @@ package org.openlmis.fulfillment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
-import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.util.ShipmentChannelHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.stereotype.Component;
 
 @Order(30)
 @Component
 public class ShipmentContextRunner implements CommandLineRunner {
-
-  private static final String INCOMING = "/incoming";
-  private static final String ERROR = "/error";
-  private static final String ARCHIVE = "/archive";
-
-  @Value("${shipment.polling.rate}")
-  private String pollingRate;
-
-  @Value("${shipment.shippedById}")
-  private String shippedById;
 
   @Autowired
   private TransferPropertiesRepository transferPropertiesService;
@@ -54,10 +40,16 @@ public class ShipmentContextRunner implements CommandLineRunner {
   @Autowired
   private ApplicationContext applicationContext;
 
+  @Autowired
+  private ShipmentChannelHelper channelHelper;
+
   private final Map<UUID, ConfigurableApplicationContext> contexts = new HashMap<>();
 
+  /**
+   * Creates Shipment File Polling Contexts.
+   */
   public void run(String... args) {
-    createFtpChannels();
+    createAllChannels();
   }
 
   /**
@@ -67,58 +59,21 @@ public class ShipmentContextRunner implements CommandLineRunner {
    */
   public void reCreateShipmentChannel(TransferProperties transferProperty) {
     if (contexts.containsKey(transferProperty.getId())) {
-      ConfigurableApplicationContext oldContext = contexts.get(transferProperty.getId());
-      oldContext.close();
+      contexts.get(transferProperty.getId()).close();
       contexts.remove(transferProperty.getId());
     }
-    createFtpChannel((FtpTransferProperties) transferProperty);
+    contexts.put(transferProperty.getId(),
+        channelHelper.createChannel(transferProperty, applicationContext));
   }
 
-  private synchronized void createFtpChannel(FtpTransferProperties transferProperties) {
-    ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext(
-        new String[]{"/META-INF/shipment-ftp-context.xml"},
-        false, applicationContext);
-    setEnvironmentForFtpShipmentSource(ctx, transferProperties);
-    ctx.refresh();
-    this.contexts.put(transferProperties.getId(), ctx);
-  }
 
-  /**
-   * Initiates ftp channels and contexts for previously configured ftp credentials.
-   */
-  private void createFtpChannels() {
+  private void createAllChannels() {
     List<TransferProperties> propertiesList = transferPropertiesService
         .findByTransferType(TransferType.SHIPMENT);
-    for (TransferProperties property : propertiesList) {
-      if (FtpTransferProperties.class.equals(property.getClass())) {
-        createFtpChannel((FtpTransferProperties) property);
-      }
-    }
-  }
-
-  private void setEnvironmentForFtpShipmentSource(ConfigurableApplicationContext ctx,
-      FtpTransferProperties ftp) {
-    Properties props = buildProperties(ftp);
-    ctx.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("ftp", props));
-  }
-
-  private Properties buildProperties(FtpTransferProperties ftp) {
-    Properties props = new Properties();
-    props.setProperty("host", ftp.getServerHost());
-    props.setProperty("user", ftp.getUsername());
-    props.setProperty("password", ftp.getPassword());
-    props.setProperty("port", ftp.getServerPort().toString());
-
-    props.setProperty("shipment.polling.rate", pollingRate);
-
-    props.setProperty("shipment.shippedById", shippedById);
-
-    props.setProperty("remote.incoming.directory", ftp.getRemoteDirectory() + INCOMING);
-    props.setProperty("remote.archive.directory", ftp.getRemoteDirectory() + ARCHIVE);
-    props.setProperty("remote.error.directory", ftp.getRemoteDirectory() + ERROR);
-
-    props.setProperty("local.directory", ftp.getLocalDirectory() + INCOMING);
-    return props;
+    propertiesList
+        .forEach(properties ->
+            contexts.put(properties.getId(),
+                channelHelper.createChannel(properties, applicationContext)));
   }
 
 }

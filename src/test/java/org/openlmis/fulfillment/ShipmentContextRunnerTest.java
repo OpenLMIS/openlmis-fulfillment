@@ -17,71 +17,70 @@ package org.openlmis.fulfillment;
 
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.openlmis.fulfillment.domain.FtpProtocol;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
+import org.openlmis.fulfillment.util.ShipmentChannelHelper;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ShipmentContextRunner.class})
+@RunWith(MockitoJUnitRunner.class)
+@PrepareForTest()
 public class ShipmentContextRunnerTest {
-
-  private static final String INCOMING = "/incoming";
-  private static final String ERROR = "/error";
-  private static final String ARCHIVE = "/archive";
 
   @Mock
   private TransferPropertiesRepository transferPropertiesRepository;
+
+  @Mock
+  private ApplicationContext applicationContext;
+
+  @Mock
+  private ShipmentChannelHelper channelHelper;
 
   @InjectMocks
   private ShipmentContextRunner shipmentContextRunner;
 
   @Before
   public void setup() {
-    ReflectionTestUtils.setField(shipmentContextRunner, "pollingRate", "1000");
-    ReflectionTestUtils.setField(shipmentContextRunner, "shippedById",
-        UUID.randomUUID().toString());
   }
 
   @Test
-  public void shouldNotInitializeCustomContextForLocalTransferType() {
+  public void shouldInitializeCustomContextForLocalTransferType() throws Exception {
     TransferProperties localTransferProperties = createLocalTransferProperty(TransferType.SHIPMENT);
     when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
         .thenReturn(asList(localTransferProperties));
+    ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
+    when(channelHelper.createChannel(localTransferProperties, applicationContext))
+        .thenReturn(mockContext);
 
     shipmentContextRunner.run();
 
+    verify(channelHelper).createChannel(localTransferProperties, applicationContext);
     Map<UUID, ConfigurableApplicationContext> contexts = Whitebox
         .getInternalState(shipmentContextRunner, "contexts");
 
     ConfigurableApplicationContext context = contexts.get(localTransferProperties.getId());
-    assertNull(context);
+    assertNotNull(context);
   }
 
   @Test
@@ -89,76 +88,65 @@ public class ShipmentContextRunnerTest {
     TransferProperties ftpTransferProperties = createFtpTransferProperty(TransferType.SHIPMENT);
     when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
         .thenReturn(asList(ftpTransferProperties));
+
     ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
-    doNothing().when(mockContext).refresh();
-    StandardEnvironment environment = new StandardEnvironment();
-    when(mockContext.getEnvironment()).thenReturn(environment);
-    whenNew(ClassPathXmlApplicationContext.class)
-        .withArguments(any(String[].class), any(Boolean.class), any(ApplicationContext.class))
+    doNothing().when(mockContext).close();
+    when(channelHelper.createChannel(ftpTransferProperties, applicationContext))
         .thenReturn(mockContext);
 
     shipmentContextRunner.run();
+
+    verify(channelHelper).createChannel(ftpTransferProperties, applicationContext);
 
     Map<UUID, ConfigurableApplicationContext> contexts = Whitebox
         .getInternalState(shipmentContextRunner, "contexts");
 
     ConfigurableApplicationContext context = contexts.get(ftpTransferProperties.getId());
     assertNotNull(context);
-    verify(mockContext).refresh();
   }
 
 
   @Test
-  public void shouldPopulateFtpPropertiesInEnvironment() throws Exception {
-
+  public void reCreateContextShouldCloseExistingContext() throws Exception {
     FtpTransferProperties ftpProps = createFtpTransferProperty(TransferType.SHIPMENT);
     when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
         .thenReturn(asList(ftpProps));
+    // this initializes the context for the first time.
     ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
-    doNothing().when(mockContext).refresh();
-    StandardEnvironment environment = new StandardEnvironment();
-    when(mockContext.getEnvironment()).thenReturn(environment);
-    whenNew(ClassPathXmlApplicationContext.class)
-        .withArguments(any(String[].class), any(Boolean.class), any(ApplicationContext.class))
+    when(channelHelper.createChannel(ftpProps, applicationContext))
         .thenReturn(mockContext);
-    Properties props = mock(Properties.class);
-    whenNew(Properties.class).withNoArguments().thenReturn(props);
-
     shipmentContextRunner.run();
 
-    verify(props).setProperty("host", ftpProps.getServerHost());
-    verify(props).setProperty("user", ftpProps.getUsername());
-    verify(props).setProperty("password", ftpProps.getPassword());
-    verify(props).setProperty("port", ftpProps.getServerPort().toString());
-    verify(props)
-        .setProperty("remote.incoming.directory", ftpProps.getRemoteDirectory() + INCOMING);
-    verify(props).setProperty("remote.error.directory", ftpProps.getRemoteDirectory() + ERROR);
-    verify(props).setProperty("remote.archive.directory", ftpProps.getRemoteDirectory() + ARCHIVE);
-    verify(props).setProperty("local.directory", ftpProps.getLocalDirectory() + INCOMING);
+    shipmentContextRunner.reCreateShipmentChannel(ftpProps);
+    verify(channelHelper, times(2)).createChannel(ftpProps, applicationContext);
+    verify(mockContext).close();
+  }
+
+  @Test
+  public void reCreateContextShouldNotCloseIfContextIsNew() throws Exception {
+    FtpTransferProperties ftpProps = createFtpTransferProperty(TransferType.SHIPMENT);
+    when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
+        .thenReturn(asList(ftpProps));
+    // this initializes the context for the first time.
+    ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
+    when(channelHelper.createChannel(ftpProps, applicationContext))
+        .thenReturn(mockContext);
+    shipmentContextRunner.reCreateShipmentChannel(ftpProps);
+    verify(channelHelper, times(1)).createChannel(ftpProps, applicationContext);
+    verify(mockContext, never()).close();
   }
 
   private FtpTransferProperties createFtpTransferProperty(TransferType transferType) {
     FtpTransferProperties ftpTransferProperties = new FtpTransferProperties();
     ftpTransferProperties.setId(UUID.randomUUID());
-    ftpTransferProperties.setFacilityId(UUID.randomUUID());
     ftpTransferProperties.setTransferType(transferType);
-    ftpTransferProperties.setLocalDirectory("/var/lib/openlmis/shipments/");
-    ftpTransferProperties.setRemoteDirectory("/shipment/files/csv");
-    ftpTransferProperties.setPassiveMode(true);
-    ftpTransferProperties.setProtocol(FtpProtocol.FTP);
-    ftpTransferProperties.setServerHost("localhost");
-    ftpTransferProperties.setUsername("random-user");
-    ftpTransferProperties.setPassword("random-password");
-    ftpTransferProperties.setServerPort(1000);
     return ftpTransferProperties;
   }
 
   private TransferProperties createLocalTransferProperty(TransferType transferType) {
     LocalTransferProperties localTransferProperties = new LocalTransferProperties();
     localTransferProperties.setId(UUID.randomUUID());
-    localTransferProperties.setFacilityId(UUID.randomUUID());
     localTransferProperties.setTransferType(transferType);
-    localTransferProperties.setPath("/var/lib/openlmis/shipments/");
     return localTransferProperties;
   }
 

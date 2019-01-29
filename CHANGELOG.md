@@ -9,6 +9,7 @@ Bug fixes and improvements:
 * [OLMIS-5912](https://openlmis.atlassian.net/browse/OLMIS-3496): Fixed performance issues with GET /api/proofsOfDelivery endpoint.
 * [OLMIS-3773](https://openlmis.atlassian.net/browse/OLMIS-3773): Adjusted facility search by ids after changing return type to page.
 * [OLMIS-5672](https://openlmis.atlassian.net/browse/OLMIS-5672): Accept changes to transfer properties to monitor shipment ftp servers.
+* [OLMIS-5671](https://openlmis.atlassian.net/browse/OLMIS-5671): Shipment file processing supports local file path as well as SFTP servers.
 
 8.0.0 / 2018-12-12
 ==================

@@ -48,6 +48,8 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.security.oauth:spring-security-oauth2"
     compile "org.springframework.integration:spring-integration-ftp"
+    compile "org.springframework.integration:spring-integration-sftp"
+    compile "org.springframework.integration:spring-integration-file"
     compile "org.springframework.integration:spring-integration-core"
     compile "net.sf.jasperreports:jasperreports:6.3.0"
     compile "net.sf.jasperreports:jasperreports-fonts:4.0.0"

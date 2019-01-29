@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.service.shipment;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.NoArgsConstructor;
@@ -65,16 +66,18 @@ public class ShipmentMessageHandler {
   public void process(Message message) throws IOException {
     FileTemplate template = templateService.getFileTemplate(TemplateType.SHIPMENT);
     LOGGER.info("A shipment file received. {}", message.getHeaders().getId());
-
+    File file = (File) message.getPayload();
     try {
       // parse file
-      List<CSVRecord> records = shipmentParser.parse((File) message.getPayload(), template);
+      List<CSVRecord> records = shipmentParser.parse(file, template);
       Shipment shipment = shipmentBuilder.build(template, records);
       shipmentService.save(shipment);
       archiveFile(message, "archiveFtpChannel");
     } catch (RuntimeException exception) {
       LOGGER.warn(exception.getLocalizedMessage(), exception);
       archiveFile(message, "errorChannel");
+    } finally {
+      Files.delete(file.toPath());
     }
   }
 

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.csv.CSVRecord;
@@ -50,7 +51,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CSVRecord.class)
+@PrepareForTest({CSVRecord.class, Files.class, ShipmentMessageHandler.class})
 public class ShipmentMessageHandlerTest {
 
   private static final String NEW_MESSAGE_CSV = "new-message.csv";
@@ -82,8 +83,10 @@ public class ShipmentMessageHandlerTest {
 
   private FileTemplate template;
 
+  File csvFile;
+
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     FileTemplateBuilder templateBuilder = new FileTemplateBuilder();
     FileColumnBuilder columnBuilder = new FileColumnBuilder();
 
@@ -98,6 +101,11 @@ public class ShipmentMessageHandlerTest {
 
     when(context.getBean("errorChannel")).thenReturn(errorChannel);
     when(context.getBean("archiveFtpChannel")).thenReturn(archiveChannel);
+    csvFile = new File(NEW_MESSAGE_CSV);
+    if (!csvFile.exists()) {
+      // create file if it does not exist.
+      csvFile.createNewFile();
+    }
   }
 
   @Test
@@ -105,7 +113,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenThrow(new RuntimeException());
 
     Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+        .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel).send(any());
@@ -116,7 +124,7 @@ public class ShipmentMessageHandlerTest {
     doThrow(new RuntimeException()).when(shipmentBuilder).build(any(), any());
 
     Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+        .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel).send(any());
@@ -130,7 +138,7 @@ public class ShipmentMessageHandlerTest {
         .thenReturn(new ShipmentDataBuilder().build());
     when(shipmentService.save(any())).thenThrow(new RuntimeException());
     Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+        .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel).send(any());
@@ -144,9 +152,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenReturn(records);
     when(shipmentBuilder.build(any(), any()))
         .thenReturn(new ShipmentDataBuilder().build());
-
-    Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+    Message<File> fileMessage = MessageBuilder.withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
     verify(archiveChannel).send(any());
@@ -161,9 +167,8 @@ public class ShipmentMessageHandlerTest {
     List<CSVRecord> records = createParsedData();
     when(shipmentParser.parse(any(), any())).thenReturn(records);
     when(shipmentService.save(shipment)).thenReturn(shipment);
-
     Message<File> fileMessage = MessageBuilder
-        .withPayload(new File(NEW_MESSAGE_CSV)).build();
+        .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
 
