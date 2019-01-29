@@ -122,8 +122,8 @@ public class ProofOfDeliveryService {
   }
 
   private boolean isPodSearchRight(PermissionStringDto permissionString) {
-    return permissionString.getRightName().equals(PODS_MANAGE)
-        || permissionString.getRightName().equals(PODS_VIEW)
-        || permissionString.getRightName().equals(SHIPMENTS_EDIT);
+    return PODS_MANAGE.equals(permissionString.getRightName())
+        || PODS_VIEW.equals(permissionString.getRightName())
+        || SHIPMENTS_EDIT.equals(permissionString.getRightName());
   }
 }
