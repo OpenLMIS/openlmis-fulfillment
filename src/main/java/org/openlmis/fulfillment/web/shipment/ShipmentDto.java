@@ -15,13 +15,18 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static org.openlmis.fulfillment.domain.Shipment.ROWS_WITH_UNRESOLVED_ORDERABLE;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -67,7 +72,6 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   @Setter
   private List<ShipmentLineItemDto> lineItems;
 
-  @Getter
   @Setter
   private Map<String, String> extraData;
 
@@ -108,6 +112,20 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   @JsonIgnore
   public CreationDetails getShipDetails() {
     return new CreationDetails(shippedBy.getId(), shippedDate);
+  }
+
+  @Override
+  public Map<String, String> getExtraData() {
+    return (this.extraData == null) ? null : this.extraData
+        .entrySet().stream()
+        .filter(m -> !(ROWS_WITH_UNRESOLVED_ORDERABLE.equals(m.getKey())))
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+  }
+
+  @JsonRawValue
+  @JsonIgnore
+  public String getRowsWithUnresolvedOrderable() {
+    return (this.extraData == null) ? null : this.extraData.get(ROWS_WITH_UNRESOLVED_ORDERABLE);
   }
 
   @Override

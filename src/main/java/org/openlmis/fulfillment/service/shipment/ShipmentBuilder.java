@@ -15,7 +15,11 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
+import static org.openlmis.fulfillment.domain.Shipment.ROWS_WITH_UNRESOLVED_ORDERABLE;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.apache.commons.csv.CSVRecord;
@@ -24,7 +28,6 @@ import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -73,11 +76,13 @@ public class ShipmentBuilder {
       throw new FulfillmentException("Order not found with code: " + orderIdentifier);
     }
 
-    List<ShipmentLineItem> lineItems = lineItemBuilder.build(template, lines);
+    ImportedShipmentLineItemData result = lineItemBuilder.build(template, lines);
 
+    Map<String, String> extraData = new HashMap<>();
+    extraData.put(ROWS_WITH_UNRESOLVED_ORDERABLE, result.getRowsWithUnresolvedOrderableAsString());
     return new Shipment(order,
         new CreationDetails(shippedById,
-            dateHelper.getCurrentDateTimeWithSystemZone()), null, lineItems, null);
+            dateHelper.getCurrentDateTimeWithSystemZone()), null, result.getLineItems(), extraData);
   }
 
   private FileColumn getOrderIdentifierColumn(FileTemplate template) {

@@ -15,12 +15,17 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.service.ResourceNames;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
@@ -46,6 +51,18 @@ public class ShipmentDtoTest {
     ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
 
     ToStringTestUtils.verify(ShipmentDto.class, shipmentDto);
+  }
+
+  @Test
+  public void shouldGetRowsWithUnknownColumns() {
+    Map<String, String> extraData = new HashMap<>();
+    extraData.put(Shipment.ROWS_WITH_UNRESOLVED_ORDERABLE, "[]");
+    ShipmentDto shipmentDto = new ShipmentDtoDataBuilder()
+        .withExtraData(extraData)
+        .build();
+
+    assertThat(shipmentDto.getRowsWithUnresolvedOrderable(), is("[]"));
+    assertThat(shipmentDto.getExtraData().isEmpty(), is(true));
   }
 
   @Test

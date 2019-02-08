@@ -50,6 +50,8 @@ import org.openlmis.fulfillment.web.ValidationException;
 @ToString
 public class Shipment extends BaseEntity {
 
+  public static final String ROWS_WITH_UNRESOLVED_ORDERABLE = "rowsWithUnresolvedOrderable";
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "orderid", unique = true)
   @Getter

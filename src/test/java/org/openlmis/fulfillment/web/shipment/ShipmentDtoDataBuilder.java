@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.web.shipment;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 
@@ -63,6 +64,11 @@ public class ShipmentDtoDataBuilder {
 
   public ShipmentDtoDataBuilder withoutShippedDate() {
     shipmentDto.setShippedDate(null);
+    return this;
+  }
+
+  public ShipmentDtoDataBuilder withExtraData(Map<String, String> extraData) {
+    shipmentDto.setExtraData(extraData);
     return this;
   }
 

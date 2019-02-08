@@ -26,7 +26,6 @@ import static org.openlmis.fulfillment.util.FileColumnKeyPath.ORDER_COLUMN_PATHS
 import static org.openlmis.fulfillment.util.FileColumnKeyPath.PRODUCT_CODE;
 import static org.openlmis.fulfillment.util.FileColumnKeyPath.QUANTITY_SHIPPED_PATHS;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class ShipmentLineItemBuilder {
    * @param lines data read from the csv.
    * @return List of ShipmentLineItems
    */
-  public List<ShipmentLineItem> build(FileTemplate template, List<CSVRecord> lines) {
+  public ImportedShipmentLineItemData build(FileTemplate template, List<CSVRecord> lines) {
     // find required columns.
     FileColumn orderableColumn = template.findColumn(ORDERABLE_COLUMN_PATHS).orElse(null);
     FileColumn orderColumn = template.findColumn(ORDER_COLUMN_PATHS).orElse(null);
@@ -67,6 +66,7 @@ public class ShipmentLineItemBuilder {
           "Required shipment template columns not found.");
     }
 
+    ImportedShipmentLineItemData result = new ImportedShipmentLineItemData();
     // Initialize and cache variables that would be used repeatedly for each row.
     List<OrderableDto> orderables = orderableService.findAll();
     Map<String, OrderableDto> orderableDtoMap = orderables
@@ -84,12 +84,14 @@ public class ShipmentLineItemBuilder {
     // read the first order identifier to check subsequent order identifiers against it.
     String orderIdentifier = lines.get(0).get(orderColumn.getPosition());
 
-    List<ShipmentLineItem> lineItems = new ArrayList<>();
-
     for (CSVRecord row : lines) {
       validateOrderIdentifier(orderColumn, orderIdentifier, row);
 
       UUID orderableId = extractOrderableId(orderableColumn, row, orderableDtoMap);
+      if (orderableId == null) {
+        result.getRowsWithUnresolvedOrderable().add(row.toMap());
+        continue;
+      }
       String quantityShippedString = row.get(quantityShippedColumn.getPosition());
       validateOrderableAndQuantity(orderableId, quantityShippedString);
 
@@ -97,9 +99,9 @@ public class ShipmentLineItemBuilder {
       Map<String, String> extraData = extractExtraData(extraDataFields, row);
 
       ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped, extraData);
-      lineItems.add(lineItem);
+      result.getLineItems().add(lineItem);
     }
-    return lineItems;
+    return result;
   }
 
   private void validateOrderIdentifier(FileColumn orderColumn, String orderIdentifier,

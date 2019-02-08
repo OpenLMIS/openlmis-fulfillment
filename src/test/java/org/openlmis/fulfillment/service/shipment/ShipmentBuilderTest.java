@@ -38,7 +38,6 @@ import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
@@ -84,8 +83,8 @@ public class ShipmentBuilderTest {
 
     ReflectionTestUtils.setField(builderService, "shippedById",
         SHIPPED_BY_ID);
-    List<ShipmentLineItem> lineItems = new ArrayList<>();
-    when(lineItemBuilder.build(any(), any())).thenReturn(lineItems);
+    ImportedShipmentLineItemData result = new ImportedShipmentLineItemData();
+    when(lineItemBuilder.build(any(), any())).thenReturn(result);
     when(csvRecord.get(0)).thenReturn(ORDER_CODE);
   }
 

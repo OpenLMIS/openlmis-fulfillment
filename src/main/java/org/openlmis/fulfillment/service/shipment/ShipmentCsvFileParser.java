@@ -69,7 +69,7 @@ public class ShipmentCsvFileParser {
         .getFileColumns()
         .stream()
         .sorted(Comparator.comparingLong(FileColumn::getPosition))
-        .map(column -> String.format("%s.%s", column.getNested(), column.getKeyPath()))
+        .map(column -> String.format("%s_%s", column.getNested(), column.getKeyPath()))
         .toArray(String[]::new);
 
     return CSVFormat.DEFAULT.withTrim(true)

@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVRecord;
@@ -33,7 +32,6 @@ import org.openlmis.fulfillment.FileColumnBuilder;
 import org.openlmis.fulfillment.FileTemplateBuilder;
 import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -110,10 +108,10 @@ public class ShipmentLineItemBuilderTest {
 
   @Test
   public void buildShouldMakeALineItem() {
-    List<ShipmentLineItem> lineItems = builder.build(template, asList(csvRecord1));
+    ImportedShipmentLineItemData result = builder.build(template, asList(csvRecord1));
 
-    assertThat(lineItems.size(), is(1));
-    assertThat(lineItems.get(0).getOrderableId().toString(), is(ORDERABLE_ID));
+    assertThat(result.getLineItems().size(), is(1));
+    assertThat(result.getLineItems().get(0).getOrderableId().toString(), is(ORDERABLE_ID));
   }
 
   @Test
@@ -121,18 +119,10 @@ public class ShipmentLineItemBuilderTest {
     template = mockTemplate(FileColumnKeyPath.PRODUCT_CODE);
     when(csvRecord1.get(1)).thenReturn(PRODUCT_CODE);
 
-    List<ShipmentLineItem> lineItems = builder.build(template, asList(csvRecord1));
+    ImportedShipmentLineItemData result = builder.build(template, asList(csvRecord1));
 
-    assertThat(lineItems.size(), is(1));
-    assertThat(lineItems.get(0).getOrderableId().toString(), is(ORDERABLE_ID));
-  }
-
-  @Test(expected = FulfillmentException.class)
-  public void buildShouldThrowErrorTemplateUsesProductCodeAndMissingProductCodeFound() {
-    template = mockTemplate(FileColumnKeyPath.PRODUCT_CODE);
-    when(csvRecord1.get(1)).thenReturn("EROROR_CODE");
-
-    builder.build(template, asList(csvRecord1));
+    assertThat(result.getLineItems().size(), is(1));
+    assertThat(result.getLineItems().get(0).getOrderableId().toString(), is(ORDERABLE_ID));
   }
 
 
@@ -171,13 +161,6 @@ public class ShipmentLineItemBuilderTest {
   @Test(expected = FulfillmentException.class)
   public void throwsExceptionWhenQuantityShippedIsNotNumeric() {
     when(csvRecord1.get(2)).thenReturn("emahoy");
-
-    builder.build(template, asList(csvRecord1));
-  }
-
-  @Test(expected = FulfillmentException.class)
-  public void throwsExceptionWhenOrderableIdIsNotFound() {
-    when(csvRecord1.get(1)).thenReturn(UUID.randomUUID().toString());
 
     builder.build(template, asList(csvRecord1));
   }
