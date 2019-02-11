@@ -52,15 +52,18 @@
   <int-file:outbound-channel-adapter
     channel="archiveFtpChannel"
     directory="${remote.archive.directory}"
+    filename-generator="shipmentArchiveFileNameGenerator"
     id="archiveFtpAdapter">
     <int-file:request-handler-advice-chain>
       <int:retry-advice max-attempts="10"/>
     </int-file:request-handler-advice-chain>
   </int-file:outbound-channel-adapter>
 
-  <int-file:outbound-channel-adapter id="ftpErrorAdaptor"
-    channel="errorChannel" directory="${remote.error.directory}"
-  >
+  <int-file:outbound-channel-adapter
+    id="ftpErrorAdaptor"
+    filename-generator="shipmentArchiveFileNameGenerator"
+    channel="errorChannel"
+    directory="${remote.error.directory}">
     <int-file:request-handler-advice-chain>
       <int:retry-advice max-attempts="10"/>
     </int-file:request-handler-advice-chain>

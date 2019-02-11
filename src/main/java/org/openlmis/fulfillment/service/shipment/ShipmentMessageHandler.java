@@ -63,10 +63,10 @@ public class ShipmentMessageHandler {
    * @param message a file message.
    */
   @Transactional
-  public void process(Message message) throws IOException {
+  public void process(Message<File> message) throws IOException {
     FileTemplate template = templateService.getFileTemplate(TemplateType.SHIPMENT);
     LOGGER.info("A shipment file received. {}", message.getHeaders().getId());
-    File file = (File) message.getPayload();
+    File file = message.getPayload();
     try {
       // parse file
       List<CSVRecord> records = shipmentParser.parse(file, template);
@@ -81,10 +81,10 @@ public class ShipmentMessageHandler {
     }
   }
 
-  private void archiveFile(Message message, String archiveFtpChannel) {
+  private void archiveFile(Message<File> message, String archiveFtpChannel) {
     MessageChannel archiveChannel = (MessageChannel) context.getBean(archiveFtpChannel);
     Message<File> archiveMessage = MessageBuilder
-        .withPayload((File) message.getPayload()).build();
+        .withPayload(message.getPayload()).build();
     archiveChannel.send(archiveMessage);
   }
 

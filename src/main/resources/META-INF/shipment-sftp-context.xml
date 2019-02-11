@@ -68,6 +68,7 @@
     remote-directory="${remote.archive.directory}"
     auto-create-directory="true"
     id="archiveFtpAdapter"
+    remote-filename-generator="shipmentArchiveFileNameGenerator"
     session-factory="ftpClientFactory">
     <int-sftp:request-handler-advice-chain>
       <int:retry-advice max-attempts="10"/>
@@ -77,8 +78,9 @@
   <int-sftp:outbound-channel-adapter id="ftpErrorAdaptor"
     session-factory="ftpClientFactory"
     auto-create-directory="true"
-    channel="errorChannel" remote-directory="${remote.error.directory}"
-  >
+    channel="errorChannel"
+    remote-directory="${remote.error.directory}"
+    remote-filename-generator="shipmentArchiveFileNameGenerator">
     <int-sftp:request-handler-advice-chain>
       <int:retry-advice max-attempts="10"/>
     </int-sftp:request-handler-advice-chain>
