@@ -19,6 +19,7 @@ import static org.openlmis.fulfillment.domain.Shipment.ROWS_WITH_UNRESOLVED_ORDE
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -123,7 +124,7 @@ public final class ShipmentDto implements CreationDetails.Exporter,
   }
 
   @JsonRawValue
-  @JsonIgnore
+  @JsonProperty(access = Access.READ_ONLY)
   public String getRowsWithUnresolvedOrderable() {
     return (this.extraData == null) ? null : this.extraData.get(ROWS_WITH_UNRESOLVED_ORDERABLE);
   }
