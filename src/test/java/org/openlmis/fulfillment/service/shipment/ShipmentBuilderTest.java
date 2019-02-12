@@ -43,12 +43,14 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.PageDto;
+import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.FileColumnKeyPath;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(PowerMockRunner.class)
@@ -119,6 +121,17 @@ public class ShipmentBuilderTest {
     Shipment shipment = builderService.build(template, asList(csvRecord));
 
     assertThat(shipment.getOrder(), is(equalTo(order)));
+  }
+
+  @Test(expected = FulfillmentException.class)
+  public void shouldThrowFulfillmentExceptionWhenShipmentAlreadyExists() {
+    FileTemplate template = mockTemplate(false);
+    when(orderRepository.findByOrderCode(ORDER_CODE)).thenReturn(order);
+    Shipment persistedShipment = new ShipmentDataBuilder().build();
+    when(shipmentRepository.findByOrder(any(), any()))
+        .thenReturn(new PageImpl<>(asList(persistedShipment)));
+
+    builderService.build(template, asList(csvRecord));
   }
 
 
