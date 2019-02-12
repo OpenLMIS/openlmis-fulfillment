@@ -45,10 +45,9 @@
   </bean>
 
   <int-sftp:inbound-channel-adapter id="ftpInboundAdapter"
-    channel="incomingFtpChannel"
+    channel="inboundShipmentFileChannel"
     session-factory="ftpClientFactory"
     filename-pattern="*.csv"
-    preserve-timestamp="true"
     auto-create-local-directory="true"
     delete-remote-files="true"
     remote-directory="${remote.incoming.directory}"
@@ -56,15 +55,15 @@
     <int:poller max-messages-per-poll="10" fixed-rate="${shipment.polling.rate}"/>
   </int-sftp:inbound-channel-adapter>
 
-  <int:service-activator input-channel="incomingFtpChannel"
+  <int:service-activator input-channel="inboundShipmentFileChannel"
     ref="shipmentMessageHandler" method="process"
   />
 
-  <int:channel id="archiveFtpChannel"
+  <int:channel id="outboundShipmentFileArchiveChannel"
     datatype="java.io.File"/>
 
   <int-sftp:outbound-channel-adapter
-    channel="archiveFtpChannel"
+    channel="outboundShipmentFileArchiveChannel"
     remote-directory="${remote.archive.directory}"
     auto-create-directory="true"
     id="archiveFtpAdapter"

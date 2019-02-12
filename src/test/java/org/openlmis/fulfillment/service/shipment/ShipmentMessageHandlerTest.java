@@ -100,7 +100,7 @@ public class ShipmentMessageHandlerTest {
     when(templateService.getFileTemplate(TemplateType.SHIPMENT)).thenReturn(template);
 
     when(context.getBean("errorChannel")).thenReturn(errorChannel);
-    when(context.getBean("archiveFtpChannel")).thenReturn(archiveChannel);
+    when(context.getBean("outboundShipmentFileArchiveChannel")).thenReturn(archiveChannel);
     csvFile = new File(NEW_MESSAGE_CSV);
     if (!csvFile.exists()) {
       // create file if it does not exist.

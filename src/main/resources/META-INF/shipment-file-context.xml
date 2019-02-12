@@ -36,21 +36,21 @@
   <tx:annotation-driven/>
 
   <int-file:inbound-channel-adapter id="ftpInboundAdapter"
-    channel="incomingFtpChannel"
+    channel="inboundShipmentFileChannel"
     filename-pattern="*.csv"
     directory="${remote.incoming.directory}">
     <int:poller max-messages-per-poll="10" fixed-rate="${shipment.polling.rate}"/>
   </int-file:inbound-channel-adapter>
 
-  <int:service-activator input-channel="incomingFtpChannel"
+  <int:service-activator input-channel="inboundShipmentFileChannel"
     ref="shipmentMessageHandler" method="process"
   />
 
-  <int:channel id="archiveFtpChannel"
+  <int:channel id="outboundShipmentFileArchiveChannel"
     datatype="java.io.File"/>
 
   <int-file:outbound-channel-adapter
-    channel="archiveFtpChannel"
+    channel="outboundShipmentFileArchiveChannel"
     directory="${remote.archive.directory}"
     filename-generator="shipmentArchiveFileNameGenerator"
     id="archiveFtpAdapter">

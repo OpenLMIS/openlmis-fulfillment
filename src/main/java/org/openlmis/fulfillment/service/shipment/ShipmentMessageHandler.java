@@ -72,7 +72,7 @@ public class ShipmentMessageHandler {
       List<CSVRecord> records = shipmentParser.parse(file, template);
       Shipment shipment = shipmentBuilder.build(template, records);
       shipmentService.save(shipment);
-      archiveFile(message, "archiveFtpChannel");
+      archiveFile(message, "outboundShipmentFileArchiveChannel");
     } catch (RuntimeException exception) {
       LOGGER.warn(exception.getLocalizedMessage(), exception);
       archiveFile(message, "errorChannel");
