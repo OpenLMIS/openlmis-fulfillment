@@ -80,11 +80,13 @@ public class ShipmentMessageHandlerTest {
   ShipmentService shipmentService;
 
   @Mock
-  ShipmentArchiveFileNameGenerator generator;
+  ShipmentMessageErrorHandler errorHandler;
 
   @InjectMocks
   ShipmentMessageHandler messageHandler;
-  File csvFile;
+
+  private File file;
+
   private FileTemplate template;
 
   @Before
@@ -103,11 +105,18 @@ public class ShipmentMessageHandlerTest {
 
     when(context.getBean("errorChannel")).thenReturn(errorChannel);
     when(context.getBean("outboundShipmentFileArchiveChannel")).thenReturn(archiveChannel);
-    csvFile = new File(NEW_MESSAGE_CSV);
-    if (!csvFile.exists()) {
+    file = new File(NEW_MESSAGE_CSV);
+    if (!file.exists()) {
       // create file if it does not exist.
-      csvFile.createNewFile();
+      file.createNewFile();
     }
+
+    Message<File> mainPayload = MessageBuilder
+        .withPayload(file).build();
+    Message<File> errorLog = MessageBuilder
+        .withPayload(file).build();
+
+    when(errorHandler.extractLogMessages(any(), any())).thenReturn(asList(mainPayload, errorLog));
   }
 
   @Test
@@ -115,7 +124,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenThrow(new RuntimeException());
 
     Message<File> fileMessage = MessageBuilder
-        .withPayload(csvFile).build();
+        .withPayload(file).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel, times(2)).send(any());
@@ -126,7 +135,7 @@ public class ShipmentMessageHandlerTest {
     doThrow(new RuntimeException()).when(shipmentBuilder).build(any(), any());
 
     Message<File> fileMessage = MessageBuilder
-        .withPayload(csvFile).build();
+        .withPayload(file).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel, times(2)).send(any());
@@ -140,7 +149,7 @@ public class ShipmentMessageHandlerTest {
         .thenReturn(new ShipmentDataBuilder().build());
     when(shipmentService.save(any())).thenThrow(new RuntimeException());
     Message<File> fileMessage = MessageBuilder
-        .withPayload(csvFile).build();
+        .withPayload(file).build();
 
     messageHandler.process(fileMessage);
     verify(errorChannel, times(2)).send(any());
@@ -154,7 +163,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenReturn(records);
     when(shipmentBuilder.build(any(), any()))
         .thenReturn(new ShipmentDataBuilder().build());
-    Message<File> fileMessage = MessageBuilder.withPayload(csvFile).build();
+    Message<File> fileMessage = MessageBuilder.withPayload(file).build();
 
     messageHandler.process(fileMessage);
     verify(archiveChannel).send(any());
@@ -170,7 +179,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenReturn(records);
     when(shipmentService.save(shipment)).thenReturn(shipment);
     Message<File> fileMessage = MessageBuilder
-        .withPayload(csvFile).build();
+        .withPayload(file).build();
 
     messageHandler.process(fileMessage);
 

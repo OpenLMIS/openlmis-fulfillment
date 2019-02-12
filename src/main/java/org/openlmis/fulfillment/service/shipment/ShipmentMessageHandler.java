@@ -16,10 +16,7 @@
 package org.openlmis.fulfillment.service.shipment;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.NoArgsConstructor;
@@ -28,7 +25,6 @@ import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.FileTemplateService;
-import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +57,7 @@ public class ShipmentMessageHandler {
   private ApplicationContext context;
 
   @Autowired
-  private ShipmentArchiveFileNameGenerator fileNameGenerator;
+  private ShipmentMessageErrorHandler errorHandler;
 
   /**
    * A message handler endpoint that processes incoming shipment files.
@@ -80,46 +76,9 @@ public class ShipmentMessageHandler {
       shipmentService.save(shipment);
       archiveFile(message, "outboundShipmentFileArchiveChannel");
     } catch (RuntimeException exception) {
-      logException(file, exception);
-    } finally {
-      if (file.exists()) {
-        Files.delete(file.toPath());
-      }
+      List<Message<File>> messages = errorHandler.extractLogMessages(file, exception);
+      messages.forEach(m -> archiveFile(m, "errorChannel"));
     }
-  }
-
-  private void logException(File file, RuntimeException exception) throws IOException {
-    String prefix = fileNameGenerator.generatePrefix();
-    String fileName = prefix + file.getName();
-
-    File originalPayload = new File(
-        file.getParentFile().getParentFile().getPath().concat(File.separator).concat(fileName));
-    Files.move(file.toPath(), originalPayload.toPath());
-
-    Message<File> payload = MessageBuilder.withPayload(originalPayload).build();
-    archiveFile(payload, "errorChannel");
-    Files.delete(originalPayload.toPath());
-
-    File errorLogFile = writeExceptionToFile(exception, file
-        .getParentFile().getPath().concat(File.separator).concat(fileName));
-    Message<File> errorLog = MessageBuilder.withPayload(errorLogFile).build();
-
-    archiveFile(errorLog, "errorChannel");
-    Files.delete(errorLogFile.toPath());
-  }
-
-  private File writeExceptionToFile(RuntimeException exception, String fileName)
-      throws FileNotFoundException {
-    File errorLogFile = new File(fileName + ".log");
-    PrintWriter writer = new PrintWriter(errorLogFile);
-    if (exception instanceof FulfillmentException) {
-      writer.println(exception.getMessage());
-    } else {
-      exception.printStackTrace(writer);
-    }
-    writer.flush();
-    writer.close();
-    return errorLogFile;
   }
 
   private void archiveFile(Message<File> message, String archiveFtpChannel) {
