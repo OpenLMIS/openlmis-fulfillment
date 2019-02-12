@@ -12,6 +12,7 @@ Bug fixes and improvements:
 * [OLMIS-5671](https://openlmis.atlassian.net/browse/OLMIS-5671): Shipment file processing supports local file path as well as SFTP servers.
 * [OLMIS-5675](https://openlmis.atlassian.net/browse/OLMIS-5675): Capture shipment line items with unresolved orderable in extra data. File processing succeeds with unresolved orderable.
 * [OLMIS-5985](https://openlmis.atlassian.net/browse/OLMIS-5985): Archived shipment files are prefixed with date/time to avoid filename collision.
+* [OLMIS-5986](https://openlmis.atlassian.net/browse/OLMIS-5986): For shipment files that did not process successfully, write an error log file in the errors folder that describes why it failed to process. 
 
 8.0.0 / 2018-12-12
 ==================

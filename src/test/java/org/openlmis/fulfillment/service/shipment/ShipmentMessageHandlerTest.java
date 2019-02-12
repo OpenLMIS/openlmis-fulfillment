@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +55,7 @@ import org.springframework.messaging.support.MessageBuilder;
 @PrepareForTest({CSVRecord.class, Files.class, ShipmentMessageHandler.class})
 public class ShipmentMessageHandlerTest {
 
-  private static final String NEW_MESSAGE_CSV = "new-message.csv";
+  private static final String NEW_MESSAGE_CSV = "/tmp/new-message.csv";
   private static final String ORDER_CODE = "O111";
 
   @Mock
@@ -78,12 +79,13 @@ public class ShipmentMessageHandlerTest {
   @Mock
   ShipmentService shipmentService;
 
+  @Mock
+  ShipmentArchiveFileNameGenerator generator;
+
   @InjectMocks
   ShipmentMessageHandler messageHandler;
-
-  private FileTemplate template;
-
   File csvFile;
+  private FileTemplate template;
 
   @Before
   public void setup() throws Exception {
@@ -116,7 +118,7 @@ public class ShipmentMessageHandlerTest {
         .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
-    verify(errorChannel).send(any());
+    verify(errorChannel, times(2)).send(any());
   }
 
   @Test
@@ -127,7 +129,7 @@ public class ShipmentMessageHandlerTest {
         .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
-    verify(errorChannel).send(any());
+    verify(errorChannel, times(2)).send(any());
   }
 
   @Test
@@ -141,7 +143,7 @@ public class ShipmentMessageHandlerTest {
         .withPayload(csvFile).build();
 
     messageHandler.process(fileMessage);
-    verify(errorChannel).send(any());
+    verify(errorChannel, times(2)).send(any());
     verify(archiveChannel, never()).send(any());
   }
 

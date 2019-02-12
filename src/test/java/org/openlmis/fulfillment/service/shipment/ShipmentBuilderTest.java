@@ -40,7 +40,9 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.FileColumnKeyPath;
 import org.powermock.api.mockito.PowerMockito;
@@ -68,6 +70,9 @@ public class ShipmentBuilderTest {
   DateHelper dateHelper;
 
   @Mock
+  ShipmentRepository shipmentRepository;
+
+  @Mock
   ShipmentLineItemBuilder lineItemBuilder;
 
   @InjectMocks
@@ -86,6 +91,7 @@ public class ShipmentBuilderTest {
     ImportedShipmentLineItemData result = new ImportedShipmentLineItemData();
     when(lineItemBuilder.build(any(), any())).thenReturn(result);
     when(csvRecord.get(0)).thenReturn(ORDER_CODE);
+    when(shipmentRepository.findByOrder(any(), any())).thenReturn(new PageDto<>());
   }
 
   @Test(expected = FulfillmentException.class)

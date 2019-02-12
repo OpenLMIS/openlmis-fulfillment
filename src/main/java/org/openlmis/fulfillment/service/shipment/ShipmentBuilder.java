@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
+import static java.lang.String.format;
 import static org.openlmis.fulfillment.domain.Shipment.ROWS_WITH_UNRESOLVED_ORDERABLE;
 
 import java.util.HashMap;
@@ -29,11 +30,14 @@ import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.FileColumnKeyPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +49,9 @@ public class ShipmentBuilder {
 
   @Autowired
   private OrderRepository orderRepository;
+
+  @Autowired
+  private ShipmentRepository shipmentRepository;
 
   @Autowired
   private DateHelper dateHelper;
@@ -73,7 +80,15 @@ public class ShipmentBuilder {
         orderRepository.findOne(UUID.fromString(orderIdentifier));
 
     if (order == null) {
-      throw new FulfillmentException("Order not found with code: " + orderIdentifier);
+      throw new FulfillmentException(
+          format("Order not found with order identifier: %s", orderIdentifier));
+    }
+
+    Page<Shipment> shipment = shipmentRepository.findByOrder(order, new PageRequest(0, 100));
+
+    if (shipment.hasContent()) {
+      throw new FulfillmentException(
+          format("Shipment record for order: %s already exists. ", orderIdentifier));
     }
 
     ImportedShipmentLineItemData result = lineItemBuilder.build(template, lines);
