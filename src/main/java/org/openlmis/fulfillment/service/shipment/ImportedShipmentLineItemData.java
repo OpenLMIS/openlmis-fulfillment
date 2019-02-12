@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +30,11 @@ import org.slf4j.LoggerFactory;
 public class ImportedShipmentLineItemData {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ImportedShipmentLineItemData.class);
+
   @Getter
-  @Setter
   private List<ShipmentLineItem> lineItems = new ArrayList<>();
 
   @Getter
-  @Setter
   private List<Map> rowsWithUnresolvedOrderable = new ArrayList<>();
 
   /**

@@ -49,6 +49,7 @@ public class ShipmentLineItemBuilderTest {
   private static final String ORDERABLE_ID = "e3fc3cf3-da18-44b0-a220-77c985202e06";
   private static final String PRODUCT_CODE = "010101";
   private static final String PRODUCT_CODE_2 = "323232";
+  private static final String PRODUCT_CODE_3 = "423432";
   private static final String ORDER_CODE = "O0001";
   private static final String ORDER_CODE_2 = "O0002";
   private static final String QUANTITY_SHIPPED = "1000";
@@ -125,6 +126,17 @@ public class ShipmentLineItemBuilderTest {
     assertThat(result.getLineItems().get(0).getOrderableId().toString(), is(ORDERABLE_ID));
   }
 
+
+  @Test
+  public void buildShouldGAddRowToUnresolvedWhenProductCodeNotFound() {
+    template = mockTemplate(FileColumnKeyPath.PRODUCT_CODE);
+    when(csvRecord1.get(1)).thenReturn(PRODUCT_CODE_3);
+
+    ImportedShipmentLineItemData result = builder.build(template, asList(csvRecord1));
+
+    assertThat(result.getRowsWithUnresolvedOrderable().size(), is(1));
+    assertThat(result.getLineItems().size(), is(0));
+  }
 
   @Test(expected = FulfillmentException.class)
   public void throwsExceptionWhenTemplateDoesNotContainOrderableField() {
