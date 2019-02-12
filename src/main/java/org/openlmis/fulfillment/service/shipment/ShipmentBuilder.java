@@ -15,8 +15,11 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
-import static java.lang.String.format;
 import static org.openlmis.fulfillment.domain.Shipment.ROWS_WITH_UNRESOLVED_ORDERABLE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REQUIRED_COLUMN;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_LINE_ITEMS_REQUIRED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_DUPLICATE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,13 +67,13 @@ public class ShipmentBuilder {
    */
   public Shipment build(FileTemplate template, List<CSVRecord> lines) {
     if (lines.isEmpty()) {
-      throw new FulfillmentException("Parsed data is empty");
+      throw new FulfillmentException(SHIPMENT_LINE_ITEMS_REQUIRED);
     }
 
     FileColumn orderColumn = getOrderIdentifierColumn(template);
 
     if (orderColumn == null) {
-      throw new FulfillmentException("Template is missing order identifier column.");
+      throw new FulfillmentException(ERROR_MISSING_REQUIRED_COLUMN, "Order Code/Order ID");
     }
     //find the order number
     CSVRecord firstRow = lines.get(0);
@@ -80,15 +83,13 @@ public class ShipmentBuilder {
         orderRepository.findOne(UUID.fromString(orderIdentifier));
 
     if (order == null) {
-      throw new FulfillmentException(
-          format("Order not found with order identifier: %s", orderIdentifier));
+      throw new FulfillmentException(ORDER_NOT_FOUND, orderIdentifier);
     }
 
     Page<Shipment> shipment = shipmentRepository.findByOrder(order, new PageRequest(0, 100));
 
     if (shipment.hasContent()) {
-      throw new FulfillmentException(
-          format("Shipment record for order: %s already exists. ", orderIdentifier));
+      throw new FulfillmentException(SHIPMENT_ORDER_DUPLICATE, orderIdentifier);
     }
 
     ImportedShipmentLineItemData result = lineItemBuilder.build(template, lines);
