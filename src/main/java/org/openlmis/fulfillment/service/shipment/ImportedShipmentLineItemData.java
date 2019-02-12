@@ -15,7 +15,8 @@
 
 package org.openlmis.fulfillment.service.shipment;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @NoArgsConstructor
 public class ImportedShipmentLineItemData {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportedShipmentLineItemData.class);
   @Getter
   @Setter
   private List<ShipmentLineItem> lineItems = new ArrayList<>();
@@ -41,6 +45,28 @@ public class ImportedShipmentLineItemData {
    * @return String
    */
   public String getRowsWithUnresolvedOrderableAsString() {
-    return new Gson().toJson(this.rowsWithUnresolvedOrderable);
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      return mapper.writeValueAsString(this.rowsWithUnresolvedOrderable);
+    } catch (JsonProcessingException exp) {
+      LOGGER.warn(exp.getMessage(), exp);
+      return "";
+    }
+  }
+
+  /**
+   * Adds a line item.
+   */
+  public void addLineItem(ShipmentLineItem lineItem) {
+    lineItems.add(lineItem);
+  }
+
+  /**
+   * Adds a map to the unresolved orderable map.
+   *
+   * @param row map
+   */
+  public void addUnresolvedRowData(Map<String, String> row) {
+    rowsWithUnresolvedOrderable.add(row);
   }
 }

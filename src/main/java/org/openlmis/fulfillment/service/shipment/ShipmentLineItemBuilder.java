@@ -89,7 +89,7 @@ public class ShipmentLineItemBuilder {
 
       UUID orderableId = extractOrderableId(orderableColumn, row, orderableDtoMap);
       if (orderableId == null) {
-        result.getRowsWithUnresolvedOrderable().add(row.toMap());
+        result.addUnresolvedRowData(row.toMap());
         continue;
       }
       String quantityShippedString = row.get(quantityShippedColumn.getPosition());
@@ -99,7 +99,7 @@ public class ShipmentLineItemBuilder {
       Map<String, String> extraData = extractExtraData(extraDataFields, row);
 
       ShipmentLineItem lineItem = new ShipmentLineItem(orderableId, quantityShipped, extraData);
-      result.getLineItems().add(lineItem);
+      result.addLineItem(lineItem);
     }
     return result;
   }
