@@ -26,6 +26,10 @@
       "type": ["string", "null"],
       "title": "notes"
     },
+    "rowsWithUnresolvedOrderable": {
+      "type": ["array", "null"],
+      "title": "rows with unresolved orderable"
+    },
     "lineItems": {
       "type": ["array"],
       "title": "line items",
