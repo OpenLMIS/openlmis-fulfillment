@@ -2,24 +2,24 @@ execution:
   - concurrency: 1
     hold-for: 2m
     scenario: get-orders
-  - concurrency: 1
-    hold-for: 2m
-    scenario: get-order
+#  - concurrency: 1
+#    hold-for: 2m
+#    scenario: get-order
   - concurrency: 1
     hold-for: 2m
     scenario: search-orders
   - concurrency: 1
     hold-for: 2m
     scenario: get-requesting-facilities
-  - concurrency: 1
-    hold-for: 2m
-    scenario: print-order-pdf
-  - concurrency: 1
-    hold-for: 2m
-    scenario: print-order-csv
-  - concurrency: 1
-    hold-for: 2m
-    scenario: export-order-csv
+#  - concurrency: 1
+#    hold-for: 2m
+#    scenario: print-order-pdf
+#  - concurrency: 1
+#    hold-for: 2m
+#    scenario: print-order-csv
+#  - concurrency: 1
+#    hold-for: 2m
+#    scenario: export-order-csv
 
 scenarios:
   get-orders:
@@ -89,9 +89,9 @@ reporting:
     - module: passfail
       criteria:
         Get All Orders is too slow: p90 of GetAllOrders>4500ms
-        Get Order is too slow: p90 of GetOrder>3500ms
+#        Get Order is too slow: p90 of GetOrder>3500ms
         Find Order By Supplying Facility is too slow: p90 of FindOrdersBySupplyingFacility>4000ms
         Get Requesting Facilities is too slow: p90 of GetRequestingFacilities>500ms
-        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>10000ms
-        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>6500ms
-        Export Order As Csv is too slow: p90 of ExportOrderAsCsv>3500ms
+#        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>10000ms
+#        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>6500ms
+#        Export Order As Csv is too slow: p90 of ExportOrderAsCsv>3500ms
