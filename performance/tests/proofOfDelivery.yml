@@ -5,21 +5,21 @@ execution:
   - concurrency: 1
     hold-for: 2m
     scenario: get-pods-by-order-id
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: get-pod
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: get-pod-expand
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: get-pod-expand-nested
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: print-pod-pdf
-#  - concurrency: 1
-#    hold-for: 2m
-#    scenario: print-pod-csv
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-pod
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-pod-expand
+  - concurrency: 1
+    hold-for: 2m
+    scenario: get-pod-expand-nested
+  - concurrency: 1
+    hold-for: 2m
+    scenario: print-pod-pdf
+  - concurrency: 1
+    hold-for: 2m
+    scenario: print-pod-csv
 
 scenarios:
   get-pods:
@@ -91,8 +91,8 @@ reporting:
       criteria:
         Get All PODs is too slow: p90 of GetAllProofsOfDelivery>2000ms
         Get POD By Order Id is too slow: p90 of GetProofsOfDeliveryByOrderId>1000ms
-#        Get POD is too slow: p90 of GetProofOfDelivery>1000ms
-#        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>1400ms
-#        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>5000ms
-#        Print POD As Pdf is too slow: p90 of PrintProofOfDeliveryAsPdf>4000ms
-#        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>3200ms
+        Get POD is too slow: p90 of GetProofOfDelivery>1000ms
+        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>1400ms
+        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>5000ms
+        Print POD As Pdf is too slow: p90 of PrintProofOfDeliveryAsPdf>4000ms
+        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>3200ms

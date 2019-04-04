@@ -272,7 +272,7 @@ ORDER BY
             <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
           </box>
           <textElement verticalAlignment="Middle"/>
-          <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityordered}).toString()]]></textFieldExpression>
+          <textFieldExpression><![CDATA[$F{quantityordered} != null ? $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="620" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="fee7ae94-a0b2-4ffe-84d0-9624f2b76451">
@@ -796,7 +796,7 @@ ORDER BY
           <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
         </box>
         <textElement verticalAlignment="Middle"/>
-        <textFieldExpression><![CDATA[$P{decimalFormat}.format($F{quantityshipped}).toString()]]></textFieldExpression>
+        <textFieldExpression><![CDATA[$F{quantityshipped} != null ? $P{decimalFormat}.format($F{quantityshipped}).toString() : ""]]></textFieldExpression>
       </textField>
       <textField isStretchWithOverflow="true" isBlankWhenNull="true">
         <reportElement stretchType="RelativeToTallestObject" x="700" y="0" width="100" height="20" uuid="3d74a886-184c-4912-9be8-d505876fe76c">
