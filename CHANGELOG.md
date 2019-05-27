@@ -1,4 +1,4 @@
-8.0.2 / WIP
+8.0.2 / 2019-05-27
 ==================
 
 Bug fixes and improvements:
