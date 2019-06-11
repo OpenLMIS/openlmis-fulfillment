@@ -1,3 +1,9 @@
+8.0.3 / WIP
+==================
+
+Improvements:
+* [OLMIS-4128](https://openlmis.atlassian.net/browse/OLMIS-4128): Change maximum page size to max integer.
+
 8.0.2 / 2019-05-27
 ==================
 
