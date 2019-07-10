@@ -92,6 +92,6 @@ reporting:
         Get Order is too slow: p90 of GetOrder>8000ms
         Find Order By Supplying Facility is too slow: p90 of FindOrdersBySupplyingFacility>4000ms
         Get Requesting Facilities is too slow: p90 of GetRequestingFacilities>500ms
-        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>80000ms
-        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>75000ms
+        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>85000ms
+        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>80000ms
         Export Order As Csv is too slow: p90 of ExportOrderAsCsv>140000ms
