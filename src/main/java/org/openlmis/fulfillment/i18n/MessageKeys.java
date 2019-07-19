@@ -190,6 +190,11 @@ public abstract class MessageKeys {
   public static final String ERROR_JAVERS_EXISTING_ENTRY =
       join(ERROR_PREFIX, JAVERS, "entryAlreadyExists");
 
+  public static final String ERROR_SIZE_NULL =
+      join(ERROR_PREFIX,"pageable.size.null");
+  public static final String ERROR_SIZE_NOT_POSITIVE =
+      join(ERROR_PREFIX,"pageable.size.notPositive");
+
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
   }

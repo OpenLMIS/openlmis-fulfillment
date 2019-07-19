@@ -81,6 +81,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private static final String AUDIT_LOG_URL = ID_URL + "/auditLog";
 
   private static final String MESSAGE_KEY = "messageKey";
+  private static final String PARAM_PAGE = "page";
+  private static final String PARAM_SIZE = "size";
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
@@ -146,8 +148,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .queryParam("page", pageable.getPageNumber())
-        .queryParam("size", pageable.getPageSize())
+        .queryParam(PARAM_PAGE, pageable.getPageNumber())
+        .queryParam(PARAM_SIZE, pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -160,14 +162,41 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     verify(proofOfDeliveryService).search(null, null, pageable);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowPaginationWithZeroSize() {
+    Pageable page = new PageRequest(0, 0);
+    restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .queryParam(PARAM_PAGE, page.getPageNumber())
+            .queryParam(PARAM_SIZE, page.getPageSize())
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(400);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowPaginationWithoutSize() {
+    Pageable page = new PageRequest(0, 0);
+    restAssured.given()
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .queryParam(PARAM_PAGE, page.getPageNumber())
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(400);
+  }
+
   @Test
   public void shouldFindProofOfDeliveryBasedOnShipment() {
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("shipmentId", proofOfDelivery.getShipment().getId())
-        .queryParam("page", pageable.getPageNumber())
-        .queryParam("size", pageable.getPageSize())
+        .queryParam(PARAM_PAGE, pageable.getPageNumber())
+        .queryParam(PARAM_SIZE, pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
@@ -192,8 +221,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .queryParam("orderId", proofOfDelivery.getShipment().getOrder().getId())
-        .queryParam("page", pageable.getPageNumber())
-        .queryParam("size", pageable.getPageSize())
+        .queryParam(PARAM_PAGE, pageable.getPageNumber())
+        .queryParam(PARAM_SIZE, pageable.getPageSize())
         .when()
         .get(RESOURCE_URL)
         .then()
