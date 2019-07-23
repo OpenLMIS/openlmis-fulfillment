@@ -6,6 +6,7 @@ Improvements:
 * [OLMIS-6129](https://openlmis.atlassian.net/browse/OLMIS-6129): Added package-lock.json file.
 * [OLMIS-6374](https://openlmis.atlassian.net/browse/OLMIS-6374): Add new profile for audit logging.
 * [OLMIS-6408](https://openlmis.atlassian.net/browse/OLMIS-6408): Added pageable validator.
+* [OLMIS-5746](https://openlmis.atlassian.net/browse/OLMIS-5746): Added missing records proofs_of_delivery and shipments to demo data.
 
 8.0.2 / 2019-05-27
 ==================
