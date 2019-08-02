@@ -51,6 +51,8 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
@@ -95,6 +97,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Override
   ProofOfDelivery generateInstance() {
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .build();
     Order order = new OrderDataBuilder()
         .withoutId()
         .withoutLineItems()
@@ -113,6 +119,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
             new ProofOfDeliveryLineItemDataBuilder()
                 .withoutQuantityAccepted()
                 .withoutQuantityRejected()
+                .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
                 .build()
         ))
         .buildAsNew();
@@ -169,6 +176,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   public void shouldLogChangesInProofOfDelivery() {
     ProofOfDelivery pod = generateInstance();
     ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(lineItem.getOrderable().getId())
+        .withVersionNumber(lineItem.getOrderable().getVersionNumber())
+        .build();
 
     ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
     ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
@@ -176,17 +187,20 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     podDto.setReceivedBy("Test receiver");
     podDto.setDeliveredBy("Test deliverer");
     podDto.setReceivedDate(LocalDate.now());
+
+    ReflectionTestUtils.setField(podDto, "lineItems", Lists.newArrayList(lineItemDto));
+
     pod = ProofOfDelivery.newInstance(podDto);
 
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
     List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
@@ -206,6 +220,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   public void shouldLogChangesInProofOfDeliveryLineItem() {
     ProofOfDelivery pod = generateInstance();
     ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(lineItem.getOrderable().getId())
+        .withVersionNumber(lineItem.getOrderable().getVersionNumber())
+        .build();
 
     ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
     ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
@@ -213,7 +231,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     lineItemDto.setQuantityAccepted(15);
     lineItemDto.setQuantityRejected(5);
@@ -225,7 +243,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
     List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);
@@ -245,6 +263,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   public void shouldLogProofOfDeliveryConfirmation() {
     ProofOfDelivery pod = generateInstance();
     ProofOfDeliveryLineItem lineItem = pod.getLineItems().get(0);
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(lineItem.getOrderable().getId())
+        .withVersionNumber(lineItem.getOrderable().getVersionNumber())
+        .build();
 
     ProofOfDeliveryDto podDto = new ProofOfDeliveryDto();
     ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
@@ -252,15 +274,18 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     podDto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
+
+    ReflectionTestUtils.setField(podDto, "lineItems", Lists.newArrayList(lineItemDto));
+
     pod = ProofOfDelivery.newInstance(podDto);
 
     proofOfDeliveryRepository.save(pod);
 
     pod.export(podDto);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderableDto);
 
     List<CdoSnapshot> podSnapshots = getSnapshots(pod.getId(), ProofOfDelivery.class);
     List<CdoSnapshot> lineSnapshots = getSnapshots(lineItem.getId(), ProofOfDeliveryLineItem.class);

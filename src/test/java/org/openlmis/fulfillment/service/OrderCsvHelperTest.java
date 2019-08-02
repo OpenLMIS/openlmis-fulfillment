@@ -57,7 +57,7 @@ public class OrderCsvHelperTest {
 
   private static final String ORDER = "order";
   private static final String LINE_ITEM = "lineItem";
-  private static final String ORDERABLE = "orderableId";
+  private static final String ORDERABLE = "orderable";
 
   private static final String ORDER_NUMBER = "Order number";
   private static final String PRODUCT_CODE = "Product code";
@@ -92,7 +92,7 @@ public class OrderCsvHelperTest {
     when(periodReferenceDataService.findOne(periodId)).thenReturn(createPeriod());
 
     UUID productId = order.getOrderLineItems()
-        .get(0).getOrderableId();
+        .get(0).getOrderable().getId();
     when(orderableReferenceDataService.findOne(productId)).thenReturn(createProduct());
   }
 
@@ -144,7 +144,7 @@ public class OrderCsvHelperTest {
   public void shouldExportOrderLineItemFields() throws IOException {
     List<FileColumn> fileColumns = new ArrayList<>();
     fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
-        true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
+        true, 1, null, LINE_ITEM, "orderable", null, null, null));
     fileColumns.add(new FileColumn(true, "header.quantity.ordered", ORDERED_QUANTITY,
         true, 2, null, LINE_ITEM, "orderedQuantity", null, null, null));
 
@@ -156,7 +156,7 @@ public class OrderCsvHelperTest {
     OrderLineItem lineItem = order.getOrderLineItems().get(0);
     assertThat(
         csv,
-        startsWith(lineItem.getOrderableId() + "," + lineItem.getOrderedQuantity())
+        startsWith(lineItem.getOrderable() + "," + lineItem.getOrderedQuantity())
     );
   }
 
@@ -260,10 +260,12 @@ public class OrderCsvHelperTest {
 
   private Order createOrder() {
     OrderLineItem orderLineItem1 = new OrderLineItemDataBuilder()
+        .withOrderable(UUID.randomUUID(), 1L)
         .withRandomOrderedQuantity()
         .build();
 
     OrderLineItem orderLineItem2 = new OrderLineItemDataBuilder()
+        .withOrderable(UUID.randomUUID(), 1L)
         .withOrderedQuantity(0L)
         .build();
 

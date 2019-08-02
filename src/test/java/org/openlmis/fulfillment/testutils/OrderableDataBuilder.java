@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.testutils;
 
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -22,12 +23,15 @@ import java.util.UUID;
 import org.openlmis.fulfillment.service.referencedata.DispensableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramOrderableDto;
+import org.openlmis.fulfillment.web.util.MetadataDto;
 
 public class OrderableDataBuilder {
 
   private static int instanceNumber = 0;
 
   private UUID id;
+  private String versionNumber;
+  private ZonedDateTime lastUpdated;
   private String productCode;
   private String fullProductName;
   private long netContent;
@@ -44,6 +48,8 @@ public class OrderableDataBuilder {
     instanceNumber++;
 
     id = UUID.randomUUID();
+    versionNumber = "1";
+    lastUpdated = ZonedDateTime.now();
     productCode = "P" + instanceNumber;
     fullProductName = "product" + instanceNumber;
     netContent = 10;
@@ -59,7 +65,8 @@ public class OrderableDataBuilder {
    */
   public OrderableDto build() {
     OrderableDto orderable = new OrderableDto(productCode, fullProductName, netContent,
-        packRoundingThreshold, roundToZero, programs, dispensable, extraData);
+        packRoundingThreshold, roundToZero, programs, dispensable, extraData,
+        new MetadataDto(versionNumber, lastUpdated));
     orderable.setId(id);
     return orderable;
   }
@@ -73,4 +80,20 @@ public class OrderableDataBuilder {
     this.netContent = netContent;
     return this;
   }
+
+  public OrderableDataBuilder withVersionNumber(Long versionNumber) {
+    this.versionNumber = versionNumber.toString();
+    return this;
+  }
+
+  public OrderableDataBuilder withoutVersionNumber() {
+    this.versionNumber = null;
+    return this;
+  }
+
+  public OrderableDataBuilder withProductCode(String productCode) {
+    this.productCode = productCode;
+    return this;
+  }
+
 }

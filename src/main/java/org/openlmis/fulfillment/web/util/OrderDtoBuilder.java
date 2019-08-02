@@ -62,7 +62,7 @@ public class OrderDtoBuilder {
    * @return new instance of {@link OrderDto}. {@code null} if passed argument is {@code
    * null}.
    */
-  public OrderDto build(Order order, Map<UUID, OrderableDto> orderables,
+  public OrderDto build(Order order, Map<VersionIdentityDto, OrderableDto> orderables,
       Map<UUID, FacilityDto> facilities, Map<UUID, ProgramDto> programs,
       Map<UUID, ProcessingPeriodDto> periods, Map<UUID, UserDto> users) {
     XLOGGER.entry(order, orderables, facilities, programs, periods, users);

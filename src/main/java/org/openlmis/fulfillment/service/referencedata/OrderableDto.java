@@ -26,6 +26,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.web.util.BaseDto;
+import org.openlmis.fulfillment.web.util.MetadataDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Getter
 @Setter
@@ -44,9 +46,20 @@ public class OrderableDto extends BaseDto {
   private Set<ProgramOrderableDto> programs;
   private DispensableDto dispensable;
   private Map<String, String> extraData;
+  private MetadataDto meta = new MetadataDto();
 
   @JsonIgnore
   public boolean useVvm() {
     return null != extraData && parseBoolean(extraData.get(USE_VVM));
+  }
+
+  @JsonIgnore
+  public Long getVersionNumber() {
+    return Long.valueOf(meta.getVersionNumber());
+  }
+
+  @JsonIgnore
+  public VersionIdentityDto getIdentity() {
+    return new VersionIdentityDto(getId(), getVersionNumber());
   }
 }

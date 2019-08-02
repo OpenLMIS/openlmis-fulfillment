@@ -100,7 +100,8 @@ public class OrderDtoBuilderTest {
 
   @Test
   public void shouldBuildDtoFromOrderWithProvidedResources() {
-    Map<UUID, OrderableDto> orderables = ImmutableMap.of(orderableId, orderableDto);
+    Map<VersionIdentityDto, OrderableDto> orderables = ImmutableMap.of(
+        new VersionIdentityDto(orderableId, 1L), orderableDto);
     when(orderExportHelper
         .exportToDtos(lineItems, orderables))
         .thenReturn(lineItemDtos);

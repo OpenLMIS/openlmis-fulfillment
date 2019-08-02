@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,7 +30,6 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Shipment;
-
 
 @ToString
 @NoArgsConstructor
@@ -51,6 +49,7 @@ public final class ProofOfDeliveryDto
   @Setter
   private ProofOfDeliveryStatus status;
 
+  @Setter
   private List<ProofOfDeliveryLineItemDto> lineItems;
 
   @Getter
@@ -79,24 +78,8 @@ public final class ProofOfDeliveryDto
   }
 
   @Override
-  public void setLineItems(List<ProofOfDeliveryLineItem> lineItems) {
-    this.lineItems = lineItems
-        .stream()
-        .map(this::createLine)
-        .collect(Collectors.toList());
-  }
-
-  @Override
   public List<ProofOfDeliveryLineItem.Importer> getLineItems() {
     return null == lineItems ? null : new ArrayList<>(lineItems);
   }
 
-  private ProofOfDeliveryLineItemDto createLine(ProofOfDeliveryLineItem line) {
-    ProofOfDeliveryLineItemDto lineDto = new ProofOfDeliveryLineItemDto();
-    lineDto.setServiceUrl(serviceUrl);
-
-    line.export(lineDto);
-
-    return lineDto;
-  }
 }

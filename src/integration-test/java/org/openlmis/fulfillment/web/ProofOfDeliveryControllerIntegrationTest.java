@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,19 +37,25 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.ImmutableSet;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRParameter;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
+import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
@@ -57,12 +64,16 @@ import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ProofOfDeliveryService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
+import org.openlmis.fulfillment.web.util.ProofOfDeliveryLineItemDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -114,11 +125,19 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   @MockBean
   private JasperReportsViewService jasperReportsViewService;
 
+  @SpyBean
+  private OrderableReferenceDataService orderableReferenceDataService;
+
   @Value("${service.url}")
   private String serviceUrl;
 
-  private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
+  private ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItemDataBuilder().build();
+  private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder()
+      .withLineItems(singletonList(lineItem))
+      .build();
   private Pageable pageable = new PageRequest(0, 10);
+  private List<OrderableDto> orderables = new ArrayList<>();
+  private OrderableDto orderableDto;
 
   @Before
   public void setUp() {
@@ -141,6 +160,17 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willReturn(ImmutableSet.of(PermissionStringDto.create(
             PODS_MANAGE, proofOfDelivery.getReceivingFacilityId(), proofOfDelivery.getProgramId()
         )));
+
+    orderables = proofOfDelivery.getLineItems()
+        .stream()
+        .map(item -> new OrderableDataBuilder()
+            .withId(item.getOrderable().getId())
+            .withVersionNumber(item.getOrderable().getVersionNumber())
+            .build())
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willReturn(orderables);
   }
 
   @Test
@@ -579,11 +609,22 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   private ProofOfDeliveryDto createDto() {
     ProofOfDeliveryDto dto = new ProofOfDeliveryDto();
+    orderableDto = orderables.get(0);
+    List<ProofOfDeliveryLineItemDto> lineItemsDtos = exportToDto(lineItem, orderableDto);
     dto.setServiceUrl(serviceUrl);
-
+    dto.setLineItems(lineItemsDtos);
     proofOfDelivery.export(dto);
 
     return dto;
+  }
+
+  private List<ProofOfDeliveryLineItemDto> exportToDto(ProofOfDeliveryLineItem lineItem,
+      OrderableDto orderable) {
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+    lineItemDto.setServiceUrl(serviceUrl);
+    lineItem.export(lineItemDto, orderable);
+
+    return singletonList(lineItemDto);
   }
 
 }

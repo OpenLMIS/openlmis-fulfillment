@@ -15,14 +15,21 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
 @Table(name = "shipment_draft_line_items")
@@ -31,9 +38,13 @@ import org.javers.core.metamodel.annotation.TypeName;
 @ToString
 public class ShipmentDraftLineItem extends BaseEntity {
 
-  @Type(type = UUID_TYPE)
-  @Column(nullable = false)
-  private UUID orderableId;
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
+  })
+  @Getter
+  private VersionEntityReference orderable;
 
   @Type(type = UUID_TYPE)
   private UUID lotId;
@@ -50,8 +61,16 @@ public class ShipmentDraftLineItem extends BaseEntity {
    * @return new instance of shipment draft line item.
    */
   protected static ShipmentDraftLineItem newInstance(ShipmentLineItem.Importer importer) {
+    VersionIdentityDto orderableDto = importer.getOrderableIdentity();
+
+    VersionEntityReference orderable = Optional
+        .ofNullable(orderableDto)
+        .map(item -> new VersionEntityReference(orderableDto.getId(),
+            orderableDto.getVersionNumber()))
+        .orElse(null);
+
     ShipmentDraftLineItem shipmentLineItem = new ShipmentDraftLineItem(
-        importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped());
+        orderable, importer.getLotId(), importer.getQuantityShipped());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
   }
@@ -63,7 +82,7 @@ public class ShipmentDraftLineItem extends BaseEntity {
    * @param newItem new item to update from.
    */
   public void updateFrom(ShipmentDraftLineItem newItem) {
-    this.orderableId = newItem.orderableId;
+    this.orderable = newItem.orderable;
     this.lotId = newItem.lotId;
     this.quantityShipped = newItem.quantityShipped;
   }
@@ -72,7 +91,7 @@ public class ShipmentDraftLineItem extends BaseEntity {
    * Returns a copy of line item.
    */
   public ShipmentDraftLineItem copy() {
-    ShipmentDraftLineItem clone = new ShipmentDraftLineItem(orderableId, lotId, quantityShipped);
+    ShipmentDraftLineItem clone = new ShipmentDraftLineItem(orderable, lotId, quantityShipped);
     clone.setId(id);
 
     return clone;
@@ -82,9 +101,9 @@ public class ShipmentDraftLineItem extends BaseEntity {
    * Exports data from the given shipment draft to the instance that implement
    * {@link ShipmentLineItem.Exporter} interface.
    */
-  public void export(ShipmentLineItem.Exporter exporter) {
+  public void export(ShipmentLineItem.Exporter exporter, OrderableDto orderableDto) {
     exporter.setId(getId());
-    exporter.setOrderableId(orderableId);
+    exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
   }

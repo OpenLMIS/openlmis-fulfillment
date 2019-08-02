@@ -171,7 +171,7 @@ public class ShipmentDraftController extends BaseController {
     } else {
       profiler.start("UPDATE_AND_SAVE_DRAFT");
       existingDraft.updateFrom(newDraft);
-      draft = repository.save(existingDraft);
+      draft = repository.save(newDraft);
     }
 
     profiler.start("CREATE_DTO");

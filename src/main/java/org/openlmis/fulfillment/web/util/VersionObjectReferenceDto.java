@@ -13,44 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.web.util;
 
-import static java.util.stream.Collectors.toList;
-
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class DummyProofOfDeliveryDto
-    implements ProofOfDelivery.Importer, ProofOfDelivery.Exporter {
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public class VersionObjectReferenceDto extends ObjectReferenceDto {
 
-  private UUID id;
-  private Identifiable shipment;
-  private ProofOfDeliveryStatus status;
-  private List<ProofOfDeliveryLineItem.Importer> lineItems;
-  private String receivedBy;
-  private String deliveredBy;
-  private LocalDate receivedDate;
+  @Getter
+  @Setter
+  private Long versionNumber;
 
-  DummyProofOfDeliveryDto(ProofOfDelivery pod) {
-    this(
-        pod.getId(), pod.getShipment(), pod.getStatus(),
-        pod.getLineItems().stream().map(DummyProofOfDeliveryLineItemDto::new).collect(toList()),
-        pod.getReceivedBy(), pod.getDeliveredBy(), pod.getReceivedDate()
-    );
-  }
-
-  @Override
-  public void setShipment(Shipment shipment) {
-    this.shipment = shipment;
+  public VersionObjectReferenceDto(UUID id, String serviceUrl, String resourceName,
+      Long versionNumber) {
+    super(id, serviceUrl, resourceName);
+    this.versionNumber = versionNumber;
   }
 
 }

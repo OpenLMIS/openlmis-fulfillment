@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
@@ -27,6 +28,9 @@ import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.util.OrderLineItemDto;
 
 public class OrderLineItemTest {
+
+  private UUID orderableId = UUID.randomUUID();
+  private Long orderableVersionNumber = 1L;
 
   @Test
   public void shouldExportToDto() {
@@ -41,9 +45,12 @@ public class OrderLineItemTest {
 
   @Test
   public void shouldCreateNewInstance() {
-    OrderableDto orderable = new OrderableDataBuilder().build();
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withId(orderableId)
+        .withVersionNumber(orderableVersionNumber)
+        .build();
     OrderLineItem expected = new OrderLineItemDataBuilder()
-        .withOrderableId(orderable.getId())
+        .withOrderable(orderable.getId(), orderable.getVersionNumber())
         .build();
 
     OrderLineItemDto dto = new OrderLineItemDto();
@@ -54,7 +61,7 @@ public class OrderLineItemTest {
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
-    assertEquals(expected.getOrderableId(), actual.getOrderableId());
+    assertEquals(expected.getOrderable(), actual.getOrderable());
   }
 
   @Test
@@ -70,7 +77,7 @@ public class OrderLineItemTest {
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getOrderedQuantity(), actual.getOrderedQuantity());
-    assertNull(actual.getOrderableId());
+    assertNull(actual.getOrderable());
   }
 
   @Test

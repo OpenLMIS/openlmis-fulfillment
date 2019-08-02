@@ -27,6 +27,7 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -118,15 +119,15 @@ public class StockEventBuilder {
   }
 
   private List<StockEventLineItemDto> getLineItems(Shipment shipment, Profiler profiler) {
-    profiler.start("GET_ORDERABLE_IDS");
-    Set<UUID> orderableIds = shipment
+    profiler.start("GET_ORDERABLE_IDENTITIES");
+    Set<VersionEntityReference> orderableIdentities = shipment
         .getLineItems()
         .stream()
-        .map(ShipmentLineItem::getOrderableId)
+        .map(ShipmentLineItem::getOrderable)
         .collect(Collectors.toSet());
 
-    profiler.start("GET_ORDERABLES_BY_IDS");
-    Map<UUID, OrderableDto> orderables = getOrderables(orderableIds);
+    profiler.start("GET_ORDERABLES_BY_IDENTITIES");
+    Map<VersionIdentityDto, OrderableDto> orderables = getOrderables(orderableIdentities);
 
     profiler.start("GET_DESTINATION_ID");
     UUID destinationId = getDestinationId(
@@ -145,15 +146,15 @@ public class StockEventBuilder {
 
   private List<StockEventLineItemDto> getLineItems(ProofOfDelivery proofOfDelivery,
       Profiler profiler) {
-    profiler.start("GET_ORDERABLE_IDS");
-    Set<UUID> orderableIds = proofOfDelivery
+    profiler.start("GET_ORDERABLE_IDENTITIES");
+    Set<VersionEntityReference> orderableIdentities = proofOfDelivery
         .getLineItems()
         .stream()
-        .map(ProofOfDeliveryLineItem::getOrderableId)
+        .map(ProofOfDeliveryLineItem::getOrderable)
         .collect(Collectors.toSet());
 
-    profiler.start("GET_ORDERABLES_BY_IDS");
-    Map<UUID, OrderableDto> orderables = getOrderables(orderableIds);
+    profiler.start("GET_ORDERABLES_BY_IDENTITIES");
+    Map<VersionIdentityDto, OrderableDto> orderables = getOrderables(orderableIdentities);
 
     profiler.start("GET_SOURCE_ID");
     UUID sourceId = getSourceId(
@@ -171,44 +172,60 @@ public class StockEventBuilder {
   }
 
   private StockEventLineItemDto createLineItem(ShipmentLineItem lineItem,
-      Map<UUID, OrderableDto> orderables, UUID destinationId) {
+      Map<VersionIdentityDto, OrderableDto> orderables, UUID destinationId) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(dateHelper.getCurrentDate());
     dto.setDestinationId(destinationId);
 
-    lineItem.export(dto);
-    convertQuantityToDispensingUnits(dto, orderables);
+    final OrderableDto orderableDto = orderables.get(
+        new VersionIdentityDto(lineItem.getOrderable()));
+
+    dto.setOrderableId(orderableDto.getId());
+    lineItem.export(dto, orderableDto);
+    convertQuantityToDispensingUnits(dto, orderableDto, orderables);
 
     return dto;
   }
 
   private StockEventLineItemDto createLineItem(ProofOfDelivery proofOfDelivery,
-      ProofOfDeliveryLineItem lineItem, Map<UUID, OrderableDto> orderables, UUID sourceId) {
+      ProofOfDeliveryLineItem lineItem, Map<VersionIdentityDto, OrderableDto> orderables,
+      UUID sourceId) {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(proofOfDelivery.getReceivedDate());
     dto.setSourceId(sourceId);
     dto.setReasonId(configurationSettingService.getTransferInReasonId());
 
-    lineItem.export(dto);
-    convertQuantityToDispensingUnits(dto, orderables);
+    final OrderableDto orderableDto = orderables.get(
+        new VersionIdentityDto(lineItem.getOrderable()));
+
+    dto.setOrderableId(orderableDto.getId());
+    lineItem.export(dto, orderableDto);
+    convertQuantityToDispensingUnits(dto, orderableDto, orderables);
 
     return dto;
   }
 
-  private Map<UUID, OrderableDto> getOrderables(Set<UUID> orderableUuids) {
+  private Map<VersionIdentityDto, OrderableDto> getOrderables(
+      Set<VersionEntityReference> orderableIdentities) {
     return orderableReferenceDataService
-        .findByIds(orderableUuids)
+        .findByIdentities(orderableIdentities)
         .stream()
-        .collect(Collectors.toMap(OrderableDto::getId, orderable -> orderable));
+        .collect(Collectors.toMap(OrderableDto::getIdentity, orderable -> orderable));
   }
 
   private void convertQuantityToDispensingUnits(StockEventLineItemDto dto,
-                                                Map<UUID, OrderableDto> orderables) {
-    orderables.computeIfPresent(dto.getOrderableId(), (id, orderable) -> {
-      Long netContent = orderables.get(dto.getOrderableId()).getNetContent();
-      dto.setQuantity((int) (dto.getQuantity() * netContent));
-      return orderable;
-    });
+      OrderableDto orderableDto, Map<VersionIdentityDto, OrderableDto> orderables) {
+    VersionIdentityDto dtoIdentifier = new VersionIdentityDto(
+        dto.getOrderableId(), orderableDto.getVersionNumber());
+
+    orderables.computeIfPresent(dtoIdentifier,
+        (identity, orderable) -> {
+        Long netContent = orderables.get(new VersionIdentityDto(
+            dto.getOrderableId(), orderable.getVersionNumber())).getNetContent();
+        dto.setQuantity((int) (dto.getQuantity() * netContent));
+        return orderable;
+      });
+
   }
 
   private UUID getDestinationId(UUID source, UUID destination, UUID programId) {

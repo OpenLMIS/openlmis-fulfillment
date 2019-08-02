@@ -15,12 +15,16 @@
 
 package org.openlmis.fulfillment.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,9 +34,26 @@ public class DummyShipmentLineItemDto
     implements ShipmentLineItem.Importer, ShipmentLineItem.Exporter {
 
   private UUID id;
-  private UUID orderableId;
+  private OrderableDto orderable;
   private UUID lotId;
   private Long quantityShipped;
   private Map<String, String> extraData;
+
+  @Override
+  @JsonIgnore
+  public void setOrderable(OrderableDto orderableDto) {
+    if (orderableDto != null) {
+      this.orderable = orderableDto;
+    }
+  }
+
+  @Override
+  @JsonIgnore
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
+        .orElse(null);
+  }
 
 }

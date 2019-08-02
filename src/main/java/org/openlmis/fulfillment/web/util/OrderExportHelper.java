@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -80,24 +81,24 @@ public class OrderExportHelper {
    * @return list of OrderLineItemDtos
    */
   public List<OrderLineItemDto> exportToDtos(List<OrderLineItem> lineItems,
-                                                   Map<UUID, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     XLOGGER.entry(lineItems);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEMS_TO_DTOS");
     profiler.setLogger(XLOGGER);
 
-    Map<UUID, OrderableDto> orderablesForLines;
+    Map<VersionIdentityDto, OrderableDto> orderablesForLines;
     if (orderables == null) {
-      profiler.start("GET_ORDERABLE_IDS_FROM_LINE_ITEMS");
-      Set<UUID> orderableIds = new HashSet<>(lineItems.size());
+      profiler.start("GET_ORDERABLE_IDENTITIES_FROM_LINE_ITEMS");
+      Set<VersionEntityReference> orderableIdentities = new HashSet<>(lineItems.size());
       for (OrderLineItem lineItem : lineItems) {
-        orderableIds.add(lineItem.getOrderableId());
+        orderableIdentities.add(lineItem.getOrderable());
       }
 
-      profiler.start("FIND_ORDERABLES_BY_IDS");
+      profiler.start("FIND_ORDERABLES_BY_IDENTITIES");
       orderablesForLines =
-          orderableReferenceDataService.findByIds(orderableIds)
+          orderableReferenceDataService.findByIdentities(orderableIdentities)
               .stream()
-              .collect(Collectors.toMap(OrderableDto::getId, orderable -> orderable));
+              .collect(Collectors.toMap(OrderableDto::getIdentity, orderable -> orderable));
 
     } else {
       orderablesForLines = orderables;
@@ -159,13 +160,14 @@ public class OrderExportHelper {
   }
 
   private OrderLineItemDto exportToDto(OrderLineItem lineItem,
-                                             Map<UUID, OrderableDto> orderables) {
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     XLOGGER.entry(lineItem, orderables);
     Profiler profiler = new Profiler("EXPORT_LINE_ITEM_TO_DTO");
     profiler.setLogger(XLOGGER);
 
     profiler.start("GET_LINE_ITEM_ORDERABLE_FROM_ORDERABLES");
-    final OrderableDto orderableDto = orderables.get(lineItem.getOrderableId());
+    final OrderableDto orderableDto = orderables
+        .get(new VersionIdentityDto(lineItem.getOrderable()));
 
     profiler.start("CONSTRUCT_LINE_ITEM_DTO");
     OrderLineItemDto dto = new OrderLineItemDto();

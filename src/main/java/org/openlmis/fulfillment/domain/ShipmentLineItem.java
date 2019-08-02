@@ -16,9 +16,13 @@
 package org.openlmis.fulfillment.domain;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import lombok.AccessLevel;
@@ -27,6 +31,8 @@ import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
 @Table(name = "shipment_line_items")
@@ -35,10 +41,13 @@ import org.javers.core.metamodel.annotation.TypeName;
 @ToString
 public class ShipmentLineItem extends BaseEntity {
 
-  @Type(type = UUID_TYPE)
-  @Column(nullable = false)
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
+  })
   @Getter
-  private UUID orderableId;
+  private VersionEntityReference orderable;
 
   @Type(type = UUID_TYPE)
   @Getter
@@ -57,12 +66,17 @@ public class ShipmentLineItem extends BaseEntity {
   private ShipmentLineItem() {
   }
 
-  public ShipmentLineItem(UUID orderableId, Long quantityShipped) {
-    this(orderableId, null, quantityShipped, null);
+  public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped) {
+    this(orderable, null, quantityShipped, null);
   }
 
-  public ShipmentLineItem(UUID orderableId, Long quantityShipped, Map<String, String> extraData) {
-    this(orderableId, null, quantityShipped, extraData);
+  public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped,
+      Map<String, String> extraData) {
+    this(orderable, null, quantityShipped, extraData);
+  }
+
+  public UUID getOrderableId() {
+    return this.orderable.getId();
   }
 
   /**
@@ -72,8 +86,16 @@ public class ShipmentLineItem extends BaseEntity {
    * @return new instance of shipment line item.
    */
   protected static ShipmentLineItem newInstance(Importer importer) {
+    VersionIdentityDto orderableDto = importer.getOrderableIdentity();
+
+    VersionEntityReference orderable = Optional
+        .ofNullable(orderableDto)
+        .map(item -> new VersionEntityReference(orderableDto.getId(),
+            orderableDto.getVersionNumber()))
+        .orElse(null);
+
     ShipmentLineItem shipmentLineItem = new ShipmentLineItem(
-        importer.getOrderableId(), importer.getLotId(), importer.getQuantityShipped(),
+        orderable, importer.getLotId(), importer.getQuantityShipped(),
         importer.getExtraData());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
@@ -90,9 +112,9 @@ public class ShipmentLineItem extends BaseEntity {
    * Exports data from the given shipment to the instance that implement {@link Exporter}
    * interface.
    */
-  public void export(Exporter exporter) {
+  public void export(Exporter exporter, OrderableDto orderableDto) {
     exporter.setId(getId());
-    exporter.setOrderableId(orderableId);
+    exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
     exporter.setExtraData(extraData);
@@ -102,7 +124,7 @@ public class ShipmentLineItem extends BaseEntity {
    * Returns a copy of line item.
    */
   public ShipmentLineItem copy() {
-    ShipmentLineItem clone = new ShipmentLineItem(orderableId, lotId, quantityShipped, extraData);
+    ShipmentLineItem clone = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
     clone.setId(id);
 
     return clone;
@@ -112,7 +134,7 @@ public class ShipmentLineItem extends BaseEntity {
 
     void setId(UUID id);
 
-    void setOrderableId(UUID orderableId);
+    void setOrderable(OrderableDto orderable);
 
     void setLotId(UUID lotId);
 
@@ -125,7 +147,7 @@ public class ShipmentLineItem extends BaseEntity {
 
     UUID getId();
 
-    UUID getOrderableId();
+    VersionIdentityDto getOrderableIdentity();
 
     UUID getLotId();
 

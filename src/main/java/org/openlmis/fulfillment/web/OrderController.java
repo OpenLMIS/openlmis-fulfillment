@@ -360,7 +360,7 @@ public class OrderController extends BaseController {
       List<ShipmentLineItem> items = order
           .getOrderLineItems()
           .stream()
-          .map(line -> new ShipmentLineItem(line.getOrderableId(), line.getOrderedQuantity()))
+          .map(line -> new ShipmentLineItem(line.getOrderable(), line.getOrderedQuantity()))
           .collect(Collectors.toList());
 
       Shipment shipment = new Shipment(

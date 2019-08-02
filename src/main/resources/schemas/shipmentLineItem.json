@@ -6,7 +6,7 @@
   "properties": {
     "orderable": {
       "type": ["object"],
-      "$ref": "referenceObjectDto.json",
+      "$ref": "versionObjectReference.json",
       "title": "orderable"
     },
     "lot": {

@@ -447,7 +447,7 @@ public class OrderServiceTest {
     OrderLineItem expectedLineItem = expected.getOrderLineItems().iterator().next();
 
     assertEquals(expectedLineItem.getOrderedQuantity(), actualLineItem.getOrderedQuantity());
-    assertEquals(expectedLineItem.getOrderableId(), actualLineItem.getOrderableId());
+    assertEquals(expectedLineItem.getOrderable(), actualLineItem.getOrderable());
 
     StatusChange actualStatusChange = actual.getStatusChanges().iterator().next();
     StatusChange expectedStatusChange = expected.getStatusChanges().iterator().next();
@@ -472,7 +472,7 @@ public class OrderServiceTest {
     orderable = new OrderableDataBuilder().build();
     OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
         .withOrderedQuantity(100L)
-        .withOrderableId(orderable.getId())
+        .withOrderable(orderable.getId(), orderable.getVersionNumber())
         .build();
     StatusChange statusChange = new StatusChangeDataBuilder().build();
     order = new OrderDataBuilder()

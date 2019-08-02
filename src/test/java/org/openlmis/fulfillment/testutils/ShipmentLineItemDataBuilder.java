@@ -19,11 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
+import org.openlmis.fulfillment.web.util.VersionObjectReferenceDto;
 
 public class ShipmentLineItemDataBuilder {
 
   private UUID id = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
+  private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 10L;
   private Map<String, String> extraData = new HashMap<>();
@@ -33,8 +35,13 @@ public class ShipmentLineItemDataBuilder {
     return this;
   }
 
-  public ShipmentLineItemDataBuilder withOrderableId(UUID id) {
-    this.orderableId = id;
+  public ShipmentLineItemDataBuilder withOrderable(UUID orderableId, Long versionNumber) {
+    this.orderable = new VersionEntityReference(orderableId, versionNumber);
+    return this;
+  }
+
+  public ShipmentLineItemDataBuilder withOrderable(VersionObjectReferenceDto reference) {
+    this.orderable = new VersionEntityReference(reference.getId(), reference.getVersionNumber());
     return this;
   }
 
@@ -67,7 +74,7 @@ public class ShipmentLineItemDataBuilder {
    * Builds instance of {@link ShipmentLineItem}.
    */
   public ShipmentLineItem build() {
-    ShipmentLineItem line = new ShipmentLineItem(orderableId, lotId, quantityShipped, extraData);
+    ShipmentLineItem line = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
     line.setId(id);
     return line;
   }

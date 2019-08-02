@@ -15,11 +15,16 @@
 
 package org.openlmis.fulfillment.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Getter
 @Setter
@@ -27,7 +32,7 @@ import org.openlmis.fulfillment.domain.naming.VvmStatus;
 public class DummyProofOfDeliveryLineItemDto
     implements ProofOfDeliveryLineItem.Importer, ProofOfDeliveryLineItem.Exporter {
   private UUID id;
-  private UUID orderableId;
+  private OrderableDto orderable;
   private UUID lotId;
   private Integer quantityAccepted;
   private Boolean useVvm;
@@ -38,10 +43,23 @@ public class DummyProofOfDeliveryLineItemDto
 
   DummyProofOfDeliveryLineItemDto(ProofOfDeliveryLineItem line) {
     this(
-        line.getId(), line.getOrderableId(), line.getLotId(), line.getQuantityAccepted(),
+        line.getId(), new OrderableDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
+            .build(),
+        line.getLotId(), line.getQuantityAccepted(),
         line.getUseVvm(), line.getVvmStatus(), line.getQuantityRejected(),
         line.getRejectionReasonId(), line.getNotes()
     );
+  }
+
+  @Override
+  @JsonIgnore
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
+        .orElse(null);
   }
 
 }

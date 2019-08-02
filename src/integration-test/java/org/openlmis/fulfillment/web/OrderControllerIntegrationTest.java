@@ -70,6 +70,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
@@ -263,7 +264,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     product1 = new OrderableDataBuilder().withId(product1Id).build();
     product2 = new OrderableDataBuilder().withId(product2Id).build();
 
-    when(orderableReferenceDataService.findByIds(anySetOf(UUID.class)))
+    when(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
         .thenReturn(Arrays.asList(product1, product2));
 
     when(userReferenceDataService.findByIds(anySetOf(UUID.class)))
@@ -328,7 +329,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private OrderLineItem createOrderLineItem(UUID product, Long orderedQuantity) {
     return new OrderLineItemDataBuilder()
-        .withOrderableId(product)
+        .withOrderable(product, 1L)
         .withOrderedQuantity(orderedQuantity)
         .build();
   }

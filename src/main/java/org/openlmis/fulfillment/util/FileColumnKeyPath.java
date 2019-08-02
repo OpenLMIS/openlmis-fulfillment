@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 public enum FileColumnKeyPath {
   ORDERABLE_ID("orderableId"),
+  ORDERABLE_VERSION_NUMBER("orderableVersionNumber"),
   PRODUCT_CODE("productCode"),
 
   ORDER_ID("orderId"),
@@ -30,7 +31,7 @@ public enum FileColumnKeyPath {
   private String columnPath;
 
   public static final ImmutableList<FileColumnKeyPath> ORDERABLE_COLUMN_PATHS = ImmutableList
-      .of(ORDERABLE_ID, PRODUCT_CODE);
+      .of(ORDERABLE_ID, ORDERABLE_VERSION_NUMBER, PRODUCT_CODE);
 
   public static final ImmutableList<FileColumnKeyPath> ORDER_COLUMN_PATHS = ImmutableList
       .of(ORDER_ID, ORDER_CODE);
@@ -39,7 +40,8 @@ public enum FileColumnKeyPath {
       .of(QUANTITY_SHIPPED);
 
   public static final ImmutableList<FileColumnKeyPath> ALL_REQUIRED_COLUMN_PATHS = ImmutableList
-      .of(ORDERABLE_ID, PRODUCT_CODE, ORDER_ID, ORDER_CODE, QUANTITY_SHIPPED);
+      .of(ORDERABLE_ID, ORDERABLE_VERSION_NUMBER, PRODUCT_CODE, ORDER_ID, ORDER_CODE,
+          QUANTITY_SHIPPED);
 
   FileColumnKeyPath(String columnPath) {
     this.columnPath = columnPath;

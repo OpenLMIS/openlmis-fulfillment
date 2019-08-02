@@ -15,12 +15,23 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static java.util.stream.Collectors.toMap;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
+import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +40,9 @@ public class ProofOfDeliveryDtoBuilder {
 
   @Value("${service.url}")
   private String serviceUrl;
+
+  @Autowired
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   /**
    * Create a new list of {@link ProofOfDeliveryDto} based on data
@@ -65,9 +79,38 @@ public class ProofOfDeliveryDtoBuilder {
   private ProofOfDeliveryDto export(ProofOfDelivery pod) {
     ProofOfDeliveryDto dto = new ProofOfDeliveryDto();
     dto.setServiceUrl(serviceUrl);
+    dto.setLineItems(exportToDtos(pod.getLineItems()));
     pod.export(dto);
-
     return dto;
+  }
+
+  private List<ProofOfDeliveryLineItemDto> exportToDtos(List<ProofOfDeliveryLineItem> lineItems) {
+    List<ProofOfDeliveryLineItemDto> lineItemDtos = new ArrayList<>(lineItems.size());
+    Set<VersionEntityReference> orderableIdentities = new HashSet<>(lineItems.size());
+
+    for (ProofOfDeliveryLineItem lineItem: lineItems) {
+      orderableIdentities.add(lineItem.getOrderable());
+    }
+
+    Map<VersionIdentityDto, OrderableDto> orderables =
+        orderableReferenceDataService.findByIdentities(orderableIdentities)
+            .stream()
+            .collect(toMap(OrderableDto::getIdentity, identity -> identity));
+
+    lineItems.forEach(l -> lineItemDtos.add(exportToDto(l, orderables)));
+    return lineItemDtos;
+  }
+
+  private ProofOfDeliveryLineItemDto exportToDto(ProofOfDeliveryLineItem lineItem,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
+    ProofOfDeliveryLineItemDto lineItemDto = new ProofOfDeliveryLineItemDto();
+    lineItemDto.setServiceUrl(serviceUrl);
+
+    final OrderableDto orderableDto = orderables.get(
+        new VersionIdentityDto(lineItem.getOrderable()));
+
+    lineItem.export(lineItemDto, orderableDto);
+    return lineItemDto;
   }
 
 }

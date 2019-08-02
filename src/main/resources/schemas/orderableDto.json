@@ -36,6 +36,11 @@
         "$ref": "programOrderable.json"
       },
       "uniqueItems": true
+    },
+    "meta": {
+      "type": "object",
+      "$ref": "metadata.json",
+      "description": "The orderable metadata"
     }
   },
   "required": ["id", "productCode", "packRoundingThreshold", "roundToZero"]

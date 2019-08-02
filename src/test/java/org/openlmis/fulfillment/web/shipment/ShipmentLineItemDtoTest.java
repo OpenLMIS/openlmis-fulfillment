@@ -22,6 +22,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 public class ShipmentLineItemDtoTest {
 
@@ -40,19 +41,12 @@ public class ShipmentLineItemDtoTest {
   }
 
   @Test
-  public void shouldGetOrderableId() {
+  public void shouldGetOrderable() {
     ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder().build();
 
-    assertEquals(shipmentLineItemDto.getOrderable().getId(), shipmentLineItemDto.getOrderableId());
-  }
-
-  @Test
-  public void shouldReturnNullIfOrderableIsNull() {
-    ShipmentLineItemDto shipmentLineItemDto = new ShipmentLineItemDtoDataBuilder()
-        .withoutOrderable()
-        .build();
-
-    assertNull(shipmentLineItemDto.getOrderableId());
+    assertEquals(new VersionIdentityDto(shipmentLineItemDto.getOrderable().getId(),
+        shipmentLineItemDto.getOrderable().getVersionNumber()),
+        shipmentLineItemDto.getOrderableIdentity());
   }
 
   @Test

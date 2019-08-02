@@ -121,7 +121,7 @@ public class ProofOfDelivery extends BaseEntity {
       shipment
           .getLineItems()
           .stream()
-          .filter(shipped -> shipped.getOrderableId().equals(lineItem.getOrderableId())
+          .filter(shipped -> shipped.getOrderable().equals(lineItem.getOrderable())
               && Objects.equals(shipped.getLotId(), lineItem.getLotId()))
           .findFirst()
           .ifPresent(shipped -> lineItem.validate(shipped.getQuantityShipped()));
@@ -215,7 +215,6 @@ public class ProofOfDelivery extends BaseEntity {
     exporter.setId(id);
     exporter.setShipment(shipment);
     exporter.setStatus(status);
-    exporter.setLineItems(lineItems);
     exporter.setReceivedBy(receivedBy);
     exporter.setDeliveredBy(deliveredBy);
     exporter.setReceivedDate(receivedDate);
@@ -228,8 +227,6 @@ public class ProofOfDelivery extends BaseEntity {
     void setShipment(Shipment shipment);
 
     void setStatus(ProofOfDeliveryStatus status);
-
-    void setLineItems(List<ProofOfDeliveryLineItem> lineItems);
 
     void setReceivedBy(String receivedBy);
 

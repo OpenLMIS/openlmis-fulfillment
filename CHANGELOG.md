@@ -1,6 +1,9 @@
 8.0.3 / WIP
 ==================
 
+New features:
+* [OLMIS-6392](https://openlmis.atlassian.net/browse/OLMIS-6392): Added orderable versioning to shipment line items, order line items and proof of delivery line items.
+
 Improvements:
 * [OLMIS-4128](https://openlmis.atlassian.net/browse/OLMIS-4128): Change maximum page size to max integer.
 * [OLMIS-6129](https://openlmis.atlassian.net/browse/OLMIS-6129): Added package-lock.json file.

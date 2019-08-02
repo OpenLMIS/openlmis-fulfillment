@@ -36,6 +36,7 @@ import org.openlmis.fulfillment.domain.TemplateType;
 import org.openlmis.fulfillment.service.FulfillmentException;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.util.FileColumnKeyPath;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -54,6 +55,7 @@ public class ShipmentLineItemBuilderTest {
   private static final String ORDER_CODE_2 = "O0002";
   private static final String QUANTITY_SHIPPED = "1000";
   private static final String BATCH_NUMBER = "1234";
+  private static final Long VERSION_NUMBER = 1L;
 
   @Mock
   OrderableReferenceDataService orderableReferenceDataService;
@@ -69,12 +71,16 @@ public class ShipmentLineItemBuilderTest {
   public void setUp() throws Exception {
     template = mockTemplate(FileColumnKeyPath.ORDERABLE_ID);
 
-    OrderableDto dto1 = new OrderableDto();
-    dto1.setProductCode(PRODUCT_CODE);
-    dto1.setId(UUID.fromString(ORDERABLE_ID));
-    OrderableDto dto2 = new OrderableDto();
-    dto2.setProductCode(PRODUCT_CODE_2);
-    dto2.setId(UUID.randomUUID());
+    OrderableDto dto1 = new OrderableDataBuilder()
+        .withId(UUID.fromString(ORDERABLE_ID))
+        .withProductCode(PRODUCT_CODE)
+        .withVersionNumber(VERSION_NUMBER)
+        .build();
+    OrderableDto dto2 = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withProductCode(PRODUCT_CODE_2)
+        .withVersionNumber(VERSION_NUMBER)
+        .build();
 
     when(orderableReferenceDataService.findAll()).thenReturn(asList(dto1, dto2));
 
@@ -112,7 +118,7 @@ public class ShipmentLineItemBuilderTest {
     ImportedShipmentLineItemData result = builder.build(template, asList(csvRecord1));
 
     assertThat(result.getLineItems().size(), is(1));
-    assertThat(result.getLineItems().get(0).getOrderableId().toString(), is(ORDERABLE_ID));
+    assertThat(result.getLineItems().get(0).getOrderable().getId().toString(), is(ORDERABLE_ID));
   }
 
   @Test
@@ -123,7 +129,7 @@ public class ShipmentLineItemBuilderTest {
     ImportedShipmentLineItemData result = builder.build(template, asList(csvRecord1));
 
     assertThat(result.getLineItems().size(), is(1));
-    assertThat(result.getLineItems().get(0).getOrderableId().toString(), is(ORDERABLE_ID));
+    assertThat(result.getLineItems().get(0).getOrderable().getId().toString(), is(ORDERABLE_ID));
   }
 
 

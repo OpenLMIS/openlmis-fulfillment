@@ -15,13 +15,23 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +40,9 @@ public class ShipmentDtoBuilder {
 
   @Value("${service.url}")
   private String serviceUrl;
+
+  @Autowired
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   /**
    * Create a new list of {@link ShipmentDto} based on data
@@ -72,14 +85,30 @@ public class ShipmentDtoBuilder {
 
   private List<ShipmentLineItemDto> exportToDtos(List<ShipmentLineItem> lineItems) {
     List<ShipmentLineItemDto> lineItemDtos = new ArrayList<>(lineItems.size());
-    lineItems.forEach(l -> lineItemDtos.add(exportToDto(l)));
+    Set<VersionEntityReference> orderableIdentities = new HashSet<>(lineItems.size());
+
+    for (ShipmentLineItem lineItem: lineItems) {
+      orderableIdentities.add(lineItem.getOrderable());
+    }
+
+    Map<VersionIdentityDto, OrderableDto> orderables =
+        orderableReferenceDataService.findByIdentities(orderableIdentities)
+        .stream()
+        .collect(toMap(OrderableDto::getIdentity, identity -> identity));
+
+    lineItems.forEach(l -> lineItemDtos.add(exportToDto(l, orderables)));
     return lineItemDtos;
   }
 
-  private ShipmentLineItemDto exportToDto(ShipmentLineItem lineItem) {
+  private ShipmentLineItemDto exportToDto(ShipmentLineItem lineItem,
+      Map<VersionIdentityDto, OrderableDto> orderables) {
     ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
     lineItemDto.setServiceUrl(serviceUrl);
-    lineItem.export(lineItemDto);
+
+    final OrderableDto orderableDto = orderables.get(
+        new VersionIdentityDto(lineItem.getOrderable()));
+
+    lineItem.export(lineItemDto, orderableDto);
     return lineItemDto;
   }
 

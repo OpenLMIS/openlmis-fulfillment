@@ -18,11 +18,13 @@ package org.openlmis.fulfillment.testutils;
 import java.util.Random;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.ShipmentDraftLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 
 public class ShipmentDraftLineItemDataBuilder {
 
   private UUID id = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
+  private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
+  //private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = new Random().nextLong();
 
@@ -31,8 +33,8 @@ public class ShipmentDraftLineItemDataBuilder {
     return this;
   }
 
-  public ShipmentDraftLineItemDataBuilder withOrderableId(UUID id) {
-    this.orderableId = id;
+  public ShipmentDraftLineItemDataBuilder withOrderable(UUID id, Long versionNumber) {
+    this.orderable = new VersionEntityReference(id, versionNumber);
     return this;
   }
 
@@ -55,7 +57,7 @@ public class ShipmentDraftLineItemDataBuilder {
    * Builds instance of {@link ShipmentDraftLineItem}.
    */
   public ShipmentDraftLineItem build() {
-    ShipmentDraftLineItem line = new ShipmentDraftLineItem(orderableId, lotId, quantityShipped);
+    ShipmentDraftLineItem line = new ShipmentDraftLineItem(orderable, lotId, quantityShipped);
     line.setId(id);
     return line;
   }

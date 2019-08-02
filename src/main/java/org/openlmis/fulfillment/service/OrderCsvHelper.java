@@ -29,6 +29,7 @@ import org.openlmis.fulfillment.domain.FileColumn;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -44,6 +45,7 @@ public class OrderCsvHelper {
   private static final String STRING = "string";
   private static final String LINE_NO = "line_no";
   private static final String ORDER = "order";
+  private static final String LINE_ITEM_ORDERABLE = "lineItemOrderable";
 
   private static final String FACILITY = "Facility";
   private static final String PRODUCT = "Orderable";
@@ -104,17 +106,19 @@ public class OrderCsvHelper {
     int counter = 1;
     for (OrderLineItem orderLineItem : orderLineItems) {
       if (includeZeroQuantity || orderLineItem.getOrderedQuantity() > 0) {
-        writeCsvLineItem(order, orderLineItem, fileColumns, writer, counter++);
+        writeCsvLineItem(order, orderLineItem, orderLineItem.getOrderable(),
+            fileColumns, writer, counter++);
         writer.write(LINE_SEPARATOR);
       }
     }
   }
 
   private void writeCsvLineItem(Order order, OrderLineItem orderLineItem,
-                                List<FileColumn> fileColumns, Writer writer, int counter)
+      VersionEntityReference orderable, List<FileColumn> fileColumns, Writer writer, int counter)
       throws IOException {
     JXPathContext orderContext = JXPathContext.newContext(order);
     JXPathContext lineItemContext = JXPathContext.newContext(orderLineItem);
+    JXPathContext lineItemOrderableContext = JXPathContext.newContext(orderable);
     for (FileColumn fileColumn : fileColumns) {
       if (fileColumn.getNested() == null || fileColumn.getNested().isEmpty()) {
         if (fileColumns.indexOf(fileColumn) < fileColumns.size() - 1) {
@@ -122,7 +126,8 @@ public class OrderCsvHelper {
         }
         continue;
       }
-      Object columnValue = getColumnValue(counter, orderContext, lineItemContext, fileColumn);
+      Object columnValue = getColumnValue(counter, orderContext, lineItemContext,
+          lineItemOrderableContext, fileColumn);
 
       if (columnValue instanceof ZonedDateTime) {
         columnValue = ((ZonedDateTime) columnValue).format(ofPattern(fileColumn.getFormat()));
@@ -141,7 +146,8 @@ public class OrderCsvHelper {
   }
 
   private Object getColumnValue(int counter, JXPathContext orderContext,
-                                JXPathContext lineItemContext, FileColumn fileColumn) {
+      JXPathContext lineItemContext, JXPathContext lineItemOrderableContext,
+      FileColumn fileColumn) {
     Object columnValue;
 
     switch (fileColumn.getNested()) {
@@ -154,12 +160,18 @@ public class OrderCsvHelper {
       case ORDER:
         columnValue = orderContext.getValue(fileColumn.getKeyPath());
         break;
+      case LINE_ITEM_ORDERABLE:
+        columnValue = lineItemOrderableContext.getValue(fileColumn.getKeyPath());
+        break;
       default:
         columnValue = lineItemContext.getValue(fileColumn.getKeyPath());
         break;
     }
 
     if (fileColumn.getRelated() != null && !fileColumn.getRelated().isEmpty()) {
+      if (columnValue instanceof VersionEntityReference) {
+        columnValue = ((VersionEntityReference) columnValue).getId();
+      }
       columnValue = getRelatedColumnValue((UUID) columnValue, fileColumn);
     }
 

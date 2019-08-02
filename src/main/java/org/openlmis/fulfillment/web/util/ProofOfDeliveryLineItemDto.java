@@ -19,6 +19,8 @@ import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
 import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,6 +30,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
 @ToString
 @NoArgsConstructor
@@ -42,7 +45,7 @@ public final class ProofOfDeliveryLineItemDto
 
   @Getter
   @Setter
-  private ObjectReferenceDto orderable;
+  private VersionObjectReferenceDto orderable;
 
   @Getter
   @Setter
@@ -79,24 +82,34 @@ public final class ProofOfDeliveryLineItemDto
    * @param lineItem instance of {@link ProofOfDeliveryLineItem}
    * @return new instance of ProofOfDeliveryLineItemDto.
    */
-  public static ProofOfDeliveryLineItemDto newInstance(ProofOfDeliveryLineItem lineItem) {
+  public static ProofOfDeliveryLineItemDto newInstance(ProofOfDeliveryLineItem lineItem,
+      OrderableDto orderableDto) {
     ProofOfDeliveryLineItemDto proofOfDeliveryLineItemDto = new ProofOfDeliveryLineItemDto();
-    lineItem.export(proofOfDeliveryLineItemDto);
+    lineItem.export(proofOfDeliveryLineItemDto, orderableDto);
 
     return proofOfDeliveryLineItemDto;
   }
 
   @Override
   @JsonIgnore
-  public UUID getOrderableId() {
-    return null == orderable ? null : orderable.getId();
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
+        .orElse(null);
+  }
+
+  @JsonSetter("orderable")
+  public void setOrderable(VersionObjectReferenceDto orderable) {
+    this.orderable = orderable;
   }
 
   @Override
   @JsonIgnore
-  public void setOrderableId(UUID orderableId) {
-    if (null != orderableId) {
-      this.orderable = ObjectReferenceDto.create(orderableId, serviceUrl, ORDERABLES);
+  public void setOrderable(OrderableDto orderable) {
+    if (orderable != null) {
+      this.orderable = new VersionObjectReferenceDto(orderable.getId(), serviceUrl,
+          ORDERABLES, orderable.getVersionNumber());
     }
   }
 

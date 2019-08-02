@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -48,14 +49,14 @@ public class ShipmentService {
   public Shipment save(final Shipment shipment) {
     Shipment saved = shipmentRepository.save(shipment);
 
-    Set<UUID> orderableIds = saved
+    Set<VersionEntityReference> orderableIdentitiess = saved
         .getLineItems()
         .stream()
-        .map(ShipmentLineItem::getOrderableId)
+        .map(ShipmentLineItem::getOrderable)
         .collect(Collectors.toSet());
 
     Map<UUID, Boolean> useVvm = orderableReferenceDataService
-        .findByIds(orderableIds)
+        .findByIdentities(orderableIdentitiess)
         .stream()
         .collect(Collectors.toMap(BaseDto::getId, OrderableDto::useVvm));
 

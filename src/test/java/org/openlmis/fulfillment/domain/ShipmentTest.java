@@ -29,7 +29,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
@@ -49,10 +51,14 @@ public class ShipmentTest {
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
+  private OrderableDto orderableDto = new OrderableDataBuilder()
+      .withId(orderableId)
+      .withVersionNumber(1L)
+      .build();
   private List<ShipmentLineItem> lineItems =
       Collections.singletonList(new ShipmentLineItemDataBuilder()
           .withId(lineItemId)
-          .withOrderableId(orderableId)
+          .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
           .withLotId(lotId)
           .withQuantityShipped(quantityShipped)
           .build());
@@ -62,7 +68,7 @@ public class ShipmentTest {
     Shipment expected = createShipment();
     DummyShipmentDto shipmentDto =
         new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
-            new DummyShipmentLineItemDto(lineItemId, orderableId, lotId, quantityShipped,
+            new DummyShipmentLineItemDto(lineItemId, orderableDto, lotId, quantityShipped,
                 null)), null);
 
     Shipment actual = Shipment.newInstance(shipmentDto, order);

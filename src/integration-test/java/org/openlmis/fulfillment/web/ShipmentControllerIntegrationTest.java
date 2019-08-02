@@ -22,7 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -35,6 +37,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,6 +49,7 @@ import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -53,9 +57,12 @@ import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
@@ -66,8 +73,10 @@ import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -108,6 +117,9 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
+  @SpyBean
+  private OrderableReferenceDataService orderableReferenceDataService;
+
   @Mock
   private Order order;
   
@@ -122,6 +134,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private UUID userId = UUID.randomUUID();
   private Shipment shipment;
   private UUID orderId = UUID.randomUUID();
+  private List<OrderableDto> orderables;
+  private OrderableDto orderableDto;
 
   @Before
   public void setUp() {
@@ -142,9 +156,27 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   private void generateShipment() {
     shipmentDtoExpected = new ShipmentDto();
     shipmentDtoExpected.setServiceUrl(serviceUrl);
-    ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder().withoutId().build();
+
+    ShipmentLineItem lineItem = new ShipmentLineItemDataBuilder()
+        .withoutId()
+        .withOrderable(UUID.randomUUID(), 1L)
+        .build();
     shipment = generateShipment(lineItem);
-    List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem);
+
+    orderables = shipment
+        .getLineItems()
+        .stream()
+        .map(line -> new OrderableDataBuilder()
+            .withId(line.getOrderable().getId())
+            .withVersionNumber(line.getOrderable().getVersionNumber())
+            .build())
+        .collect(Collectors.toList());
+
+    given(orderableReferenceDataService.findByIdentities(anySetOf(VersionEntityReference.class)))
+        .willReturn(orderables);
+
+    orderableDto = findOrderable(orderables, lineItem);
+    List<ShipmentLineItemDto> lineItemsDtos = exportToDto(lineItem, orderableDto);
     shipmentDtoExpected.setLineItems(lineItemsDtos);
 
     shipmentDto = new ShipmentDtoDataBuilder()
@@ -152,7 +184,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .withoutShippedDate()
         .withOrder(new OrderObjectReferenceDto(shipmentDtoExpected.getOrder().getId()))
         .withNotes(shipmentDtoExpected.getNotes())
-        .withLineItems(lineItemsDtos)
+        .withLineItems(shipmentDtoExpected.lineItems())
         .build();
   }
 
@@ -167,11 +199,20 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .build();
   }
 
-  private List<ShipmentLineItemDto> exportToDto(ShipmentLineItem lineItem) {
+  private OrderableDto findOrderable(List<OrderableDto> orderables, ShipmentLineItem line) {
+    return orderables
+        .stream()
+        .filter(orderable -> orderable.getIdentity()
+            .equals(new VersionIdentityDto(line.getOrderable())))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private List<ShipmentLineItemDto> exportToDto(ShipmentLineItem lineItem, OrderableDto orderable) {
     shipment.export(shipmentDtoExpected);
     ShipmentLineItemDto lineItemDto = new ShipmentLineItemDto();
     lineItemDto.setServiceUrl(serviceUrl);
-    lineItem.export(lineItemDto);
+    lineItem.export(lineItemDto, orderable);
 
     return singletonList(lineItemDto);
   }

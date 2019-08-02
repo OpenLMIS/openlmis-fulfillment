@@ -15,42 +15,40 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static java.util.stream.Collectors.toList;
+import static org.openlmis.fulfillment.domain.BaseEntity.UUID_TYPE;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
+import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.Type;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DummyProofOfDeliveryDto
-    implements ProofOfDelivery.Importer, ProofOfDelivery.Exporter {
+@EqualsAndHashCode
+@ToString
+@Embeddable
+public class VersionEntityReference {
 
+  @Type(type = UUID_TYPE)
   private UUID id;
-  private Identifiable shipment;
-  private ProofOfDeliveryStatus status;
-  private List<ProofOfDeliveryLineItem.Importer> lineItems;
-  private String receivedBy;
-  private String deliveredBy;
-  private LocalDate receivedDate;
 
-  DummyProofOfDeliveryDto(ProofOfDelivery pod) {
-    this(
-        pod.getId(), pod.getShipment(), pod.getStatus(),
-        pod.getLineItems().stream().map(DummyProofOfDeliveryLineItemDto::new).collect(toList()),
-        pod.getReceivedBy(), pod.getDeliveredBy(), pod.getReceivedDate()
-    );
+  private Long versionNumber;
+
+  /**
+   * Copy constructor.
+   *
+   * @param original an original version entity reference with data that will be placed in
+   *                 a new version entity reference.
+   */
+  public VersionEntityReference(VersionEntityReference original) {
+    this.id = original.id;
+    this.versionNumber = original.versionNumber;
   }
-
-  @Override
-  public void setShipment(Shipment shipment) {
-    this.shipment = shipment;
-  }
-
 }

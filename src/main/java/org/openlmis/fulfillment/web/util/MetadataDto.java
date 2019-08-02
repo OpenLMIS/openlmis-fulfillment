@@ -13,44 +13,32 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.web.util;
 
-import static java.util.stream.Collectors.toList;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class DummyProofOfDeliveryDto
-    implements ProofOfDelivery.Importer, ProofOfDelivery.Exporter {
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
+public class MetadataDto {
 
-  private UUID id;
-  private Identifiable shipment;
-  private ProofOfDeliveryStatus status;
-  private List<ProofOfDeliveryLineItem.Importer> lineItems;
-  private String receivedBy;
-  private String deliveredBy;
-  private LocalDate receivedDate;
+  private String versionNumber;
+  private ZonedDateTime lastUpdated;
 
-  DummyProofOfDeliveryDto(ProofOfDelivery pod) {
-    this(
-        pod.getId(), pod.getShipment(), pod.getStatus(),
-        pod.getLineItems().stream().map(DummyProofOfDeliveryLineItemDto::new).collect(toList()),
-        pod.getReceivedBy(), pod.getDeliveredBy(), pod.getReceivedDate()
-    );
+  /**
+   * A copy constructor.
+   */
+  public MetadataDto(MetadataDto original) {
+    this.versionNumber = original.versionNumber;
+    this.lastUpdated = original.lastUpdated;
   }
-
-  @Override
-  public void setShipment(Shipment shipment) {
-    this.shipment = shipment;
-  }
-
 }

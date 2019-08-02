@@ -41,6 +41,8 @@ import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -115,7 +117,7 @@ public class ProofOfDeliveryTest {
     for (ProofOfDeliveryLineItem line : pod.getLineItems()) {
       assertThat(
           shipment.getLineItems(),
-          hasItem(hasProperty("orderableId", is(line.getOrderableId())))
+          hasItem(hasProperty("orderable", is(line.getOrderable())))
       );
       assertThat(
           shipment.getLineItems(),
@@ -143,16 +145,23 @@ public class ProofOfDeliveryTest {
 
   @Test
   public void shouldConfirmIfLineItemIsLotless() {
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .build();
+
     Shipment shipment = new ShipmentDataBuilder()
         .withLineItems(Collections.singletonList(new ShipmentLineItemDataBuilder()
             .withoutLotId()
+            .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
             .build()))
         .build();
 
     ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder()
         .withLineItems(Collections.singletonList(
             new ProofOfDeliveryLineItemDataBuilder()
-            .withOrderableId(shipment.getLineItems().get(0).getOrderableId())
+            .withOrderable(shipment.getLineItems().get(0).getOrderable().getId(),
+                shipment.getLineItems().get(0).getOrderable().getVersionNumber())
             .withoutLotId()
             .build()
         ))

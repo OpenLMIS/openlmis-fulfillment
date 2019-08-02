@@ -38,6 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -56,10 +57,11 @@ public class ExporterBuilderTest {
   private ExporterBuilder exportBuilder;
 
   @Captor
-  private ArgumentCaptor<Set<UUID>> argumentCaptor;
+  private ArgumentCaptor<Set<VersionEntityReference>> argumentCaptor;
 
   private UUID orderableId = UUID.randomUUID();
   private UUID lastUpdaterId = UUID.randomUUID();
+  private VersionEntityReference orderable = new VersionEntityReference(orderableId, 1L);
   private OrderableDto orderableDto = mock(OrderableDto.class);
   private Order order = mock(Order.class);
   private OrderLineItem orderLineItem = mock(OrderLineItem.class);
@@ -67,8 +69,10 @@ public class ExporterBuilderTest {
 
   @Before
   public void setUp() {
-    when(orderLineItem.getOrderableId()).thenReturn(orderableId);
+    when(orderLineItem.getOrderable()).thenReturn(orderable);
     when(orderableDto.getId()).thenReturn(orderableId);
+    //when(orderableDto.getId()).thenReturn(orderable.getId());
+    when(orderableDto.getVersionNumber()).thenReturn(orderable.getVersionNumber());
     when(order.getOrderLineItems()).thenReturn(Collections.singletonList(orderLineItem));
 
     ReflectionTestUtils.setField(exportBuilder, "serviceUrl", SERVICE_URL);
@@ -108,6 +112,8 @@ public class ExporterBuilderTest {
     // given
     OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
     when(products.findOne(orderableId)).thenReturn(orderableDto);
+    when(products.findByIdentities(argumentCaptor.capture())).thenReturn(
+        Collections.singletonList(orderableDto));
 
     // when
     exportBuilder.export(orderLineItem, orderLineItemDto, Collections.emptyList());
@@ -140,16 +146,22 @@ public class ExporterBuilderTest {
   @Test
   public void shouldGetLineItemOrderables() {
     // given
-    when(products.findByIds(argumentCaptor.capture())).thenReturn(
+    when(products.findByIdentities(argumentCaptor.capture())).thenReturn(
         Collections.singletonList(orderableDto));
 
     // when
     List<OrderableDto> orderables = exportBuilder.getLineItemOrderables(order);
 
     // then
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
+    Set<VersionEntityReference> searchedIds = argumentCaptor.getValue();
+    VersionEntityReference ref = new VersionEntityReference(
+        orderableDto.getId(), orderableDto.getVersionNumber());
+    assertTrue(searchedIds.contains(ref));
     assertTrue(searchedIds.size() == 1);
     assertTrue(orderables.contains(orderableDto));
+  }
+
+  private UUID getOrderableIdFromEntityReference() {
+    return orderLineItem.getOrderable().getId();
   }
 }

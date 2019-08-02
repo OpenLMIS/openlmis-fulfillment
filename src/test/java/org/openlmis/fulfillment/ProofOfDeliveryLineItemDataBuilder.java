@@ -19,12 +19,13 @@ import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
+  private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private UUID lotId = UUID.randomUUID();
   private Integer quantityAccepted = RandomUtils.nextInt(1, 10);
   private boolean useVvm = true;
@@ -38,13 +39,13 @@ public class ProofOfDeliveryLineItemDataBuilder {
    */
   public ProofOfDeliveryLineItem buildAsNew() {
     return new ProofOfDeliveryLineItem(
-        orderableId, lotId, quantityAccepted, useVvm, vvmStatus,
+        orderable, lotId, quantityAccepted, useVvm, vvmStatus,
         quantityRejected, rejectionReasonId, notes
     );
   }
 
-  public ProofOfDeliveryLineItemDataBuilder withOrderableId(UUID orderableId) {
-    this.orderableId = orderableId;
+  public ProofOfDeliveryLineItemDataBuilder withOrderable(UUID orderableId, Long versionNumber) {
+    this.orderable = new VersionEntityReference(orderableId, versionNumber);
     return this;
   }
 

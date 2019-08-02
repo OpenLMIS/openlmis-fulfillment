@@ -20,8 +20,12 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITI
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
 
+import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -33,7 +37,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -42,10 +48,13 @@ import org.openlmis.fulfillment.web.ValidationException;
 @TypeName("ProofOfDeliveryLineItem")
 public class ProofOfDeliveryLineItem extends BaseEntity {
 
-  @Type(type = UUID_TYPE)
-  @Column(nullable = false)
   @Getter
-  private UUID orderableId;
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
+  })
+  @Embedded
+  private VersionEntityReference orderable;
 
   @Type(type = UUID_TYPE)
   @Getter(AccessLevel.PACKAGE)
@@ -74,7 +83,8 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
   ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem, Boolean useVvm) {
     this(
-        shipmentLineItem.getOrderableId(), shipmentLineItem.getLotId(), null, toBoolean(useVvm),
+        shipmentLineItem.getOrderable(), shipmentLineItem.getLotId(),
+        null, toBoolean(useVvm),
         null, null, null, null
     );
   }
@@ -133,8 +143,16 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @return instance of ProofOfDeliveryLineItem.
    */
   static ProofOfDeliveryLineItem newInstance(Importer importer) {
+    VersionIdentityDto orderableDto = importer.getOrderableIdentity();
+
+    VersionEntityReference orderable = Optional
+        .ofNullable(orderableDto)
+        .map(item -> new VersionEntityReference(orderableDto.getId(),
+        orderableDto.getVersionNumber()))
+        .orElse(null);
+
     ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
-        importer.getOrderableId(), importer.getLotId(), importer.getQuantityAccepted(),
+        orderable, importer.getLotId(), importer.getQuantityAccepted(),
         importer.getUseVvm(), importer.getVvmStatus(), importer.getQuantityRejected(),
         importer.getRejectionReasonId(), importer.getNotes()
     );
@@ -148,9 +166,9 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    *
    * @param exporter exporter to export to
    */
-  public void export(Exporter exporter) {
+  public void export(Exporter exporter, OrderableDto orderableDto) {
     exporter.setId(id);
-    exporter.setOrderableId(orderableId);
+    exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityAccepted(quantityAccepted);
     exporter.setUseVvm(useVvm);
@@ -163,7 +181,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    UUID getOrderableId();
+    VersionIdentityDto getOrderableIdentity();
 
     UUID getLotId();
 
@@ -184,7 +202,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   public interface Exporter {
     void setId(UUID id);
 
-    void setOrderableId(UUID orderableId);
+    void setOrderable(OrderableDto orderableDto);
 
     void setLotId(UUID lotId);
 

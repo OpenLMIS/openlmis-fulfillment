@@ -19,7 +19,9 @@ import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
 import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,7 +30,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
+import org.openlmis.fulfillment.web.util.VersionObjectReferenceDto;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,6 +43,7 @@ public final class ShipmentLineItemDto
     implements ShipmentLineItem.Exporter, ShipmentLineItem.Importer {
 
   @Setter
+  @JsonIgnore
   private String serviceUrl;
 
   @Getter
@@ -45,8 +51,7 @@ public final class ShipmentLineItemDto
   private UUID id;
 
   @Getter
-  @Setter
-  private ObjectReferenceDto orderable;
+  private VersionObjectReferenceDto orderable;
 
   @Getter
   @Setter
@@ -62,10 +67,16 @@ public final class ShipmentLineItemDto
 
   @Override
   @JsonIgnore
-  public void setOrderableId(UUID orderableId) {
-    if (orderableId != null) {
-      this.orderable = ObjectReferenceDto.create(orderableId, serviceUrl, ORDERABLES);
+  public void setOrderable(OrderableDto orderableDto) {
+    if (orderableDto != null) {
+      this.orderable = new VersionObjectReferenceDto(orderableDto.getId(), serviceUrl,
+          ORDERABLES, orderableDto.getVersionNumber());
     }
+  }
+
+  @JsonSetter("orderable")
+  public void setOrderable(VersionObjectReferenceDto orderable) {
+    this.orderable = orderable;
   }
 
   @Override
@@ -78,11 +89,11 @@ public final class ShipmentLineItemDto
 
   @Override
   @JsonIgnore
-  public UUID getOrderableId() {
-    if (orderable == null) {
-      return null;
-    }
-    return orderable.getId();
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
+        .orElse(null);
   }
 
   @Override

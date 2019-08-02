@@ -25,13 +25,16 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.Lists;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.util.DynamicPageTypeReference;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.springframework.http.HttpMethod;
 
 public class OrderableReferenceDataServiceTest
@@ -101,6 +104,28 @@ public class OrderableReferenceDataServiceTest
 
     URI uri = uriCaptor.getValue();
     assertEquals(serviceUrl + service.getUrl(), uri.toString());
+  }
+
+  @Test
+  public void shouldReturnProductsByIdentity() {
+    //given
+    VersionEntityReference reference = new VersionEntityReference(UUID.randomUUID(), 1L);
+
+    //when
+    OrderableDto product = mockPageResponseEntityAndGetDto();
+    List<OrderableDto> response = service.findByIdentities(Collections.singleton(reference));
+    OrderableSearchParams searchParams = new OrderableSearchParams(null, null, null,
+        Lists.newArrayList(new VersionIdentityDto(reference)), 0, 1);
+
+    //then
+    verify(restTemplate).exchange(
+        uriCaptor.capture(), eq(HttpMethod.POST), entityCaptor.capture(),
+        refEq(new DynamicPageTypeReference<>(OrderableDto.class)));
+
+    assertEquals(entityCaptor.getValue().getBody(), searchParams);
+    assertThat(response, hasItem(product));
+    assertThat(response, hasSize(1));
+    assertAuthHeader(entityCaptor.getValue());
   }
 
 }

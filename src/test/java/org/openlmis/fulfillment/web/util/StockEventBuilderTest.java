@@ -44,6 +44,7 @@ import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -135,10 +136,12 @@ public class StockEventBuilderTest {
   @Test
   public void shouldCreateEventFromShipment() {
     final OrderableDto orderable = new OrderableDataBuilder()
-        .withId(shipment.getLineItems().get(0).getOrderableId())
+        .withId(shipment.getLineItems().get(0).getOrderable().getId())
+        .withVersionNumber(shipment.getLineItems().get(0).getOrderable().getVersionNumber())
         .withNetContent(NET_CONTENT)
         .build();
-    when(orderableReferenceDataService.findByIds(Sets.asSet(orderable.getId())))
+    when(orderableReferenceDataService.findByIdentities(Sets.asSet(new VersionEntityReference(
+        orderable.getId(), orderable.getVersionNumber()))))
         .thenReturn(Lists.newArrayList(orderable));
 
     StockEventDto event = stockEventBuilder.fromShipment(shipment);
@@ -148,16 +151,18 @@ public class StockEventBuilderTest {
     assertThat(event.getUserId(), is(shipment.getShippedById()));
 
     assertThat(event.getLineItems(), hasSize(shipment.getLineItems().size()));
-    assertEventLineItemOfShipment(event.getLineItems().get(0));
+    assertEventLineItemOfShipment(event.getLineItems().get(0), orderable);
   }
 
   @Test
   public void shouldCreateEventFromProofOfDelivery() {
     final OrderableDto orderable = new OrderableDataBuilder()
-        .withId(proofOfDelivery.getLineItems().get(0).getOrderableId())
+        .withId(proofOfDelivery.getLineItems().get(0).getOrderable().getId())
+        .withVersionNumber(proofOfDelivery.getLineItems().get(0).getOrderable().getVersionNumber())
         .withNetContent(NET_CONTENT)
         .build();
-    when(orderableReferenceDataService.findByIds(Sets.asSet(orderable.getId())))
+    when(orderableReferenceDataService.findByIdentities(Sets.asSet(new VersionEntityReference(
+        orderable.getId(), orderable.getVersionNumber()))))
         .thenReturn(Lists.newArrayList(orderable));
 
     StockEventDto event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
@@ -167,7 +172,7 @@ public class StockEventBuilderTest {
     assertThat(event.getUserId(), is(user.getId()));
 
     assertThat(event.getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
-    assertEventLineItemOfProofOfDelivery(event.getLineItems().get(0));
+    assertEventLineItemOfProofOfDelivery(event.getLineItems().get(0), orderable);
   }
 
   @Test
@@ -192,11 +197,12 @@ public class StockEventBuilderTest {
     stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
   }
 
-  private void assertEventLineItemOfShipment(StockEventLineItemDto eventLine) {
+  private void assertEventLineItemOfShipment(StockEventLineItemDto eventLine,
+      OrderableDto orderableDto) {
     ShipmentLineItemDto dto = new ShipmentLineItemDto();
-    shipment.getLineItems().get(0).export(dto);
+    shipment.getLineItems().get(0).export(dto, orderableDto);
 
-    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
+    assertThat(eventLine.getOrderableId(), is(dto.getOrderable().getId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
     assertThat(eventLine.getQuantity(),
         is(dto.getQuantityShipped().intValue() * NET_CONTENT.intValue()));
@@ -204,11 +210,12 @@ public class StockEventBuilderTest {
     assertThat(eventLine.getDestinationId(), is(node.getId()));
   }
 
-  private void assertEventLineItemOfProofOfDelivery(StockEventLineItemDto eventLine) {
+  private void assertEventLineItemOfProofOfDelivery(StockEventLineItemDto eventLine,
+      OrderableDto orderableDto) {
     ProofOfDeliveryLineItemDto dto = new ProofOfDeliveryLineItemDto();
-    proofOfDelivery.getLineItems().get(0).export(dto);
+    proofOfDelivery.getLineItems().get(0).export(dto, orderableDto);
 
-    assertThat(eventLine.getOrderableId(), is(dto.getOrderableId()));
+    assertThat(eventLine.getOrderableId(), is(dto.getOrderable().getId()));
     assertThat(eventLine.getLotId(), is(dto.getLotId()));
     assertThat(eventLine.getQuantity(),
         is(dto.getQuantityAccepted() * NET_CONTENT.intValue()));

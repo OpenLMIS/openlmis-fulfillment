@@ -20,7 +20,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
@@ -54,10 +54,10 @@ public class ShipmentServiceTest {
   public void shouldSaveShipmentAndCreateProofOfDelivery() {
     // given
     final Shipment shipment = new ShipmentDataBuilder().build();
-    final Set<UUID> orderableIds = shipment
+    final Set<VersionEntityReference> orderableIdentities = shipment
         .getLineItems()
         .stream()
-        .map(ShipmentLineItem::getOrderableId)
+        .map(ShipmentLineItem::getOrderable)
         .collect(Collectors.toSet());
 
     // when
@@ -66,7 +66,7 @@ public class ShipmentServiceTest {
 
     // then
     verify(shipmentRepository).save(shipment);
-    verify(orderableReferenceDataService).findByIds(orderableIds);
+    verify(orderableReferenceDataService).findByIdentities(orderableIdentities);
     // creating a POD based on shipment and map is check in
     // ProofOfDeliveryTest.shouldCreateInstanceBasedOnShipment
     // here we only verify that POD has been saved

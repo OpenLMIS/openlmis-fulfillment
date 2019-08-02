@@ -42,6 +42,7 @@ import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -54,6 +55,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.DtoGenerator;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -84,7 +86,7 @@ public class OrderExportHelperTest {
   private OrderExportHelper orderExportHelper;
 
   @Captor
-  private ArgumentCaptor<Set<UUID>> argumentCaptor;
+  private ArgumentCaptor<Set<VersionEntityReference>> argumentCaptor;
 
   private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
   private FacilityDto requestingFacility = DtoGenerator.of(FacilityDto.class);
@@ -102,9 +104,9 @@ public class OrderExportHelperTest {
   @Test
   public void shouldExportOrderLinesToDtos() {
     OrderLineItem orderLineItem =
-        generateOrderLineItem(orderableDto.getId());
+        generateOrderLineItem(orderableDto.getId(), orderableDto.getVersionNumber());
 
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
+    when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
             .thenReturn(Collections.singletonList(orderableDto));
 
     List<OrderLineItemDto> items =
@@ -112,23 +114,24 @@ public class OrderExportHelperTest {
     OrderLineItemDto item = items.get(0);
     assertNotNull(item);
     assertEquals(item.getId(), orderLineItem.getId());
-    assertEquals(item.getOrderable().getId(), orderLineItem.getOrderableId());
+    assertEquals(item.getOrderable().getId(), orderLineItem.getOrderable().getId());
     assertEquals(item.getOrderedQuantity(), orderLineItem.getOrderedQuantity());
     assertEquals((long) item.getTotalDispensingUnits(),
         orderableDto.getNetContent() * orderLineItem.getOrderedQuantity());
 
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
+    Set<VersionEntityReference> searchedIds = argumentCaptor.getValue();
+    assertTrue(searchedIds.contains(new VersionEntityReference(
+        orderableDto.getId(), orderableDto.getVersionNumber())));
     assertTrue(searchedIds.size() == 1);
   }
 
   @Test
   public void exportShouldNotSetOrderableIfNoneReturned() {
-    when(orderableReferenceDataService.findByIds(argumentCaptor.capture()))
+    when(orderableReferenceDataService.findByIdentities(argumentCaptor.capture()))
             .thenReturn(Collections.emptyList());
 
     OrderLineItem orderLineItem =
-        generateOrderLineItem(orderableDto.getId());
+        generateOrderLineItem(orderableDto.getId(), orderableDto.getVersionNumber());
     List<OrderLineItemDto> items =
             orderExportHelper.exportToDtos(singletonList(orderLineItem));
     OrderLineItemDto item = items.get(0);
@@ -136,8 +139,9 @@ public class OrderExportHelperTest {
 
     assertEquals(item.getOrderable(), null);
 
-    Set<UUID> searchedIds = argumentCaptor.getValue();
-    assertTrue(searchedIds.contains(orderableDto.getId()));
+    Set<VersionEntityReference> searchedIds = argumentCaptor.getValue();
+    assertTrue(searchedIds.contains(new VersionEntityReference(
+        orderableDto.getId(), orderableDto.getVersionNumber())));
     assertTrue(searchedIds.size() == 1);
   }
 
@@ -192,7 +196,7 @@ public class OrderExportHelperTest {
     assertEquals(order.getCreatedById(), orderDto.getCreatedBy().getId());
   }
 
-  private OrderLineItem generateOrderLineItem(UUID orderableId) {
+  private OrderLineItem generateOrderLineItem(UUID orderableId, Long versionNumber) {
     ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
     programOrderableDto.setProgramId(program.getId());
     Set<ProgramOrderableDto> products = new HashSet<>();
@@ -201,7 +205,7 @@ public class OrderExportHelperTest {
 
     return new OrderLineItemDataBuilder()
         .withOrder(order)
-        .withOrderableId(orderableId)
+        .withOrderable(orderableId, versionNumber)
         .build();
   }
 
@@ -217,11 +221,14 @@ public class OrderExportHelperTest {
         .withCreatedById(user.getId())
         .build();
 
-    orderableDto = new OrderableDto();
-    orderableDto.setId(UUID.randomUUID());
-    orderableDto.setNetContent(PACK_SIZE);
+    orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .withNetContent(PACK_SIZE)
+        .build();
 
-    OrderLineItem orderLineItem = generateOrderLineItem(orderableDto.getId());
+    OrderLineItem orderLineItem = generateOrderLineItem(
+        orderableDto.getId(), orderableDto.getVersionNumber());
     order.setOrderLineItems(new ArrayList<>(
         singletonList(orderLineItem)));
   }

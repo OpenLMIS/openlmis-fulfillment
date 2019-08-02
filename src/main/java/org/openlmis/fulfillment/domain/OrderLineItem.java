@@ -15,9 +15,13 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -27,8 +31,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
 @Table(name = "order_line_items")
@@ -42,10 +46,13 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Order order;
 
-  @Column(nullable = false)
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "id", column = @Column(name = "orderableId")),
+      @AttributeOverride(name = "versionNumber", column = @Column(name = "orderableVersionNumber"))
+  })
   @Getter
-  @Type(type = UUID_TYPE)
-  private UUID orderableId;
+  private VersionEntityReference orderable;
 
   @Column(nullable = false)
   @Getter
@@ -58,9 +65,13 @@ public class OrderLineItem extends BaseEntity {
    * @return new instance of OrderLineItem.
    */
   public static OrderLineItem newInstance(Importer importer) {
-    UUID orderable = null != importer.getOrderable()
-        ? importer.getOrderable().getId()
-        : null;
+    VersionIdentityDto orderableDto = importer.getOrderableIdentity();
+
+    VersionEntityReference orderable = Optional
+        .ofNullable(orderableDto)
+        .map(item -> new VersionEntityReference(orderableDto.getId(),
+            orderableDto.getVersionNumber()))
+        .orElse(null);
 
     OrderLineItem orderLineItem = new OrderLineItem(
         null, orderable, importer.getOrderedQuantity()
@@ -93,7 +104,7 @@ public class OrderLineItem extends BaseEntity {
   public interface Importer {
     UUID getId();
 
-    OrderableDto getOrderable();
+    VersionIdentityDto getOrderableIdentity();
 
     Long getOrderedQuantity();
 

@@ -13,39 +13,27 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.web.util;
+package org.openlmis.fulfillment.domain;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
-import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-public class ProofOfDeliveryLineItemDtoTest {
+public class VersionEntityReferenceTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier
-        .forClass(ProofOfDeliveryLineItemDto.class)
-        .withRedefinedSuperclass()
+    EqualsVerifier.forClass(VersionEntityReference.class)
         .suppress(Warning.NONFINAL_FIELDS)
-        .withIgnoredFields("serviceUrl")
+        .withRedefinedSuperclass()
         .verify();
   }
 
   @Test
   public void shouldImplementToString() {
-    OrderableDto orderableDto = new OrderableDataBuilder().build();
-    ProofOfDeliveryLineItem domain = new ProofOfDeliveryLineItemDataBuilder()
-        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
-        .build();
-    ProofOfDeliveryLineItemDto dto = new ProofOfDeliveryLineItemDto();
-    domain.export(dto, orderableDto);
-
-    ToStringTestUtils.verify(ProofOfDeliveryLineItemDto.class, dto);
+    VersionEntityReference reference = new VersionEntityReference();
+    ToStringTestUtils.verify(VersionEntityReference.class, reference);
   }
 
 }

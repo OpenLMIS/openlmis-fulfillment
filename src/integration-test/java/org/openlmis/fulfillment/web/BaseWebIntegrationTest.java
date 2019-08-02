@@ -480,12 +480,12 @@ public abstract class BaseWebIntegrationTest {
     );
     FileColumn column3 = addOrderFileColumn(
         "752cda76-0db5-4b6e-bb79-0f531ab78e2e", true, "fulfillment.header.product.code",
-        "Product code", true, 3, null, "lineItem", "orderableId", "Orderable",
+        "Product code", true, 3, null, "lineItemOrderable", "id", "Orderable",
         "productCode", template
     );
     FileColumn column4 = addOrderFileColumn(
         "9e825396-269d-4873-baa4-89054e2722f5", true, "fulfillment.header.product.name",
-        "Product name", true, 4, null, "lineItem", "orderableId", "Orderable",
+        "Product name", true, 4, null, "lineItemOrderable", "id", "Orderable",
         "fullProductName", template
     );
     FileColumn column5 = addOrderFileColumn(

@@ -23,13 +23,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
 public class ShipmentLineItemTest {
 
   private UUID lineItemId = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
   private Map<String, String> extraData = new HashMap<>();
@@ -39,10 +40,12 @@ public class ShipmentLineItemTest {
     DummyShipmentLineItemDto exporter = new DummyShipmentLineItemDto();
 
     ShipmentLineItem shipmentLineItem = createShipmentLineItem();
-    shipmentLineItem.export(exporter);
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .build();
+    shipmentLineItem.export(exporter, orderableDto);
 
     assertEquals(lineItemId, exporter.getId());
-    assertEquals(orderableId, exporter.getOrderableId());
+    assertEquals(orderableDto, exporter.getOrderable());
     assertEquals(lotId, exporter.getLotId());
     assertEquals(quantityShipped, exporter.getQuantityShipped());
     assertEquals(extraData, exporter.getExtraData());
@@ -75,7 +78,7 @@ public class ShipmentLineItemTest {
     return new ShipmentLineItemDataBuilder()
         .withId(lineItemId)
         .withLotId(lotId)
-        .withOrderableId(orderableId)
+        //.withOrderable(orderableId, orderableVersionNumber)
         .withQuantityShipped(quantityShipped)
         .withExtraData(extraData)
         .build();

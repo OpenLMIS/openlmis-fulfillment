@@ -15,7 +15,9 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,5 +47,14 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
     exporter.export(line, orderLineItemDto, orderables);
 
     return orderLineItemDto;
+  }
+
+  @JsonIgnore
+  @Override
+  public VersionIdentityDto getOrderableIdentity() {
+    return Optional
+        .ofNullable(orderable)
+        .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
+        .orElse(null);
   }
 }

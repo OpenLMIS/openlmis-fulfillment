@@ -26,6 +26,7 @@ import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.StatusChange;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.referencedata.BaseReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -34,6 +35,7 @@ import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -90,9 +92,10 @@ public class ExporterBuilder {
                      List<OrderableDto> orderables) {
     exporter.setId(item.getId());
     Optional<OrderableDto> orderableOptional = orderables.stream().filter(
-        orderable -> orderable.getId().equals(item.getOrderableId())).findAny();
+        orderable -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()).equals(
+            new VersionIdentityDto(item.getOrderable()))).findAny();
     OrderableDto orderableDto = orderableOptional
-        .orElse(getIfPresent(products, item.getOrderableId()));
+        .orElse(getIfPresent(products, item.getOrderable().getId()));
 
     exporter.setOrderable(orderableDto);
     exporter.setOrderedQuantity(item.getOrderedQuantity());
@@ -152,9 +155,11 @@ public class ExporterBuilder {
    * @return a list of orderable dtos
    */
   public List<OrderableDto> getLineItemOrderables(Order order) {
-    Set<UUID> ids = order.getOrderLineItems().stream().map(
-            OrderLineItem::getOrderableId).collect(Collectors.toSet());
-    return products.findByIds(ids);
+    Set<VersionEntityReference> identities = order.getOrderLineItems()
+        .stream()
+        .map(OrderLineItem::getOrderable).collect(Collectors.toSet());
+
+    return products.findByIdentities(identities);
   }
 
   private <T> T getIfPresent(BaseReferenceDataService<T> service, UUID id) {

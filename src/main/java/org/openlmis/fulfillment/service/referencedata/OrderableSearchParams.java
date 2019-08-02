@@ -13,44 +13,32 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.service.referencedata;
 
-import static java.util.stream.Collectors.toList;
-
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DummyProofOfDeliveryDto
-    implements ProofOfDelivery.Importer, ProofOfDelivery.Exporter {
+@ToString
+@EqualsAndHashCode
+public final class OrderableSearchParams {
 
-  private UUID id;
-  private Identifiable shipment;
-  private ProofOfDeliveryStatus status;
-  private List<ProofOfDeliveryLineItem.Importer> lineItems;
-  private String receivedBy;
-  private String deliveredBy;
-  private LocalDate receivedDate;
+  private String code;
+  private String name;
+  private String programCode;
 
-  DummyProofOfDeliveryDto(ProofOfDelivery pod) {
-    this(
-        pod.getId(), pod.getShipment(), pod.getStatus(),
-        pod.getLineItems().stream().map(DummyProofOfDeliveryLineItemDto::new).collect(toList()),
-        pod.getReceivedBy(), pod.getDeliveredBy(), pod.getReceivedDate()
-    );
-  }
+  private List<VersionIdentityDto> identities;
 
-  @Override
-  public void setShipment(Shipment shipment) {
-    this.shipment = shipment;
-  }
+  private Integer page;
+  private Integer size;
 
 }

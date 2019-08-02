@@ -19,25 +19,34 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.UUID;
 import org.junit.Test;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftLineItemDataBuilder;
 import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
 public class ShipmentDraftLineItemTest {
 
   private UUID lineItemId = UUID.randomUUID();
-  private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 15L;
+  OrderableDto orderableDto = new OrderableDataBuilder()
+      .withId(UUID.randomUUID())
+      .withVersionNumber(1L)
+      .build();
 
   @Test
   public void shouldExportValues() {
     DummyShipmentLineItemDto exporter = new DummyShipmentLineItemDto();
 
     ShipmentDraftLineItem shipmentLineItem = createShipmentLineItem();
-    shipmentLineItem.export(exporter);
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(shipmentLineItem.getOrderable().getId())
+        .withVersionNumber(shipmentLineItem.getOrderable().getVersionNumber())
+        .build();
+    shipmentLineItem.export(exporter, orderableDto);
 
     assertEquals(lineItemId, exporter.getId());
-    assertEquals(orderableId, exporter.getOrderableId());
+    assertEquals(orderableDto, exporter.getOrderable());
     assertEquals(lotId, exporter.getLotId());
     assertEquals(quantityShipped, exporter.getQuantityShipped());
   }
@@ -46,7 +55,7 @@ public class ShipmentDraftLineItemTest {
     return new ShipmentDraftLineItemDataBuilder()
         .withId(lineItemId)
         .withLotId(lotId)
-        .withOrderableId(orderableId)
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
         .withQuantityShipped(quantityShipped)
         .build();
   }
