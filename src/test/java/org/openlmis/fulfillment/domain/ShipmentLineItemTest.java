@@ -78,7 +78,6 @@ public class ShipmentLineItemTest {
     return new ShipmentLineItemDataBuilder()
         .withId(lineItemId)
         .withLotId(lotId)
-        //.withOrderable(orderableId, orderableVersionNumber)
         .withQuantityShipped(quantityShipped)
         .withExtraData(extraData)
         .build();

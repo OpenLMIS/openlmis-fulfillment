@@ -71,7 +71,6 @@ public class ExporterBuilderTest {
   public void setUp() {
     when(orderLineItem.getOrderable()).thenReturn(orderable);
     when(orderableDto.getId()).thenReturn(orderableId);
-    //when(orderableDto.getId()).thenReturn(orderable.getId());
     when(orderableDto.getVersionNumber()).thenReturn(orderable.getVersionNumber());
     when(order.getOrderLineItems()).thenReturn(Collections.singletonList(orderLineItem));
 
@@ -159,9 +158,5 @@ public class ExporterBuilderTest {
     assertTrue(searchedIds.contains(ref));
     assertTrue(searchedIds.size() == 1);
     assertTrue(orderables.contains(orderableDto));
-  }
-
-  private UUID getOrderableIdFromEntityReference() {
-    return orderLineItem.getOrderable().getId();
   }
 }
