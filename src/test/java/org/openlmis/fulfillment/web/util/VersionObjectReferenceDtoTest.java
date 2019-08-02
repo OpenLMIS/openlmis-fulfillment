@@ -15,26 +15,17 @@
 
 package org.openlmis.fulfillment.web.util;
 
-import java.util.UUID;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
 
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public final class VersionObjectReferenceDto extends ObjectReferenceDto {
+public class VersionObjectReferenceDtoTest {
 
-  @Getter
-  @Setter
-  private Long versionNumber;
-
-  public VersionObjectReferenceDto(UUID id, String serviceUrl, String resourceName,
-      Long versionNumber) {
-    super(id, serviceUrl, resourceName);
-    this.versionNumber = versionNumber;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(VersionObjectReferenceDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .withRedefinedSuperclass()
+        .verify();
   }
-
 }
