@@ -16,29 +16,33 @@
 package org.openlmis.fulfillment.web.util;
 
 import java.time.ZonedDateTime;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.fulfillment.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-@EqualsAndHashCode
-public final class MetadataDto {
+public class MetadataDtoTest {
 
-  private String versionNumber;
-  private ZonedDateTime lastUpdated;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(MetadataDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .withRedefinedSuperclass()
+        .verify();
+  }
 
-  /**
-   * A copy constructor.
-   */
-  public MetadataDto(MetadataDto original) {
-    this.versionNumber = original.versionNumber;
-    this.lastUpdated = original.lastUpdated;
+  @Test
+  public void shouldImplementToString() {
+    MetadataDto meta = new MetadataDto();
+    ToStringTestUtils.verify(MetadataDto.class, meta);
+  }
+
+  @Test
+  public void shouldImplementToStringWithACopyConstructor() {
+    MetadataDto metaOriginal = new MetadataDto();
+    metaOriginal.setLastUpdated(ZonedDateTime.now());
+    metaOriginal.setVersionNumber("1L");
+    MetadataDto metaCopy = new MetadataDto(metaOriginal);
+    ToStringTestUtils.verify(MetadataDto.class, metaCopy);
   }
 }
