@@ -15,19 +15,10 @@
 
 package org.openlmis.fulfillment.service;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentLineItem;
-import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
-import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
-import org.openlmis.fulfillment.web.util.BaseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,27 +31,12 @@ public class ShipmentService {
   @Autowired
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
-  @Autowired
-  private OrderableReferenceDataService orderableReferenceDataService;
-
   /**
    * Saves the given shipment to database. Also related Proof Of Delivery will be created.
    */
   public Shipment save(final Shipment shipment) {
     Shipment saved = shipmentRepository.save(shipment);
-
-    Set<VersionEntityReference> orderableIdentitiess = saved
-        .getLineItems()
-        .stream()
-        .map(ShipmentLineItem::getOrderable)
-        .collect(Collectors.toSet());
-
-    Map<UUID, Boolean> useVvm = orderableReferenceDataService
-        .findByIdentities(orderableIdentitiess)
-        .stream()
-        .collect(Collectors.toMap(BaseDto::getId, OrderableDto::useVvm));
-
-    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(saved, useVvm);
+    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(saved);
     proofOfDeliveryRepository.save(proofOfDelivery);
 
     return saved;

@@ -77,7 +77,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private String notes;
 
-  ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem, Boolean useVvm) {
+  ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem) {
     this(
         shipmentLineItem.getOrderable(), shipmentLineItem.getLotId(),
         null, null, null, null, null

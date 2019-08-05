@@ -34,8 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -135,13 +133,7 @@ public class ProofOfDeliveryTest {
         ))
         .build();
 
-    Map<UUID, Boolean> useVvm = shipment
-        .getLineItems()
-        .stream()
-        .map(ShipmentLineItem::getOrderableId)
-        .collect(Collectors.toMap(Function.identity(), key -> true));
-
-    ProofOfDelivery pod = ProofOfDelivery.newInstance(shipment, useVvm);
+    ProofOfDelivery pod = ProofOfDelivery.newInstance(shipment);
 
     assertThat(pod.getShipment(), is(shipment));
     assertThat(pod.getStatus(), is(ProofOfDeliveryStatus.INITIATED));

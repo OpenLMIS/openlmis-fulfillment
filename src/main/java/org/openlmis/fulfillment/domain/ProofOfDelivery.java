@@ -191,15 +191,14 @@ public class ProofOfDelivery extends BaseEntity {
    * vvm status by orderables.
    *
    * @param shipment instance of {@link Shipment}
-   * @param useVvm map that contain information if orderable use vvm status.
    * @return instance of ProofOfDelivery.
    */
-  public static ProofOfDelivery newInstance(Shipment shipment, Map<UUID, Boolean> useVvm) {
+  public static ProofOfDelivery newInstance(Shipment shipment) {
     List<ProofOfDeliveryLineItem> items = shipment
         .getLineItems()
         .stream()
         .filter(ShipmentLineItem::isShipped)
-        .map(line -> new ProofOfDeliveryLineItem(line, useVvm.get(line.getOrderableId())))
+        .map(ProofOfDeliveryLineItem::new)
         .collect(Collectors.toList());
 
     return new ProofOfDelivery(shipment, items);
