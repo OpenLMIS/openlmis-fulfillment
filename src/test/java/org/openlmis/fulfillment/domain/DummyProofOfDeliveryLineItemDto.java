@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Getter
@@ -41,14 +40,10 @@ public class DummyProofOfDeliveryLineItemDto
   private UUID rejectionReasonId;
   private String notes;
 
-  DummyProofOfDeliveryLineItemDto(ProofOfDeliveryLineItem line) {
+  DummyProofOfDeliveryLineItemDto(ProofOfDeliveryLineItem line, OrderableDto orderableDto) {
     this(
-        line.getId(), new OrderableDataBuilder()
-            .withId(line.getOrderable().getId())
-            .withVersionNumber(line.getOrderable().getVersionNumber())
-            .build(),
-        line.getLotId(), line.getQuantityAccepted(),
-        line.getUseVvm(), line.getVvmStatus(), line.getQuantityRejected(),
+        line.getId(), orderableDto, line.getLotId(), line.getQuantityAccepted(),
+        orderableDto.useVvm(), line.getVvmStatus(), line.getQuantityRejected(),
         line.getRejectionReasonId(), line.getNotes()
     );
   }

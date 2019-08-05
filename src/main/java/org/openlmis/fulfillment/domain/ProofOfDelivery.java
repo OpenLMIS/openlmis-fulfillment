@@ -20,9 +20,12 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
@@ -42,7 +45,9 @@ import lombok.NoArgsConstructor;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -112,7 +117,7 @@ public class ProofOfDelivery extends BaseEntity {
   /**
    * Try to confirm this Proof of delivery.
    */
-  public void confirm() {
+  public void confirm(Map<VersionIdentityDto, OrderableDto> orderables) {
     Validations.throwIfBlank(deliveredBy, "deliveredBy");
     Validations.throwIfBlank(receivedBy, "receivedBy");
     Validations.throwIfNull(receivedDate, "receivedDate");
@@ -124,7 +129,7 @@ public class ProofOfDelivery extends BaseEntity {
           .filter(shipped -> shipped.getOrderable().equals(lineItem.getOrderable())
               && Objects.equals(shipped.getLotId(), lineItem.getLotId()))
           .findFirst()
-          .ifPresent(shipped -> lineItem.validate(shipped.getQuantityShipped()));
+          .ifPresent(shipped -> lineItem.validate(shipped.getQuantityShipped(), orderables));
     }
 
     status = ProofOfDeliveryStatus.CONFIRMED;
@@ -204,6 +209,18 @@ public class ProofOfDelivery extends BaseEntity {
     if (isEmpty(lineItems)) {
       throw new ValidationException(MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
     }
+  }
+
+  /**
+   * Returns a set of all orderable identities in this proof of delivery.
+   */
+  public Set<VersionEntityReference> getAllOrderables() {
+    return Optional
+        .ofNullable(lineItems)
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(ProofOfDeliveryLineItem::getOrderable)
+        .collect(Collectors.toSet());
   }
 
   /**

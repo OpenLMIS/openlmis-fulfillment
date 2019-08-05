@@ -96,4 +96,9 @@ public class OrderableDataBuilder {
     return this;
   }
 
+  public OrderableDataBuilder withExtraData(Map<String, String> extraData) {
+    this.extraData = extraData;
+    return this;
+  }
+
 }

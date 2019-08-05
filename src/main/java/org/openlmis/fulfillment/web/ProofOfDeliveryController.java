@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -33,6 +36,7 @@ import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
@@ -40,6 +44,8 @@ import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ProofOfDeliveryService;
 import org.openlmis.fulfillment.service.TemplateService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -48,6 +54,7 @@ import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -115,6 +122,9 @@ public class ProofOfDeliveryController extends BaseController {
 
   @Autowired
   private ProofOfDeliveryService proofOfDeliveryService;
+
+  @Autowired
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Value("${dateFormat}")
   private String dateFormat;
@@ -192,8 +202,12 @@ public class ProofOfDeliveryController extends BaseController {
     toUpdate.updateFrom(proofOfDelivery);
 
     if (dto.getStatus() == ProofOfDeliveryStatus.CONFIRMED) {
+      Map<VersionIdentityDto, OrderableDto> orderables = findOrderables(
+          toUpdate::getAllOrderables, profiler
+      );
+
       profiler.start("CONFIRM_POD");
-      toUpdate.confirm();
+      toUpdate.confirm(orderables);
 
       profiler.start("UPDATE_ORDER_STATUS_AND_SAVE");
       Order order = toUpdate.getShipment().getOrder();
@@ -353,6 +367,15 @@ public class ProofOfDeliveryController extends BaseController {
     }
 
     return entity;
+  }
+
+  private Map<VersionIdentityDto, OrderableDto> findOrderables(
+      Supplier<Set<VersionEntityReference>> supplier, Profiler profiler) {
+    profiler.start("GET_ORDERABLES");
+    return orderableReferenceDataService
+        .findByIdentities(supplier.get())
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getIdentity, Function.identity()));
   }
 
   private void canManagePod(OAuth2Authentication authentication, Profiler profiler,

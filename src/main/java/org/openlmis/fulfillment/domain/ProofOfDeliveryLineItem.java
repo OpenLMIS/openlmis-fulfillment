@@ -15,11 +15,11 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_QUANTITIES;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
@@ -63,10 +63,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private Integer quantityAccepted;
 
-  @Column(nullable = false)
-  @Getter(AccessLevel.PACKAGE)
-  private Boolean useVvm;
-
   @Enumerated(EnumType.STRING)
   @Getter(AccessLevel.PACKAGE)
   private VvmStatus vvmStatus;
@@ -84,8 +80,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem, Boolean useVvm) {
     this(
         shipmentLineItem.getOrderable(), shipmentLineItem.getLotId(),
-        null, toBoolean(useVvm),
-        null, null, null, null
+        null, null, null, null, null
     );
   }
 
@@ -117,9 +112,11 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @param quantityShipped this value should be from related shipment line item.
    * @throws ValidationException if any validation does not match.
    */
-  void validate(Long quantityShipped) {
+  void validate(Long quantityShipped, Map<VersionIdentityDto, OrderableDto> orderables) {
     Validations.throwIfLessThanZeroOrNull(quantityAccepted, "quantityAccepted");
     Validations.throwIfLessThanZeroOrNull(quantityRejected, "quantityRejected");
+
+    boolean useVvm = getUseVvmFromOrderables(orderables);
 
     if (quantityAccepted > 0
         && useVvm
@@ -134,6 +131,11 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     if (quantityAccepted + quantityRejected != Math.toIntExact(quantityShipped)) {
       throw new ValidationException(ERROR_INCORRECT_QUANTITIES);
     }
+  }
+
+  private Boolean getUseVvmFromOrderables(Map<VersionIdentityDto, OrderableDto> orderables) {
+    OrderableDto orderableDto = orderables.get(new VersionIdentityDto(this.orderable));
+    return orderableDto.useVvm();
   }
 
   /**
@@ -153,7 +155,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
     ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
         orderable, importer.getLotId(), importer.getQuantityAccepted(),
-        importer.getUseVvm(), importer.getVvmStatus(), importer.getQuantityRejected(),
+        importer.getVvmStatus(), importer.getQuantityRejected(),
         importer.getRejectionReasonId(), importer.getNotes()
     );
     lineItem.setId(importer.getId());
@@ -171,7 +173,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityAccepted(quantityAccepted);
-    exporter.setUseVvm(useVvm);
+    exporter.setUseVvm(orderableDto.useVvm());
     exporter.setVvmStatus(vvmStatus);
     exporter.setQuantityRejected(quantityRejected);
     exporter.setRejectionReasonId(rejectionReasonId);
@@ -186,8 +188,6 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     UUID getLotId();
 
     Integer getQuantityAccepted();
-
-    Boolean getUseVvm();
 
     VvmStatus getVvmStatus();
 

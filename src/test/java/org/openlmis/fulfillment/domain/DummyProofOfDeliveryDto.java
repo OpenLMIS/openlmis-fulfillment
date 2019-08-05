@@ -24,6 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 
 @Getter
 @Setter
@@ -40,10 +41,12 @@ public class DummyProofOfDeliveryDto
   private String deliveredBy;
   private LocalDate receivedDate;
 
-  DummyProofOfDeliveryDto(ProofOfDelivery pod) {
+  DummyProofOfDeliveryDto(ProofOfDelivery pod, OrderableDto orderableDto) {
     this(
         pod.getId(), pod.getShipment(), pod.getStatus(),
-        pod.getLineItems().stream().map(DummyProofOfDeliveryLineItemDto::new).collect(toList()),
+        pod.getLineItems()
+            .stream()
+            .map(item -> new DummyProofOfDeliveryLineItemDto(item, orderableDto)).collect(toList()),
         pod.getReceivedBy(), pod.getDeliveredBy(), pod.getReceivedDate()
     );
   }

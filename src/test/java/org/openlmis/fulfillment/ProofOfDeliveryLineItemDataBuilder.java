@@ -39,7 +39,7 @@ public class ProofOfDeliveryLineItemDataBuilder {
    */
   public ProofOfDeliveryLineItem buildAsNew() {
     return new ProofOfDeliveryLineItem(
-        orderable, lotId, quantityAccepted, useVvm, vvmStatus,
+        orderable, lotId, quantityAccepted, vvmStatus,
         quantityRejected, rejectionReasonId, notes
     );
   }

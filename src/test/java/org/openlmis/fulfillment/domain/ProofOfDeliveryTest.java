@@ -29,11 +29,14 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,9 +49,28 @@ import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryTest {
+
+  private Map<VersionIdentityDto, OrderableDto> orderables = Maps.newHashMap();
+  private OrderableDto orderableDto;
+  private List<ProofOfDeliveryLineItem> lineItems;
+
+  @Before
+  public void setUp() {
+    orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .build();
+    orderables.put(orderableDto.getIdentity(), orderableDto);
+
+    lineItems = Collections.singletonList(
+        new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .build());
+  }
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -56,25 +78,39 @@ public class ProofOfDeliveryTest {
   @Test
   public void shouldNotConfirmIfDeliveredByIsBlank() {
     setException("deliveredBy");
-    new ProofOfDeliveryDataBuilder().withoutDeliveredBy().build().confirm();
+    new ProofOfDeliveryDataBuilder()
+        .withoutDeliveredBy()
+        .withLineItems(lineItems)
+        .build()
+        .confirm(orderables);
   }
 
   @Test
   public void shouldNotConfirmIfReceivedByIsBlank() {
     setException("receivedBy");
-    new ProofOfDeliveryDataBuilder().withoutReceivedBy().build().confirm();
+    new ProofOfDeliveryDataBuilder()
+        .withoutReceivedBy()
+        .withLineItems(lineItems)
+        .build()
+        .confirm(orderables);
   }
 
   @Test
   public void shouldNotConfirmIfReceivedDateIsNull() {
     setException("receivedDate");
-    new ProofOfDeliveryDataBuilder().withoutReceivedDate().build().confirm();
+    new ProofOfDeliveryDataBuilder()
+        .withoutReceivedDate()
+        .withLineItems(lineItems)
+        .build()
+        .confirm(orderables);
   }
 
   @Test
   public void shouldConfirm() {
-    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
-    pod.confirm();
+    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder()
+        .withLineItems(lineItems)
+        .build();
+    pod.confirm(orderables);
 
     assertThat(pod.isConfirmed(), is(true));
   }
@@ -82,7 +118,7 @@ public class ProofOfDeliveryTest {
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
     ProofOfDelivery expected = new ProofOfDeliveryDataBuilder().build();
-    ProofOfDelivery.Importer importer = new DummyProofOfDeliveryDto(expected);
+    ProofOfDelivery.Importer importer = new DummyProofOfDeliveryDto(expected, orderableDto);
 
     ProofOfDelivery actual = ProofOfDelivery.newInstance(importer);
 
@@ -123,7 +159,6 @@ public class ProofOfDeliveryTest {
           shipment.getLineItems(),
           hasItem(hasProperty("lotId", is(line.getLotId())))
       );
-      assertThat(line.getUseVvm(), is(true));
       assertThat(line.getQuantityAccepted(), is(nullValue()));
       assertThat(line.getVvmStatus(), is(nullValue()));
       assertThat(line.getQuantityRejected(), is(nullValue()));
@@ -145,11 +180,6 @@ public class ProofOfDeliveryTest {
 
   @Test
   public void shouldConfirmIfLineItemIsLotless() {
-    OrderableDto orderableDto = new OrderableDataBuilder()
-        .withId(UUID.randomUUID())
-        .withVersionNumber(1L)
-        .build();
-
     Shipment shipment = new ShipmentDataBuilder()
         .withLineItems(Collections.singletonList(new ShipmentLineItemDataBuilder()
             .withoutLotId()
@@ -167,7 +197,7 @@ public class ProofOfDeliveryTest {
         ))
         .build();
 
-    proofOfDelivery.confirm();
+    proofOfDelivery.confirm(orderables);
 
     assertTrue(proofOfDelivery.isConfirmed());
   }

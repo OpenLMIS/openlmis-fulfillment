@@ -21,37 +21,71 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_INCORRECT_VVM_STAT
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_MISSING_REASON;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO;
 
+import com.google.common.collect.Maps;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.naming.VvmStatus;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 public class ProofOfDeliveryLineItemTest {
 
+  private Map<VersionIdentityDto, OrderableDto> orderables = Maps.newHashMap();
+  private OrderableDto orderableDto;
+  private Map<String, String> extraData = new HashMap<>();
+
   @Rule
   public ExpectedException exception = ExpectedException.none();
+
+  @Before
+  public void setUp() {
+    extraData.put("useVVM", "true");
+    orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .withExtraData(extraData)
+        .build();
+
+    orderables.put(orderableDto.getIdentity(), orderableDto);
+  }
 
   @Test
   public void shouldThrowExceptionIfQuantityAcceptedIsLessThanZero() {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
-    new ProofOfDeliveryLineItemDataBuilder().withIncorrectQuantityAccepted().build().validate(null);
+    new ProofOfDeliveryLineItemDataBuilder()
+        .withIncorrectQuantityAccepted()
+        .build()
+        .validate(null, null);
   }
 
   @Test
   public void shouldThrowExceptionIfQuantityRejectedIsLessThanZero() {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO));
-    new ProofOfDeliveryLineItemDataBuilder().withIncorrectQuantityRejected().build().validate(null);
+    new ProofOfDeliveryLineItemDataBuilder()
+        .withIncorrectQuantityRejected()
+        .build()
+        .validate(null, null);
   }
 
   @Test
   public void shouldThrowExceptionIfUseVvmAndStatusIsNull() {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(ERROR_INCORRECT_VVM_STATUS));
-    new ProofOfDeliveryLineItemDataBuilder().withoutVvmStatus().build().validate(null);
+    ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .withoutVvmStatus()
+        .build();
+    lineItem.validate(null, orderables);
   }
 
   @Test
@@ -59,16 +93,21 @@ public class ProofOfDeliveryLineItemTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(ERROR_INCORRECT_VVM_STATUS));
     new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
         .withVvmStatus(VvmStatus.STAGE_4)
         .build()
-        .validate(null);
+        .validate(null, orderables);
   }
 
   @Test
   public void shouldThrowExceptionIfReasonIsNotProvided() {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(ERROR_MISSING_REASON));
-    new ProofOfDeliveryLineItemDataBuilder().withoutReason().build().validate(null);
+    new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .withoutReason()
+        .build()
+        .validate(null, orderables);
   }
 
   @Test
@@ -76,18 +115,22 @@ public class ProofOfDeliveryLineItemTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(startsWith(ERROR_INCORRECT_QUANTITIES));
 
-    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItemDataBuilder().build();
+    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .build();
     // we calculate shipped quantity in this way to make sure that the sum of accepted and
     // rejected quantities will be incorrect
     Long quantityShipped = (long) (line.getQuantityAccepted() + line.getQuantityRejected() + 10);
-    line.validate(quantityShipped);
+    line.validate(quantityShipped, orderables);
   }
 
   @Test
   public void shouldValidate() {
-    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItemDataBuilder().build();
+    ProofOfDeliveryLineItem line = new ProofOfDeliveryLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .build();
     Long quantityShipped = (long) (line.getQuantityAccepted() + line.getQuantityRejected());
-    line.validate(quantityShipped);
+    line.validate(quantityShipped, orderables);
   }
 
 }
