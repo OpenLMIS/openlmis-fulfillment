@@ -5,7 +5,7 @@
   "description": "The object contains a resource metadata",
   "properties": {
     "versionNumber": {
-      "type": "string",
+      "type": "number",
       "title": "versionNumber",
       "description": "The version number of a resource. The property contains the last known version of the resource."
     },

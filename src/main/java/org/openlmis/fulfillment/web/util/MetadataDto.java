@@ -31,7 +31,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public final class MetadataDto {
 
-  private String versionNumber;
+  private Long versionNumber;
   private ZonedDateTime lastUpdated;
 
   /**

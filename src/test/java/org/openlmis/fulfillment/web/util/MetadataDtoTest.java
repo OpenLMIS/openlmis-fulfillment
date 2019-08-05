@@ -41,7 +41,7 @@ public class MetadataDtoTest {
   public void shouldImplementToStringWithACopyConstructor() {
     MetadataDto metaOriginal = new MetadataDto();
     metaOriginal.setLastUpdated(ZonedDateTime.now());
-    metaOriginal.setVersionNumber("1L");
+    metaOriginal.setVersionNumber(1L);
     MetadataDto metaCopy = new MetadataDto(metaOriginal);
     ToStringTestUtils.verify(MetadataDto.class, metaCopy);
   }

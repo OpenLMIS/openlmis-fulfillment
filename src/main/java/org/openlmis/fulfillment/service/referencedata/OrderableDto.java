@@ -55,7 +55,7 @@ public class OrderableDto extends BaseDto {
 
   @JsonIgnore
   public Long getVersionNumber() {
-    return Long.valueOf(meta.getVersionNumber());
+    return meta.getVersionNumber();
   }
 
   @JsonIgnore

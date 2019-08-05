@@ -30,7 +30,7 @@ public class OrderableDataBuilder {
   private static int instanceNumber = 0;
 
   private UUID id;
-  private String versionNumber;
+  private Long versionNumber;
   private ZonedDateTime lastUpdated;
   private String productCode;
   private String fullProductName;
@@ -48,7 +48,7 @@ public class OrderableDataBuilder {
     instanceNumber++;
 
     id = UUID.randomUUID();
-    versionNumber = "1";
+    versionNumber = 1L;
     lastUpdated = ZonedDateTime.now();
     productCode = "P" + instanceNumber;
     fullProductName = "product" + instanceNumber;
@@ -82,7 +82,7 @@ public class OrderableDataBuilder {
   }
 
   public OrderableDataBuilder withVersionNumber(Long versionNumber) {
-    this.versionNumber = versionNumber.toString();
+    this.versionNumber = versionNumber;
     return this;
   }
 

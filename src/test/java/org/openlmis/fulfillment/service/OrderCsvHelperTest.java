@@ -144,7 +144,7 @@ public class OrderCsvHelperTest {
   public void shouldExportOrderLineItemFields() throws IOException {
     List<FileColumn> fileColumns = new ArrayList<>();
     fileColumns.add(new FileColumn(true, HEADER_ORDERABLE, PRODUCT,
-        true, 1, null, LINE_ITEM, "orderable", null, null, null));
+        true, 1, null, LINE_ITEM, ORDERABLE, null, null, null));
     fileColumns.add(new FileColumn(true, "header.quantity.ordered", ORDERED_QUANTITY,
         true, 2, null, LINE_ITEM, "orderedQuantity", null, null, null));
 
