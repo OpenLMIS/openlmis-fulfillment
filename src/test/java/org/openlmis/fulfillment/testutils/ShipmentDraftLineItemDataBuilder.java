@@ -24,7 +24,6 @@ public class ShipmentDraftLineItemDataBuilder {
 
   private UUID id = UUID.randomUUID();
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
-  //private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = new Random().nextLong();
 

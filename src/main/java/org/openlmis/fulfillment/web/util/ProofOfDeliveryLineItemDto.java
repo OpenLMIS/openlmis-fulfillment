@@ -44,7 +44,6 @@ public final class ProofOfDeliveryLineItemDto
   private String serviceUrl;
 
   @Getter
-  @Setter
   private VersionObjectReferenceDto orderable;
 
   @Getter
