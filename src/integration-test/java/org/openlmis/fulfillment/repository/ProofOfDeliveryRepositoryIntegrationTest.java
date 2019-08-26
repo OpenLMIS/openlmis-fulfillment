@@ -97,7 +97,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Override
   ProofOfDelivery generateInstance() {
-    return generateInstance(true);
+    return buildInstance(true);
   }
 
   @Override
@@ -315,7 +315,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     List<ProofOfDelivery> list = Lists.newArrayList();
 
     for (int i = 0; i < 10; ++i) {
-      list.add(generateInstance(false));
+      list.add(buildInstance(false));
     }
 
     proofOfDeliveryRepository.save(list);
@@ -457,7 +457,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     }
   }
 
-  private ProofOfDelivery generateInstance(boolean withLineItems) {
+  private ProofOfDelivery buildInstance(boolean withLineItems) {
     OrderableDto orderableDto = new OrderableDataBuilder()
         .withId(UUID.randomUUID())
         .withVersionNumber(1L)
