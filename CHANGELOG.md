@@ -11,6 +11,9 @@ Improvements:
 * [OLMIS-6408](https://openlmis.atlassian.net/browse/OLMIS-6408): Added pageable validator.
 * [OLMIS-5746](https://openlmis.atlassian.net/browse/OLMIS-5746): Added missing records proofs_of_delivery and shipments to demo data.
 
+Bug fixes:
+* [OLMIS-6479](https://openlmis.atlassian.net/browse/OLMIS-6479): Searching for PoD by Order ID now works properly even if PoD has no line items.
+
 8.0.2 / 2019-05-27
 ==================
 

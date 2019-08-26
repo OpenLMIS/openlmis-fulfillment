@@ -44,7 +44,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       + " FROM ProofOfDelivery AS p"
       + " INNER JOIN FETCH p.shipment AS s"
       + " INNER JOIN FETCH s.order AS o"
-      + " INNER JOIN FETCH p.lineItems";
+      + " LEFT JOIN FETCH p.lineItems";
 
   private static final String POD_COUNT = "SELECT DISTINCT COUNT(*)"
       + " FROM ProofOfDelivery AS p"

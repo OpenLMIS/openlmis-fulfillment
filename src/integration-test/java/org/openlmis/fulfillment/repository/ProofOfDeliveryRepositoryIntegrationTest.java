@@ -97,37 +97,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
   @Override
   ProofOfDelivery generateInstance() {
-    OrderableDto orderableDto = new OrderableDataBuilder()
-        .withId(UUID.randomUUID())
-        .withVersionNumber(1L)
-        .build();
-    Order order = new OrderDataBuilder()
-        .withoutId()
-        .withoutLineItems()
-        .build();
-    Shipment shipment = new ShipmentDataBuilder()
-        .withoutId()
-        .withoutLineItems()
-        .withOrder(order)
-        .build();
-    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder()
-        .withShipment(shipment)
-        .withoutReceivedDate()
-        .withoutReceivedBy()
-        .withoutDeliveredBy()
-        .withLineItems(Lists.newArrayList(
-            new ProofOfDeliveryLineItemDataBuilder()
-                .withoutQuantityAccepted()
-                .withoutQuantityRejected()
-                .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
-                .build()
-        ))
-        .buildAsNew();
-
-    orderRepository.save(order);
-    shipmentRepository.save(shipment);
-
-    return pod;
+    return generateInstance(true);
   }
 
   @Override
@@ -341,6 +311,26 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   }
 
   @Test
+  public void shouldFindProofOfDeliveryWithEmptyLineItemsByOrderId() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 10; ++i) {
+      list.add(generateInstance(false));
+    }
+
+    proofOfDeliveryRepository.save(list);
+
+    for (ProofOfDelivery proofOfDelivery : list) {
+      Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null,
+          createPageable(10, 0));
+
+      assertEquals(1, found.getTotalElements());
+      assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
+    }
+  }
+
+  @Test
   public void shouldFindProofOfDeliveryByAllParameters() {
     List<ProofOfDelivery> list = Lists.newArrayList();
 
@@ -465,5 +455,42 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
         assertThat(snapshot.getPropertyValue(fields[i]), is(values[i]));
       }
     }
+  }
+
+  private ProofOfDelivery generateInstance(boolean withLineItems) {
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withId(UUID.randomUUID())
+        .withVersionNumber(1L)
+        .build();
+    Order order = new OrderDataBuilder()
+        .withoutId()
+        .withoutLineItems()
+        .build();
+    Shipment shipment = new ShipmentDataBuilder()
+        .withoutId()
+        .withoutLineItems()
+        .withOrder(order)
+        .build();
+
+    List<ProofOfDeliveryLineItem> lineItemsList = withLineItems ? Lists.newArrayList(
+        new ProofOfDeliveryLineItemDataBuilder()
+            .withoutQuantityAccepted()
+            .withoutQuantityRejected()
+            .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+            .build()
+    ) : Lists.newArrayList();
+
+    ProofOfDelivery pod = new ProofOfDeliveryDataBuilder()
+        .withShipment(shipment)
+        .withoutReceivedDate()
+        .withoutReceivedBy()
+        .withoutDeliveredBy()
+        .withLineItems(lineItemsList)
+        .buildAsNew();
+
+    orderRepository.save(order);
+    shipmentRepository.save(shipment);
+
+    return pod;
   }
 }
