@@ -74,7 +74,7 @@ FROM
     ON pod_li.proofofdeliveryid = pod.id
   JOIN
   referencedata.orderables orderable
-    ON orderable.id = pod_li.orderableid
+    ON orderable.id = pod_li.orderableid AND orderable.versionnumber = pod_li.orderableversionnumber
   JOIN
   referencedata.dispensables dispensable
     ON dispensable.id = orderable.dispensableid
@@ -82,7 +82,7 @@ FROM
                                                        AND (pod_orderable_identifier.key = 'tradeItem' OR pod_orderable_identifier.key = 'commodityType')
   LEFT JOIN
   fulfillment.order_line_items order_li
-    ON order_li.orderid = ord.id AND (pod_li.orderableid = order_li.orderableid OR order_li.orderableid IN
+    ON order_li.orderid = ord.id AND (pod_li.orderableid = order_li.orderableid AND pod_li.orderableversionnumber = order_li.orderableversionnumber OR order_li.orderableid IN
     (
       SELECT
         o.id
@@ -134,6 +134,7 @@ FROM
   fulfillment.shipment_line_items shipment_li
     ON shipment_li.shipmentid = shipment.id
        AND pod_li.orderableid = shipment_li.orderableid
+       AND pod_li.orderableversionnumber = shipment_li.orderableversionnumber
        AND
        (
          (pod_li.lotid IS NULL
@@ -161,6 +162,7 @@ FROM
 LEFT JOIN
   referencedata.orderables order_orderable
     ON order_orderable.id = order_li.orderableid
+    AND order_orderable.versionnumber = order_li.orderableversionnumber
 WHERE
   pod.id = $P{id}::uuid
 ORDER BY
