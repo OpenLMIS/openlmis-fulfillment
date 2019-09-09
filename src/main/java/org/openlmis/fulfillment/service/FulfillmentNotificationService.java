@@ -38,6 +38,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.util.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,8 +50,8 @@ public class FulfillmentNotificationService {
   private static final String FIRST_NAME = "firstName";
   private static final String LAST_NAME = "lastName";
   private static final String POD_URL = "podUrl";
-  private static final String POD_BASE = System.getenv("BASE_URL") + "/#!/pod/";
-
+  private static final String POD_BASE = "/#!/pod/";
+  
   @Autowired
   private NotificationService notificationService;
 
@@ -63,6 +64,9 @@ public class FulfillmentNotificationService {
   @Autowired
   protected MessageService messageService;
 
+  @Value("${publicUrl}")
+  private String publicUrl;
+  
   /**
    * Send notification to the shipper of the associated Proof of Delivery informing them that the
    * Proof of Delivery has been confirmed.
@@ -107,7 +111,7 @@ public class FulfillmentNotificationService {
     messageParams.put(SHIPMENT_DATE, pod.getShipment().getShippedDate().toLocalDate().toString());
     messageParams.put(FIRST_NAME, user.getFirstName());
     messageParams.put(LAST_NAME, user.getLastName());
-    messageParams.put(POD_URL, POD_BASE + pod.getId());
+    messageParams.put(POD_URL, publicUrl + POD_BASE + pod.getId());
 
     return messageParams;
   }
