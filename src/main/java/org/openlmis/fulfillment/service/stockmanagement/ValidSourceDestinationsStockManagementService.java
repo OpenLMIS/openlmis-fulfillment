@@ -38,19 +38,19 @@ public abstract class ValidSourceDestinationsStockManagementService
   /**
    * Try to find an instance of {@link ValidSourceDestinationDto} based on passed parameters.
    */
-  public Optional<ValidSourceDestinationDto> search(UUID program, UUID facilityType,
-      UUID facility) {
-    Collection<ValidSourceDestinationDto> sources = search(program, facilityType);
+  public Optional<ValidSourceDestinationDto> search(UUID programId, UUID fromFacilityId,
+      UUID toFacilityId) {
+    Collection<ValidSourceDestinationDto> sources = search(programId, fromFacilityId);
 
     return sources
         .stream()
         .filter(elem -> elem.getNode().isRefDataFacility())
-        .filter(elem -> Objects.equals(facility, elem.getNode().getReferenceId()))
+        .filter(elem -> Objects.equals(toFacilityId, elem.getNode().getReferenceId()))
         .findFirst();
   }
 
-  private Collection<ValidSourceDestinationDto> search(UUID program, UUID facilityType) {
+  private Collection<ValidSourceDestinationDto> search(UUID programId, UUID fromFacilityId) {
     return findAll("", RequestParameters.init()
-        .set("program", program).set("facilityType", facilityType));
+        .set("programId", programId).set("facilityId", fromFacilityId));
   }
 }
