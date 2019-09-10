@@ -78,9 +78,9 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
 
     // when
     UUID program = UUID.randomUUID();
-    UUID facilityType = UUID.randomUUID();
+    UUID fromFacilityId = UUID.randomUUID();
     Optional<ValidSourceDestinationDto> validSourceDestination = service
-        .search(program, facilityType, facility);
+        .search(program, fromFacilityId, facility);
 
     // then
     assertThat(validSourceDestination.isPresent(), is(true));
@@ -97,8 +97,8 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
         uri,
         allOf(
             startsWith(url),
-            containsString("program=" + program),
-            containsString("facilityType=" + facilityType)
+            containsString("programId=" + program),
+            containsString("facilityId=" + fromFacilityId)
         )
     );
 

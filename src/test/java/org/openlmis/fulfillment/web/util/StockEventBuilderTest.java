@@ -48,7 +48,6 @@ import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.FacilityTypeDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -100,10 +99,10 @@ public class StockEventBuilderTest {
   @InjectMocks
   private StockEventBuilder stockEventBuilder;
 
-  private FacilityDto facility = DtoGenerator.of(FacilityDto.class);
-  private FacilityTypeDto facilityType = facility.getType();
+  private FacilityDto toFacilityDto = DtoGenerator.of(FacilityDto.class);
+  private FacilityDto fromFacilityDto = DtoGenerator.of(FacilityDto.class);
   private ValidSourceDestinationDto destination = new ValidSourceDestinationDtoDataBuilder()
-      .withNode(facility.getId())
+      .withNode(toFacilityDto.getId())
       .build();
   private NodeDto node = destination.getNode();
   private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
@@ -114,16 +113,16 @@ public class StockEventBuilderTest {
   @Before
   public void setUp() {
     when(facilityReferenceDataService.findOne(order.getReceivingFacilityId()))
-        .thenReturn(facility);
+        .thenReturn(toFacilityDto);
     when(facilityReferenceDataService.findOne(order.getSupplyingFacilityId()))
-        .thenReturn(facility);
+        .thenReturn(toFacilityDto);
 
     when(validDestinationsStockManagementService
-        .search(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .search(order.getProgramId(), fromFacilityDto.getId(), toFacilityDto.getId()))
         .thenReturn(Optional.of(destination));
 
     when(validSourcesStockManagementService
-        .search(order.getProgramId(), facilityType.getId(), facility.getId()))
+        .search(order.getProgramId(), fromFacilityDto.getId(), toFacilityDto.getId()))
         .thenReturn(Optional.of(destination));
 
     when(configurationSettingService.getTransferInReasonId())

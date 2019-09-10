@@ -246,7 +246,7 @@ public class StockEventBuilder {
     FacilityDto toFacility = facilityReferenceDataService.findOne(toFacilityId);
 
     Optional<ValidSourceDestinationDto> response = service
-        .search(programId, fromFacility.getType().getId(), toFacility.getId());
+        .search(programId, fromFacility.getId(), toFacility.getId());
 
     if (response.isPresent()) {
       return response.get().getNode().getId();
