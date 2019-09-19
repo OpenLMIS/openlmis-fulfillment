@@ -13,6 +13,7 @@ Improvements:
 * [OLMIS-5746](https://openlmis.atlassian.net/browse/OLMIS-5746): Added missing records proofs_of_delivery and shipments to demo data.
 * [OLMIS-6494](https://openlmis.atlassian.net/browse/OLMIS-6494): Updated Proof of Delivery report to display the correct version of an orderable.
 * [OLMIS-6556](https://openlmis.atlassian.net/browse/OLMIS-6494): Adjust source destination search method to use the programId and facilityId
+* [OLMIS-6564](https://openlmis.atlassian.net/browse/OLMIS-6564): Changed wiremock dependency configuration to avoid issue with HTTP response compression.
 
 Bug fixes:
 * [OLMIS-6479](https://openlmis.atlassian.net/browse/OLMIS-6479): Searching for PoD by Order ID now works properly even if PoD has no line items.
