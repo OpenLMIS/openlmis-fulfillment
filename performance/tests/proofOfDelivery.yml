@@ -90,9 +90,9 @@ reporting:
     - module: passfail
       criteria:
         Get All PODs is too slow: p90 of GetAllProofsOfDelivery>12000ms
-        Get POD By Order Id is too slow: p90 of GetProofsOfDeliveryByOrderId>5000ms
-        Get POD is too slow: p90 of GetProofOfDelivery>4000ms
-        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>7500ms
-        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>15000ms
+        Get POD By Order Id is too slow: p90 of GetProofsOfDeliveryByOrderId>8000ms
+        Get POD is too slow: p90 of GetProofOfDelivery>8000ms
+        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>16000ms
+        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>26000ms
         Print POD As Pdf is too slow: p90 of PrintProofOfDeliveryAsPdf>4000ms
-        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>3200ms
+        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>4000ms

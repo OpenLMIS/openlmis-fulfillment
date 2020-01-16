@@ -88,10 +88,10 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Get All Orders is too slow: p90 of GetAllOrders>4500ms
+        Get All Orders is too slow: p90 of GetAllOrders>4700ms
         Get Order is too slow: p90 of GetOrder>8000ms
         Find Order By Supplying Facility is too slow: p90 of FindOrdersBySupplyingFacility>4000ms
         Get Requesting Facilities is too slow: p90 of GetRequestingFacilities>500ms
-        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>90000ms
-        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>85000ms
-        Export Order As Csv is too slow: p90 of ExportOrderAsCsv>160000ms
+        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>170000ms
+        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>170000ms
+        Export Order As Csv is too slow: p90 of ExportOrderAsCsv>200000ms

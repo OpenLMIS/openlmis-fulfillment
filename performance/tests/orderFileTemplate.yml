@@ -16,4 +16,4 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Get Order File Template is too slow: p90 of GetOrderFileTemplate>1000ms
+        Get Order File Template is too slow: p90 of GetOrderFileTemplate>1500ms
