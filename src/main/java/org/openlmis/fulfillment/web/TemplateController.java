@@ -16,11 +16,12 @@
 package org.openlmis.fulfillment.web;
 
 import java.util.UUID;
-import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.TemplateRepository;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.web.util.TemplateDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/reports/templates/fulfillment")
 public class TemplateController extends BaseController {
 
-  private static final Logger LOGGER = Logger.getLogger(TemplateController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemplateController.class);
 
   private static final String CONSISTENCY_REPORT = "Consistency Report";
 
@@ -88,18 +89,18 @@ public class TemplateController extends BaseController {
   public ResponseEntity<TemplateDto> updateTemplate(@RequestBody TemplateDto templateDto,
                                           @PathVariable("id") UUID templateId) {
     Template template = Template.newInstance(templateDto);
-    Template templateToUpdate = templateRepository.findOne(templateId);
+    Template templateToUpdate = templateRepository.findById(templateId).orElse(null);
     if (templateToUpdate == null) {
       templateToUpdate = new Template();
       LOGGER.info("Creating new template");
     } else {
-      LOGGER.debug("Updating template with id: " + templateId);
+      LOGGER.debug("Updating template with id: {}", templateId);
     }
 
     templateToUpdate.updateFrom(template);
     templateToUpdate = templateRepository.save(templateToUpdate);
 
-    LOGGER.debug("Saved template with id: " + templateToUpdate.getId());
+    LOGGER.debug("Saved template with id: {}", templateToUpdate.getId());
     return new ResponseEntity<>(TemplateDto.newInstance(templateToUpdate), HttpStatus.OK);
   }
 
@@ -111,7 +112,7 @@ public class TemplateController extends BaseController {
    */
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   public ResponseEntity<TemplateDto> getTemplate(@PathVariable("id") UUID templateId) {
-    Template template = templateRepository.findOne(templateId);
+    Template template = templateRepository.findById(templateId).orElse(null);
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {
@@ -128,7 +129,7 @@ public class TemplateController extends BaseController {
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   public ResponseEntity<TemplateDto> deleteTemplate(@PathVariable("id")
                                               UUID templateId) {
-    Template template = templateRepository.findOne(templateId);
+    Template template = templateRepository.findById(templateId).orElse(null);
     if (template == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     } else {

@@ -21,10 +21,11 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -39,9 +40,9 @@ import com.google.common.collect.ImmutableSet;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.jasperreports.engine.JRParameter;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +83,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -135,23 +135,19 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder()
       .withLineItems(singletonList(lineItem))
       .build();
-  private Pageable pageable = new PageRequest(0, 10);
+  private Pageable pageable = PageRequest.of(0, 10);
   private List<OrderableDto> orderables = new ArrayList<>();
   private OrderableDto orderableDto;
 
   @Before
   public void setUp() {
-    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(proofOfDelivery);
-    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(true);
+    given(proofOfDeliveryRepository.findById(proofOfDelivery.getId()))
+        .willReturn(Optional.of(proofOfDelivery));
+    given(proofOfDeliveryRepository.existsById(proofOfDelivery.getId())).willReturn(true);
     given(proofOfDeliveryRepository.save(any(ProofOfDelivery.class)))
         .willAnswer(new SaveAnswer<>());
-    given(proofOfDeliveryService.search(
-        any(UUID.class),
-        any(UUID.class),
-        any(Pageable.class)))
-        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
-    given(shipmentRepository.findOne(proofOfDelivery.getShipment().getId()))
-        .willReturn(proofOfDelivery.getShipment());
+    given(shipmentRepository.findById(proofOfDelivery.getShipment().getId()))
+        .willReturn(Optional.of(proofOfDelivery.getShipment()));
 
     given(permissionService.getPermissionStrings(INITIAL_USER_ID))
         .willReturn(permissionStringsHandler);
@@ -175,6 +171,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetAllProofsOfDelivery() {
+    given(proofOfDeliveryService.search(
+        isNull(),
+        isNull(),
+        any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
+
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -194,7 +196,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowPaginationWithZeroSize() {
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     restAssured.given()
             .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -208,7 +210,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowPaginationWithoutSize() {
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     restAssured.given()
             .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -221,6 +223,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldFindProofOfDeliveryBasedOnShipment() {
+    given(proofOfDeliveryService.search(
+        any(UUID.class),
+        isNull(),
+        any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
+
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -247,6 +255,12 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldFindProofOfDeliveryBasedOnOrder() {
+    given(proofOfDeliveryService.search(
+        isNull(),
+        any(UUID.class),
+        any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
+
     PageDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -322,8 +336,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldNotUpdateProofOfDeliveryIfDoesNotExist() {
-    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
-    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
+    given(proofOfDeliveryRepository.findById(proofOfDelivery.getId())).willReturn(Optional.empty());
+    given(proofOfDeliveryRepository.existsById(proofOfDelivery.getId())).willReturn(false);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -383,6 +397,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   public void shouldSubmitValidObject() {
     ProofOfDeliveryDto dto = createDto();
     dto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
+
+    given(stockEventBuilder.fromProofOfDelivery(any(ProofOfDelivery.class)))
+        .willReturn(new StockEventDto());
 
     ProofOfDeliveryDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -445,14 +462,14 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .statusCode(200)
         .extract().as(ProofOfDeliveryDto.class);
 
-    assertTrue(proofOfDeliveryRepository.exists(response.getId()));
+    assertTrue(proofOfDeliveryRepository.existsById(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldNotGetNonexistentProofOfDelivery() {
-    given(proofOfDeliveryRepository.findOne(proofOfDelivery.getId())).willReturn(null);
-    given(proofOfDeliveryRepository.exists(proofOfDelivery.getId())).willReturn(false);
+    given(proofOfDeliveryRepository.findById(proofOfDelivery.getId())).willReturn(Optional.empty());
+    given(proofOfDeliveryRepository.existsById(proofOfDelivery.getId())).willReturn(false);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -488,10 +505,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldPrintProofOfDelivery() {
-    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
     given(jasperReportsViewService
-        .getJasperReportsView(any(Template.class), any(HttpServletRequest.class)))
-        .willReturn(view);
+        .generateReport(any(Template.class), anyMap()))
+        .willReturn(new byte[1]);
 
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
@@ -523,7 +539,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldReturnNotFoundIfProofOfDeliveryDoesNotExistForAuditLogEndpoint() {
-    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(null);
+    given(proofOfDeliveryRepository.findById(any(UUID.class))).willReturn(Optional.empty());
 
     restAssured
         .given()
@@ -555,7 +571,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetProofOfDeliveryAuditLog() {
-    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(proofOfDelivery);
+    given(proofOfDeliveryRepository.findById(any(UUID.class)))
+        .willReturn(Optional.of(proofOfDelivery));
 
     restAssured
         .given()
@@ -571,7 +588,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldGetProofOfDeliveryAuditLogForAuthorAndChangedPropertyName() {
-    given(proofOfDeliveryRepository.findOne(any(UUID.class))).willReturn(proofOfDelivery);
+    given(proofOfDeliveryRepository.findById(any(UUID.class)))
+        .willReturn(Optional.of(proofOfDelivery));
 
     restAssured
         .given()

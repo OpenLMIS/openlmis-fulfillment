@@ -80,13 +80,13 @@ public class ShipmentBuilder {
     String orderIdentifier = firstRow.get(orderColumn.getPosition());
     Order order = (FileColumnKeyPath.ORDER_CODE.equals(orderColumn.getFileColumnKeyPathEnum()))
         ? orderRepository.findByOrderCode(orderIdentifier) :
-        orderRepository.findOne(UUID.fromString(orderIdentifier));
+        orderRepository.findById(UUID.fromString(orderIdentifier)).orElse(null);
 
     if (order == null) {
       throw new FulfillmentException(ORDER_NOT_FOUND, orderIdentifier);
     }
 
-    Page<Shipment> shipment = shipmentRepository.findByOrder(order, new PageRequest(0, 100));
+    Page<Shipment> shipment = shipmentRepository.findByOrder(order, PageRequest.of(0, 100));
 
     if (shipment.hasContent()) {
       throw new FulfillmentException(SHIPMENT_ORDER_DUPLICATE, orderIdentifier);

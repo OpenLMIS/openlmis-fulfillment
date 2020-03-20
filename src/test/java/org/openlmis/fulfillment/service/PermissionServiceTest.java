@@ -38,6 +38,7 @@ import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,7 +53,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
@@ -84,9 +84,6 @@ public class PermissionServiceTest {
 
   @Mock
   private OrderRepository orderRepository;
-
-  @Mock
-  private ShipmentRepository shipmentRepository;
 
   @InjectMocks
   private PermissionService permissionService;
@@ -129,8 +126,7 @@ public class PermissionServiceTest {
 
     user.setId(order.getCreatedById());
 
-    when(orderRepository.findOne(order.getId())).thenReturn(order);
-    when(shipmentRepository.findOne(shipment.getId())).thenReturn(shipment);
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
     rightsMap.forEach((right, details) ->
         when(authenticationHelper.getRight(right)).thenReturn(details));
@@ -340,7 +336,7 @@ public class PermissionServiceTest {
   @Test
   public void cannotManageShipmentWhenOrderIsNotFound() {
     mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
-    when(orderRepository.findOne(order.getId())).thenReturn(null);
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.empty());
 
     exception.expect(ValidationException.class);
     exception.expect(hasProperty("params", arrayContaining(order.getId().toString())));

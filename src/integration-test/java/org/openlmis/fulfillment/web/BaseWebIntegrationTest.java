@@ -38,6 +38,7 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.junit.Before;
@@ -55,9 +56,9 @@ import org.openlmis.fulfillment.repository.FileTemplateRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.domain.Page;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -514,8 +515,8 @@ public abstract class BaseWebIntegrationTest {
     );
     configuration.setId(UUID.fromString("70543032-b131-4219-b44d-7781d29db330"));
 
-    given(orderNumberConfigurationRepository.findOne(configuration.getId()))
-        .willReturn(configuration);
+    given(orderNumberConfigurationRepository.findById(configuration.getId()))
+        .willReturn(Optional.of(configuration));
     given(orderNumberConfigurationRepository.findAll())
         .willReturn(Lists.newArrayList(configuration));
 
@@ -530,7 +531,7 @@ public abstract class BaseWebIntegrationTest {
     template.setTemplateType(TemplateType.ORDER);
     template.setFileColumns(Lists.newArrayList());
 
-    given(fileTemplateRepository.findOne(template.getId())).willReturn(template);
+    given(fileTemplateRepository.findById(template.getId())).willReturn(Optional.of(template));
     given(fileTemplateRepository.findAll()).willReturn(Lists.newArrayList(template));
     given(fileTemplateRepository.findFirstByTemplateType(TemplateType.ORDER))
         .willReturn(template);
@@ -559,7 +560,7 @@ public abstract class BaseWebIntegrationTest {
 
     template.getFileColumns().add(column);
 
-    given(fileColumnRepository.findOne(column.getId())).willReturn(column);
+    given(fileColumnRepository.findById(column.getId())).willReturn(Optional.of(column));
 
     return column;
   }

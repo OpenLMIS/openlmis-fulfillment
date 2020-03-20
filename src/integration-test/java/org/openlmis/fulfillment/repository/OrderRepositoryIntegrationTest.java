@@ -58,7 +58,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   @Autowired
   private OrderRepository orderRepository;
 
-  Pageable pageable = new PageRequest(0, 10);
+  Pageable pageable = PageRequest.of(0, 10);
 
   @Override
   protected CrudRepository<Order, UUID> getRepository() {
@@ -104,9 +104,9 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
 
     UUID instanceId = instance.getId();
 
-    orderRepository.delete(instanceId);
+    orderRepository.deleteById(instanceId);
 
-    assertFalse(orderRepository.exists(instanceId));
+    assertFalse(orderRepository.existsById(instanceId));
   }
 
   @Test
@@ -126,7 +126,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         .searchOrders(params, null, pageable, null, availableRequestingFacilities);
     assertSearchOrders(page, one, two, three, four, five);
 
-    page = orderRepository.searchOrders(params, null, new PageRequest(1, 2), null,
+    page = orderRepository.searchOrders(params, null, PageRequest.of(1, 2), null,
         availableRequestingFacilities);
     assertSearchOrders(page, three, four);
 
@@ -348,7 +348,7 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     OrderSearchParams params = new OrderSearchParams();
     params.setStatus(newHashSet(OrderStatus.ORDERED.name()));
     Page<Order> result = orderRepository.searchOrders(params, null,
-        new PageRequest(0, 10, new Sort(Sort.Direction.DESC, "createdDate")),
+        PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdDate")),
         availableSupplyingFacilities, null);
 
     assertEquals(4, result.getContent().size());

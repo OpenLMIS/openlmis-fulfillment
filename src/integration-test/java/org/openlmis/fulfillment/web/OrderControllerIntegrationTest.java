@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -215,7 +216,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private OrderableDto product1;
   private OrderableDto product2;
 
-  private Pageable pageable = new PageRequest(0, 10);
+  private Pageable pageable = PageRequest.of(0, 10);
 
   private UserDto user = new UserDataBuilder().withId(INITIAL_USER_ID).build();
 
@@ -259,7 +260,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         facility, facility1, facility2));
 
     when(shipmentRepository.save(any(Shipment.class)))
-        .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
+        .thenAnswer(invocation -> invocation.getArgument(0, Shipment.class));
 
     product1 = new OrderableDataBuilder().withId(product1Id).build();
     product2 = new OrderableDataBuilder().withId(product2Id).build();
@@ -321,8 +322,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
             .build())
         .build();
 
-    given(orderRepository.findOne(order.getId())).willReturn(order);
-    given(orderRepository.exists(order.getId())).willReturn(true);
+    given(orderRepository.findById(order.getId())).willReturn(Optional.of(order));
+    given(orderRepository.existsById(order.getId())).willReturn(true);
 
     return order;
   }
@@ -366,7 +367,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnNotFoundErrorIfThereIsNoOrderToPrint() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.empty());
 
     restAssured.given()
         .queryParam(FORMAT, "pdf")
@@ -495,7 +496,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(200)
         .extract().as(OrderDto.class);
 
-    assertTrue(orderRepository.exists(response.getId()));
+    assertTrue(orderRepository.existsById(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -520,7 +521,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotGetNonexistentOrder() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -626,7 +627,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnBadRequestIfThereIsNoOrderToExport() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -642,7 +643,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnNotFoundErrorMessageForRetryEndpointWhenOrderDoesNotExist() {
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(null);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.empty());
 
     String message = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -662,7 +663,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldNotAllowToRetryIfOrderHasIncorrectStatus() {
     firstOrder.setStatus(READY_TO_PACK);
 
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
 
     String message = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -682,7 +683,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldAllowToDoManuallyRetry() {
     firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
 
-    given(orderRepository.findOne(firstOrder.getId())).willReturn(firstOrder);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
 
     ResultDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

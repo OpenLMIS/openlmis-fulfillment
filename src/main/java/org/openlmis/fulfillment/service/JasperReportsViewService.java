@@ -15,142 +15,96 @@
 
 package org.openlmis.fulfillment.service;
 
-import static java.io.File.createTempFile;
-import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
-import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.openlmis.fulfillment.i18n.MessageKeys.CLASS_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_IO;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_FILE_CREATION;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
-import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.util.AuthenticationHelper;
-import org.openlmis.fulfillment.web.util.OrderReportDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Service
 public class JasperReportsViewService {
 
+  static final String PARAM_DATASOURCE = "datasource";
+  
   @Autowired
   private DataSource replicationDataSource;
 
-  @Autowired
-  private ExporterBuilder exporter;
-
-  @Autowired
-  private AuthenticationHelper authenticationHelper;
-
   /**
-   * Create Jasper Report View.
-   * Create Jasper Report (".jasper" file) from bytes from Template entity.
-   * Set 'Jasper' exporter parameters, data source, web application context, url to file.
-   * @param template template that will be used to create a view
-   * @param request it is used to take web application context
-   * @return created jasper view.
-   */
-  public JasperReportsMultiFormatView getJasperReportsView(Template template,
-                                                           HttpServletRequest request) {
-    JasperReportsMultiFormatView jasperView = new JasperReportsMultiFormatView();
-    setExportParams(jasperView);
-    jasperView.setJdbcDataSource(replicationDataSource);
-    jasperView.setUrl(getReportUrlForReportData(template));
-    if (getApplicationContext(request) != null) {
-      jasperView.setApplicationContext(getApplicationContext(request));
-    }
-    return jasperView;
-  }
-
-  /**
-   * Get customized Jasper Report View for Order Report.
+   * Generate a report based on the Jasper template.
+   * Create compiled report from bytes from Template entity, and use compiled report to fill in data
+   * and export to desired format.
    *
-   * @param jasperView generic jasper report view
-   * @param parameters template parameters populated with values from the request
-   * @param order the reporting order
-   * @return customized jasper view.
+   * @param jasperTemplate template that will be used to generate a report
+   * @param params  map of parameters
+   * @return data of generated report
    */
-  public ModelAndView getOrderJasperReportView(JasperReportsMultiFormatView jasperView,
-                                               Map<String, Object> parameters, Order order) {
-    OrderReportDto orderDto = OrderReportDto.newInstance(order, exporter);
-    parameters.put("datasource", new JRBeanCollectionDataSource(orderDto.getOrderLineItems()));
-    parameters.put("order", orderDto);
+  public byte[] generateReport(Template jasperTemplate, Map<String, Object> params) {
 
-    String userName = "";
-    if (authenticationHelper != null) {
-      userName = authenticationHelper.getCurrentUser().printName();
-    }
-    parameters.put("loggedInUser", userName);
-
-    return new ModelAndView(jasperView, parameters);
-  }
-
-  /**
-   * Set export parameters in jasper view.
-   */
-  private void setExportParams(JasperReportsMultiFormatView jasperView) {
-    Map<JRExporterParameter, Object> reportFormatMap = new HashMap<>();
-    reportFormatMap.put(IS_USING_IMAGES_TO_ALIGN, false);
-    jasperView.setExporterParameters(reportFormatMap);
-  }
-
-  /**
-   * Get application context from servlet.
-   */
-  public WebApplicationContext getApplicationContext(HttpServletRequest servletRequest) {
-    ServletContext servletContext = servletRequest.getSession().getServletContext();
-    return WebApplicationContextUtils.getWebApplicationContext(servletContext);
-  }
-
-  /**
-   * Create ".jasper" file with byte array from Template.
-   *
-   * @return Url to ".jasper" file.
-   */
-  private String getReportUrlForReportData(Template template) {
-    File tmpFile;
+    JasperReport jasperReport = getReportFromTemplateData(jasperTemplate);
+    
+    byte[] bytes;
 
     try {
-      tmpFile = createTempFile(template.getName() + "_temp", ".jasper");
-    } catch (IOException exp) {
-      throw new JasperReportViewException(
-          exp, ERROR_JASPER_FILE_CREATION
-      );
+      JasperPrint jasperPrint;
+      if (params.containsKey(PARAM_DATASOURCE)) {
+        jasperPrint = JasperFillManager.fillReport(jasperReport, params,
+            new JRBeanCollectionDataSource((List) params.get(PARAM_DATASOURCE)));
+      } else {
+        jasperPrint = JasperFillManager.fillReport(jasperReport, params,
+            replicationDataSource.getConnection());
+      }
+
+      JasperExporter exporter;
+      String format = (String) params.get("format");
+      if ("csv".equals(format)) {
+        exporter = new JasperCsvExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else if ("xls".equals(format)) {
+        exporter = new JasperXlsExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else if ("html".equals(format)) {
+        exporter = new JasperHtmlExporter(jasperPrint);
+        bytes = exporter.exportReport();
+      } else {
+        bytes = JasperExportManager.exportReportToPdf(jasperPrint);
+      }
+    } catch (Exception e) {
+      throw new JasperReportViewException(e, ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE,
+          e.getMessage());
     }
 
+    return bytes;
+  }
+
+  /**
+   * Get (compiled) Jasper report from Jasper template.
+   *
+   * @param jasperTemplate template
+   * @return Jasper report
+   */
+  private JasperReport getReportFromTemplateData(Template jasperTemplate) {
+
     try (ObjectInputStream inputStream =
-             new ObjectInputStream(new ByteArrayInputStream(template.getData()))) {
-      JasperReport jasperReport = (JasperReport) inputStream.readObject();
+        new ObjectInputStream(new ByteArrayInputStream(jasperTemplate.getData()))) {
 
-      try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-           ObjectOutputStream out = new ObjectOutputStream(bos)) {
-
-        out.writeObject(jasperReport);
-        writeByteArrayToFile(tmpFile, bos.toByteArray());
-
-        return tmpFile.toURI().toURL().toString();
-      }
-    } catch (IOException exp) {
-      throw new JasperReportViewException(exp, ERROR_IO, exp.getMessage());
-    } catch (ClassNotFoundException exp) {
-      throw new JasperReportViewException(exp, CLASS_NOT_FOUND, JasperReport.class.getName());
+      return (JasperReport) inputStream.readObject();
+    } catch (IOException ex) {
+      throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
+    } catch (ClassNotFoundException ex) {
+      throw new JasperReportViewException(ex, CLASS_NOT_FOUND, JasperReport.class.getName());
     }
   }
 }

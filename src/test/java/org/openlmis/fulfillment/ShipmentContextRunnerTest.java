@@ -17,7 +17,6 @@ package org.openlmis.fulfillment;
 
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -90,7 +89,6 @@ public class ShipmentContextRunnerTest {
         .thenReturn(asList(ftpTransferProperties));
 
     ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
-    doNothing().when(mockContext).close();
     when(channelHelper.createChannel(ftpTransferProperties, applicationContext))
         .thenReturn(mockContext);
 
@@ -125,8 +123,6 @@ public class ShipmentContextRunnerTest {
   @Test
   public void reCreateContextShouldNotCloseIfContextIsNew() throws Exception {
     FtpTransferProperties ftpProps = createFtpTransferProperty(TransferType.SHIPMENT);
-    when(transferPropertiesRepository.findByTransferType(TransferType.SHIPMENT))
-        .thenReturn(asList(ftpProps));
     // this initializes the context for the first time.
     ClassPathXmlApplicationContext mockContext = mock(ClassPathXmlApplicationContext.class);
     when(channelHelper.createChannel(ftpProps, applicationContext))

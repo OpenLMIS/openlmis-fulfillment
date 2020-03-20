@@ -21,6 +21,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STAT
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileTemplate;
@@ -38,6 +38,7 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
 import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
@@ -53,6 +54,7 @@ import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
+import org.openlmis.fulfillment.web.util.OrderReportDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -63,6 +65,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,8 +78,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Controller
 @Transactional
@@ -83,6 +85,7 @@ public class OrderController extends BaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
   private static final String DISPOSITION_BASE = "attachment; filename=";
+  private static final String TYPE_CSV = "csv";
 
   @Autowired
   private OrderRepository orderRepository;
@@ -116,6 +119,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private BasicOrderDtoBuilder basicOrderDtoBuilder;
+
+  @Autowired
+  private ExporterBuilder exporter;
 
   @Value("${groupingSeparator}")
   private String groupingSeparator;
@@ -197,15 +203,13 @@ public class OrderController extends BaseController {
   @ResponseBody
   public OrderDto getOrder(@PathVariable("id") UUID orderId,
                            @RequestParam(required = false) Set<String> expand) {
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      throw new OrderNotFoundException(orderId);
-    } else {
-      permissionService.canViewOrder(order);
-      OrderDto orderDto = orderDtoBuilder.build(order);
-      expandDto(orderDto, expand);
-      return orderDto;
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    permissionService.canViewOrder(order);
+    OrderDto orderDto = orderDtoBuilder.build(order);
+    expandDto(orderDto, expand);
+    return orderDto;
   }
 
   /**
@@ -228,14 +232,12 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public ModelAndView printOrder(HttpServletRequest request,
-                                 @PathVariable("id") UUID orderId,
+  public ResponseEntity<byte[]> printOrder(@PathVariable("id") UUID orderId,
                                  @RequestParam("format") String format) throws IOException {
 
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      throw new OrderNotFoundException(orderId);
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
     permissionService.canViewOrder(order);
 
     String filePath = "jasperTemplates/ordersJasperTemplate.jrxml";
@@ -256,11 +258,31 @@ public class OrderController extends BaseController {
     decimalFormat.setGroupingSize(Integer.parseInt(groupingSize));
     params.put("decimalFormat", decimalFormat);
     params.put("dateTimeFormat", dateTimeFormat);
+    OrderReportDto orderDto = OrderReportDto.newInstance(order, exporter);
+    params.put("datasource", orderDto.getOrderLineItems());
+    params.put("order", orderDto);
+    params.put("loggedInUser", null != authenticationHelper
+        ? authenticationHelper.getCurrentUser().printName() : null);
 
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsView(template, request);
+    byte[] bytes = jasperReportsViewService.generateReport(template, params);
 
-    return jasperReportsViewService.getOrderJasperReportView(jasperView, params, order);
+    MediaType mediaType;
+    if (TYPE_CSV.equals(format)) {
+      mediaType = new MediaType("text", "csv", StandardCharsets.UTF_8);
+    } else if ("xls".equals(format)) {
+      mediaType = new MediaType("application", "vnd.ms-excel", StandardCharsets.UTF_8);
+    } else if ("html".equals(format)) {
+      mediaType = new MediaType("text", "html", StandardCharsets.UTF_8);
+    } else {
+      mediaType = new MediaType("application", "pdf", StandardCharsets.UTF_8);
+    }
+    String fileName = template.getName().replaceAll("\\s+", "_");
+
+    return ResponseEntity
+        .ok()
+        .contentType(mediaType)
+        .header("Content-Disposition", "inline; filename=" + fileName + "." + format)
+        .body(bytes);
   }
 
 
@@ -274,16 +296,17 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/export", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public void export(@PathVariable("id") UUID orderId,
-                  @RequestParam(value = "type", required = false, defaultValue = "csv") String type,
-                     HttpServletResponse response) throws IOException {
-    if (!"csv".equals(type)) {
+      @RequestParam(value = "type", required = false, 
+          defaultValue = TYPE_CSV) String type, 
+      HttpServletResponse response) throws IOException {
+    if (!TYPE_CSV.equals(type)) {
       String msg = "Export type: " + type + " not allowed";
       LOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
       return;
     }
 
-    Order order = orderRepository.findOne(orderId);
+    Order order = orderRepository.findById(orderId).orElse(null);
 
     if (order == null) {
       String msg = "Order does not exist.";
@@ -325,11 +348,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/retry", method = RequestMethod.GET)
   @ResponseBody
   public ResultDto<Boolean> retryOrderTransfer(@PathVariable("id") UUID id) {
-    Order order = orderRepository.findOne(id);
-
-    if (null == order) {
-      throw new OrderNotFoundException(id);
-    }
+    Order order = orderRepository.findById(id)
+        .orElseThrow(() -> new OrderNotFoundException(id));
 
     permissionService.canTransferOrder(order);
 

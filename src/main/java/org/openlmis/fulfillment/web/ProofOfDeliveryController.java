@@ -19,6 +19,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREAD
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
@@ -28,7 +29,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
@@ -65,6 +65,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
@@ -76,8 +77,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @Controller
 @Transactional
@@ -272,8 +271,8 @@ public class ProofOfDeliveryController extends BaseController {
    */
   @RequestMapping(value = "/proofsOfDelivery/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public ModelAndView printProofOfDelivery(HttpServletRequest request,
-      @PathVariable("id") UUID id, OAuth2Authentication authentication) throws IOException {
+  public ResponseEntity<byte[]> printProofOfDelivery(@PathVariable("id") UUID id,
+      OAuth2Authentication authentication) throws IOException {
 
     XLOGGER.entry(id, authentication);
     Profiler profiler = new Profiler("GET_POD");
@@ -295,7 +294,6 @@ public class ProofOfDeliveryController extends BaseController {
     profiler.start("GENERATE_JASPER_VIEW");
 
     Map<String, Object> params = new HashMap<>();
-    params.put("format", "pdf");
     params.put("id", proofOfDelivery.getId());
     params.put("dateFormat", dateFormat);
     DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
@@ -306,15 +304,18 @@ public class ProofOfDeliveryController extends BaseController {
     params.put("dateTimeFormat", dateTimeFormat);
     params.put("timeZoneId", timeZoneId);
 
-    JasperReportsMultiFormatView jasperView = jasperReportsViewService
-        .getJasperReportsView(template, request);
+    byte[] bytes = jasperReportsViewService.generateReport(template, params);
 
-    ModelAndView modelAndView = new ModelAndView(jasperView, params);
+    String fileName = template.getName().replaceAll("\\s+", "_");
 
     profiler.stop().log();
-    XLOGGER.exit(modelAndView);
+    XLOGGER.exit();
 
-    return modelAndView;
+    return ResponseEntity
+        .ok()
+        .contentType(new MediaType("application", "pdf", StandardCharsets.UTF_8))
+        .header("Content-Disposition", "inline; filename=" + fileName + ".pdf")
+        .body(bytes);
   }
 
   /**
@@ -359,7 +360,7 @@ public class ProofOfDeliveryController extends BaseController {
 
   private ProofOfDelivery findProofOfDelivery(UUID id, Profiler profiler) {
     profiler.start("FIND_POD_BY_ID");
-    ProofOfDelivery entity = proofOfDeliveryRepository.findOne(id);
+    ProofOfDelivery entity = proofOfDeliveryRepository.findById(id).orElse(null);
 
     if (null == entity) {
       profiler.stop().log();

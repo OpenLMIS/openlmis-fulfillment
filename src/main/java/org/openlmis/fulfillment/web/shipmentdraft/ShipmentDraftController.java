@@ -114,7 +114,8 @@ public class ShipmentDraftController extends BaseController {
     profiler.start("CREATE_DOMAIN_INSTANCE");
     ShipmentDraft draft = ShipmentDraft.newInstance(draftDto);
 
-    Order order = orderRepository.findOne(draftDto.getOrder().getId());
+    Order order = orderRepository.findById(draftDto.getOrder().getId())
+        .orElseThrow(() -> new ValidationException(SHIPMENT_DRAFT_ORDER_NOT_FOUND));
     if (!order.isOrdered()) {
       throw new ValidationException(CANNOT_CREATE_SHIPMENT_DRAFT_FOR_ORDER_WITH_WRONG_STATUS,
           order.getStatus().toString());
@@ -164,7 +165,7 @@ public class ShipmentDraftController extends BaseController {
 
     profiler.start("FIND_EXISTING_DRAFT");
     ShipmentDraft draft;
-    ShipmentDraft existingDraft = repository.findOne(id);
+    ShipmentDraft existingDraft = repository.findById(id).orElse(null);
     if (existingDraft == null) {
       profiler.start("SAVE_NEW_DRAFT");
       draft = repository.save(newDraft);
@@ -202,10 +203,8 @@ public class ShipmentDraftController extends BaseController {
       throw new ValidationException(SHIPMENT_DRAFT_ORDER_REQUIRED);
     }
 
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      throw new ValidationException(SHIPMENT_DRAFT_ORDER_NOT_FOUND);
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new ValidationException(SHIPMENT_DRAFT_ORDER_NOT_FOUND));
 
     profiler.start(CHECK_RIGHTS);
     permissionService.canViewShipmentDraft(order);
@@ -269,9 +268,10 @@ public class ShipmentDraftController extends BaseController {
     permissionService.canEditShipmentDraft(shipment);
 
     profiler.start("DELETE");
-    repository.delete(id);
+    repository.deleteById(id);
 
-    Order order = orderRepository.findOne(shipment.getOrder().getId());
+    Order order = orderRepository.findById(shipment.getOrder().getId())
+        .orElseThrow(() -> new ValidationException(SHIPMENT_DRAFT_ORDER_NOT_FOUND));
 
     profiler.start("UPDATE_ORDER");
     updateOrderStatus(order, OrderStatus.ORDERED);
@@ -290,11 +290,8 @@ public class ShipmentDraftController extends BaseController {
 
   private ShipmentDraft findShipmentDraft(UUID id, Profiler profiler) {
     profiler.start("FIND_IN_DB");
-    ShipmentDraft shipment = repository.findOne(id);
-    if (shipment == null) {
-      throw new NotFoundException(SHIPMENT_NOT_FOUND, id.toString());
-    }
-    return shipment;
+    return repository.findById(id)
+        .orElseThrow(() -> new NotFoundException(SHIPMENT_NOT_FOUND, id.toString()));
   }
 
   private void validateOrder(ObjectReferenceDto dtoOrder) {

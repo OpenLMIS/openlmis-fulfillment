@@ -12,7 +12,7 @@ services:
       - '/tmp/openlmis/fulfillment/orders:/var/lib/openlmis/fulfillment/orders'
 
   db:
-    image: openlmis/postgres:9.6
+    image: openlmis/postgres:9.6-debezium
     logging:
       driver: syslog
       options:

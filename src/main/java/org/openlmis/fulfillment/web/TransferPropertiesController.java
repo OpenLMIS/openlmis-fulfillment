@@ -119,7 +119,7 @@ public class TransferPropertiesController extends BaseController {
                                @PathVariable("id") UUID id) {
     LOGGER.debug("Checking right to update transfer properties ");
     permissionService.canManageSystemSettings();
-    TransferProperties toUpdate = transferPropertiesRepository.findOne(id);
+    TransferProperties toUpdate = transferPropertiesRepository.findById(id).orElse(null);
 
     if (null == toUpdate) {
       return ResponseEntity.notFound().build();
@@ -162,7 +162,7 @@ public class TransferPropertiesController extends BaseController {
     LOGGER.debug("Checking right to view transfer properties");
     permissionService.canManageSystemSettings();
 
-    TransferProperties properties = transferPropertiesRepository.findOne(id);
+    TransferProperties properties = transferPropertiesRepository.findById(id).orElse(null);
     return properties == null
         ? ResponseEntity.notFound().build()
         : ResponseEntity.ok(TransferPropertiesFactory.newInstance(properties, exporter));
@@ -180,7 +180,7 @@ public class TransferPropertiesController extends BaseController {
     LOGGER.debug("Checking right to delete transfer properties");
     permissionService.canManageSystemSettings();
 
-    TransferProperties toDelete = transferPropertiesRepository.findOne(id);
+    TransferProperties toDelete = transferPropertiesRepository.findById(id).orElse(null);
 
     if (toDelete == null) {
       return ResponseEntity.notFound().build();

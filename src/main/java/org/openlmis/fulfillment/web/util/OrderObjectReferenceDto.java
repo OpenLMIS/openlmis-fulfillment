@@ -24,6 +24,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -33,6 +34,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class OrderObjectReferenceDto extends ObjectReferenceDto {

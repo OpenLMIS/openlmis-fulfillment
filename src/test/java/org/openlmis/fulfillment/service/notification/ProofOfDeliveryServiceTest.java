@@ -69,7 +69,7 @@ public class ProofOfDeliveryServiceTest {
   private ProofOfDeliveryService proofOfDeliveryService;
 
   private ProofOfDelivery proofOfDelivery = new ProofOfDeliveryDataBuilder().build();
-  private Pageable pageable = new PageRequest(0, 10);
+  private Pageable pageable = PageRequest.of(0, 10);
   private UUID shipmentId = UUID.randomUUID();
   private UUID orderId = UUID.randomUUID();
   private UserDto userDto = new UserDataBuilder().build();

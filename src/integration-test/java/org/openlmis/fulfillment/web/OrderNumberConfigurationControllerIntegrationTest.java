@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,8 +78,8 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     secondOrderNumberConfiguration =  new OrderNumberConfiguration("prefix", false, false, false);
 
 
-    given(orderRepository.findOne(order.getId())).willReturn(order);
-    given(orderRepository.exists(order.getId())).willReturn(true);
+    given(orderRepository.findById(order.getId())).willReturn(Optional.of(order));
+    given(orderRepository.existsById(order.getId())).willReturn(true);
 
     given(orderNumberConfigurationRepository.save(any(OrderNumberConfiguration.class)))
         .willAnswer(new SaveAnswer<OrderNumberConfiguration>());
@@ -91,7 +92,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
     given(orderNumberConfigurationRepository.findAll()).willReturn(Lists.newArrayList(
         firstOrderNumberConfiguration, secondOrderNumberConfiguration));
 
-    given(orderNumberConfigurationRepository.exists(firstOrderNumberConfiguration.getId()))
+    given(orderNumberConfigurationRepository.existsById(firstOrderNumberConfiguration.getId()))
         .willReturn(true);
 
     OrderNumberConfigurationDto response = restAssured.given()
@@ -103,7 +104,7 @@ public class OrderNumberConfigurationControllerIntegrationTest extends BaseWebIn
         .statusCode(200)
         .extract().as(OrderNumberConfigurationDto.class);
 
-    assertTrue(orderNumberConfigurationRepository.exists(response.getId()));
+    assertTrue(orderNumberConfigurationRepository.existsById(response.getId()));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

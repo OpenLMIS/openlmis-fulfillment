@@ -62,8 +62,6 @@ public class TransferPropertiesServiceTest {
     final TransferProperties properties = randomSetting(TransferType.ORDER);
     final FacilityDto facility = mock(FacilityDto.class);
 
-    doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
-    when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -84,7 +82,6 @@ public class TransferPropertiesServiceTest {
     final FacilityDto facility = mock(FacilityDto.class);
 
     doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
-    when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -105,7 +102,6 @@ public class TransferPropertiesServiceTest {
     final TransferProperties duplicate = randomSetting(TransferType.ORDER);
     FacilityDto facility = mock(FacilityDto.class);
 
-    when(facility.getId()).thenReturn(UUID.randomUUID());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(facility);
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
@@ -120,11 +116,7 @@ public class TransferPropertiesServiceTest {
     // given
     final TransferProperties properties = randomSetting(TransferType.ORDER);
 
-    doNothing().when(shipmentContextRunner).reCreateShipmentChannel(any());
     when(facilityReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
-    when(transferPropertiesRepository
-        .findFirstByFacilityIdAndTransferType(any(UUID.class), any()))
-        .thenReturn(null);
 
     // when
     transferPropertiesService.save(properties);

@@ -166,6 +166,8 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                headers:
+                  Keep-Alive:
                 body:
                   application/json:
                     schema: auditLogEntryArray
@@ -189,11 +191,15 @@ resourceTypes:
                         }
                       ]
               403:
+                headers:
+                  Keep-Alive:
                 body:
                   application/json:
                     schema: localizedMessage
               404:
                 description: The specified <<resourcePathName|!singularize>> does not exist.
+                headers:
+                  Keep-Alive:
                 body:
                   application/json:
                     schema: localizedMessage
@@ -312,6 +318,8 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: basicOrderDtoPage
@@ -331,6 +339,8 @@ resourceTypes:
                 schema: orderDto
           responses:
               201:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: orderDto
@@ -339,6 +349,8 @@ resourceTypes:
                     application/json:
                       schema: localizedMessage
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -357,14 +369,20 @@ resourceTypes:
                   POD_VIEW (for requesting facility)
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: orderDto
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -386,16 +404,21 @@ resourceTypes:
                     200:
                       headers:
                         Content-Disposition:
+                        Keep-Alive:
                       body:
                         text/csv:
                     400:
                       body:
                         application/json:
                     403:
+                        headers:
+                          Keep-Alive:
                         body:
                           application/json:
                             schema: localizedMessage
                     404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
           /retry:
@@ -404,10 +427,14 @@ resourceTypes:
                   description: Manually retry for transferring order file via FTP after updating or checking the FTP transfer properties.
                   responses:
                     200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: resultDto
                     404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -439,14 +466,19 @@ resourceTypes:
                   200:
                       headers:
                         Content-Disposition:
+                        Keep-Alive:
                       body:
                         application/pdf:
                         text/csv:
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -459,6 +491,8 @@ resourceTypes:
                     schema: orderDtoArray
               responses:
                   201:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: basicOrderDtoArray
@@ -467,6 +501,8 @@ resourceTypes:
                         application/json:
                           schema: localizedMessage
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -483,6 +519,8 @@ resourceTypes:
                       repeat: true
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: uuidArray
@@ -494,14 +532,20 @@ resourceTypes:
           description: Get OrderNumberConfiguration.
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: orderNumberConfigurationDto
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
               404:
+                headers:
+                  Keep-Alive:
       post:
           is: [ secured ]
           description: Create or Update OrderNumberConfiguration.
@@ -510,6 +554,8 @@ resourceTypes:
                 schema: orderNumberConfigurationDto
           responses:
             200:
+              headers:
+                Keep-Alive:
               body:
                 application/json:
                   schema: orderNumberConfigurationDto
@@ -517,6 +563,8 @@ resourceTypes:
               body:
                 application/json:
             403:
+              headers:
+                Keep-Alive:
               body:
                 application/json:
                   schema: localizedMessage
@@ -543,6 +591,8 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: proofOfDeliveryPage
@@ -570,14 +620,20 @@ resourceTypes:
                   facility)
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: proofOfDeliveryDto
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                           application/json:
                               schema: localizedMessage
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -589,6 +645,8 @@ resourceTypes:
                     schema: proofOfDeliveryDto
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                           application/json:
                               schema: proofOfDeliveryDto
@@ -597,10 +655,14 @@ resourceTypes:
                           application/json:
                               schema: badRequestResponse
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                           application/json:
                               schema: localizedMessage
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -626,6 +688,8 @@ resourceTypes:
                         application/json:
                           schema: localizedMessage
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -645,11 +709,17 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: fileTemplateDto
               404:
+                  headers:
+                    Keep-Alive:
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -661,6 +731,8 @@ resourceTypes:
                 schema: fileTemplateDto
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: fileTemplateDto
@@ -669,6 +741,8 @@ resourceTypes:
                     application/json:
                       schema: localizedMessage
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -730,6 +804,8 @@ resourceTypes:
                            repeat: false
             responses:
                 200:
+                  headers:
+                    Keep-Alive:
                 400:
                     body:
                       application/json:
@@ -739,6 +815,8 @@ resourceTypes:
           description: Get all templates.
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: templateDtoArray
@@ -755,16 +833,24 @@ resourceTypes:
               description: Delete chosen template.
               responses:
                   204:
+                    headers:
+                      Keep-Alive:
                   404:
+                    headers:
+                      Keep-Alive:
           get:
               is: [ secured ]
               description: Get chosen template.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: templateDto
                   404:
+                    headers:
+                      Keep-Alive:
           put:
               is: [ secured ]
               description: Update existing template.
@@ -773,6 +859,8 @@ resourceTypes:
                     schema: templateDto
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: templateDto
@@ -786,6 +874,8 @@ resourceTypes:
                 schema: transferProperties
           responses:
               201:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: transferProperties
@@ -794,6 +884,8 @@ resourceTypes:
                       application/json:
                           schema: badRequestResponse
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -810,12 +902,20 @@ resourceTypes:
               description: Delete chosen transfer properties.
               responses:
                   204:
+                    headers:
+                      Keep-Alive:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                    headers:
+                      Keep-Alive:
                   409:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -824,14 +924,20 @@ resourceTypes:
               description: Get chosen transfer properties.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: transferProperties
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                    headers:
+                      Keep-Alive:
           put:
               is: [ secured ]
               description: Update existing transfer properties.
@@ -840,6 +946,8 @@ resourceTypes:
                     schema: transferProperties
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: transferProperties
@@ -848,7 +956,11 @@ resourceTypes:
                           application/json:
                             schema: badRequestResponse
                   404:
+                    headers:
+                      Keep-Alive:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -871,14 +983,20 @@ resourceTypes:
                       repeat: false
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: transferProperties
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                    headers:
+                      Keep-Alive:
   /shipmentDrafts:
       post:
           is: [ secured ]
@@ -889,6 +1007,8 @@ resourceTypes:
           responses:
               201:
                   description: Draft created.
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: shipmentDraft
@@ -901,6 +1021,8 @@ resourceTypes:
                   body:
                     application/json:
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -916,6 +1038,8 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: shipmentDraftPage
@@ -927,6 +1051,8 @@ resourceTypes:
                   body:
                     application/json:
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -947,6 +1073,8 @@ resourceTypes:
               responses:
                   200:
                       description: Draft saved.
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: shipmentDraft
@@ -959,6 +1087,8 @@ resourceTypes:
                       body:
                         application/json:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -967,6 +1097,8 @@ resourceTypes:
               description: Get chosen shipment draft. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: shipmentDraft
@@ -974,10 +1106,14 @@ resourceTypes:
                       body:
                         application/json:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -986,14 +1122,20 @@ resourceTypes:
               description: Delete chosen shipment draft. This endpoint requires SHIPMENT_EDIT right.
               responses:
                   204:
+                    headers:
+                      Keep-Alive:
                   401:
                       body:
                         application/json:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
@@ -1009,6 +1151,8 @@ resourceTypes:
           responses:
               201:
                   description: Shipment created.
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: shipment
@@ -1020,6 +1164,8 @@ resourceTypes:
                   body:
                     application/json:
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -1035,6 +1181,8 @@ resourceTypes:
                   repeat: false
           responses:
               200:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: shipmentPage
@@ -1046,6 +1194,8 @@ resourceTypes:
                   body:
                     application/json:
               403:
+                  headers:
+                    Keep-Alive:
                   body:
                     application/json:
                       schema: localizedMessage
@@ -1061,6 +1211,8 @@ resourceTypes:
               description: Get chosen shipment. This endpoint requires SHIPMENT_VIEW or SHIPMENT_EDIT rights.
               responses:
                   200:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: shipment
@@ -1068,10 +1220,14 @@ resourceTypes:
                       body:
                         application/json:
                   403:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage
                   404:
+                      headers:
+                        Keep-Alive:
                       body:
                         application/json:
                           schema: localizedMessage

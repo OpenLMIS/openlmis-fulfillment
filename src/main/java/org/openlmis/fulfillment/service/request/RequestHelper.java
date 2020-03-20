@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.service.request;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -48,13 +47,9 @@ public final class RequestHelper {
         .init()
         .setAll(parameters)
         .forEach(e -> e.getValue().forEach(one -> {
-          try {
-            builder.queryParam(e.getKey(),
-                UriUtils.encodeQueryParam(String.valueOf(one),
-                    StandardCharsets.UTF_8.name()));
-          } catch (UnsupportedEncodingException ex) {
-            throw new EncodingException(ex);
-          }
+          builder.queryParam(e.getKey(),
+              UriUtils.encodeQueryParam(String.valueOf(one),
+                  StandardCharsets.UTF_8.name()));
         }));
 
     return builder.build(true).toUri();

@@ -41,10 +41,11 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-import org.apache.log4j.Logger;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TemplateParameter;
 import org.openlmis.fulfillment.repository.TemplateRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,7 +53,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class TemplateService {
 
-  private static final Logger LOGGER = Logger.getLogger(TemplateService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemplateService.class);
 
   @Autowired
   private TemplateRepository templateRepository;
