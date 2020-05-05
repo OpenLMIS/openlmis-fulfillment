@@ -22,7 +22,8 @@ import java.util.Locale;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.flywaydb.core.api.callback.FlywayCallback;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.callback.Callback;
 import org.javers.core.Javers;
 import org.javers.core.MappingStyle;
 import org.javers.core.diff.ListCompareAlgorithm;
@@ -158,14 +159,14 @@ public class Application {
   public FlywayMigrationStrategy cleanMigrationStrategy() {
     return flyway -> {
       logger.info("Using clean-migrate flyway strategy -- production profile not active");
-      flyway.setCallbacks(flywayCallback());
+      Flyway.configure().callbacks(flywayCallback());
       flyway.clean();
       flyway.migrate();
     };
   }
 
   @Bean
-  public FlywayCallback flywayCallback() {
+  public Callback flywayCallback() {
     return new ExportSchemaFlywayCallback();
   }
 

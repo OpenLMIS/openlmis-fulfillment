@@ -91,7 +91,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
           supplyingFacilityIds, programIds, pageable, false);
       List<ProofOfDelivery> pods = searchQuery
           .setMaxResults(pageable.getPageSize())
-          .setFirstResult(pageable.getOffset())
+          .setFirstResult(Math.toIntExact(pageable.getOffset()))
           .getResultList();
       return Pagination.getPage(pods, pageable, count);
     }
@@ -136,7 +136,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
     }
 
     String query = Joiner.on(' ').join(sql);
-    if (!count && pageable.getSort() != null) {
+    if (!count && pageable.getSort() != Sort.unsorted()) {
       query = Joiner.on(' ').join(Lists.newArrayList(query, ORDER_BY,
           getOrderPredicate(pageable)));
     }

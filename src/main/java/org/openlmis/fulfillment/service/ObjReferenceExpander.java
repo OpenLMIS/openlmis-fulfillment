@@ -18,12 +18,10 @@ package org.openlmis.fulfillment.service;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_ASSIGNMENT;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_CAST;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_DTO_EXPANSION_HREF;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_ENCODING;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createEntity;
 import static org.openlmis.fulfillment.service.request.RequestHelper.createUri;
 
 import com.google.common.collect.Maps;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -112,8 +110,6 @@ public class ObjReferenceExpander {
         populate(dto, field, refObj);
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
         throw new ValidationException(ex, ERROR_DTO_EXPANSION_ASSIGNMENT, expand);
-      } catch (UnsupportedEncodingException exp) {
-        throw new ValidationException(exp, ERROR_ENCODING);
       }
     }
   }

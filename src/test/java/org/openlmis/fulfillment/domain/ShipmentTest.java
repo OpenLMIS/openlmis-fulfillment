@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -27,7 +28,6 @@ import java.util.UUID;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.testutils.CreationDetailsDataBuilder;
@@ -73,7 +73,7 @@ public class ShipmentTest {
 
     Shipment actual = Shipment.newInstance(shipmentDto, order);
 
-    assertThat(expected, new ReflectionEquals(actual));
+    assertThat(expected, equalTo(actual));
   }
 
   @Test

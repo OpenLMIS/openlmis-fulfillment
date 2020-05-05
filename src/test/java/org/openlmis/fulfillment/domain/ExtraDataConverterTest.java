@@ -25,6 +25,7 @@ import static org.openlmis.fulfillment.domain.ExtraDataConverter.TYPE_REFERENCE;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class ExtraDataConverterTest {
   @Test(expected = IllegalStateException.class)
   public void shouldThrowExceptionIfStringCannotBeConvertedToMap() throws IOException {
     when(objectMapper.readValue(EXPECTED_JSON, TYPE_REFERENCE))
-        .thenThrow(new IOException("test"));
+        .thenThrow(new JsonMappingException("test"));
 
     converter.convertToEntityAttribute(EXPECTED_JSON);
   }

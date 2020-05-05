@@ -37,11 +37,11 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -86,7 +86,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   @Value("${service.url}")
   private String serviceUrl;
 
-  @MockBean(answer = Answers.RETURNS_MOCKS)
+  @MockBean
   protected ShipmentDraftRepository shipmentDraftRepository;
 
   @MockBean
@@ -117,8 +117,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   public void setUp() {
     generateShipmentDraft();
 
-    when(shipmentDraftRepository.findOne(shipmentDraftDtoExpected.getId()))
-        .thenReturn(shipmentDraft);
+    when(shipmentDraftRepository.findById(shipmentDraftDtoExpected.getId()))
+        .thenReturn(Optional.of(shipmentDraft));
     when(shipmentDraftRepository.save(any(ShipmentDraft.class))).thenAnswer(new SaveAnswer<>());
   }
 
@@ -196,7 +196,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(modifiedDate);
 
     Order order = new OrderDataBuilder().withOrderedStatus().build();
-    when(orderRepository.findOne(any())).thenReturn(order);
+    when(orderRepository.findById(any())).thenReturn(Optional.of(order));
 
     ShipmentDraftDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -222,7 +222,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
   @Test
   public void shouldReturnBadRequestIfOrderStatusIsNotOrdered() {
     Order order = new OrderDataBuilder().withFulfillingStatus().build();
-    when(orderRepository.findOne(any())).thenReturn(order);
+    when(orderRepository.findById(any())).thenReturn(Optional.of(order));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -277,7 +277,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldCreateShipmentDraftIfNotFoundById() {
-    when(shipmentDraftRepository.findOne(any(UUID.class))).thenReturn(null);
+    when(shipmentDraftRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
     shipmentDraftDto.setId(draftIdFromUser);
 
     ShipmentDraftDto extracted = restAssured.given()
@@ -301,7 +301,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .withNotes("old notes")
         .build();
 
-    when(shipmentDraftRepository.findOne(any(UUID.class))).thenReturn(existingDraft);
+    when(shipmentDraftRepository.findById(any(UUID.class))).thenReturn(Optional.of(existingDraft));
     shipmentDraftDto.setId(draftIdFromUser);
 
     ShipmentDraftDto extracted = restAssured.given()
@@ -333,7 +333,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(400)
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_DRAFT_ID_MISMATCH));
 
-    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
+    verify(shipmentDraftRepository, never()).findById(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -353,7 +353,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(400)
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED));
 
-    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
+    verify(shipmentDraftRepository, never()).findById(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
@@ -373,7 +373,7 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(403)
         .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
-    verify(shipmentDraftRepository, never()).findOne(any(UUID.class));
+    verify(shipmentDraftRepository, never()).findById(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
@@ -395,7 +395,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldReturnNotFoundIfShipmentDraftIsNotFound() {
-    when(shipmentDraftRepository.findOne(shipmentDraftDtoExpected.getId())).thenReturn(null);
+    when(shipmentDraftRepository.findById(shipmentDraftDtoExpected.getId()))
+        .thenReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -430,8 +431,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldFindShipmentDraftBasedOnOrder() {
-    when(orderRepository.findOne(shipmentDraftDtoExpected.getOrder().getId()))
-        .thenReturn(shipmentDraft.getOrder());
+    when(orderRepository.findById(shipmentDraftDtoExpected.getOrder().getId()))
+        .thenReturn(Optional.of(shipmentDraft.getOrder()));
     when(shipmentDraftRepository.findByOrder(eq(shipmentDraft.getOrder()), any(Pageable.class)))
         .thenReturn(new PageImpl<>(singletonList(shipmentDraft)));
 
@@ -489,8 +490,8 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToGetDrafts() {
-    when(orderRepository.findOne(orderId))
-        .thenReturn(shipmentDraft.getOrder());
+    when(orderRepository.findById(orderId))
+        .thenReturn(Optional.of(shipmentDraft.getOrder()));
     doThrow(new MissingPermissionException(PERMISSION_NAME))
         .when(permissionService).canViewShipmentDraft(shipmentDraft.getOrder());
 
@@ -510,12 +511,12 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
 
   @Test
   public void shouldDeleteShipmentDraft() {
-    when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(shipmentDraft);
+    when(shipmentDraftRepository.findById(draftIdFromUser)).thenReturn(Optional.of(shipmentDraft));
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(modifiedDate);
 
     Order order = new OrderDataBuilder().build();
-    when(orderRepository.findOne(any())).thenReturn(order);
+    when(orderRepository.findById(any())).thenReturn(Optional.of(order));
 
     restAssured.given()
         .pathParam(ID, draftIdFromUser)
@@ -529,14 +530,14 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
     order.setStatus(OrderStatus.ORDERED);
     order.setUpdateDetails(new UpdateDetails(INITIAL_USER_ID, modifiedDate));
 
-    verify(shipmentDraftRepository).delete(draftIdFromUser);
+    verify(shipmentDraftRepository).deleteById(draftIdFromUser);
     verify(orderRepository).save(order);
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldReturnNotFoundIfShipmentDraftIsNotFoundWhenDelete() {
-    when(shipmentDraftRepository.findOne(draftIdFromUser)).thenReturn(null);
+    when(shipmentDraftRepository.findById(draftIdFromUser)).thenReturn(Optional.empty());
 
     restAssured.given()
         .pathParam(ID, draftIdFromUser)
@@ -548,14 +549,14 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(404)
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_NOT_FOUND));
 
-    verify(shipmentDraftRepository, never()).delete(any(UUID.class));
+    verify(shipmentDraftRepository, never()).deleteById(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToDeleteShipmentDraft() {
-    when(shipmentDraftRepository.findOne(draftIdFromUser))
-        .thenReturn(shipmentDraft);
+    when(shipmentDraftRepository.findById(draftIdFromUser))
+        .thenReturn(Optional.of(shipmentDraft));
     doThrow(new MissingPermissionException(PERMISSION_NAME))
         .when(permissionService).canEditShipmentDraft(shipmentDraft);
 
@@ -569,13 +570,13 @@ public class ShipmentDraftControllerIntegrationTest extends BaseWebIntegrationTe
         .statusCode(403)
         .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
-    verify(shipmentDraftRepository, never()).delete(any(UUID.class));
+    verify(shipmentDraftRepository, never()).deleteById(any(UUID.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
 
   private void verifyAfterPut(ShipmentDraftDto extracted) {
-    verify(shipmentDraftRepository).findOne(draftIdFromUser);
+    verify(shipmentDraftRepository).findById(draftIdFromUser);
     shipmentDraft.setId(draftIdFromUser);
     verify(shipmentDraftRepository).save(refEq(shipmentDraft));
     shipmentDraftDtoExpected.setId(draftIdFromUser);

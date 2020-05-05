@@ -21,15 +21,12 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,26 +36,18 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
-import org.openlmis.fulfillment.extension.ExtensionManager;
-import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
-import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
-import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -74,28 +63,7 @@ public class OrderControllerTest {
   private AuthenticationHelper authenticationHelper;
 
   @Mock
-  private DateHelper dateHelper;
-
-  @Mock
-  private ProgramReferenceDataService programReferenceDataService;
-
-  @Mock
   private OrderService orderService;
-
-  @Mock
-  private OrderNumberGenerator orderNumberGenerator;
-
-  @Mock
-  private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
-
-  @Mock
-  private ExtensionManager extensionManager;
-
-  @Mock
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
-
-  @Mock
-  private ProofOfDelivery proofOfDelivery;
 
   @Mock
   private ExporterBuilder exporterBuilder;
@@ -116,12 +84,8 @@ public class OrderControllerTest {
   private ShipmentService shipmentService;
 
   @Mock
-  private ProgramDto programDto;
-
-  @Mock
   private OrderDtoBuilder orderDtoBuilder;
 
-  private static final String ORDER_NUMBER = "orderNumber";
   private static final String SERVICE_URL = "localhost";
 
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
@@ -138,24 +102,12 @@ public class OrderControllerTest {
 
   @Before
   public void setUp() {
-    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
-        ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));
-
-    OrderNumberConfiguration orderNumberConfiguration =
-        new OrderNumberConfiguration("prefix", false, false, false);
-
     when(orderService.createOrder(orderDto, lastUpdaterId)).thenReturn(order);
-    when(programReferenceDataService.findOne(any())).thenReturn(programDto);
     when(authentication.isClientOnly()).thenReturn(true);
-    when(orderNumberConfigurationRepository.findAll()).thenReturn(Lists.newArrayList(
-        orderNumberConfiguration));
-    when(extensionManager.getExtension(any(), any())).thenReturn(orderNumberGenerator);
-    when(orderNumberGenerator.generate(any())).thenReturn(ORDER_NUMBER);
-    when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
     when(orderDtoBuilder.build(order)).thenReturn(orderDto);
 
     when(shipmentService.save(any(Shipment.class)))
-        .thenAnswer(invocation -> invocation.getArgumentAt(0, Shipment.class));
+        .thenAnswer(invocation -> invocation.getArgument(0, Shipment.class));
 
     orderDto.setUpdaterId(lastUpdaterId);
 
@@ -169,7 +121,6 @@ public class OrderControllerTest {
   @Test
   public void shouldGetLastUpdaterFromDtoIfCurrentUserIsNull() {
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
-    doCallRealMethod().when(exporterBuilder).export(any(Order.class), any());
 
     orderController.createOrder(orderDto, authentication);
 

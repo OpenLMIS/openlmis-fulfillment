@@ -132,7 +132,8 @@ public class ShipmentController extends BaseController {
     profiler.start("CREATE_DOMAIN_INSTANCE");
     setShipDetailsToDto(shipmentDto);
 
-    Order order = orderRepository.findOne(dtoOrder.getId());
+    Order order = orderRepository.findById(dtoOrder.getId())
+        .orElseThrow(() -> new ValidationException(ORDER_NOT_FOUND, dtoOrder.getId().toString()));
 
     if (!order.canBeFulfilled()) {
       throw new ValidationException(SHIPMENT_ORDER_STATUS_INVALID, order.getStatus().toString());
@@ -186,10 +187,8 @@ public class ShipmentController extends BaseController {
       throw new ValidationException(SHIPMENT_ORDER_REQUIRED);
     }
 
-    Order order = orderRepository.findOne(orderId);
-    if (order == null) {
-      throw new ValidationException(ORDER_NOT_FOUND, orderId.toString());
-    }
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new ValidationException(ORDER_NOT_FOUND, orderId.toString()));
 
     profiler.start("CHECK_RIGHTS");
     permissionService.canViewShipment(order);
@@ -222,11 +221,8 @@ public class ShipmentController extends BaseController {
     profiler.setLogger(XLOGGER);
 
     profiler.start("FIND_IN_DB");
-    Shipment shipment = shipmentRepository.findOne(id);
-
-    if (shipment == null) {
-      throw new NotFoundException(SHIPMENT_NOT_FOUND, id.toString());
-    }
+    Shipment shipment = shipmentRepository.findById(id)
+        .orElseThrow(() -> new NotFoundException(SHIPMENT_NOT_FOUND, id.toString()));
 
     profiler.start("CHECK_RIGHTS");
     permissionService.canViewShipment(shipment);

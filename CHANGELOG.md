@@ -1,9 +1,24 @@
+8.2.0 / WIP
+=================
+
+New functionality added in a backwards-compatible manner:
+* [OLMIS-6782](https://openlmis.atlassian.net/browse/OLMIS-6782): Update Spring Boot version to 2.x:
+  * Spring Boot version is 2.2.2.
+  * Flyway is at 6.0.8, new mechanism for loading Spring Security for OAuth2 (matching Spring Boot version), new versions for REST Assured, RAML tester, RAML parser, PowerMock, Mockito (so tests will pass) and Java callback mechanism has changed to a general handle() method.
+  * Spring application properties for Flyway have changed.
+  * Re-implement generation of Jasper reports.
+  * Fix repository method signatures (findOne is now findById, etc.); additionally they return Optional.
+  * Fix unit tests.
+  * Fix integration tests.
+  * API definitions require "Keep-Alive" header for web integration tests.
+
 8.1.1 / 2020-04-14
 ==================
 
 Bug fixes:
 * [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
   * A mechanism to retry authentication load after encountering the error was introduced.
+=======
 
 8.1.0 / 2019-10-17
 ==================

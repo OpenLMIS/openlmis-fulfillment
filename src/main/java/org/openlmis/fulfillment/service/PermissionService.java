@@ -221,11 +221,8 @@ public class PermissionService {
   }
 
   private void checkShipmentEditWithOrder(ObjectReferenceDto orderDto) {
-    Order order = orderRepository.findOne(orderDto.getId());
-
-    if (null == order) {
-      throw new ValidationException(ORDER_NOT_FOUND, orderDto.getId().toString());
-    }
+    Order order = orderRepository.findById(orderDto.getId())
+        .orElseThrow(() -> new ValidationException(ORDER_NOT_FOUND, orderDto.getId().toString()));
 
     checkPermission(SHIPMENTS_EDIT, order.getSupplyingFacilityId());
   }

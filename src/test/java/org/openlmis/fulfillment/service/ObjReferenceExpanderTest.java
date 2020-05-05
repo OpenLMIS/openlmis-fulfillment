@@ -48,9 +48,9 @@ import org.openlmis.fulfillment.testutils.TestDto;
 import org.openlmis.fulfillment.testutils.TestDtoDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -116,7 +116,7 @@ public class ObjReferenceExpanderTest {
 
   @Test
   public void shouldNotFailIfResourceDoesNotExist() {
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(RequestEntity.class),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
         eq(Map.class))).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
     objReferenceExpander.expandDto(testDto, singleton(EXPANDED_OBJECT_REFERENCE_DTO_FIELD));
@@ -140,7 +140,7 @@ public class ObjReferenceExpanderTest {
     responseMap.put("expandedUuidProperty", EXPANDED_UUID_VALUE);
     responseMap.put("expandedNestedProperty", EXPANDED_NESTED_PROPERTY);
 
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(RequestEntity.class),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
         eq(Map.class))).thenReturn(ResponseEntity.ok(responseMap));
 
     objReferenceExpander.expandDto(testDto, singleton(EXPANDED_OBJECT_REFERENCE_DTO_FIELD));
@@ -172,12 +172,12 @@ public class ObjReferenceExpanderTest {
 
     ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
 
-    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(RequestEntity.class),
+    when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
         eq(Map.class))).thenReturn(ResponseEntity.ok(responseMap));
 
     objReferenceExpander.expandDto(testDto, singleton(EXPANDED_NESTED_FIELD));
 
-    verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.GET), any(RequestEntity.class),
+    verify(restTemplate).exchange(uriCaptor.capture(), eq(HttpMethod.GET), any(HttpEntity.class),
         eq(Map.class));
 
     URI value = uriCaptor.getValue();

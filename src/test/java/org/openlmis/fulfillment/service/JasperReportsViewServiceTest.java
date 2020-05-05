@@ -15,139 +15,123 @@
 
 package org.openlmis.fulfillment.service;
 
-import static net.sf.jasperreports.engine.export.JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.when;
+import static org.openlmis.fulfillment.service.JasperReportsViewService.PARAM_DATASOURCE;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
-import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.web.util.OrderReportDto;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.jasperreports.JasperReportsMultiFormatView;
 
 @SuppressWarnings({"PMD.UnusedPrivateField"})
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
-@PrepareForTest({JasperReportsViewService.class})
+@PrepareForTest({JasperReportsViewService.class, JasperFillManager.class,
+    JasperExportManager.class})
 public class JasperReportsViewServiceTest {
 
   private static final String FORMAT = "format";
   private static final String PDF = "pdf";
 
   @Mock
-  private DataSource dataSource;
-
-  @Mock
-  private ExporterBuilder exporterBuilder;
-
+  DataSource dataSource;
+  
   @InjectMocks
-  private JasperReportsViewService viewFactory;
+  private JasperReportsViewService jasperReportsViewService;
 
   private Template template;
-  private JasperReportsMultiFormatView jasperReportsView;
   private JasperReport jasperReport;
   private ObjectInputStream objectInputStream;
   private ObjectOutputStream objectOutputStream;
   private ByteArrayOutputStream byteArrayOutputStream;
-  private byte[] reportByteData;
+  private byte[] reportTemplateData;
+  private byte[] expectedReportData;
 
   @Before
   public void setUp() throws Exception {
     template = mock(Template.class);
     when(template.getName()).thenReturn("report1.jrxml");
-    reportByteData = new byte[1];
-    when(template.getData()).thenReturn(reportByteData);
+    reportTemplateData = new byte[1];
+    when(template.getData()).thenReturn(reportTemplateData);
     jasperReport = mock(JasperReport.class);
+    expectedReportData = new byte[1];
 
     objectInputStream = mock(ObjectInputStream.class);
     objectOutputStream = mock(ObjectOutputStream.class);
     byteArrayOutputStream = mock(ByteArrayOutputStream.class);
 
     ByteArrayInputStream byteArrayInputStream = mock(ByteArrayInputStream.class);
-    whenNew(ByteArrayInputStream.class).withArguments(reportByteData)
+    whenNew(ByteArrayInputStream.class).withArguments(reportTemplateData)
         .thenReturn(byteArrayInputStream);
     whenNew(ObjectInputStream.class).withArguments(byteArrayInputStream)
         .thenReturn(objectInputStream);
     whenNew(ByteArrayOutputStream.class).withNoArguments().thenReturn(byteArrayOutputStream);
     whenNew(ObjectOutputStream.class).withArguments(byteArrayOutputStream)
         .thenReturn(objectOutputStream);
-    jasperReportsView = spy(new JasperReportsMultiFormatView());
+    
+    mockStatic(JasperFillManager.class);
+    mockStatic(JasperExportManager.class);
   }
 
   @Test
-  public void shouldGetRequestedViewAndSetDataSourceAndWebContextInJasperView()
-      throws Exception {
-    whenNew(JasperReportsMultiFormatView.class).withNoArguments().thenReturn(jasperReportsView);
+  public void generateReportShouldReturnReportForDataSource() throws Exception {
     when(objectInputStream.readObject()).thenReturn(jasperReport);
-    when(byteArrayOutputStream.toByteArray()).thenReturn(reportByteData);
+    when(dataSource.getConnection()).thenReturn(mock(Connection.class));
+    JasperPrint jasperPrint = mock(JasperPrint.class);
+    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
+        any(Connection.class)))
+        .thenReturn(jasperPrint);
+    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
+        .thenReturn(expectedReportData);
 
-    ServletContext servletContext = new MockServletContext("");
-    HttpServletRequest httpServletRequest = new MockHttpServletRequest(servletContext);
-    JasperReportsMultiFormatView reportView = viewFactory.getJasperReportsView(
-        template, httpServletRequest);
+    byte[] actualReportData = jasperReportsViewService.generateReport(template,
+        Collections.emptyMap());
 
-    assertThat(reportView, is(jasperReportsView));
-    verify(jasperReportsView).setJdbcDataSource(dataSource);
-    verify(objectOutputStream).writeObject(jasperReport);
+    assertEquals(expectedReportData, actualReportData);
   }
 
   @Test
-  public void shouldAddExportParamToGetRidOfImageInHtmlReport() throws Exception {
-    whenNew(JasperReportsMultiFormatView.class).withNoArguments().thenReturn(jasperReportsView);
+  public void generateReportShouldReturnReportForBeanDataSource() throws Exception {
     when(objectInputStream.readObject()).thenReturn(jasperReport);
-    when(byteArrayOutputStream.toByteArray()).thenReturn(reportByteData);
-
-    Map<JRExporterParameter, Object> exportParams = new HashMap<>();
-    exportParams.put(IS_USING_IMAGES_TO_ALIGN, false);
-    ServletContext servletContext = new MockServletContext("");
-    HttpServletRequest httpServletRequest = new MockHttpServletRequest(servletContext);
-    viewFactory.getJasperReportsView(template, httpServletRequest);
-
-    verify(jasperReportsView).setExporterParameters(exportParams);
-  }
-
-  @Test
-  public void shouldGetOrderJasperReportView() {
-    JasperReportsMultiFormatView view = mock(JasperReportsMultiFormatView.class);
-    Order order = mock(Order.class);
-
+    JasperPrint jasperPrint = mock(JasperPrint.class);
+    PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
+        any(JRBeanCollectionDataSource.class)))
+        .thenReturn(jasperPrint);
+    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
+        .thenReturn(expectedReportData);
     Map<String, Object> params = new HashMap<>();
-    params.put(FORMAT, PDF);
+    params.put(PARAM_DATASOURCE, new ArrayList<>());
 
-    ModelAndView modelAndView = viewFactory.getOrderJasperReportView(view, params, order);
-    Map<String, Object> paramsReturned = modelAndView.getModel();
+    byte[] actualReportData = jasperReportsViewService.generateReport(template, params);
 
-    assertEquals(PDF, paramsReturned.get(FORMAT));
-    assertNotNull(paramsReturned.get("datasource"));
-    assertEquals(OrderReportDto.class, paramsReturned.get("order").getClass());
+    assertEquals(expectedReportData, actualReportData);
   }
 }

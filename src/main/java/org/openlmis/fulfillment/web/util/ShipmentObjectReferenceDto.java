@@ -24,11 +24,13 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.web.shipment.ShipmentLineItemDto;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public final class ShipmentObjectReferenceDto extends ObjectReferenceDto {

@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
@@ -29,7 +30,6 @@ import java.util.Random;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ShipmentDraftDataBuilder;
@@ -69,7 +69,7 @@ public class ShipmentDraftTest {
 
     ShipmentDraft actual = ShipmentDraft.newInstance(shipmentDraftDto);
 
-    assertThat(expected, new ReflectionEquals(actual));
+    assertThat(expected, equalTo(actual));
   }
 
   @Test

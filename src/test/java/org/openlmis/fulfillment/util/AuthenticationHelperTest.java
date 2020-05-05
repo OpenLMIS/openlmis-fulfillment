@@ -95,7 +95,6 @@ public class AuthenticationHelperTest {
   public void shouldNotThrowExceptionIfAuthenticationIsClientOnly() {
     // given
     when(authentication.isClientOnly()).thenReturn(true);
-    when(userReferenceDataService.findOne(any(UUID.class))).thenReturn(null);
 
     // when
     UserDto user = authenticationHelper.getCurrentUser();

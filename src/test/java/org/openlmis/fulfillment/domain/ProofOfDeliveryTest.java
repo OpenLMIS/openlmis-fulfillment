@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.Matchers.hasProperty;
@@ -38,7 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
@@ -120,7 +120,7 @@ public class ProofOfDeliveryTest {
 
     ProofOfDelivery actual = ProofOfDelivery.newInstance(importer);
 
-    assertThat(expected, new ReflectionEquals(actual));
+    assertThat(expected, equalTo(actual));
   }
 
   @Test

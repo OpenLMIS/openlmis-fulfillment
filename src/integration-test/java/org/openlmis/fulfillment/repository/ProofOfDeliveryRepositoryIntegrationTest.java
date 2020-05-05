@@ -120,9 +120,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     UUID instanceId = instance.getId();
 
-    proofOfDeliveryRepository.delete(instanceId);
+    proofOfDeliveryRepository.deleteById(instanceId);
 
-    assertFalse(proofOfDeliveryRepository.exists(instanceId));
+    assertFalse(proofOfDeliveryRepository.existsById(instanceId));
   }
 
   @Test
@@ -279,7 +279,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
@@ -298,7 +298,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
@@ -318,7 +318,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(buildInstance(false));
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
@@ -338,7 +338,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     for (ProofOfDelivery proofOfDelivery : list) {
 
@@ -363,7 +363,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
         null,
@@ -387,7 +387,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
         UUID.randomUUID(),
@@ -408,9 +408,9 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       list.add(generateInstance());
     }
 
-    Pageable pageable = new PageRequest(0, 10, new Sort(Direction.ASC, "id"));
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Direction.ASC, "id"));
 
-    proofOfDeliveryRepository.save(list);
+    proofOfDeliveryRepository.saveAll(list);
 
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
         null,

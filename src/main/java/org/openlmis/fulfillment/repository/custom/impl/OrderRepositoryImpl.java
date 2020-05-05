@@ -102,7 +102,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     countQuery = prepareQuery(countQuery, params, processingPeriodIds, pageable, true,
         availableSupplyingFacilities, availableRequestingFacilities);
 
-    Pageable page = null != pageable ? pageable : new PageRequest(0, Integer.MAX_VALUE);
+    Pageable page = null != pageable ? pageable : PageRequest.of(0, Integer.MAX_VALUE);
 
     Long count = entityManager.createQuery(countQuery).getSingleResult();
     List<Order> result = entityManager.createQuery(query)

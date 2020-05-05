@@ -285,7 +285,7 @@ public class OrderServiceTest {
   @Test
   public void shouldFindOrderIfMatchedSupplyingAndRequestingFacilitiesAndProgram() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
     UserDto user = new UserDataBuilder().build();
     PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
     when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
@@ -323,7 +323,7 @@ public class OrderServiceTest {
   @Test
   public void shouldNotCheckPermissionWhenCrossServiceRequest() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -351,7 +351,7 @@ public class OrderServiceTest {
   @Test
   public void shouldSearchByStartDateAndEndDate() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -373,7 +373,7 @@ public class OrderServiceTest {
   @Test
   public void shouldReturnEmptyPageIfFilteredPeriodsAndGivenPeriodIdDoesNotMatch() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
@@ -391,7 +391,7 @@ public class OrderServiceTest {
   @Test
   public void shouldReturnEmptyPageIfPeriodsSearchReturnsEmptyList() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
 
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
 
@@ -411,7 +411,7 @@ public class OrderServiceTest {
   @Test
   public void shouldSearchByStartDateAndEndDateAndPeriodId() {
     Order order = generateOrder();
-    Pageable pageable = new PageRequest(0, 10);
+    Pageable pageable = PageRequest.of(0, 10);
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
@@ -500,8 +500,6 @@ public class OrderServiceTest {
     when(programReferenceDataService.findOne(program.getId())).thenReturn(program);
     when(facilityReferenceDataService.findOne(facility.getId())).thenReturn(facility);
     when(periodReferenceDataService.findOne(period1.getId())).thenReturn(period1);
-    when(orderableReferenceDataService.findByIds(any()))
-        .thenReturn(Collections.singletonList(orderable));
 
     when(userReferenceDataService.findOne(any())).thenReturn(userDto);
 
@@ -522,5 +520,7 @@ public class OrderServiceTest {
 
     when(periodReferenceDataService.search(startDate, endDate))
         .thenReturn(asList(period1, period2));
+    
+    when(orderableReferenceDataService.findByIdentities(anySet())).thenReturn(emptyList());
   }
 }

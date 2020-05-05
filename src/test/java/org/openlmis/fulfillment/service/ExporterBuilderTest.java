@@ -111,8 +111,6 @@ public class ExporterBuilderTest {
     // given
     OrderLineItemDto orderLineItemDto = new OrderLineItemDto();
     when(products.findOne(orderableId)).thenReturn(orderableDto);
-    when(products.findByIdentities(argumentCaptor.capture())).thenReturn(
-        Collections.singletonList(orderableDto));
 
     // when
     exportBuilder.export(orderLineItem, orderLineItemDto, Collections.emptyList());

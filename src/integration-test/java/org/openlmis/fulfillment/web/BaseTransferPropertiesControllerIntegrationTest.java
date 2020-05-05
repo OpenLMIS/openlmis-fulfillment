@@ -20,6 +20,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.TransferProperties;
@@ -72,7 +73,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     newProperties.setId(oldProperties.getId());
     newProperties.setFacilityId(oldProperties.getFacilityId());
 
-    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(oldProperties);
+    given(transferPropertiesRepository.findById(newProperties.getId()))
+        .willReturn(Optional.of(oldProperties));
     given(transferPropertiesRepository.save(any(TransferProperties.class)))
         .willAnswer(new SaveAnswer<TransferProperties>());
 
@@ -101,7 +103,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     newProperties.setId(oldProperties.getId());
     newProperties.setFacilityId(oldProperties.getFacilityId());
 
-    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(null);
+    given(transferPropertiesRepository.findById(newProperties.getId()))
+        .willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -127,7 +130,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
     newProperties.setId(oldProperties.getId());
     newProperties.setFacilityId(oldProperties.getFacilityId());
 
-    given(transferPropertiesRepository.findOne(newProperties.getId())).willReturn(otherProperties);
+    given(transferPropertiesRepository.findById(newProperties.getId()))
+        .willReturn(Optional.of(otherProperties));
     given(transferPropertiesRepository.save(any(TransferProperties.class)))
         .willAnswer(new SaveAnswer<TransferProperties>());
 
@@ -153,7 +157,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldDeleteProperties() {
     // given
     T properties = generateProperties();
-    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(properties);
+    given(transferPropertiesRepository.findById(properties.getId()))
+        .willReturn(Optional.of(properties));
 
     // when
     restAssured.given()
@@ -173,7 +178,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldNotDeleteNonexistentProperties() {
     // given
     T properties = generateProperties();
-    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(null);
+    given(transferPropertiesRepository.findById(properties.getId())).willReturn(Optional.empty());
 
     // when
     restAssured.given()
@@ -193,7 +198,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldNotDeletePropertiesWithConflicts() {
     // given
     T properties = generateProperties();
-    given(transferPropertiesRepository.findOne(properties.getId())).willThrow(
+    given(transferPropertiesRepository.findById(properties.getId())).willThrow(
         new DataIntegrityViolationException("This exception is required by IT"));
 
     // when
@@ -214,7 +219,8 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldGetChosenProperties() {
     // given
     T properties = generateProperties();
-    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(properties);
+    given(transferPropertiesRepository.findById(properties.getId()))
+        .willReturn(Optional.of(properties));
 
     // when
     TransferPropertiesDto response = restAssured.given()
@@ -236,7 +242,7 @@ public abstract class BaseTransferPropertiesControllerIntegrationTest<T extends 
   public void shouldNotGetNonexistentProperties() {
     // given
     T properties = generateProperties();
-    given(transferPropertiesRepository.findOne(properties.getId())).willReturn(null);
+    given(transferPropertiesRepository.findById(properties.getId())).willReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

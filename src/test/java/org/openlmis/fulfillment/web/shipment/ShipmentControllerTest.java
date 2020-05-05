@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,8 +103,8 @@ public class ShipmentControllerTest {
     when(userDto.getId()).thenReturn(UUID.randomUUID());
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
 
-    when(orderRepository.findOne(shipmentDto.getOrder().getId()))
-        .thenReturn(order);
+    when(orderRepository.findById(shipmentDto.getOrder().getId()))
+        .thenReturn(Optional.of(order));
     when(stockEventBuilder.fromShipment(any(Shipment.class)))
         .thenReturn(event);
     when(shipmentService.save(any(Shipment.class)))

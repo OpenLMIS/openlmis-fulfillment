@@ -36,6 +36,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -145,9 +146,11 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     generateShipment();
 
-    when(shipmentRepository.findOne(shipmentDtoExpected.getId())).thenReturn(shipment);
+    when(shipmentRepository.findById(shipmentDtoExpected.getId()))
+        .thenReturn(Optional.of(shipment));
     when(shipmentRepository.save(any(Shipment.class))).thenAnswer(new SaveAnswer<>());
-    when(orderRepository.findOne(shipmentDtoExpected.getOrder().getId())).thenReturn(order);
+    when(orderRepository.findById(shipmentDtoExpected.getOrder().getId()))
+        .thenReturn(Optional.of(order));
     when(orderRepository.save(any(Order.class))).thenAnswer(new SaveAnswer<>());
 
     when(order.canBeFulfilled()).thenReturn(true);
@@ -221,10 +224,12 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateShipment() {
     Order shipmentOrder = shipment.getOrder();
     shipmentOrder.setStatus(OrderStatus.ORDERED);
-    when(orderRepository.findOne(shipment.getOrder().getId())).thenReturn(shipment.getOrder());
+    when(orderRepository.findById(shipment.getOrder().getId()))
+        .thenReturn(Optional.of(shipment.getOrder()));
     //necessary as SaveAnswer change shipment id value also in captor
     when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
     when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
+    when(stockEventBuilder.fromShipment(any(Shipment.class))).thenReturn(new StockEventDto());
 
     ShipmentDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -316,8 +321,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldFindShipmentBasedOnOrder() {
-    when(orderRepository.findOne(orderId))
-        .thenReturn(shipment.getOrder());
+    when(orderRepository.findById(orderId))
+        .thenReturn(Optional.of(shipment.getOrder()));
     when(shipmentRepository.findByOrder(eq(shipment.getOrder()), any(Pageable.class)))
         .thenReturn(new PageImpl<>(singletonList(shipment)));
 
@@ -346,7 +351,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnBadRequestIfOrderIsNotFoundWhenGetShipments() {
-    when(orderRepository.findOne(orderId)).thenReturn(null);
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -377,8 +382,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnForbiddenIfUserHasNoRightsToGetShipments() {
-    when(orderRepository.findOne(orderId))
-        .thenReturn(shipment.getOrder());
+    when(orderRepository.findById(orderId))
+        .thenReturn(Optional.of(shipment.getOrder()));
     doThrow(new MissingPermissionException("test"))
         .when(permissionService).canViewShipment(shipment.getOrder());
 
@@ -414,7 +419,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldReturnNotFoundIfShipmentIsNotFound() {
-    when(shipmentRepository.findOne(shipmentDtoExpected.getId())).thenReturn(null);
+    when(shipmentRepository.findById(shipmentDtoExpected.getId())).thenReturn(Optional.empty());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

@@ -26,6 +26,7 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,8 +64,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
     template.setName(TEMPLATE_CONTROLLER_TEST + generateInstanceNumber());
     templateDto = TemplateDto.newInstance(template);
 
-    given(templateRepository.findOne(template.getId())).willReturn(template);
-    given(templateRepository.exists(template.getId())).willReturn(true);
+    given(templateRepository.findById(template.getId())).willReturn(Optional.of(template));
+    given(templateRepository.existsById(template.getId())).willReturn(true);
 
     given(templateRepository.save(any(Template.class))).willAnswer(new SaveAnswer<Template>());
     given(templateRepository.findAll()).willReturn(Lists.newArrayList(template));
@@ -132,8 +133,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotDeleteNonexistentTemplate() {
-    given(templateRepository.findOne(template.getId())).willReturn(null);
-    given(templateRepository.exists(template.getId())).willReturn(false);
+    given(templateRepository.findById(template.getId())).willReturn(Optional.empty());
+    given(templateRepository.existsById(template.getId())).willReturn(false);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -169,8 +170,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateNewTemplateIfDoesNotExist() {
-    given(templateRepository.findOne(template.getId())).willReturn(template);
-    given(templateRepository.exists(template.getId())).willReturn(true);
+    given(templateRepository.findById(template.getId())).willReturn(Optional.of(template));
+    given(templateRepository.existsById(template.getId())).willReturn(true);
 
     templateDto.setDescription(TEMPLATE_CONTROLLER_TEST);
 
@@ -224,8 +225,8 @@ public class TemplateControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldNotGetNonexistentTemplate() {
-    given(templateRepository.findOne(template.getId())).willReturn(null);
-    given(templateRepository.exists(template.getId())).willReturn(false);
+    given(templateRepository.findById(template.getId())).willReturn(Optional.empty());
+    given(templateRepository.existsById(template.getId())).willReturn(false);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

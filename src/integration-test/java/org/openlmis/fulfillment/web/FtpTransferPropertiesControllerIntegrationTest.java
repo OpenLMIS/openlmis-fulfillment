@@ -25,6 +25,7 @@ import static org.openlmis.fulfillment.domain.FtpProtocol.FTP;
 import static org.openlmis.fulfillment.web.util.TransferPropertiesFactory.newInstance;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,8 +46,8 @@ public class FtpTransferPropertiesControllerIntegrationTest
   @Before
   public void setUp() {
     ftpTransferProperties = generateProperties();
-    given(transferPropertiesRepository.findOne(ftpTransferProperties.getId()))
-        .willReturn(ftpTransferProperties);
+    given(transferPropertiesRepository.findById(ftpTransferProperties.getId()))
+        .willReturn(Optional.of(ftpTransferProperties));
     given(transferPropertiesRepository.save(any(TransferProperties.class)))
         .willAnswer(new SaveAnswer<TransferProperties>());
   }
