@@ -1,32 +1,20 @@
-{   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema",
-  "title": "FileTemplateDto",
-  "description": "A single FileTemplate",
-  "properties": {
-    "id": {
-      "type": ["string", "null"],
-      "title": "id"
-    },
-    "filePrefix": {
-      "type": "string",
-      "title": "filePrefix"
-    },
-    "headerInFile": {
-      "type": "boolean",
-      "title": "headerInFile"
-    },
-    "csvFileColumns": {
-      "type": "array",
-      "title": "csvFileColumns",
-      "items": {
-        "type": "object",
-        "$ref": "fileColumnDto.json"
-      },
-      "uniqueItems": false
+{
+  "id": "object",
+  "filePrefix": "string",
+  "headerInFile": true,
+  "templateType": "object",
+  "fileColumns": [
+    {
+      "openLmisField": true,
+      "dataFieldLabel": "object",
+      "columnLabel": "Name",
+      "include": true,
+      "position": 1,
+      "format": "string",
+      "nested": "string",
+      "keyPath": "string",
+      "related": "string",
+      "relatedKeyPath": "string"
     }
-  },
-  "required": [
-    "filePrefix",
-    "headerInFile"
   ]
 }

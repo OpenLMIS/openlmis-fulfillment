@@ -1,3 +1,7 @@
+TZ UPGRADE / 2020-09-21
+=================
+* [TZUP-24](https://openlmis.atlassian.net/browse/TZUP-24): Implement API to define Budget file:
+
 8.2.0 / WIP
 =================
 

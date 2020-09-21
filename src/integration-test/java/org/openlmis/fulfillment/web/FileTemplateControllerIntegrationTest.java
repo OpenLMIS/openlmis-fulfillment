@@ -42,6 +42,7 @@ public class FileTemplateControllerIntegrationTest extends BaseWebIntegrationTes
 
   private static final String RESOURCE_URL = "/api/fileTemplates";
   private static final String ORDER = "ORDER";
+  private static final String BUDGET = "BUDGET";
   private static final String TEMPLATE_TYPE = "templateType";
 
   private FileTemplate fileTemplate = new FileTemplate();
@@ -268,6 +269,27 @@ public class FileTemplateControllerIntegrationTest extends BaseWebIntegrationTes
         .then()
         .statusCode(403);
 
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+
+  @Test
+  public void shouldReturnBudgetFileTemplate() {
+    given(fileTemplateService.getFileTemplate(TemplateType.BUDGET))
+            .willReturn(fileTemplate);
+
+    FileTemplateDto result = restAssured.given()
+            .queryParam(TEMPLATE_TYPE, BUDGET)
+            .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .get(RESOURCE_URL)
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(FileTemplateDto.class);
+
+    assertEquals(fileTemplate.getId(),result.getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 }
