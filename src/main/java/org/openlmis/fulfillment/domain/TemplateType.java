@@ -18,5 +18,6 @@ package org.openlmis.fulfillment.domain;
 
 public enum TemplateType {
   ORDER,
-  SHIPMENT
+  SHIPMENT,
+  BUDGET
 }
