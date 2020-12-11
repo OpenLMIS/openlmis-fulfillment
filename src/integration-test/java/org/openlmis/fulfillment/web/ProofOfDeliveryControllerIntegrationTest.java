@@ -519,6 +519,54 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   }
 
   @Test
+  public void shouldPrintProofOfDeliveryAsPdf() {
+    restAssured.given()
+        .queryParam("format", "pdf")
+        .pathParam("id", proofOfDelivery.getId())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void shouldPrintProofOfDeliveryAsCsv() {
+    restAssured.given()
+        .queryParam("datasource", "csv")
+        .pathParam("id", proofOfDelivery.getId())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void shouldPrintProofOfDeliveryAsXls() {
+    restAssured.given()
+        .queryParam("format", "xls")
+        .pathParam("id", proofOfDelivery.getId())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void shouldPrintProofOfDeliveryAsHtml() {
+    restAssured.given()
+        .queryParam("format", "html")
+        .pathParam("id", proofOfDelivery.getId())
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(PRINT_URL)
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
   public void shouldRejectPrintRequestIfUserHasNoRight() {
     denyUserAllRights();
 

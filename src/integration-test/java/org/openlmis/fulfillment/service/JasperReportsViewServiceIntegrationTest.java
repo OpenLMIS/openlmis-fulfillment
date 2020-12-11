@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import net.sf.jasperreports.engine.JRException;
@@ -38,6 +39,7 @@ public class JasperReportsViewServiceIntegrationTest {
 
   private static final String EMPTY_REPORT_RESOURCE = "/empty-report.jrxml";
   private static final int HIKARI_DEFAULT_POOL_SIZE = 10;
+  static final String PARAM_DATASOURCE = "datasource";
 
   @Autowired
   private JasperReportsViewService service;
@@ -58,6 +60,38 @@ public class JasperReportsViewServiceIntegrationTest {
     for (int i = 0; i < HIKARI_DEFAULT_POOL_SIZE + 1; i++) {
       service.generateReport(template, params);
     }
+  }
+
+  @Test
+  public void generateReportShouldNotThrowErrorForDatasourceParam()
+      throws JRException, IOException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bos);
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    Template template = new Template();
+    template.setData(bos.toByteArray());
+    Map<String, Object> params = new HashMap<>();
+    params.put(PARAM_DATASOURCE, new ArrayList<>());
+
+    service.generateReport(template, params);
+  }
+
+  @Test(expected = JasperReportViewException.class)
+  public void shouldThrowJasperReportViewExceptionForUnknownFormat()
+      throws JRException, IOException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bos);
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    Template template = new Template();
+    template.setData(bos.toByteArray());
+    Map<String, Object> params = new HashMap<>();
+    params.put("format", "odt");
+
+    service.generateReport(template, params);
   }
 
   private JasperReport getEmptyReport() throws JRException {
