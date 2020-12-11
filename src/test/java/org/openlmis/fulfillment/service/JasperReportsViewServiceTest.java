@@ -18,6 +18,8 @@ package org.openlmis.fulfillment.service;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.service.JasperReportsViewService.PARAM_DATASOURCE;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -62,7 +64,19 @@ public class JasperReportsViewServiceTest {
 
   @Mock
   DataSource dataSource;
-  
+
+  @Mock
+  private JasperCsvExporter jasperCsvExporter;
+
+  @Mock
+  private JasperXlsExporter jasperXlsExporter;
+
+  @Mock
+  private JasperHtmlExporter jasperHtmlExporter;
+
+  @Mock
+  private JasperPdfExporter jasperPdfExporter;
+
   @InjectMocks
   private JasperReportsViewService jasperReportsViewService;
 
@@ -76,6 +90,7 @@ public class JasperReportsViewServiceTest {
 
   @Before
   public void setUp() throws Exception {
+    initializeExporterMocks();
     template = mock(Template.class);
     when(template.getName()).thenReturn("report1.jrxml");
     reportTemplateData = new byte[1];
@@ -108,7 +123,7 @@ public class JasperReportsViewServiceTest {
     PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
         any(Connection.class)))
         .thenReturn(jasperPrint);
-    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
+    PowerMockito.when(jasperPdfExporter.exportReport())
         .thenReturn(expectedReportData);
 
     byte[] actualReportData = jasperReportsViewService.generateReport(template,
@@ -124,7 +139,7 @@ public class JasperReportsViewServiceTest {
     PowerMockito.when(JasperFillManager.fillReport(any(JasperReport.class), anyMap(),
         any(JRBeanCollectionDataSource.class)))
         .thenReturn(jasperPrint);
-    PowerMockito.when(JasperExportManager.exportReportToPdf(jasperPrint))
+    PowerMockito.when(jasperPdfExporter.exportReport())
         .thenReturn(expectedReportData);
     Map<String, Object> params = new HashMap<>();
     params.put(PARAM_DATASOURCE, new ArrayList<>());
@@ -134,9 +149,45 @@ public class JasperReportsViewServiceTest {
     assertEquals(expectedReportData, actualReportData);
   }
 
+  @Test
+  public void shouldSelectCsvExporterForCsvFormat() throws Exception {
+    jasperReportsViewService.generateReport(template, getParamsWithFormat("csv"));
+    verify(jasperCsvExporter, times(1)).exportReport();
+  }
+
+  @Test
+  public void shouldSelectPdfExporterForPdfFormat() throws Exception {
+    jasperReportsViewService.generateReport(template, getParamsWithFormat("pdf"));
+    verify(jasperPdfExporter, times(1)).exportReport();
+  }
+
+  @Test
+  public void shouldSelectXlsExporterForXlsFormat() throws Exception {
+    jasperReportsViewService.generateReport(template, getParamsWithFormat("xls"));
+    verify(jasperXlsExporter, times(1)).exportReport();
+  }
+
+  @Test
+  public void shouldSelectHtmlExporterForHtmlFormat() throws Exception {
+    jasperReportsViewService.generateReport(template, getParamsWithFormat("html"));
+    verify(jasperHtmlExporter, times(1)).exportReport();
+  }
+
+  @Test(expected = JasperReportViewException.class)
+  public void shouldThrowJasperReportViewExceptionForUnknownFormat() {
+    jasperReportsViewService.generateReport(template, getParamsWithFormat("odt"));
+  }
+
   private Map<String, Object> getParamsWithFormat(String format) {
     Map<String, Object> params = new HashMap<>();
     params.put(FORMAT, format);
     return params;
+  }
+
+  private void initializeExporterMocks() throws Exception {
+    whenNew(JasperCsvExporter.class).withAnyArguments().thenReturn(jasperCsvExporter);
+    whenNew(JasperXlsExporter.class).withAnyArguments().thenReturn(jasperXlsExporter);
+    whenNew(JasperHtmlExporter.class).withAnyArguments().thenReturn(jasperHtmlExporter);
+    whenNew(JasperPdfExporter.class).withAnyArguments().thenReturn(jasperPdfExporter);
   }
 }
