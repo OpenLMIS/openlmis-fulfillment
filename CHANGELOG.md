@@ -1,3 +1,9 @@
+8.2.1 / WIP
+=================
+
+Bug fixes:
+* [OLMIS-7169](https://openlmis.atlassian.net/browse/OLMIS-7169): Fixed issue with not closing a connection after generating Jasper reports
+
 8.2.0 / 2020-11-16
 =================
 
@@ -18,7 +24,6 @@ New functionality added in a backwards-compatible manner:
 Bug fixes:
 * [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
   * A mechanism to retry authentication load after encountering the error was introduced.
-=======
 
 8.1.0 / 2019-10-17
 ==================

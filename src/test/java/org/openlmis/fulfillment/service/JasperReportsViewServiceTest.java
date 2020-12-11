@@ -30,7 +30,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -113,7 +112,7 @@ public class JasperReportsViewServiceTest {
         .thenReturn(expectedReportData);
 
     byte[] actualReportData = jasperReportsViewService.generateReport(template,
-        Collections.emptyMap());
+        getParamsWithFormat(PDF));
 
     assertEquals(expectedReportData, actualReportData);
   }
@@ -133,5 +132,11 @@ public class JasperReportsViewServiceTest {
     byte[] actualReportData = jasperReportsViewService.generateReport(template, params);
 
     assertEquals(expectedReportData, actualReportData);
+  }
+
+  private Map<String, Object> getParamsWithFormat(String format) {
+    Map<String, Object> params = new HashMap<>();
+    params.put(FORMAT, format);
+    return params;
   }
 }

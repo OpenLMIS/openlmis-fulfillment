@@ -22,10 +22,11 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREA
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
-import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
@@ -54,8 +55,6 @@ public class JasperReportsViewService {
   public byte[] generateReport(Template jasperTemplate, Map<String, Object> params) {
 
     JasperReport jasperReport = getReportFromTemplateData(jasperTemplate);
-    
-    byte[] bytes;
 
     try {
       JasperPrint jasperPrint;
@@ -63,30 +62,17 @@ public class JasperReportsViewService {
         jasperPrint = JasperFillManager.fillReport(jasperReport, params,
             new JRBeanCollectionDataSource((List) params.get(PARAM_DATASOURCE)));
       } else {
-        jasperPrint = JasperFillManager.fillReport(jasperReport, params,
-            replicationDataSource.getConnection());
+        try (Connection connection = replicationDataSource.getConnection()) {
+          jasperPrint = JasperFillManager.fillReport(jasperReport, params,
+              connection);
+        }
       }
 
-      JasperExporter exporter;
-      String format = (String) params.get("format");
-      if ("csv".equals(format)) {
-        exporter = new JasperCsvExporter(jasperPrint);
-        bytes = exporter.exportReport();
-      } else if ("xls".equals(format)) {
-        exporter = new JasperXlsExporter(jasperPrint);
-        bytes = exporter.exportReport();
-      } else if ("html".equals(format)) {
-        exporter = new JasperHtmlExporter(jasperPrint);
-        bytes = exporter.exportReport();
-      } else {
-        bytes = JasperExportManager.exportReportToPdf(jasperPrint);
-      }
+      return prepareReport(jasperPrint, params);
     } catch (Exception e) {
       throw new JasperReportViewException(e, ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE,
           e.getMessage());
     }
-
-    return bytes;
   }
 
   /**
@@ -105,6 +91,30 @@ public class JasperReportsViewService {
       throw new JasperReportViewException(ex, ERROR_IO, ex.getMessage());
     } catch (ClassNotFoundException ex) {
       throw new JasperReportViewException(ex, CLASS_NOT_FOUND, JasperReport.class.getName());
+    }
+  }
+
+  private byte[] prepareReport(JasperPrint jasperPrint, Map<String, Object> params)
+      throws JRException {
+    if (null != params.get("format")) {
+      return getJasperExporter((String) params.get("format"), jasperPrint).exportReport();
+    }
+
+    return getJasperExporter("pdf", jasperPrint).exportReport();
+  }
+
+  private JasperExporter getJasperExporter(String keyParam, JasperPrint jasperPrint) {
+    switch (keyParam) {
+      case "pdf":
+        return new JasperPdfExporter(jasperPrint);
+      case "csv":
+        return new JasperCsvExporter(jasperPrint);
+      case "xls":
+        return new JasperXlsExporter(jasperPrint);
+      case "html":
+        return new JasperHtmlExporter(jasperPrint);
+      default:
+        throw new IllegalArgumentException(keyParam);
     }
   }
 }
