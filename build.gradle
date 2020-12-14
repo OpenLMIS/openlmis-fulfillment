@@ -85,6 +85,7 @@ dependencies {
     testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
     testCompile "be.joengenduvel.java.verifiers:to-string:1.0.2"
     testCompile "com.github.tomakehurst:wiremock:1.58"
+    testCompile group: 'org.jacoco', name: 'org.jacoco.ant', version: '0.7.9'
 }
 
 idea {
@@ -199,6 +200,36 @@ checkstyle {
     toolVersion = "8.12"
 }
 
+task instrument(dependsOn: [classes, project.configurations.jacocoAnt]) {
+
+    inputs.files classes.outputs.files
+    File outputDir = new File(project.buildDir, 'instrumentedClasses')
+    outputs.dir outputDir
+    doFirst {
+        project.delete(outputDir)
+        ant.taskdef(
+                resource: 'org/jacoco/ant/antlib.xml',
+                classpath: project.configurations.jacocoAnt.asPath,
+                uri: 'jacoco'
+        )
+        def instrumented = false
+        if (file(sourceSets.main.java.outputDir).exists()) {
+            def instrumentedClassedDir = "${outputDir}/${sourceSets.main.java}"
+            ant.'jacoco:instrument'(destdir: instrumentedClassedDir) {
+                fileset(dir: sourceSets.main.java.outputDir, includes: '**/*.class')
+            }
+            //Replace the classes dir in the test classpath with the instrumented one
+            sourceSets.test.runtimeClasspath -= files(sourceSets.main.java.outputDir)
+            sourceSets.test.runtimeClasspath += files(instrumentedClassedDir)
+            instrumented = true
+        }
+        if (instrumented) {
+            //Disable class verification based on https://github.com/jayway/powermock/issues/375
+            test.jvmArgs += '-noverify'
+        }
+    }
+}
+
 //Usage: gradle sonarqube
 sonarqube {
     properties {
@@ -249,6 +280,7 @@ test {
 
 apply from: "documentation.gradle"
 integrationTest.dependsOn copyRamlToBuild
+test.dependsOn instrument
 
 processResources {
     // we want the generated HTML spec file included in the output jar
