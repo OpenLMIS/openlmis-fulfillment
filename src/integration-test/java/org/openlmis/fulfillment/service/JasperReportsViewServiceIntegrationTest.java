@@ -44,8 +44,9 @@ public class JasperReportsViewServiceIntegrationTest {
 
   private static final String EMPTY_REPORT_RESOURCE = "/empty-report.jrxml";
   private static final int DOUBLE_HIKARI_DEFAULT_POOL_SIZE = 20;
-  static final String PARAM_DATASOURCE = "datasource";
-  static final String FORMAT = "format";
+  private static final String PARAM_DATASOURCE = "datasource";
+  private static final String FORMAT = "format";
+  private static final String PDF = "pdf";
 
   @InjectMocks
   private JasperReportsViewService service;
@@ -70,7 +71,7 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put(FORMAT, "pdf");
+    params.put(FORMAT, PDF);
 
     for (int i = 0; i <= DOUBLE_HIKARI_DEFAULT_POOL_SIZE; i++) {
       service.generateReport(template, params);
@@ -114,15 +115,44 @@ public class JasperReportsViewServiceIntegrationTest {
   }
 
   @Test
+  public void shouldGenerateReportForXls()
+      throws JRException, IOException, JasperReportViewException {
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    template.setData(bos.toByteArray());
+    params.put(FORMAT, "xls");
+
+    service.generateReport(template, params);
+  }
+
+  @Test
   public void shouldCatchJasperReportViewExceptionWhenDatasourceReturnsNull()
       throws JRException, IOException, SQLException {
     out.writeObject(getEmptyReport());
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put(FORMAT, "pdf");
+    params.put(FORMAT, PDF);
 
     when(dataSource.getConnection()).thenThrow(NullPointerException.class);
+    try {
+      service.generateReport(template, params);
+    } catch (JasperReportViewException e) {
+      assertTrue(e.getMessage().contains("fulfillment.error.jasper.reportCreationWithMessage"));
+    }
+  }
+
+  @Test
+  public void shouldCatchJasperReportViewExceptionWhenDatasourceReturnsSqlException()
+      throws JRException, IOException, SQLException {
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    template.setData(bos.toByteArray());
+    params.put(FORMAT, PDF);
+
+    when(dataSource.getConnection()).thenThrow(SQLException.class);
     try {
       service.generateReport(template, params);
     } catch (JasperReportViewException e) {
@@ -145,7 +175,7 @@ public class JasperReportsViewServiceIntegrationTest {
   @Test(expected = JasperReportViewException.class)
   public void shouldThrowJasperReportViewExceptionIfReportIsNotSavedAsObjectOutputStream() {
     template.setData(bos.toByteArray());
-    params.put(FORMAT, "pdf");
+    params.put(FORMAT, PDF);
 
     service.generateReport(template, params);
   }
