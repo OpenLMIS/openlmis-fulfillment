@@ -15,49 +15,62 @@
 
 package org.openlmis.fulfillment.service;
 
+import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.openlmis.fulfillment.domain.Template;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest
-@DirtiesContext
 @RunWith(SpringRunner.class)
 public class JasperReportsViewServiceIntegrationTest {
 
   private static final String EMPTY_REPORT_RESOURCE = "/empty-report.jrxml";
-  private static final int HIKARI_DEFAULT_POOL_SIZE = 10;
+  private static final int DOUBLE_HIKARI_DEFAULT_POOL_SIZE = 20;
   static final String PARAM_DATASOURCE = "datasource";
 
-  @Autowired
+  @InjectMocks
   private JasperReportsViewService service;
 
+  @Spy
+  private DataSource dataSource;
+
+  private ByteArrayOutputStream bos = new ByteArrayOutputStream();
+  private ObjectOutputStream out;
+  private Template template = new Template();
+  private Map<String, Object> params = new HashMap<>();
+
+  @Before
+  public void setUp() throws IOException {
+    out = new ObjectOutputStream(bos);
+  }
+
   @Test
-  public void generateReportShouldNotThrowErrorAfterPrintingReport10Times()
+  public void generateReportShouldNotThrowErrorAfterPrintingReport20Times()
       throws JRException, IOException, JasperReportViewException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream out = new ObjectOutputStream(bos);
     out.writeObject(getEmptyReport());
     out.flush();
 
-    Template template = new Template();
     template.setData(bos.toByteArray());
-    Map<String, Object> params = new HashMap<>();
     params.put("format", "pdf");
 
-    for (int i = 0; i < HIKARI_DEFAULT_POOL_SIZE + 1; i++) {
+    for (int i = 0; i <= DOUBLE_HIKARI_DEFAULT_POOL_SIZE; i++) {
       service.generateReport(template, params);
     }
   }
@@ -65,31 +78,72 @@ public class JasperReportsViewServiceIntegrationTest {
   @Test
   public void generateReportShouldNotThrowErrorForDatasourceParam()
       throws JRException, IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream out = new ObjectOutputStream(bos);
     out.writeObject(getEmptyReport());
     out.flush();
 
-    Template template = new Template();
     template.setData(bos.toByteArray());
-    Map<String, Object> params = new HashMap<>();
     params.put(PARAM_DATASOURCE, new ArrayList<>());
 
     service.generateReport(template, params);
   }
 
-  @Test(expected = JasperReportViewException.class)
-  public void shouldThrowJasperReportViewExceptionForUnknownFormat()
-      throws JRException, IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream out = new ObjectOutputStream(bos);
+  @Test
+  public void shouldGenerateReportForHtml()
+      throws JRException, IOException, JasperReportViewException {
     out.writeObject(getEmptyReport());
     out.flush();
 
-    Template template = new Template();
     template.setData(bos.toByteArray());
-    Map<String, Object> params = new HashMap<>();
+    params.put("format", "html");
+
+    service.generateReport(template, params);
+  }
+
+  @Test
+  public void shouldGenerateReportForCsv()
+      throws JRException, IOException, JasperReportViewException {
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    template.setData(bos.toByteArray());
+    params.put("format", "csv");
+
+    service.generateReport(template, params);
+  }
+
+  @Test
+  public void shouldCatchJasperReportViewExceptionWhenDatasourceReturnsNull()
+      throws JRException, IOException, SQLException {
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    template.setData(bos.toByteArray());
+    params.put("format", "pdf");
+
+    when(dataSource.getConnection()).thenThrow(NullPointerException.class);
+    try {
+      service.generateReport(template, params);
+    } catch (JasperReportViewException e) {
+      // no "then" needed, exception is caught
+    }
+  }
+
+  @Test(expected = JasperReportViewException.class)
+  public void shouldThrowJasperReportViewExceptionForUnknownFormat()
+      throws JRException, IOException {
+    out.writeObject(getEmptyReport());
+    out.flush();
+
+    template.setData(bos.toByteArray());
     params.put("format", "odt");
+
+    service.generateReport(template, params);
+  }
+
+  @Test(expected = JasperReportViewException.class)
+  public void shouldThrowJasperReportViewExceptionIfReportIsNotSavedAsObjectOutputStream() {
+    template.setData(bos.toByteArray());
+    params.put("format", "pdf");
 
     service.generateReport(template, params);
   }
