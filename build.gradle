@@ -71,6 +71,8 @@ dependencies {
     compile 'org.javers:javers-spring-boot-starter-sql:2.8.2'
     compile "org.slf4j:slf4j-ext"
 
+    compile group: 'org.apache.poi', name: 'poi', version: '3.15'
+
     testCompile 'io.rest-assured:rest-assured'
     testCompile 'io.rest-assured:json-schema-validator'
     testCompile 'io.rest-assured:spring-mock-mvc'
