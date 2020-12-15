@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.service;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
@@ -44,6 +45,7 @@ public class JasperReportsViewServiceIntegrationTest {
   private static final String EMPTY_REPORT_RESOURCE = "/empty-report.jrxml";
   private static final int DOUBLE_HIKARI_DEFAULT_POOL_SIZE = 20;
   static final String PARAM_DATASOURCE = "datasource";
+  static final String FORMAT = "format";
 
   @InjectMocks
   private JasperReportsViewService service;
@@ -68,7 +70,7 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put("format", "pdf");
+    params.put(FORMAT, "pdf");
 
     for (int i = 0; i <= DOUBLE_HIKARI_DEFAULT_POOL_SIZE; i++) {
       service.generateReport(template, params);
@@ -94,7 +96,7 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put("format", "html");
+    params.put(FORMAT, "html");
 
     service.generateReport(template, params);
   }
@@ -106,7 +108,7 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put("format", "csv");
+    params.put(FORMAT, "csv");
 
     service.generateReport(template, params);
   }
@@ -118,13 +120,13 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put("format", "pdf");
+    params.put(FORMAT, "pdf");
 
     when(dataSource.getConnection()).thenThrow(NullPointerException.class);
     try {
       service.generateReport(template, params);
     } catch (JasperReportViewException e) {
-      // no "then" needed, exception is caught
+      assertTrue(e.getMessage().contains("fulfillment.error.jasper.reportCreationWithMessage"));
     }
   }
 
@@ -135,7 +137,7 @@ public class JasperReportsViewServiceIntegrationTest {
     out.flush();
 
     template.setData(bos.toByteArray());
-    params.put("format", "odt");
+    params.put(FORMAT, "odt");
 
     service.generateReport(template, params);
   }
@@ -143,7 +145,7 @@ public class JasperReportsViewServiceIntegrationTest {
   @Test(expected = JasperReportViewException.class)
   public void shouldThrowJasperReportViewExceptionIfReportIsNotSavedAsObjectOutputStream() {
     template.setData(bos.toByteArray());
-    params.put("format", "pdf");
+    params.put(FORMAT, "pdf");
 
     service.generateReport(template, params);
   }
