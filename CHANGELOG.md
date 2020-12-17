@@ -1,5 +1,5 @@
-8.2.1 / WIP
-=================
+8.2.1 / 2020-12-17
+==================
 
 Bug fixes:
 * [OLMIS-7169](https://openlmis.atlassian.net/browse/OLMIS-7169): Fixed issue with not closing a connection after generating Jasper reports
