@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.service;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER;
 import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.SEND_EMAIL_ON_REQUISITION_TO_ORDER;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
@@ -202,25 +203,29 @@ public class OrderService {
 
     orderStorage.store(saved);
 
-    TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
-            TransferType.ORDER);
+    String allowFtpTransfer = configSettingsRepository
+            .findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()).getValue();
+    if (allowFtpTransfer.equalsIgnoreCase("true")) {
+      TransferProperties properties = transferPropertiesRepository
+              .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+                      TransferType.ORDER);
 
-    if (properties instanceof FtpTransferProperties) {
-      boolean success = orderSender.send(saved);
+      if (properties instanceof FtpTransferProperties) {
+        boolean success = orderSender.send(saved);
 
-      if (success) {
-        orderStorage.delete(saved);
-      } else {
-        order.setStatus(TRANSFER_FAILED);
-        saved = orderRepository.save(order);
+        if (success) {
+          orderStorage.delete(saved);
+        } else {
+          order.setStatus(TRANSFER_FAILED);
+          saved = orderRepository.save(order);
+        }
       }
     }
 
     // Send an email notification to the user that converted the order
-    String configSettingValue = configSettingsRepository
+    String allowSendingEmail = configSettingsRepository
             .findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()).getValue();
-    if (configSettingValue.equalsIgnoreCase("true")) {
+    if (allowSendingEmail.equalsIgnoreCase("true")) {
       fulfillmentNotificationService.sendOrderCreatedNotification(saved);
     }
     return saved;

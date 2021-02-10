@@ -16,5 +16,6 @@
 package org.openlmis.fulfillment.domain;
 
 public enum ConfigurationSettingsKey {
-    SEND_EMAIL_ON_REQUISITION_TO_ORDER;
+    SEND_EMAIL_ON_REQUISITION_TO_ORDER,
+    ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER;
 }
