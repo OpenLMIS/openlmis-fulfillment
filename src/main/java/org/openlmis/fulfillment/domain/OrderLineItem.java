@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
@@ -59,6 +60,11 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long orderedQuantity;
 
+  @Column()
+  @Getter
+  @Setter
+  private BigDecimal price;
+
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}.
    * @param importer instance of {@link OrderLineItem.Importer}
@@ -74,7 +80,7 @@ public class OrderLineItem extends BaseEntity {
         .orElse(null);
 
     OrderLineItem orderLineItem = new OrderLineItem(
-        null, orderable, importer.getOrderedQuantity()
+        null, orderable, importer.getOrderedQuantity(), importer.getPrice()
     );
     orderLineItem.setId(importer.getId());
 
@@ -99,6 +105,8 @@ public class OrderLineItem extends BaseEntity {
     void setOrderedQuantity(Long orderedQuantity);
 
     void setTotalDispensingUnits(Long totalDispensingUnits);
+
+    void setPrice(BigDecimal price);
   }
 
   public interface Importer {
@@ -109,5 +117,7 @@ public class OrderLineItem extends BaseEntity {
     Long getOrderedQuantity();
 
     Long getTotalDispensingUnits();
+
+    BigDecimal getPrice();
   }
 }

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -25,6 +26,7 @@ public class OrderLineItemDataBuilder {
   private Order order;
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private Long orderedQuantity = 1200L;
+  private BigDecimal price;
 
   public OrderLineItemDataBuilder withoutId() {
     id = null;
@@ -56,12 +58,17 @@ public class OrderLineItemDataBuilder {
     return this;
   }
 
+  public OrderLineItemDataBuilder withPrice(BigDecimal price) {
+    this.price = price;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link OrderLineItem} based on passed data.
    */
   public OrderLineItem build() {
     OrderLineItem lineItem = new OrderLineItem(
-        order, orderable, orderedQuantity
+        order, orderable, orderedQuantity,price
     );
     lineItem.setId(id);
 

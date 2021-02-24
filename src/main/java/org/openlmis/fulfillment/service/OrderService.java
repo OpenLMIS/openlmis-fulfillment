@@ -18,8 +18,6 @@ package org.openlmis.fulfillment.service;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER;
-import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.SEND_EMAIL_ON_REQUISITION_TO_ORDER;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
@@ -42,7 +40,6 @@ import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.repository.ConfigurationSettingsRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -109,7 +106,7 @@ public class OrderService {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
-  private ConfigurationSettingsRepository configSettingsRepository;
+  private ConfigurationSettingService configurationSettingService;
 
   /**
    * Creates an order.
@@ -203,9 +200,9 @@ public class OrderService {
 
     orderStorage.store(saved);
 
-    String allowFtpTransfer = configSettingsRepository
-            .findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()).getValue();
-    if (allowFtpTransfer.equalsIgnoreCase("true")) {
+    String allowFtpTransfer = configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder();
+    if (allowFtpTransfer == null || allowFtpTransfer.equalsIgnoreCase("true")) {
       TransferProperties properties = transferPropertiesRepository
               .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
                       TransferType.ORDER);
@@ -223,9 +220,9 @@ public class OrderService {
     }
 
     // Send an email notification to the user that converted the order
-    String allowSendingEmail = configSettingsRepository
-            .findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()).getValue();
-    if (allowSendingEmail.equalsIgnoreCase("true")) {
+    String allowSendingEmail = configurationSettingService
+            .getAllowSendingEmailOnRequisitionToOrder();
+    if (allowSendingEmail == null || allowSendingEmail.equalsIgnoreCase("true")) {
       fulfillmentNotificationService.sendOrderCreatedNotification(saved);
     }
     return saved;

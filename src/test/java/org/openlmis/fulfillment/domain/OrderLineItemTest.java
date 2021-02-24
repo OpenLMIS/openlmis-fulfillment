@@ -18,12 +18,17 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramOrderableDto;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.util.OrderLineItemDto;
 
@@ -31,6 +36,16 @@ public class OrderLineItemTest {
 
   private UUID orderableId = UUID.randomUUID();
   private Long orderableVersionNumber = 1L;
+  private Set<ProgramOrderableDto> programs;
+
+  @Before
+  public void setUp() {
+    programs = new HashSet<>();
+    ProgramOrderableDto programOrderableDto = new ProgramOrderableDto();
+    programOrderableDto.setProgramId(UUID.randomUUID());
+    programOrderableDto.setPricePerPack(new BigDecimal(50));
+    programs.add(programOrderableDto);
+  }
 
   @Test
   public void shouldExportToDto() {
@@ -48,6 +63,7 @@ public class OrderLineItemTest {
     OrderableDto orderable = new OrderableDataBuilder()
         .withId(orderableId)
         .withVersionNumber(orderableVersionNumber)
+        .withPrograms(programs)
         .build();
     OrderLineItem expected = new OrderLineItemDataBuilder()
         .withOrderable(orderable.getId(), orderable.getVersionNumber())

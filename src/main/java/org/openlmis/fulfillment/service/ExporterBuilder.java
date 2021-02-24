@@ -99,6 +99,7 @@ public class ExporterBuilder {
 
     exporter.setOrderable(orderableDto);
     exporter.setOrderedQuantity(item.getOrderedQuantity());
+    exporter.setPrice(item.getPrice());
     if (orderableDto != null) {
       exporter.setTotalDispensingUnits(item.getOrderedQuantity() * orderableDto.getNetContent());
     }

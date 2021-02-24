@@ -27,12 +27,22 @@ public class ConfigurationSettingService {
 
   private static final String RESONS_SUFFIX = "reasons.";
   static final String TRANSFER_IN = RESONS_SUFFIX + "transferIn";
+  private static final String FTP_TRANSFER = "ftp.transfer.on.requisition.to.order";
+  private static final String SEND_EMAIL = "send.email.on.requisition.to.order";
 
   @Autowired
   private Environment env;
 
   public UUID getTransferInReasonId() {
     return UUID.fromString(env.getProperty(TRANSFER_IN));
+  }
+
+  public String getAllowFtpTransferOnRequisitionToOrder() {
+    return env.getProperty(FTP_TRANSFER);
+  }
+
+  public String getAllowSendingEmailOnRequisitionToOrder() {
+    return env.getProperty(SEND_EMAIL);
   }
 
 }

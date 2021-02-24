@@ -31,8 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER;
-import static org.openlmis.fulfillment.domain.ConfigurationSettingsKey.SEND_EMAIL_ON_REQUISITION_TO_ORDER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
@@ -45,9 +43,7 @@ import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,7 +60,6 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.StatusChangeDataBuilder;
 import org.openlmis.fulfillment.domain.Base36EncodedOrderNumberGenerator;
-import org.openlmis.fulfillment.domain.ConfigurationSettings;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
@@ -75,7 +70,6 @@ import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
-import org.openlmis.fulfillment.repository.ConfigurationSettingsRepository;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
@@ -165,7 +159,7 @@ public class OrderServiceTest {
   private ArgumentCaptor<Order> orderCaptor;
 
   @Mock
-  private ConfigurationSettingsRepository configSettingsRepository;
+  private ConfigurationSettingService configurationSettingService;
 
   private ProgramDto program;
   private FacilityDto facility;
@@ -178,30 +172,21 @@ public class OrderServiceTest {
   private FtpTransferProperties properties;
   private LocalDate startDate;
   private LocalDate endDate;
-  private List<ConfigurationSettings> configSettingsList;
+  private static final String stringReturned = "true";
 
   @Before
   public void setUp() {
     generateTestData();
     mockResponses();
-
-    configSettingsList = new ArrayList<>();
-    ConfigurationSettings configSettings1 = new ConfigurationSettings();
-    configSettings1.setKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString());
-    configSettings1.setValue("true");
-    configSettingsList.add(configSettings1);
-    ConfigurationSettings configSettings2 = new ConfigurationSettings();
-    configSettings2.setKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString());
-    configSettings2.setValue("true");
-    configSettingsList.add(configSettings2);
   }
 
   @Test
   public void shouldCreateRegularOrder() throws Exception {
-    when(configSettingsRepository.findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(0));
-    when(configSettingsRepository.findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(1));
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     OrderDto dto = OrderDto.newInstance(order, exporter);
     dto.setId(null);
 
@@ -222,10 +207,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateRegularOrderIfFacilityNotSupportProgram() throws Exception {
-    when(configSettingsRepository.findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(0));
-    when(configSettingsRepository.findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(1));
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     facility.setSupportedPrograms(emptyList());
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -250,10 +236,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateOrderForFulfill() throws Exception {
-    when(configSettingsRepository.findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(0));
-    when(configSettingsRepository.findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(1));
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     program.setSupportLocallyFulfilled(true);
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -278,10 +265,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldSaveOrder() throws Exception {
-    when(configSettingsRepository.findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(0));
-    when(configSettingsRepository.findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(1));
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     Order created = orderService.save(order);
 
     // then
@@ -299,10 +287,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
-    when(configSettingsRepository.findByKey(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(0));
-    when(configSettingsRepository.findByKey(SEND_EMAIL_ON_REQUISITION_TO_ORDER.toString()))
-            .thenReturn(configSettingsList.get(1));
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     StatusChange statusChange = new StatusChange();
     statusChange.setStatus(ExternalStatus.APPROVED);
     statusChange.setCreatedDate(ZonedDateTime.now());
