@@ -1,0 +1,2 @@
+INSERT INTO fulfillment.file_columns (id, columnlabel, datafieldlabel, format, include, keypath, nested, openlmisfield, "position", related, relatedkeypath, filetemplateid)
+VALUES ('ad545ee6-a221-498f-b4e7-1c4e053f9363', 'Plant', 'fulfillment.header.facility.zone', NULL, true, 'facilityZone', 'extraData', true, 2, NULL, NULL, '457ed5b0-80d7-4cb6-af54-e3f6138c8128');

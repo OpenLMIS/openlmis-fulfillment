@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -60,6 +61,7 @@ public class Order extends BaseEntity {
   public static final String ORDER_STATUS = "status";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String CREATED_DATE = "createdDate";
+
 
   @Column(nullable = false, unique = true)
   @Getter
@@ -171,6 +173,9 @@ public class Order extends BaseEntity {
       })
   private UpdateDetails updateDetails;
 
+  @Embedded
+  private ExtraDataEntity extraData = new ExtraDataEntity();
+
   /**
    * Constructor with update details.
    */
@@ -252,6 +257,7 @@ public class Order extends BaseEntity {
     order.setId(importer.getId());
     order.setExternalId(importer.getExternalId());
     order.setEmergency(importer.getEmergency());
+    order.setExtraData(importer.getExtraData());
 
     Optional.ofNullable(importer.getFacility())
         .ifPresent(facility -> order.setFacilityId(facility.getId()));
@@ -318,6 +324,15 @@ public class Order extends BaseEntity {
     if (getUpdateDetails() != null) {
       exporter.setUpdateDetails(getUpdateDetails());
     }
+  }
+
+  public void setExtraData(Map<String, String> extraData) {
+    this.extraData = ExtraDataEntity.defaultEntity(this.extraData);
+    this.extraData.updateFrom(extraData);
+  }
+
+  public Map<String, String> getExtraData() {
+    return ExtraDataEntity.defaultEntity(extraData).getExtraData();
   }
 
   public interface Exporter {
@@ -394,5 +409,8 @@ public class Order extends BaseEntity {
     List<StatusChange.Importer> getStatusChanges();
 
     UpdateDetails getUpdateDetails();
+
+    Map<String,String> getExtraData();
   }
+
 }
