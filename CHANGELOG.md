@@ -1,3 +1,9 @@
+8.2.2 / WIP
+==================
+
+Improvements
+* [TZUP-169](https://openlmis.atlassian.net/browse/TZUP-169): Made ftp file transfer and email sending configurable on requisition to order
+
 8.2.1 / 2020-12-17
 ==================
 

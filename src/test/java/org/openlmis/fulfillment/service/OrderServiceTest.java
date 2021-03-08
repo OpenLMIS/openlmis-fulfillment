@@ -157,6 +157,9 @@ public class OrderServiceTest {
   @Captor
   private ArgumentCaptor<Order> orderCaptor;
 
+  @Mock
+  private ConfigurationSettingService configurationSettingService;
+
   private ProgramDto program;
   private FacilityDto facility;
   private ProcessingPeriodDto period1;
@@ -168,6 +171,7 @@ public class OrderServiceTest {
   private FtpTransferProperties properties;
   private LocalDate startDate;
   private LocalDate endDate;
+  private static final String stringReturned = "true";
 
   @Before
   public void setUp() {
@@ -177,6 +181,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateRegularOrder() throws Exception {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     OrderDto dto = OrderDto.newInstance(order, exporter);
     dto.setId(null);
 
@@ -197,6 +206,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateRegularOrderIfFacilityNotSupportProgram() throws Exception {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     facility.setSupportedPrograms(emptyList());
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -221,6 +235,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateOrderForFulfill() throws Exception {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     program.setSupportLocallyFulfilled(true);
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -245,6 +264,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldSaveOrder() throws Exception {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     Order created = orderService.save(order);
 
     // then
@@ -262,6 +286,11 @@ public class OrderServiceTest {
 
   @Test
   public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturned);
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturned);
     StatusChange statusChange = new StatusChange();
     statusChange.setStatus(ExternalStatus.APPROVED);
     statusChange.setCreatedDate(ZonedDateTime.now());

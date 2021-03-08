@@ -105,6 +105,9 @@ public class OrderService {
   @Autowired
   private AuthenticationHelper authenticationHelper;
 
+  @Autowired
+  private ConfigurationSettingService configurationSettingService;
+
   /**
    * Creates an order.
    *
@@ -197,23 +200,31 @@ public class OrderService {
 
     orderStorage.store(saved);
 
-    TransferProperties properties = transferPropertiesRepository
-        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
-            TransferType.ORDER);
+    String allowFtpTransfer = configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder();
+    if (allowFtpTransfer == null || allowFtpTransfer.equalsIgnoreCase("true")) {
+      TransferProperties properties = transferPropertiesRepository
+              .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
+                      TransferType.ORDER);
 
-    if (properties instanceof FtpTransferProperties) {
-      boolean success = orderSender.send(saved);
+      if (properties instanceof FtpTransferProperties) {
+        boolean success = orderSender.send(saved);
 
-      if (success) {
-        orderStorage.delete(saved);
-      } else {
-        order.setStatus(TRANSFER_FAILED);
-        saved = orderRepository.save(order);
+        if (success) {
+          orderStorage.delete(saved);
+        } else {
+          order.setStatus(TRANSFER_FAILED);
+          saved = orderRepository.save(order);
+        }
       }
     }
 
     // Send an email notification to the user that converted the order
-    fulfillmentNotificationService.sendOrderCreatedNotification(saved);
+    String allowSendingEmail = configurationSettingService
+            .getAllowSendingEmailOnRequisitionToOrder();
+    if (allowSendingEmail == null || allowSendingEmail.equalsIgnoreCase("true")) {
+      fulfillmentNotificationService.sendOrderCreatedNotification(saved);
+    }
 
     return saved;
   }
