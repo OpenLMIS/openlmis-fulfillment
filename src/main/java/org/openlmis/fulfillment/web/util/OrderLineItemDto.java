@@ -16,6 +16,8 @@
 package org.openlmis.fulfillment.web.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +37,7 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
   private OrderableDto orderable;
   private Long orderedQuantity;
   private Long totalDispensingUnits;
+  private BigDecimal price;
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}.
@@ -56,5 +59,16 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
         .ofNullable(orderable)
         .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
         .orElse(null);
+  }
+
+  @JsonIgnore
+  @Override
+  public BigDecimal getPrice() {
+    if (this.getOrderable() != null
+            && this.getOrderable().getPrograms() != null) {
+      return this.getOrderable().getPrograms().iterator().next().getPricePerPack();
+    } else {
+      return BigDecimal.ZERO.stripTrailingZeros();
+    }
   }
 }
