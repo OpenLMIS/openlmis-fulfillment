@@ -50,7 +50,7 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 @EqualsAndHashCode(exclude = {"serviceUrl"})
 public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.Exporter {
 
-  public static final String FACILITY_ZONE = "facilityZone";
+  public static final String SUPPLYING_FACILITY_NAME = "supplyingFacilityName";
 
   @Setter
   private String serviceUrl;
@@ -230,7 +230,12 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   @Override
   public Map<String,String> getExtraData() {
     Map<String, String> extraData = new HashMap<>();
-    extraData.put(FACILITY_ZONE,this.getRequestingFacility().getGeographicZone().getName());
+    String supplyingFacilityName = "";
+    Optional supplyingFacility = Optional.ofNullable(this.getSupplyingFacility());
+    if (supplyingFacility.isPresent()) {
+      supplyingFacilityName = this.getSupplyingFacility().getName();
+    }
+    extraData.put(SUPPLYING_FACILITY_NAME, supplyingFacilityName);
     return extraData;
   }
 }

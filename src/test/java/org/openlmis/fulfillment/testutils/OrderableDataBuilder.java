@@ -101,4 +101,9 @@ public class OrderableDataBuilder {
     return this;
   }
 
+  public OrderableDataBuilder withPrograms(Set<ProgramOrderableDto> programs) {
+    this.programs = programs;
+    return this;
+  }
+
 }

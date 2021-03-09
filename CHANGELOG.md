@@ -1,3 +1,9 @@
+8.2.2 / WIP
+==================
+
+Improvements
+* [TZUP-170] (https://openlmis.atlassian.net/browse/TZUP-170): added extradata column to order class
+
 8.2.1 / 2020-12-17
 ==================
 

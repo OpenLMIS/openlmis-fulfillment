@@ -38,7 +38,7 @@ public class OrderReportDtoTest {
             new UserDataBuilder().build())
         .suppress(Warning.NONFINAL_FIELDS)
         .withRedefinedSuperclass()
-        .withIgnoredFields("serviceUrl")
+        .withIgnoredFields("serviceUrl","extraData")
         .verify();
   }
 }

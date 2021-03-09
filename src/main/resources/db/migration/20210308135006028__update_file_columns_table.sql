@@ -22,6 +22,7 @@ WHERE
 UPDATE fulfillment.file_columns
 SET
     position = 6,
+    columnlabel = 'Approved quantity',
     datafieldlabel = 'fulfillment.header.approved.quantity'
 WHERE
     id = 'cd57f329-f549-4717-882e-ecbf98122c39';
