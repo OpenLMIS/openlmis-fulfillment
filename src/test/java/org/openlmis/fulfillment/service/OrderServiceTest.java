@@ -171,7 +171,8 @@ public class OrderServiceTest {
   private FtpTransferProperties properties;
   private LocalDate startDate;
   private LocalDate endDate;
-  private static final String stringReturned = "true";
+  private static final String stringReturnedTrue = "true";
+  private static final String stringReturnedFalse = "false";
 
   @Before
   public void setUp() {
@@ -183,9 +184,9 @@ public class OrderServiceTest {
   public void shouldCreateRegularOrder() throws Exception {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     OrderDto dto = OrderDto.newInstance(order, exporter);
     dto.setId(null);
 
@@ -205,12 +206,39 @@ public class OrderServiceTest {
   }
 
   @Test
+  public void shouldNotSendFtpIfAllowFtpTransferIsFalse() {
+    when(configurationSettingService
+            .getAllowFtpTransferOnRequisitionToOrder())
+            .thenReturn(stringReturnedFalse);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+    dto.setId(null);
+
+    Order created = orderService.createOrder(dto, userDto.getId());
+    validateCreatedOrder(created, order);
+
+    verify(orderSender,never()).send(any(Order.class));
+  }
+
+  @Test
+  public void shouldNotSendEmailNotificationIfAllowSendingEmailIsFalse() {
+    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
+            .thenReturn(stringReturnedFalse);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+    dto.setId(null);
+
+    Order created = orderService.createOrder(dto, userDto.getId());
+    validateCreatedOrder(created, order);
+
+    verify(notificationService,never()).sendOrderCreatedNotification(any(Order.class));
+  }
+
+  @Test
   public void shouldCreateRegularOrderIfFacilityNotSupportProgram() throws Exception {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     facility.setSupportedPrograms(emptyList());
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -237,9 +265,9 @@ public class OrderServiceTest {
   public void shouldCreateOrderForFulfill() throws Exception {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     program.setSupportLocallyFulfilled(true);
 
     OrderDto dto = OrderDto.newInstance(order, exporter);
@@ -266,9 +294,9 @@ public class OrderServiceTest {
   public void shouldSaveOrder() throws Exception {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     Order created = orderService.save(order);
 
     // then
@@ -288,9 +316,9 @@ public class OrderServiceTest {
   public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturned);
+            .thenReturn(stringReturnedTrue);
     StatusChange statusChange = new StatusChange();
     statusChange.setStatus(ExternalStatus.APPROVED);
     statusChange.setCreatedDate(ZonedDateTime.now());
