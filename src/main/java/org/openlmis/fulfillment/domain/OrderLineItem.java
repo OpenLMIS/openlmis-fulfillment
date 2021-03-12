@@ -15,7 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
-import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
@@ -60,9 +60,8 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long orderedQuantity;
 
-  @Getter
-  @Setter
-  private BigDecimal price;
+  @Embedded
+  private OrderLineItemExtraDataEntity extraData;
 
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}.
@@ -78,8 +77,10 @@ public class OrderLineItem extends BaseEntity {
             orderableDto.getVersionNumber()))
         .orElse(null);
 
+    OrderLineItemExtraDataEntity extraDataEntity = new OrderLineItemExtraDataEntity();
+    extraDataEntity.setExtraData(importer.getExtraData());
     OrderLineItem orderLineItem = new OrderLineItem(
-        null, orderable, importer.getOrderedQuantity(), importer.getPrice()
+        null, orderable, importer.getOrderedQuantity(), extraDataEntity
     );
     orderLineItem.setId(importer.getId());
 
@@ -96,6 +97,15 @@ public class OrderLineItem extends BaseEntity {
     exporter.setOrderedQuantity(getOrderedQuantity());
   }
 
+  public void setExtraData(Map<String, Object> extraData) {
+    this.extraData = OrderLineItemExtraDataEntity.defaultEntity(this.extraData);
+    this.extraData.updateFrom(extraData);
+  }
+
+  public Map<String, Object> getExtraData() {
+    return OrderLineItemExtraDataEntity.defaultEntity(extraData).getExtraData();
+  }
+
   public interface Exporter {
     void setId(UUID id);
 
@@ -104,8 +114,6 @@ public class OrderLineItem extends BaseEntity {
     void setOrderedQuantity(Long orderedQuantity);
 
     void setTotalDispensingUnits(Long totalDispensingUnits);
-
-    void setPrice(BigDecimal price);
   }
 
   public interface Importer {
@@ -117,6 +125,6 @@ public class OrderLineItem extends BaseEntity {
 
     Long getTotalDispensingUnits();
 
-    BigDecimal getPrice();
+    Map<String,Object> getExtraData();
   }
 }

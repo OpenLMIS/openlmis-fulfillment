@@ -23,7 +23,6 @@ import java.io.Writer;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openlmis.fulfillment.domain.FileColumn;
@@ -51,7 +50,6 @@ public class OrderCsvHelper {
   private static final String FACILITY = "Facility";
   private static final String PRODUCT = "Orderable";
   private static final String PERIOD = "ProcessingPeriod";
-  private static final String EXTRA_DATA = "extraData";
 
   private static final String LINE_SEPARATOR = "\r\n";
   private static final Boolean ENCLOSE_VALUES_WITH_QUOTES = false;
@@ -121,7 +119,6 @@ public class OrderCsvHelper {
     JXPathContext orderContext = JXPathContext.newContext(order);
     JXPathContext lineItemContext = JXPathContext.newContext(orderLineItem);
     JXPathContext lineItemOrderableContext = JXPathContext.newContext(orderable);
-    Map<String, String> orderExtraData = order.getExtraData();
     for (FileColumn fileColumn : fileColumns) {
       if (fileColumn.getNested() == null || fileColumn.getNested().isEmpty()) {
         if (fileColumns.indexOf(fileColumn) < fileColumns.size() - 1) {
@@ -130,7 +127,7 @@ public class OrderCsvHelper {
         continue;
       }
       Object columnValue = getColumnValue(counter, orderContext, lineItemContext,
-          lineItemOrderableContext, orderExtraData, fileColumn);
+          lineItemOrderableContext, fileColumn);
 
       if (columnValue instanceof ZonedDateTime) {
         columnValue = ((ZonedDateTime) columnValue).format(ofPattern(fileColumn.getFormat()));
@@ -150,7 +147,7 @@ public class OrderCsvHelper {
 
   private Object getColumnValue(int counter, JXPathContext orderContext,
       JXPathContext lineItemContext, JXPathContext lineItemOrderableContext,
-      Map<String, String> orderExtraData, FileColumn fileColumn) {
+      FileColumn fileColumn) {
     Object columnValue;
 
     switch (fileColumn.getNested()) {
@@ -165,9 +162,6 @@ public class OrderCsvHelper {
         break;
       case LINE_ITEM_ORDERABLE:
         columnValue = lineItemOrderableContext.getValue(fileColumn.getKeyPath());
-        break;
-      case EXTRA_DATA:
-        columnValue = orderExtraData.get(fileColumn.getKeyPath());
         break;
       default:
         columnValue = lineItemContext.getValue(fileColumn.getKeyPath());

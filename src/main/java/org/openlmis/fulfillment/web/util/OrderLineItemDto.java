@@ -19,11 +19,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.collections.map.HashedMap;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
@@ -33,11 +36,13 @@ import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 @AllArgsConstructor
 public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.Exporter {
 
+  public static final String PRICE = "price";
   private UUID id;
   private OrderableDto orderable;
   private Long orderedQuantity;
   private Long totalDispensingUnits;
-  private BigDecimal price;
+  @Setter
+  private Map<String, Object> extraData;
 
   /**
    * Create new instance of TemplateParameterDto based on given {@link OrderLineItem}.
@@ -63,12 +68,14 @@ public class OrderLineItemDto implements OrderLineItem.Importer, OrderLineItem.E
 
   @JsonIgnore
   @Override
-  public BigDecimal getPrice() {
+  public Map<String,Object> getExtraData() {
+    Map<String,Object> extraData = new HashedMap();
+    BigDecimal price = BigDecimal.ZERO.stripTrailingZeros();
     if (this.getOrderable() != null
             && this.getOrderable().getPrograms() != null) {
-      return this.getOrderable().getPrograms().iterator().next().getPricePerPack();
-    } else {
-      return BigDecimal.ZERO.stripTrailingZeros();
+      price = this.getOrderable().getPrograms().iterator().next().getPricePerPack();
     }
+    extraData.put(PRICE,price);
+    return extraData;
   }
 }

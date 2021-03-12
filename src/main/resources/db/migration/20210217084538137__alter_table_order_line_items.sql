@@ -1,1 +1,1 @@
-ALTER TABLE fulfillment.order_line_items ADD COLUMN price numeric;
+ALTER TABLE fulfillment.order_line_items ADD COLUMN extradata jsonb;
