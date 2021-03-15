@@ -17,7 +17,6 @@ package org.openlmis.fulfillment.repository;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.substring;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -441,36 +440,6 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     Order found = orderRepository.findByOrderCode(one.getOrderCode());
     assertThat(found, notNullValue());
     assertThat(found.getId(), is(one.getId()));
-  }
-
-  @Test
-  public void shouldRetrieveFirstSequenceOrderCodeIfBase36() {
-
-    Order one = orderRepository.save(generateInstance());
-
-    String found = orderRepository.findLastOrderCodeOrCreateSequenceCode(
-        one.getSupplyingFacilityId());
-    assertThat(found, notNullValue());
-    assertEquals(4, found.length());
-    assertThat(substring(found, found.length() - 4, found.length()),
-        is("0000"));
-
-  }
-
-  @Test
-  public void shouldRetrieveSequenceOrderCodeBySupplyingFacility() {
-
-    Order one = generateInstance();
-    one.setOrderCode("2020/02/02-FACILITYCODE-0002");
-    orderRepository.save(one);
-
-    String found =
-        orderRepository.findLastOrderCodeOrCreateSequenceCode(one.getSupplyingFacilityId());
-    assertThat(found, notNullValue());
-    assertEquals(4, found.length());
-    assertThat(substring(found, found.length() - 4, found.length()),
-        is(substring(one.getOrderCode(), one.getOrderCode().length() - 4,
-            one.getOrderCode().length())));
   }
 
   private Order prepareOrdersForSearchByFacility() {
