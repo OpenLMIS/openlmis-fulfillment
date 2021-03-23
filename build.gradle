@@ -20,6 +20,17 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 apply plugin: 'pmd'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+ext {
+    ossrhUsername = System.getenv("OSSRH_USERNAME")
+    ossrhPassword = System.getenv("OSSRH_PASSWORD")
+}
+ext.set("signing.secretKeyRingFile", ".signing/secring.gpg")
+ext.set("signing.keyId", System.getenv("SIGNING_KEYID"))
+ext.set("signing.password", System.getenv("SIGNING_PASSWORD"))
 
 group = serviceGroup
 version = serviceVersion
@@ -87,6 +98,9 @@ dependencies {
     testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
     testCompile "be.joengenduvel.java.verifiers:to-string:1.0.2"
     testCompile "com.github.tomakehurst:wiremock:1.58"
+
+    runtime fileTree(dir: '/extensions/', include: '*.jar')
+
 }
 
 idea {
@@ -97,10 +111,10 @@ idea {
             xmlFile.asNode().component
                     .find { it.@name == 'CompilerConfiguration' }['annotationProcessing'][0]
                     .replaceNode {
-                annotationProcessing {
-                    profile(default: true, name: 'Default', useClasspath: 'true', enabled: true)
-                }
-            }
+                        annotationProcessing {
+                            profile(default: true, name: 'Default', useClasspath: 'true', enabled: true)
+                        }
+                    }
         }
     }
     module {
@@ -170,7 +184,7 @@ task generateMigration {
         def migrationFile = new File(sourceSets.main.resources.srcDirs.first(), 'db/migration/' + fullFileName)
         migrationFile << "-- WHEN COMMITTING OR REVIEWING THIS FILE: Make sure that the timestamp in the file name (that serves as a version) is the latest timestamp, and that no new migration have been added in the meanwhile.\n"
         migrationFile << "-- Adding migrations out of order may cause this migration to never execute or behave in an unexpected way.\n"
-        migrationFile << "-- Migrations should NOT BE EDITED. Add a new migration to apply changes."        
+        migrationFile << "-- Migrations should NOT BE EDITED. Add a new migration to apply changes."
         migrationFile.createNewFile()
     }
 }
@@ -249,6 +263,79 @@ test {
     }
 }
 
+//enable the lines below if you need to debug spring running in docker
+//bootRun {
+//    jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]
+//}
+
+signing {
+    sign configurations.archives
+}
+
+// task javadocJar(type: Jar) {
+//     classifier = 'javadoc'
+//     from javadoc
+// }
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task execJar(type: Jar) {
+    classifier = 'exec'
+    from sourceSets.main.output
+}
+
+artifacts {
+//    archives javadocJar, sourcesJar, execJar
+    archives sourcesJar, execJar
+}
+
+signArchives.onlyIf {project.findProperty("signing.keyId") && project.findProperty("signing.password")}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.project {
+                name project.name
+                packaging 'jar'
+                description project.description()
+                url = 'https://openlmis.org'
+                licenses {
+                    license {
+                        name 'GNU Affero General Public License, Version 3'
+                        url 'https://www.gnu.org/licenses/agpl-3.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'techcommittee'
+                        name = 'tech committee'
+                        email = 'info@openlmis.org'
+                        organizationUrl = 'https://villagereach.org'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/OpenLMIS/openlmis-fulfillment.git'
+                    developerConnection = 'scm:git:ssh://github.com/OpenLMIS/openlmis-fulfillment' +
+                            '.git'
+                    url = 'http://github.com/OpenLMIS/openlmis-fulfillment/'
+                }
+            }
+        }
+    }
+}
+
+uploadArchives.onlyIf { project.getProperty("ossrhUsername") && project.getProperty("ossrhPassword") }
+
 apply from: "documentation.gradle"
 integrationTest.dependsOn copyRamlToBuild
 
@@ -269,6 +356,7 @@ check {
     dependsOn copyRamlHtmlToBuild
     dependsOn copyConsulRegistrationToBuild
     dependsOn integrationTest
+    finalizedBy uploadArchives
 }
 
 build {

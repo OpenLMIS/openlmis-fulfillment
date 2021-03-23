@@ -39,6 +39,7 @@ import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.ExtensionPointId;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -123,8 +124,9 @@ public class OrderService {
     OrderNumberConfiguration orderNumberConfiguration =
         orderNumberConfigurationRepository.findAll().iterator().next();
 
-    OrderNumberGenerator orderNumberGenerator = extensionManager.getExtension(
-        OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class);
+    OrderNumberGenerator orderNumberGenerator =
+        extensionManager.getExtension(ExtensionPointId.ORDER_NUMBER_POINT_ID,
+            OrderNumberGenerator.class);
 
     String orderNumber = orderNumberGenerator.generate(order);
 

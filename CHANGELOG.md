@@ -258,6 +258,7 @@ is submitted (confirmed)
 * [OLMIS-2044](https://openlmis.atlassian.net/browse/OLMIS-2044): Fix print POD
 * [OLMIS-2117](https://openlmis.atlassian.net/browse/OLMIS-2117): Improve error message for POD
 template for printing
+* [OLMIS-7225](https://openlmis.atlassian.net/browse/OLMIS-7225): Add extension point for new OrderCode
 
 3.0.0 / 2017-03-01
 ==================
