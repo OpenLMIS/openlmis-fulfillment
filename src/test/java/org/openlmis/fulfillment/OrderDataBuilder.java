@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
+import org.openlmis.fulfillment.domain.ExtraDataEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -55,6 +56,7 @@ public class OrderDataBuilder {
   private List<StatusMessage> statusMessages = Lists.emptyList();
   private List<StatusChange> statusChanges = Lists.newArrayList();
   private UpdateDetails updateDetails = new UpdateDetails(lastUpdaterId, ZonedDateTime.now());
+  private ExtraDataEntity extraData = new ExtraDataEntity();
 
   public OrderDataBuilder() {
     orderLineItems.add(new OrderLineItemDataBuilder().withRandomOrderedQuantity().build());
@@ -172,7 +174,7 @@ public class OrderDataBuilder {
     Order order = new Order(
         externalId, emergency, facilityId, processingPeriodId, createdDate, createdById, programId,
         requestingFacilityId, receivingFacilityId, supplyingFacilityId, orderCode, status,
-        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails
+        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails,extraData
     );
     order.setId(id);
     order.forEachLine(line -> prepareLineItems(line, order));

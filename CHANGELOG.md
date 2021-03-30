@@ -2,7 +2,9 @@
 ==================
 
 Improvements
+
 * [TZUP-169](https://openlmis.atlassian.net/browse/TZUP-169): Made ftp file transfer and email sending configurable on requisition to order
+* [TZUP-170] (https://openlmis.atlassian.net/browse/TZUP-170): added extradata column to order class
 
 8.2.1 / 2020-12-17
 ==================

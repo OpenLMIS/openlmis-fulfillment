@@ -1,0 +1,1 @@
+ALTER TABLE fulfillment.orders ADD COLUMN extradata jsonb;

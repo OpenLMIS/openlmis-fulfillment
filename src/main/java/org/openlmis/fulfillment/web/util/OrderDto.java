@@ -20,7 +20,9 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,6 +49,8 @@ import org.openlmis.fulfillment.service.referencedata.UserDto;
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = {"serviceUrl"})
 public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.Exporter {
+
+  public static final String SUPPLYING_FACILITY_NAME = "supplyingFacilityName";
 
   @Setter
   private String serviceUrl;
@@ -121,6 +125,9 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
 
   @Getter
   private ZonedDateTime lastUpdatedDate;
+
+  @Setter
+  private Map<String, String> extraData;
 
   @Override
   public List<OrderLineItem.Importer> getOrderLineItems() {
@@ -218,5 +225,17 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
         .filter(statusChange -> status.equals(statusChange.getStatus()))
         .findFirst()
         .orElse(null);
+  }
+
+  @Override
+  public Map<String,String> getExtraData() {
+    Map<String, String> extraData = new HashMap<>();
+    String supplyingFacilityName = "";
+    Optional supplyingFacility = Optional.ofNullable(this.getSupplyingFacility());
+    if (supplyingFacility.isPresent()) {
+      supplyingFacilityName = this.getSupplyingFacility().getName();
+    }
+    extraData.put(SUPPLYING_FACILITY_NAME, supplyingFacilityName);
+    return extraData;
   }
 }

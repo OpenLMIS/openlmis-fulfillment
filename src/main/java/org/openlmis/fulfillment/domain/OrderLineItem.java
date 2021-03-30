@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.domain;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
@@ -59,6 +60,9 @@ public class OrderLineItem extends BaseEntity {
   @Setter
   private Long orderedQuantity;
 
+  @Embedded
+  private OrderLineItemExtraDataEntity extraData;
+
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}.
    * @param importer instance of {@link OrderLineItem.Importer}
@@ -73,8 +77,10 @@ public class OrderLineItem extends BaseEntity {
             orderableDto.getVersionNumber()))
         .orElse(null);
 
+    OrderLineItemExtraDataEntity extraDataEntity = new OrderLineItemExtraDataEntity();
+    extraDataEntity.setExtraData(importer.getExtraData());
     OrderLineItem orderLineItem = new OrderLineItem(
-        null, orderable, importer.getOrderedQuantity()
+        null, orderable, importer.getOrderedQuantity(), extraDataEntity
     );
     orderLineItem.setId(importer.getId());
 
@@ -89,6 +95,15 @@ public class OrderLineItem extends BaseEntity {
   public void export(OrderLineItem.Exporter exporter) {
     exporter.setId(getId());
     exporter.setOrderedQuantity(getOrderedQuantity());
+  }
+
+  public void setExtraData(Map<String, Object> extraData) {
+    this.extraData = OrderLineItemExtraDataEntity.defaultEntity(this.extraData);
+    this.extraData.updateFrom(extraData);
+  }
+
+  public Map<String, Object> getExtraData() {
+    return OrderLineItemExtraDataEntity.defaultEntity(extraData).getExtraData();
   }
 
   public interface Exporter {
@@ -109,5 +124,7 @@ public class OrderLineItem extends BaseEntity {
     Long getOrderedQuantity();
 
     Long getTotalDispensingUnits();
+
+    Map<String,Object> getExtraData();
   }
 }

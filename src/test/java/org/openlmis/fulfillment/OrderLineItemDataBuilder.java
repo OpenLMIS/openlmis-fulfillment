@@ -18,6 +18,7 @@ package org.openlmis.fulfillment;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.OrderLineItemExtraDataEntity;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 
 public class OrderLineItemDataBuilder {
@@ -25,6 +26,7 @@ public class OrderLineItemDataBuilder {
   private Order order;
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private Long orderedQuantity = 1200L;
+  private OrderLineItemExtraDataEntity extraDataEntity = new OrderLineItemExtraDataEntity();
 
   public OrderLineItemDataBuilder withoutId() {
     id = null;
@@ -61,7 +63,7 @@ public class OrderLineItemDataBuilder {
    */
   public OrderLineItem build() {
     OrderLineItem lineItem = new OrderLineItem(
-        order, orderable, orderedQuantity
+            order, orderable, orderedQuantity,extraDataEntity
     );
     lineItem.setId(id);
 
