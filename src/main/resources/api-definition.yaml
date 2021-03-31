@@ -333,12 +333,14 @@ resourceTypes:
                       schema: localizedMessage
       post:
           is: [ secured ]
-          description: Creates new order. This endpoint requires ORDERS_EDIT right.
+          description: >
+              Creates new order or returns existing one found by related requisition.
+              This endpoint requires ORDERS_EDIT right.
           body:
               application/json:
                 schema: orderDto
           responses:
-              201:
+              200:
                   headers:
                     Keep-Alive:
                   body:
@@ -485,12 +487,15 @@ resourceTypes:
       /batch:
           post:
               is: [ secured ]
-              description: Creates multiple new orders in one transaction. This endpoint requires ORDERS_EDIT right.
+              description: >
+                  Creates multiple new orders in one transaction. If order was already created
+                  endpoint returns the existing one found by related requisition.
+                  This endpoint requires ORDERS_EDIT right.
               body:
                   application/json:
                     schema: orderDtoArray
               responses:
-                  201:
+                  200:
                       headers:
                         Keep-Alive:
                       body:

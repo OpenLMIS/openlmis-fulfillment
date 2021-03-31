@@ -434,6 +434,26 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldReturnExistingOrderInsteadOfCreatingNewOne() {
+    given(orderRepository.findByExternalId(any(UUID.class))).willReturn(firstOrder);
+
+    OrderDto order = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(firstOrderDto)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderDto.class);
+
+    verify(orderRepository, times(1)).findByExternalId(firstOrder.getExternalId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(order.getExternalId(), is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
   public void shouldCreateOrder() {
     firstOrderDto.setStatusChanges(sampleStatusChanges());
 
@@ -447,13 +467,41 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .when()
         .post(RESOURCE_URL)
         .then()
-        .statusCode(201);
+        .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
     ArgumentCaptor<OrderDto> orderCaptor = ArgumentCaptor.forClass(OrderDto.class);
     verify(orderService, times(1)).createOrder(orderCaptor.capture(), eq(user.getId()));
 
+    assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
+        is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
+  public void shouldReturnExistingOrdersInsteadOfCreatingNewOnes() {
+    firstOrderDto.setExternalId(UUID.randomUUID());
+
+    given(orderRepository.findByExternalId(firstOrderDto.getExternalId())).willReturn(null);
+    given(orderRepository.findByExternalId(secondOrderDto.getExternalId())).willReturn(secondOrder);
+
+    given(orderService.createOrder(any(OrderDto.class), eq(user.getId())))
+        .willReturn(firstOrder);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(asList(firstOrderDto, secondOrderDto))
+        .when()
+        .post(BATCH_URL)
+        .then()
+        .statusCode(200);
+
+    ArgumentCaptor<OrderDto> orderCaptor = ArgumentCaptor.forClass(OrderDto.class);
+    verify(orderService, times(1)).createOrder(orderCaptor.capture(), eq(user.getId()));
+    verify(orderRepository, times(1)).findByExternalId(secondOrderDto.getExternalId());
+
+    assertEquals(orderCaptor.getAllValues().size(), 1);
     assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
         is(firstOrderDto.getExternalId()));
   }
@@ -470,7 +518,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .when()
         .post(BATCH_URL)
         .then()
-        .statusCode(201);
+        .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 

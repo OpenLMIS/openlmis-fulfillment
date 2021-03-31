@@ -1,8 +1,10 @@
-8.2.2 / WIP
+8.3.0 / WIP
 ==================
 
-Improvements
+Contract breaking changes:
+* [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Updated POST /order and /orders/batch to return existing orders if already created
 
+Improvements:
 * [TZUP-169](https://openlmis.atlassian.net/browse/TZUP-169): Made ftp file transfer and email sending configurable on requisition to order
 * [TZUP-170] (https://openlmis.atlassian.net/browse/TZUP-170): added extradata column to order class
 

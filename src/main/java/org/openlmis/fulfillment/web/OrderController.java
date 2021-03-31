@@ -137,10 +137,10 @@ public class OrderController extends BaseController {
    * If the id is specified, it will be ignored.
    *
    * @param orderDto A order bound to the request body
-   * @return the newly created order
+   * @return the newly created or existing order for provided requisition (externalId)
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
     Order order = createSingleOrder(orderDto, authentication);
@@ -152,10 +152,10 @@ public class OrderController extends BaseController {
    * If the id is specified for any of the orders, it will be ignored.
    *
    * @param orders A list of orders to be created
-   * @return a list of newly created orders
+   * @return a list of newly created or existing orders for provided requisitions (externalIds)
    */
   @RequestMapping(value = "/orders/batch", method = RequestMethod.POST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Iterable<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
       OAuth2Authentication authentication) {
@@ -363,6 +363,14 @@ public class OrderController extends BaseController {
 
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
+
+    if (orderDto.getExternalId() != null) {
+      Order existingOrder = orderRepository.findByExternalId(orderDto.getExternalId());
+      if (existingOrder != null) {
+        return existingOrder;
+      }
+    }
+
     orderDto.setId(null);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();

@@ -442,6 +442,16 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertThat(found.getId(), is(one.getId()));
   }
 
+  @Test
+  public void shouldRetrieveOrderByExternalId() {
+    Order one = orderRepository.save(generateInstance());
+    orderRepository.save(generateInstance());
+
+    Order found = orderRepository.findByExternalId(one.getExternalId());
+    assertThat(found, notNullValue());
+    assertThat(found.getId(), is(one.getId()));
+  }
+
   private Order prepareOrdersForSearchByFacility() {
     orderRepository.save(generateInstance(OrderStatus.ORDERED));
     orderRepository.save(generateInstance(OrderStatus.ORDERED));

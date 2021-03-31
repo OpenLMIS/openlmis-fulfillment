@@ -26,4 +26,6 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
 
   Order findByOrderCode(@Param("orderCode") String orderNumber);
 
+  Order findByExternalId(@Param("externalId") UUID externalId);
+
 }
