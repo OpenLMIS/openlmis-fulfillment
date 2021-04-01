@@ -138,7 +138,7 @@ public class OrderController extends BaseController {
    * If the id is specified, it will be ignored.
    *
    * @param orderDto A order bound to the request body
-   * @return the newly created
+   * @return the newly created order
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)

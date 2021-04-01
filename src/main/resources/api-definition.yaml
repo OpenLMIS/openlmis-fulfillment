@@ -333,8 +333,7 @@ resourceTypes:
                       schema: localizedMessage
       post:
           is: [ secured ]
-          description: >
-              Creates new order. This endpoint requires ORDERS_EDIT right.
+          description: Creates new order. This endpoint requires ORDERS_EDIT right.
           body:
               application/json:
                 schema: orderDto
