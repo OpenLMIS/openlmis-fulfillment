@@ -56,8 +56,8 @@ import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderReportDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,7 +84,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Transactional
 public class OrderController extends BaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(OrderController.class);
   private static final String DISPOSITION_BASE = "attachment; filename=";
   private static final String TYPE_CSV = "csv";
 
@@ -185,7 +185,7 @@ public class OrderController extends BaseController {
   @ResponseBody
   public Page<BasicOrderDto> searchOrders(OrderSearchParams params, Pageable pageable) {
     Profiler profiler = new Profiler("SEARCH_ORDERS");
-    profiler.setLogger(LOGGER);
+    profiler.setLogger(XLOGGER);
 
     profiler.start("SEARCH_ORDERS_IN_SERVICE");
     Page<Order> orders = orderService.searchOrders(params, pageable);
@@ -309,7 +309,7 @@ public class OrderController extends BaseController {
       HttpServletResponse response) throws IOException {
     if (!TYPE_CSV.equals(type)) {
       String msg = "Export type: " + type + " not allowed";
-      LOGGER.warn(msg);
+      XLOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
       return;
     }
@@ -318,7 +318,7 @@ public class OrderController extends BaseController {
 
     if (order == null) {
       String msg = "Order does not exist.";
-      LOGGER.warn(msg);
+      XLOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
       return;
     }
@@ -329,7 +329,7 @@ public class OrderController extends BaseController {
 
     if (fileTemplate == null) {
       String msg = "Could not export Order, because Order Template File not found";
-      LOGGER.warn(msg);
+      XLOGGER.warn(msg);
       response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
       return;
     }
@@ -343,7 +343,7 @@ public class OrderController extends BaseController {
     } catch (IOException ex) {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
           "Error occurred while exporting order to csv.");
-      LOGGER.error("Error occurred while exporting order to csv", ex);
+      XLOGGER.error("Error occurred while exporting order to csv", ex);
     }
   }
 
@@ -372,6 +372,10 @@ public class OrderController extends BaseController {
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
 
+    Profiler profiler = new Profiler("CREATE_SINGLE_ORDER");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CHECK_ORDER_EXISTS");
     if (orderDto.getExternalId() != null) {
       Order existingOrder = orderRepository.findByExternalId(orderDto.getExternalId());
       if (existingOrder != null) {
@@ -381,18 +385,23 @@ public class OrderController extends BaseController {
 
     orderDto.setId(null);
 
+    profiler.start("CHECK_PERMISSIONS");
     UserDto currentUser = authenticationHelper.getCurrentUser();
-    UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
 
     if (!authentication.isClientOnly()) {
-      LOGGER.debug("Checking rights to create order");
+      XLOGGER.debug("Checking rights to create order");
       permissionService.canEditOrder(orderDto);
     }
 
-    LOGGER.debug("Creating new order");
+    profiler.start("GET_CURRENT_USER");
+    UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
+
+    XLOGGER.debug("Creating new order");
+    profiler.start("CREATE_ORDER");
     Order order = orderService.createOrder(orderDto, userId);
 
     if (order.isExternal()) {
+      profiler.start("CREATE_SHIPMENT");
       List<ShipmentLineItem> items = order
           .getOrderLineItems()
           .stream()
@@ -406,6 +415,7 @@ public class OrderController extends BaseController {
       shipmentService.save(shipment);
     }
 
+    profiler.stop().log();
     return order;
   }
 }
