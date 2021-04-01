@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 
 import com.google.common.collect.ImmutableMap;
@@ -140,9 +141,16 @@ public class OrderController extends BaseController {
    * @return the newly created or existing order for provided requisition (externalId)
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
-  @ResponseStatus(HttpStatus.OK)
+  @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public OrderDto createOrder(@RequestBody OrderDto orderDto, OAuth2Authentication authentication) {
+    if (orderDto.getExternalId() != null) {
+      Order existingOrder = orderRepository.findByExternalId(orderDto.getExternalId());
+      if (existingOrder != null) {
+        throw new ValidationException(ORDER_EXISTS);
+      }
+    }
+
     Order order = createSingleOrder(orderDto, authentication);
     return orderDtoBuilder.build(order);
   }

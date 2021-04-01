@@ -434,23 +434,21 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
-  public void shouldReturnExistingOrderInsteadOfCreatingNewOne() {
+  public void shouldThrowErrorIfOrderAlreadyExists() {
     given(orderRepository.findByExternalId(any(UUID.class))).willReturn(firstOrder);
 
-    OrderDto order = restAssured.given()
+    restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(firstOrderDto)
         .when()
         .post(RESOURCE_URL)
         .then()
-        .statusCode(200)
-        .extract().as(OrderDto.class);
+        .statusCode(400);
 
     verify(orderRepository, times(1)).findByExternalId(firstOrder.getExternalId());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertThat(order.getExternalId(), is(firstOrderDto.getExternalId()));
   }
 
   @Test
@@ -467,7 +465,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .when()
         .post(RESOURCE_URL)
         .then()
-        .statusCode(200);
+        .statusCode(201);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 

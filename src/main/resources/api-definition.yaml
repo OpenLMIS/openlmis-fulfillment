@@ -334,13 +334,12 @@ resourceTypes:
       post:
           is: [ secured ]
           description: >
-              Creates new order or returns existing one found by related requisition.
-              This endpoint requires ORDERS_EDIT right.
+              Creates new order. This endpoint requires ORDERS_EDIT right.
           body:
               application/json:
                 schema: orderDto
           responses:
-              200:
+              201:
                   headers:
                     Keep-Alive:
                   body:
@@ -356,6 +355,12 @@ resourceTypes:
                   body:
                     application/json:
                       schema: localizedMessage
+              400:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -489,7 +494,7 @@ resourceTypes:
               is: [ secured ]
               description: >
                   Creates multiple new orders in one transaction. If order was already created
-                  endpoint returns the existing one found by related requisition.
+                  endpoint returns the existing one found by related external id.
                   This endpoint requires ORDERS_EDIT right.
               body:
                   application/json:
