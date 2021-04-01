@@ -138,7 +138,7 @@ public class OrderController extends BaseController {
    * If the id is specified, it will be ignored.
    *
    * @param orderDto A order bound to the request body
-   * @return the newly created or existing order for provided requisition (externalId)
+   * @return the newly created
    */
   @RequestMapping(value = "/orders", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
@@ -160,7 +160,7 @@ public class OrderController extends BaseController {
    * If the id is specified for any of the orders, it will be ignored.
    *
    * @param orders A list of orders to be created
-   * @return a list of newly created or existing orders for provided requisitions (externalIds)
+   * @return a list of newly created or existing orders for provided externalIds
    */
   @RequestMapping(value = "/orders/batch", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
