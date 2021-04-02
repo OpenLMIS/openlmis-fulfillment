@@ -372,6 +372,7 @@ public class OrderController extends BaseController {
   private Order createSingleOrder(OrderDto orderDto,
                                   OAuth2Authentication authentication) {
 
+    XLOGGER.entry(orderDto);
     Profiler profiler = new Profiler("CREATE_SINGLE_ORDER");
     profiler.setLogger(XLOGGER);
 
