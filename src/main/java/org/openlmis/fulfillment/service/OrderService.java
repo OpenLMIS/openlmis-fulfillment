@@ -200,8 +200,6 @@ public class OrderService {
     // save order
     Order saved = orderRepository.save(order);
 
-    orderStorage.store(saved);
-
     String allowFtpTransfer = configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder();
     if (allowFtpTransfer == null || allowFtpTransfer.equalsIgnoreCase("true")) {
@@ -210,6 +208,7 @@ public class OrderService {
                       TransferType.ORDER);
 
       if (properties instanceof FtpTransferProperties) {
+        orderStorage.store(saved);
         boolean success = orderSender.send(saved);
 
         if (success) {

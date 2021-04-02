@@ -217,6 +217,7 @@ public class OrderServiceTest {
     validateCreatedOrder(created, order);
 
     verify(orderSender,never()).send(any(Order.class));
+    verify(orderStorage,never()).store(any(Order.class));
   }
 
   @Test
@@ -310,6 +311,7 @@ public class OrderServiceTest {
     inOrder.verify(orderStorage).delete(order);
 
     verify(notificationService).sendOrderCreatedNotification(eq(created));
+    verify(orderStorage).store(eq(order));
   }
 
   @Test
