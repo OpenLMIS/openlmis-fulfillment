@@ -417,6 +417,7 @@ public class OrderController extends BaseController {
     }
 
     profiler.stop().log();
+    XLOGGER.exit(orderDto);
     return order;
   }
 }

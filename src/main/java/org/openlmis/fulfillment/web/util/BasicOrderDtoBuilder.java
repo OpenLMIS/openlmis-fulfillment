@@ -67,10 +67,17 @@ public class BasicOrderDtoBuilder {
    * @return a list of basic order dtos
    */
   public List<BasicOrderDto> build(List<Order> orders) {
+    XLOGGER.entry(orders);
+    Profiler profiler = new Profiler("GET_REFERENCE_DATA");
+    profiler.setLogger(XLOGGER);
+
     Map<UUID, FacilityDto> facilities = getFacilities(orders);
     Map<UUID, ProgramDto> programs = getPrograms(orders);
     Map<UUID, ProcessingPeriodDto> periods = getPeriods(orders);
     Map<UUID, UserDto> users = getUsers(orders);
+
+    profiler.stop().log();
+    XLOGGER.exit(orders);
 
     return orders.stream()
         .map(order -> build(order, facilities, programs, periods, users))
