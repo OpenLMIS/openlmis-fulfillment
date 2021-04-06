@@ -76,12 +76,13 @@ public class BasicOrderDtoBuilder {
     Map<UUID, ProcessingPeriodDto> periods = getPeriods(orders);
     Map<UUID, UserDto> users = getUsers(orders);
 
-    profiler.stop().log();
-    XLOGGER.exit(orders);
-
-    return orders.stream()
+    List<BasicOrderDto> dtos = orders.stream()
         .map(order -> build(order, facilities, programs, periods, users))
         .collect(Collectors.toList());
+
+    profiler.stop().log();
+    XLOGGER.exit(orders);
+    return dtos;
   }
 
   /**

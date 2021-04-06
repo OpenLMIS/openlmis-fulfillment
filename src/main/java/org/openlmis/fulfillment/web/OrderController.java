@@ -380,6 +380,7 @@ public class OrderController extends BaseController {
     if (orderDto.getExternalId() != null) {
       Order existingOrder = orderRepository.findByExternalId(orderDto.getExternalId());
       if (existingOrder != null) {
+        stopProfiler(profiler, orderDto);
         return existingOrder;
       }
     }
@@ -416,8 +417,12 @@ public class OrderController extends BaseController {
       shipmentService.save(shipment);
     }
 
-    profiler.stop().log();
-    XLOGGER.exit(orderDto);
+    stopProfiler(profiler, orderDto);
     return order;
+  }
+
+  void stopProfiler(Profiler profiler, Object... exitArgs) {
+    profiler.stop().log();
+    XLOGGER.exit(exitArgs);
   }
 }
