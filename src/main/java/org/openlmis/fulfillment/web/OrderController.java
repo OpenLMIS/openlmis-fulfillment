@@ -415,7 +415,6 @@ public class OrderController extends BaseController {
           order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
           null, items, ImmutableMap.of("external", "true"));
 
-      profiler.start("SAVE_SHIPMENT");
       shipmentService.save(shipment);
     }
 
