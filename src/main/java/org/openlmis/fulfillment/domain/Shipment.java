@@ -39,6 +39,7 @@ import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -73,6 +74,7 @@ public class Shipment extends BaseEntity {
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   @JoinColumn(name = "shipmentid", nullable = false)
+  @BatchSize(size = LINE_ITEMS_BATCH_SIZE)
   private List<ShipmentLineItem> lineItems;
 
   @Column(name = "extradata", columnDefinition = "jsonb")

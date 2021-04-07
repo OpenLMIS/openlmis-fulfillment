@@ -35,6 +35,8 @@ public abstract class BaseEntity implements Identifiable {
   static final String TEXT_COLUMN_DEFINITION = "text";
   static final String UUID_TYPE = "pg-uuid";
 
+  static final int LINE_ITEMS_BATCH_SIZE = 100;
+
   @Id
   @GeneratedValue(generator = "uuid-gen")
   @GenericGenerator(name = "uuid-gen",

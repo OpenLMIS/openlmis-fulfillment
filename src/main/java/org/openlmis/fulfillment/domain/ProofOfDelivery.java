@@ -42,6 +42,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
@@ -73,6 +74,7 @@ public class ProofOfDelivery extends BaseEntity {
       orphanRemoval = true)
   @JoinColumn(name = "proofOfDeliveryId", nullable = false)
   @Getter
+  @BatchSize(size = LINE_ITEMS_BATCH_SIZE)
   private List<ProofOfDeliveryLineItem> lineItems;
 
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
