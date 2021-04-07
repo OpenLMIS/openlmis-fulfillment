@@ -403,17 +403,19 @@ public class OrderController extends BaseController {
     Order order = orderService.createOrder(orderDto, userId);
 
     if (order.isExternal()) {
-      profiler.start("CREATE_SHIPMENT");
+      profiler.start("GET_SHIPMENT_LINE_ITEMS");
       List<ShipmentLineItem> items = order
           .getOrderLineItems()
           .stream()
           .map(line -> new ShipmentLineItem(line.getOrderable(), line.getOrderedQuantity()))
           .collect(Collectors.toList());
 
+      profiler.start("CREATE_SHIPMENT");
       Shipment shipment = new Shipment(
           order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
           null, items, ImmutableMap.of("external", "true"));
 
+      profiler.start("SAVE_SHIPMENT");
       shipmentService.save(shipment);
     }
 
