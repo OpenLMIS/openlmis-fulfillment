@@ -20,18 +20,14 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -44,11 +40,6 @@ import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 @AllArgsConstructor
 @ToString
 public class ShipmentLineItem extends BaseEntity {
-
-  @ManyToOne(cascade = CascadeType.REFRESH)
-  @JoinColumn(name = "shipmentId", nullable = false)
-  @Setter
-  private Shipment shipment;
 
   @Embedded
   @AttributeOverrides({
@@ -76,12 +67,12 @@ public class ShipmentLineItem extends BaseEntity {
   }
 
   public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped) {
-    this(null, orderable, null, quantityShipped, null);
+    this(orderable, null, quantityShipped, null);
   }
 
   public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped,
       Map<String, String> extraData) {
-    this(null, orderable, null, quantityShipped, extraData);
+    this(orderable, null, quantityShipped, extraData);
   }
 
   public UUID getOrderableId() {
@@ -103,7 +94,7 @@ public class ShipmentLineItem extends BaseEntity {
             orderableDto.getVersionNumber()))
         .orElse(null);
 
-    ShipmentLineItem shipmentLineItem = new ShipmentLineItem(null,
+    ShipmentLineItem shipmentLineItem = new ShipmentLineItem(
         orderable, importer.getLotId(), importer.getQuantityShipped(),
         importer.getExtraData());
     shipmentLineItem.setId(importer.getId());
@@ -133,8 +124,7 @@ public class ShipmentLineItem extends BaseEntity {
    * Returns a copy of line item.
    */
   public ShipmentLineItem copy() {
-    ShipmentLineItem clone =
-        new ShipmentLineItem(shipment, orderable, lotId, quantityShipped, extraData);
+    ShipmentLineItem clone = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
     clone.setId(id);
 
     return clone;

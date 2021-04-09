@@ -39,8 +39,7 @@ import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -71,11 +70,11 @@ public class Shipment extends BaseEntity {
   private String notes;
 
   @OneToMany(
-      mappedBy = "shipment",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
       fetch = FetchType.LAZY,
       orphanRemoval = true)
-  @Fetch(FetchMode.SELECT)
+  @JoinColumn(name = "shipmentid", nullable = false)
+  @BatchSize(size = LINE_ITEMS_BATCH_SIZE)
   private List<ShipmentLineItem> lineItems;
 
   @Column(name = "extradata", columnDefinition = "jsonb")

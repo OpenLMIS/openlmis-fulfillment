@@ -18,7 +18,6 @@ package org.openlmis.fulfillment.testutils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.web.util.VersionObjectReferenceDto;
@@ -30,7 +29,6 @@ public class ShipmentLineItemDataBuilder {
   private UUID lotId = UUID.randomUUID();
   private Long quantityShipped = 10L;
   private Map<String, String> extraData = new HashMap<>();
-  private Shipment shipment;
 
   public ShipmentLineItemDataBuilder withId(UUID id) {
     this.id = id;
@@ -72,17 +70,11 @@ public class ShipmentLineItemDataBuilder {
     return this;
   }
 
-  public ShipmentLineItemDataBuilder withShipment(Shipment shipment) {
-    this.shipment = shipment;
-    return this;
-  }
-
   /**
    * Builds instance of {@link ShipmentLineItem}.
    */
   public ShipmentLineItem build() {
-    ShipmentLineItem line =
-        new ShipmentLineItem(shipment, orderable, lotId, quantityShipped, extraData);
+    ShipmentLineItem line = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
     line.setId(id);
     return line;
   }
