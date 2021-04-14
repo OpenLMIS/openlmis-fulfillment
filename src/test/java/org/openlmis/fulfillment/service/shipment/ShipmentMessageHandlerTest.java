@@ -147,7 +147,7 @@ public class ShipmentMessageHandlerTest {
     when(shipmentParser.parse(any(), any())).thenReturn(records);
     when(shipmentBuilder.build(any(), any()))
         .thenReturn(new ShipmentDataBuilder().build());
-    when(shipmentService.save(any())).thenThrow(new RuntimeException());
+    when(shipmentService.create(any())).thenThrow(new RuntimeException());
     Message<File> fileMessage = MessageBuilder
         .withPayload(file).build();
 
@@ -177,13 +177,13 @@ public class ShipmentMessageHandlerTest {
         .thenReturn(shipment);
     List<CSVRecord> records = createParsedData();
     when(shipmentParser.parse(any(), any())).thenReturn(records);
-    when(shipmentService.save(shipment)).thenReturn(shipment);
+    when(shipmentService.create(shipment)).thenReturn(shipment);
     Message<File> fileMessage = MessageBuilder
         .withPayload(file).build();
 
     messageHandler.process(fileMessage);
 
-    verify(shipmentService).save(any());
+    verify(shipmentService).create(any());
   }
 
   private List<CSVRecord> createParsedData() {

@@ -106,7 +106,7 @@ public class OrderControllerTest {
     when(authentication.isClientOnly()).thenReturn(true);
     when(orderDtoBuilder.build(order)).thenReturn(orderDto);
 
-    when(shipmentService.save(any(Shipment.class)))
+    when(shipmentService.create(any(Shipment.class)))
         .thenAnswer(invocation -> invocation.getArgument(0, Shipment.class));
 
     orderDto.setUpdaterId(lastUpdaterId);
@@ -133,7 +133,7 @@ public class OrderControllerTest {
     orderController.createOrder(orderDto, authentication);
 
     ArgumentCaptor<Shipment> shipmentCaptor = ArgumentCaptor.forClass(Shipment.class);
-    verify(shipmentService).save(shipmentCaptor.capture());
+    verify(shipmentService).create(shipmentCaptor.capture());
 
     Shipment shipment = shipmentCaptor.getValue();
 

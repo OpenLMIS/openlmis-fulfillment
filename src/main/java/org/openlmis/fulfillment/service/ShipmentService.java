@@ -15,14 +15,13 @@
 
 package org.openlmis.fulfillment.service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,32 +29,35 @@ public class ShipmentService {
 
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ShipmentService.class);
 
-  @Autowired
-  private ShipmentRepository shipmentRepository;
-
-  @Autowired
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   /**
    * Saves the given shipment to database. Also related Proof Of Delivery will be created.
    */
-  public Shipment save(final Shipment shipment) {
+  public Shipment create(final Shipment shipment) {
     XLOGGER.entry();
     Profiler profiler = new Profiler("SAVE_SHIPMENT");
     profiler.setLogger(XLOGGER);
 
     profiler.start("SAVE_SHIPMENT_TO_DB");
-    Shipment saved = shipmentRepository.save(shipment);
+    entityManager.persist(shipment);
+
+    entityManager.flush();
+    entityManager.clear();
 
     profiler.start("CREATE_POD");
-    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(saved);
+    ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(shipment);
 
     profiler.start("SAVE_POD_TO_DB");
-    proofOfDeliveryRepository.save(proofOfDelivery);
+    entityManager.persist(proofOfDelivery);
+
+    entityManager.flush();
+    entityManager.clear();
 
     profiler.stop().log();
     XLOGGER.exit();
-    return saved;
+    return shipment;
   }
 
 }

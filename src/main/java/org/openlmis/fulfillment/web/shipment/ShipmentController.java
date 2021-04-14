@@ -142,7 +142,7 @@ public class ShipmentController extends BaseController {
     Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
     profiler.start("SAVE_SHIPMENT");
-    shipment = shipmentService.save(shipment);
+    shipment = shipmentService.create(shipment);
 
     profiler.start("UPDATE_ORDER");
     order.updateStatus(OrderStatus.SHIPPED, new UpdateDetails(

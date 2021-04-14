@@ -49,7 +49,7 @@ public class ShipmentServiceTest {
 
     // when
     when(shipmentRepository.save(shipment)).thenReturn(shipment);
-    shipmentService.save(shipment);
+    shipmentService.create(shipment);
 
     // then
     verify(shipmentRepository).save(shipment);

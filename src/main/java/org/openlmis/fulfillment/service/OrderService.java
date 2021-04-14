@@ -32,6 +32,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -108,6 +110,9 @@ public class OrderService {
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   /**
    * Creates an order.
@@ -198,7 +203,7 @@ public class OrderService {
     setOrderStatus(order);
 
     // save order
-    Order saved = orderRepository.save(order);
+    entityManager.persist(order);
 
     String allowFtpTransfer = configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder();
@@ -208,14 +213,13 @@ public class OrderService {
                       TransferType.ORDER);
 
       if (properties instanceof FtpTransferProperties) {
-        orderStorage.store(saved);
-        boolean success = orderSender.send(saved);
+        orderStorage.store(order);
+        boolean success = orderSender.send(order);
 
         if (success) {
-          orderStorage.delete(saved);
+          orderStorage.delete(order);
         } else {
           order.setStatus(TRANSFER_FAILED);
-          saved = orderRepository.save(order);
         }
       }
     }
@@ -224,10 +228,13 @@ public class OrderService {
     String allowSendingEmail = configurationSettingService
             .getAllowSendingEmailOnRequisitionToOrder();
     if (allowSendingEmail == null || allowSendingEmail.equalsIgnoreCase("true")) {
-      fulfillmentNotificationService.sendOrderCreatedNotification(saved);
+      fulfillmentNotificationService.sendOrderCreatedNotification(order);
     }
 
-    return saved;
+    entityManager.flush();
+    entityManager.clear();
+
+    return order;
   }
 
   private void setOrderStatus(Order order) {

@@ -107,7 +107,7 @@ public class ShipmentControllerTest {
         .thenReturn(Optional.of(order));
     when(stockEventBuilder.fromShipment(any(Shipment.class)))
         .thenReturn(event);
-    when(shipmentService.save(any(Shipment.class)))
+    when(shipmentService.create(any(Shipment.class)))
         .thenReturn(shipment);
   }
 

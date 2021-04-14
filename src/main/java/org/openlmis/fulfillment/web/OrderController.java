@@ -304,8 +304,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/export", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public void export(@PathVariable("id") UUID orderId,
-      @RequestParam(value = "type", required = false, 
-          defaultValue = TYPE_CSV) String type, 
+      @RequestParam(value = "type", required = false,
+          defaultValue = TYPE_CSV) String type,
       HttpServletResponse response) throws IOException {
     if (!TYPE_CSV.equals(type)) {
       String msg = "Export type: " + type + " not allowed";
@@ -415,7 +415,7 @@ public class OrderController extends BaseController {
           order, new CreationDetails(order.getCreatedById(), order.getCreatedDate()),
           null, items, ImmutableMap.of("external", "true"));
 
-      shipmentService.save(shipment);
+      shipmentService.create(shipment);
     }
 
     stopProfiler(profiler, orderDto);

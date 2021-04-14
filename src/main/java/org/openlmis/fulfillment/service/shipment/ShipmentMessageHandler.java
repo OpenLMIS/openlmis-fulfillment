@@ -73,7 +73,7 @@ public class ShipmentMessageHandler {
       // parse file
       List<CSVRecord> records = shipmentParser.parse(file, template);
       Shipment shipment = shipmentBuilder.build(template, records);
-      shipmentService.save(shipment);
+      shipmentService.create(shipment);
       archiveFile(message, "outboundShipmentFileArchiveChannel");
     } catch (RuntimeException exception) {
       List<Message<File>> messages = errorHandler.extractLogMessages(file, exception);
