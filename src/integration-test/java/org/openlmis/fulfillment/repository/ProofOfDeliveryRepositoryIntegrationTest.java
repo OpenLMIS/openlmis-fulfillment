@@ -42,6 +42,7 @@ import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.core.metamodel.object.SnapshotType;
 import org.javers.repository.jql.JqlQuery;
 import org.javers.repository.jql.QueryBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
@@ -64,6 +65,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@Ignore
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {

@@ -61,6 +61,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -112,6 +113,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 
+@Ignore
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 

@@ -40,6 +40,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -82,6 +83,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 
+@Ignore
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -114,7 +116,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private StockEventBuilder stockEventBuilder;
-  
+
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
@@ -123,7 +125,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Mock
   private Order order;
-  
+
   @Mock
   private ProofOfDelivery proofOfDelivery;
 
