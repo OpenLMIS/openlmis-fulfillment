@@ -3,6 +3,8 @@
 
 Contract breaking changes:
 * [OLMIS-7219](https://openlmis.atlassian.net/browse/OLMIS-7219): Updated POST /orders/batch to return existing orders if already created
+  * Clear Hibernate session after order and shipment created
+  * Set Hibernate batch insert properties
 
 Improvements:
 * [TZUP-169](https://openlmis.atlassian.net/browse/TZUP-169): Made ftp file transfer and email sending configurable on requisition to order
