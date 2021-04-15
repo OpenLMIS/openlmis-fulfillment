@@ -44,8 +44,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import javax.persistence.EntityManager;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -81,6 +81,7 @@ import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramOrderableDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
@@ -97,7 +98,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-@Ignore
 @SuppressWarnings({"PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderServiceTest {
@@ -150,6 +150,9 @@ public class OrderServiceTest {
   @Mock
   private AuthenticationHelper authenticationHelper;
 
+  @Mock
+  private EntityManager entityManager;
+
   @InjectMocks
   private ExporterBuilder exporter;
 
@@ -183,21 +186,22 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldCreateRegularOrder() throws Exception {
+  public void shouldCreateRegularOrder() {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
     when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
+
+    order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
-    dto.setId(null);
 
     Order created = orderService.createOrder(dto, userDto.getId());
 
     // then
     validateCreatedOrder(created, order);
 
-    verify(orderRepository).save(orderCaptor.capture());
+    verify(entityManager).persist(orderCaptor.capture());
     verify(orderStorage).store(any(Order.class));
     verify(orderSender).send(any(Order.class));
     verify(orderStorage).delete(any(Order.class));
@@ -236,7 +240,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldCreateRegularOrderIfFacilityNotSupportProgram() throws Exception {
+  public void shouldCreateRegularOrderIfFacilityNotSupportProgram() {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
@@ -244,8 +248,8 @@ public class OrderServiceTest {
             .thenReturn(stringReturnedTrue);
     facility.setSupportedPrograms(emptyList());
 
+    order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
-    dto.setId(null);
 
     order.setStatus(OrderStatus.ORDERED);
 
@@ -254,7 +258,7 @@ public class OrderServiceTest {
     // then
     validateCreatedOrder(created, order);
 
-    verify(orderRepository).save(orderCaptor.capture());
+    verify(entityManager).persist(orderCaptor.capture());
     verify(orderStorage).store(any(Order.class));
     verify(orderSender).send(any(Order.class));
     verify(orderStorage).delete(any(Order.class));
@@ -265,7 +269,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldCreateOrderForFulfill() throws Exception {
+  public void shouldCreateOrderForFulfill() {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
@@ -273,8 +277,8 @@ public class OrderServiceTest {
             .thenReturn(stringReturnedTrue);
     program.setSupportLocallyFulfilled(true);
 
+    order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
-    dto.setId(null);
 
     order.setStatus(OrderStatus.ORDERED);
 
@@ -283,7 +287,7 @@ public class OrderServiceTest {
     // then
     validateCreatedOrder(created, order);
 
-    verify(orderRepository).save(orderCaptor.capture());
+    verify(entityManager).persist(orderCaptor.capture());
     verify(orderStorage).store(any(Order.class));
     verify(orderSender).send(any(Order.class));
     verify(orderStorage).delete(any(Order.class));
@@ -294,7 +298,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldSaveOrder() throws Exception {
+  public void shouldSaveOrder() {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
@@ -306,8 +310,7 @@ public class OrderServiceTest {
     validateCreatedOrder(created, order);
     assertEquals(OrderStatus.IN_ROUTE, created.getStatus());
 
-    InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
-    inOrder.verify(orderRepository).save(order);
+    InOrder inOrder = inOrder(orderStorage, orderSender);
     inOrder.verify(orderStorage).store(order);
     inOrder.verify(orderSender).send(order);
     inOrder.verify(orderStorage).delete(order);
@@ -317,7 +320,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() throws Exception {
+  public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() {
     when(configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder())
             .thenReturn(stringReturnedTrue);
@@ -336,8 +339,7 @@ public class OrderServiceTest {
     validateCreatedOrder(created, order);
     assertEquals(OrderStatus.TRANSFER_FAILED, created.getStatus());
 
-    InOrder inOrder = inOrder(orderRepository, orderStorage, orderSender);
-    inOrder.verify(orderRepository).save(order);
+    InOrder inOrder = inOrder(orderStorage, orderSender);
     inOrder.verify(orderStorage).store(order);
     inOrder.verify(orderSender).send(order);
     inOrder.verify(orderStorage, never()).delete(order);
@@ -530,7 +532,9 @@ public class OrderServiceTest {
 
     userDto = new UserDataBuilder().build();
 
-    orderable = new OrderableDataBuilder().build();
+    orderable = new OrderableDataBuilder()
+        .withPrograms(Collections.singleton(new ProgramOrderableDto()))
+        .build();
     OrderLineItem orderLineItem = new OrderLineItemDataBuilder()
         .withOrderedQuantity(100L)
         .withOrderable(orderable.getId(), orderable.getVersionNumber())
@@ -546,6 +550,9 @@ public class OrderServiceTest {
         .withSupplyingFacilityId(facility.getId())
         .withProcessingPeriodId(period1.getId())
         .withLineItems(orderLineItem)
+        .withFacilityId(null)
+        .withReceivingFacilityId(null)
+        .withRequestingFacilityId(null)
         .build();
 
     userDto = new UserDataBuilder().build();
@@ -574,7 +581,6 @@ public class OrderServiceTest {
         .findFirstByFacilityIdAndTransferType(any(),any()))
         .thenReturn(properties);
 
-    when(orderRepository.save(any(Order.class))).thenReturn(order);
     when(orderSender.send(order)).thenReturn(true);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
@@ -582,6 +588,7 @@ public class OrderServiceTest {
     when(periodReferenceDataService.search(startDate, endDate))
         .thenReturn(asList(period1, period2));
 
-    when(orderableReferenceDataService.findByIdentities(anySet())).thenReturn(emptyList());
+    when(orderableReferenceDataService.findByIdentities(anySet())).thenReturn(
+        Collections.singletonList(orderable));
   }
 }

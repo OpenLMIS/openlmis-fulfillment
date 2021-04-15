@@ -203,7 +203,9 @@ public class OrderService {
     setOrderStatus(order);
 
     // save order
-    entityManager.persist(order);
+    if (order.getId() == null) {
+      entityManager.persist(order);
+    }
 
     String allowFtpTransfer = configurationSettingService
             .getAllowFtpTransferOnRequisitionToOrder();

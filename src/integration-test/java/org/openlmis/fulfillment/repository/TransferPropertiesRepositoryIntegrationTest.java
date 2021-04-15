@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.fulfillment.domain.FtpProtocol;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
@@ -31,7 +30,6 @@ import org.openlmis.fulfillment.domain.TransferType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
-@Ignore
 public class TransferPropertiesRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<TransferProperties> {
 

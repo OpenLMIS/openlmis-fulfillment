@@ -59,23 +59,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.persistence.EntityManager;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
@@ -84,6 +83,7 @@ import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.notification.NotificationService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
@@ -106,14 +106,15 @@ import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@Ignore
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -174,9 +175,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private ObjReferenceExpander objReferenceExpander;
 
   @MockBean
-  private ShipmentRepository shipmentRepository;
-
-  @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
 
   @MockBean
@@ -187,6 +185,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderService orderService;
+
+  @Autowired
+  private ShipmentService shipmentService;
 
   @SpyBean
   private UserReferenceDataService userReferenceDataService;
@@ -261,8 +262,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findByIds(anySetOf(UUID.class))).thenReturn(Arrays.asList(
         facility, facility1, facility2));
 
-    when(shipmentRepository.save(any(Shipment.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0, Shipment.class));
+    EntityManager entityManager = Mockito.mock(EntityManager.class);
+    ReflectionTestUtils.setField(shipmentService, "entityManager", entityManager);
 
     product1 = new OrderableDataBuilder().withId(product1Id).build();
     product2 = new OrderableDataBuilder().withId(product2Id).build();

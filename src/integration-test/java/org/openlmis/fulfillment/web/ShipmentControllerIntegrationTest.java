@@ -28,6 +28,7 @@ import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -39,26 +40,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -76,14 +78,15 @@ import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.OrderObjectReferenceDto;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.openlmis.fulfillment.web.util.VersionIdentityDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@Ignore
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -117,8 +120,10 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private StockEventBuilder stockEventBuilder;
 
-  @MockBean
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+  @Autowired
+  private ShipmentService shipmentService;
+
+  private EntityManager entityManager;
 
   @SpyBean
   private OrderableReferenceDataService orderableReferenceDataService;
@@ -126,11 +131,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
   @Mock
   private Order order;
 
-  @Mock
-  private ProofOfDelivery proofOfDelivery;
-
   @Captor
-  private ArgumentCaptor<Shipment> captor;
+  private ArgumentCaptor<BaseEntity> captor;
 
   private ShipmentDto shipmentDto;
   private ShipmentDto shipmentDtoExpected;
@@ -150,12 +152,13 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     when(shipmentRepository.findById(shipmentDtoExpected.getId()))
         .thenReturn(Optional.of(shipment));
-    when(shipmentRepository.save(any(Shipment.class))).thenAnswer(new SaveAnswer<>());
     when(orderRepository.findById(shipmentDtoExpected.getOrder().getId()))
         .thenReturn(Optional.of(order));
-    when(orderRepository.save(any(Order.class))).thenAnswer(new SaveAnswer<>());
 
     when(order.canBeFulfilled()).thenReturn(true);
+
+    entityManager = Mockito.mock(EntityManager.class);
+    ReflectionTestUtils.setField(shipmentService, "entityManager", entityManager);
   }
 
   private void generateShipment() {
@@ -224,13 +227,13 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldCreateShipment() {
+    shipmentDtoExpected.setId(null);
+
     Order shipmentOrder = shipment.getOrder();
     shipmentOrder.setStatus(OrderStatus.ORDERED);
     when(orderRepository.findById(shipment.getOrder().getId()))
         .thenReturn(Optional.of(shipment.getOrder()));
     //necessary as SaveAnswer change shipment id value also in captor
-    when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
-    when(proofOfDeliveryRepository.save(any(ProofOfDelivery.class))).thenReturn(proofOfDelivery);
     when(stockEventBuilder.fromShipment(any(Shipment.class))).thenReturn(new StockEventDto());
 
     ShipmentDto extracted = restAssured.given()
@@ -249,11 +252,12 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertEquals(shipmentDtoExpected, extracted);
     verify(orderRepository).save(shipmentOrder);
-    verify(shipmentRepository).save(captor.capture());
+    verify(entityManager, times(2)).persist(captor.capture());
     verify(stockEventBuilder).fromShipment(any(Shipment.class));
     verify(stockEventService).submit(any(StockEventDto.class));
-    assertTrue(reflectionEquals(shipment, captor.getValue(), singletonList("id")));
-    assertNull(captor.getValue().getId());
+    assertTrue(reflectionEquals(shipment, captor.getAllValues().iterator().next(),
+        singletonList("id")));
+    assertNull(captor.getAllValues().iterator().next().getId());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
   }
 
@@ -271,7 +275,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(400)
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDERLESS_NOT_SUPPORTED));
 
-    verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(entityManager, never()).persist(any(Shipment.class));
     verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
     verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
@@ -293,7 +297,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(400)
         .body(MESSAGE_KEY, equalTo(MessageKeys.SHIPMENT_ORDER_STATUS_INVALID));
 
-    verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(entityManager, never()).persist(any(Shipment.class));
     verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
     verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());
@@ -315,7 +319,7 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(403)
         .body(MESSAGE_KEY, equalTo(MessageKeys.PERMISSION_MISSING));
 
-    verify(shipmentRepository, never()).save(any(Shipment.class));
+    verify(entityManager, never()).persist(any(Shipment.class));
     verify(stockEventBuilder, never()).fromShipment(any(Shipment.class));
     verify(stockEventService, never()).submit(any(StockEventDto.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.responseChecks());

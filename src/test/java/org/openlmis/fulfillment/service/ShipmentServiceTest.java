@@ -17,9 +17,8 @@ package org.openlmis.fulfillment.service;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import org.junit.Ignore;
+import javax.persistence.EntityManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -27,19 +26,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
-import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
 
-@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class ShipmentServiceTest {
 
   @Mock
-  private ShipmentRepository shipmentRepository;
-
-  @Mock
-  private ProofOfDeliveryRepository proofOfDeliveryRepository;
+  private EntityManager entityManager;
 
   @InjectMocks
   private ShipmentService shipmentService;
@@ -50,14 +43,13 @@ public class ShipmentServiceTest {
     final Shipment shipment = new ShipmentDataBuilder().build();
 
     // when
-    when(shipmentRepository.save(shipment)).thenReturn(shipment);
     shipmentService.create(shipment);
 
     // then
-    verify(shipmentRepository).save(shipment);
+    verify(entityManager).persist(shipment);
     // creating a POD based on shipment and map is check in
     // ProofOfDeliveryTest.shouldCreateInstanceBasedOnShipment
     // here we only verify that POD has been saved
-    verify(proofOfDeliveryRepository).save(any(ProofOfDelivery.class));
+    verify(entityManager).persist(any(ProofOfDelivery.class));
   }
 }
