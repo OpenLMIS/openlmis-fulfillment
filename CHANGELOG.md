@@ -1,4 +1,4 @@
-9.0.0 / WIP
+9.0.0 / 2021-05-27
 ==================
 
 Contract breaking changes:
