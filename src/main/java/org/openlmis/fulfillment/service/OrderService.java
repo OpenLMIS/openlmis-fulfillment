@@ -42,6 +42,7 @@ import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.ExtensionPointId;
+import org.openlmis.fulfillment.extension.point.OrderCreatePostProcessor;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -137,6 +138,10 @@ public class OrderService {
 
     order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
     Order newOrder = save(order);
+
+    OrderCreatePostProcessor orderCreatePostProcessor = extensionManager.getExtension(
+        ExtensionPointId.ORDER_CREATE_POST_POINT_ID, OrderCreatePostProcessor.class);
+    orderCreatePostProcessor.process(order);
 
     XLOGGER.debug("Created new order with id: {}", order.getId());
     return newOrder;
