@@ -69,6 +69,8 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.ExtensionPointId;
+import org.openlmis.fulfillment.extension.point.OrderCreatePostProcessor;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -576,6 +578,10 @@ public class OrderServiceTest {
 
     when(extensionManager.getExtension(OrderNumberGenerator.POINT_ID, OrderNumberGenerator.class))
         .thenReturn(new Base36EncodedOrderNumberGenerator());
+
+    when(extensionManager.getExtension(ExtensionPointId.ORDER_CREATE_POST_POINT_ID,
+        OrderCreatePostProcessor.class))
+        .thenReturn(new DefaultOrderCreatePostProcessor());
 
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(),any()))
