@@ -15,11 +15,16 @@
 
 package org.openlmis.fulfillment.extension.point;
 
-public final class ExtensionPointId {
+import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.service.DefaultShipmentCreatePostProcessor;
+import org.springframework.stereotype.Component;
 
-  public static final String ORDER_NUMBER_POINT_ID = "OrderNumberGenerator";
-  public static final String ORDER_CREATE_POST_POINT_ID = "OrderCreatePostProcessor";
-  public static final String SHIPMENT_CREATE_POST_POINT_ID = "ShipmentCreatePostProcessor";
+/**
+ * Extension point used for logic after creating an order.
+ * @see DefaultShipmentCreatePostProcessor
+ */
+@Component
+public interface ShipmentCreatePostProcessor {
 
-  private ExtensionPointId() { }
+  void process(Shipment shipment);
 }

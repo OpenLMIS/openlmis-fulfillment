@@ -36,9 +36,13 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.ExtensionPointId;
+import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
+import org.openlmis.fulfillment.service.DefaultShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
@@ -86,6 +90,9 @@ public class ShipmentControllerTest {
   @Mock
   private ShipmentService shipmentService;
 
+  @Mock
+  private ExtensionManager extensionManager;
+
   @InjectMocks
   private ShipmentController shipmentController = new ShipmentController();
 
@@ -109,6 +116,10 @@ public class ShipmentControllerTest {
         .thenReturn(event);
     when(shipmentService.create(any(Shipment.class)))
         .thenReturn(shipment);
+
+    when(extensionManager.getExtension(ExtensionPointId.SHIPMENT_CREATE_POST_POINT_ID,
+        ShipmentCreatePostProcessor.class))
+        .thenReturn(new DefaultShipmentCreatePostProcessor(stockEventService, stockEventBuilder));
   }
 
   @Test
