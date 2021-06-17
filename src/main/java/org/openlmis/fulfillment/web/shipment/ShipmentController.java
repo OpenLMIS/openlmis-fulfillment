@@ -33,22 +33,22 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.ExtensionPointId;
+import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.Pagination;
 import org.openlmis.fulfillment.web.BaseController;
 import org.openlmis.fulfillment.web.NotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
-import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
 import org.openlmis.fulfillment.web.util.ObjectReferenceDto;
-import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -98,13 +98,10 @@ public class ShipmentController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private StockEventStockManagementService stockEventService;
-
-  @Autowired
-  private StockEventBuilder stockEventBuilder;
-
-  @Autowired
   private ShipmentService shipmentService;
+
+  @Autowired
+  private ExtensionManager extensionManager;
 
   /**
    * Allows creating new shipment. If the id is specified, it will be ignored.
@@ -153,11 +150,9 @@ public class ShipmentController extends BaseController {
     profiler.start("REMOVE_DRAFT_SHIPMENTS");
     findAndRemoveShipmentDraftsForOrder(order);
 
-    profiler.start("BUILD_STOCK_EVENT_FROM_SHIPMENT");
-    StockEventDto stockEventDto = stockEventBuilder.fromShipment(shipment);
-
-    profiler.start("SUBMIT_STOCK_EVENT");
-    stockEventService.submit(stockEventDto);
+    ShipmentCreatePostProcessor shipmentCreatePostProcessor = extensionManager.getExtension(
+        ExtensionPointId.SHIPMENT_CREATE_POST_POINT_ID, ShipmentCreatePostProcessor.class);
+    shipmentCreatePostProcessor.process(shipment);
 
     profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
