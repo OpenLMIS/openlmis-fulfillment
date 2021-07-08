@@ -80,7 +80,7 @@ public class ObjReferenceExpander {
    * Expands the DTO object. The requirement is that the field names in the {@code expands}
    * list exactly correspond to the field names in the passed DTO object. Moreover, those fields
    * need to extend the {@link ObjectReferenceDto}. If that's the case, this method will query the
-   * URL from {@link ObjectReferenceDto#getHref()} and add the retrieved fields to the
+   * URL from {@link ObjectReferenceDto} (getHref()) and add the retrieved fields to the
    * representation.
    *
    * @param dto the DTO to expand

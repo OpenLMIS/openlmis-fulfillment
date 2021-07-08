@@ -83,6 +83,7 @@ dependencies {
     compile "org.slf4j:slf4j-ext"
 
     compile group: 'org.apache.poi', name: 'poi', version: '3.15'
+    compile group: 'javax.interceptor', name: 'javax.interceptor-api', version: '1.2'
 
     testCompile 'io.rest-assured:rest-assured'
     testCompile 'io.rest-assured:json-schema-validator'
@@ -272,10 +273,10 @@ signing {
     sign configurations.archives
 }
 
-// task javadocJar(type: Jar) {
-//     classifier = 'javadoc'
-//     from javadoc
-// }
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
@@ -288,8 +289,7 @@ task execJar(type: Jar) {
 }
 
 artifacts {
-//    archives javadocJar, sourcesJar, execJar
-    archives sourcesJar, execJar
+    archives javadocJar, sourcesJar, execJar
 }
 
 signArchives.onlyIf {project.findProperty("signing.keyId") && project.findProperty("signing.password")}

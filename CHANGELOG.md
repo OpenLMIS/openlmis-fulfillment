@@ -1,3 +1,9 @@
+9.0.1 / 2021-07-08
+==================
+
+Bug fixes:
+* [OLMIS-7336](https://openlmis.atlassian.net/browse/OLMIS-7336): Added javadoc task, fixed docs in Application and ObjReferenceExpander
+
 9.0.0 / 2021-05-27
 ==================
 
