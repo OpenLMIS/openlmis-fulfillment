@@ -4,6 +4,9 @@
 Bug fixes:
 * [OLMIS-7336](https://openlmis.atlassian.net/browse/OLMIS-7336): Added javadoc task, fixed docs in Application and ObjReferenceExpander
 
+Improvements:
+* Add extension points to post order creation and post shipment creation.
+
 9.0.0 / 2021-05-27
 ==================
 
