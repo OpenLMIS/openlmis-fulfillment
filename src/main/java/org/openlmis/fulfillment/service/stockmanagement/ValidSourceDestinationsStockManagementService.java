@@ -50,7 +50,7 @@ public abstract class ValidSourceDestinationsStockManagementService
   }
 
   private Collection<ValidSourceDestinationDto> search(UUID programId, UUID fromFacilityId) {
-    return findAll("", RequestParameters.init()
-        .set("programId", programId).set("facilityId", fromFacilityId));
+    return getPage(RequestParameters.init()
+        .set("programId", programId).set("facilityId", fromFacilityId)).getContent();
   }
 }

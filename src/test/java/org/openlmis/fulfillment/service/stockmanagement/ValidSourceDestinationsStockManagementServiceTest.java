@@ -23,20 +23,24 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.fulfillment.service.BaseCommunicationServiceTest;
+import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDtoDataBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -67,13 +71,12 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
     ValidSourceDestinationDto destination = new ValidSourceDestinationDtoDataBuilder()
         .withNode(facility)
         .build();
-    ResponseEntity<ValidSourceDestinationDto[]> response = new ResponseEntity<>(
-        new ValidSourceDestinationDto[]{destination}, HttpStatus.OK
-    );
+    ResponseEntity response = mock(ResponseEntity.class);
+    when(response.getBody()).thenReturn(new PageDto<>(new PageImpl<>(Arrays.asList(destination))));
 
     when(restTemplate
         .exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
-            eq(service.getArrayResultClass())))
+            any(ParameterizedTypeReference.class)))
         .thenReturn(response);
 
     // when
@@ -88,7 +91,7 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
 
     verify(restTemplate)
         .exchange(uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
-            eq(service.getArrayResultClass()));
+            any(ParameterizedTypeReference.class));
 
     String uri = uriCaptor.getValue().toString();
     String url = service.getServiceUrl() + getUrl();
