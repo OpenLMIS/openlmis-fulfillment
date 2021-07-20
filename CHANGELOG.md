@@ -1,3 +1,9 @@
+9.0.2 / WIP
+==================
+
+New functionality added in a backwards-compatible manner:
+* [OLMIS-7345](https://openlmis.atlassian.net/browse/OLMIS-7345): Updated code due to /validDestinations returns Page<>
+
 9.0.1 / 2021-07-08
 ==================
 
