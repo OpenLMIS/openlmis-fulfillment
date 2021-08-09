@@ -18,15 +18,13 @@ package org.openlmis.fulfillment.service;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.UUID.randomUUID;
 import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -38,7 +36,6 @@ import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,7 +49,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -60,7 +56,6 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.StatusChangeDataBuilder;
 import org.openlmis.fulfillment.domain.Base36EncodedOrderNumberGenerator;
-import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
@@ -132,15 +127,6 @@ public class OrderServiceTest {
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Mock
-  private FulfillmentNotificationService notificationService;
-
-  @Mock
-  private OrderStorage orderStorage;
-
-  @Mock
-  private OrderSender orderSender;
-
-  @Mock
   private DateHelper dateHelper;
 
   @Mock
@@ -155,6 +141,9 @@ public class OrderServiceTest {
   @Mock
   private EntityManager entityManager;
 
+  @Mock
+  private DefaultOrderCreatePostProcessor orderCreatePostProcessor;
+
   @InjectMocks
   private ExporterBuilder exporter;
 
@@ -163,9 +152,6 @@ public class OrderServiceTest {
 
   @Captor
   private ArgumentCaptor<Order> orderCaptor;
-
-  @Mock
-  private ConfigurationSettingService configurationSettingService;
 
   private ProgramDto program;
   private FacilityDto facility;
@@ -178,8 +164,6 @@ public class OrderServiceTest {
   private FtpTransferProperties properties;
   private LocalDate startDate;
   private LocalDate endDate;
-  private static final String stringReturnedTrue = "true";
-  private static final String stringReturnedFalse = "false";
 
   @Before
   public void setUp() {
@@ -189,162 +173,61 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateRegularOrder() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-
+    // given
     order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
 
+    // when
     Order created = orderService.createOrder(dto, userDto.getId());
 
     // then
     validateCreatedOrder(created, order);
-
     verify(entityManager).persist(orderCaptor.capture());
-    verify(orderStorage).store(any(Order.class));
-    verify(orderSender).send(any(Order.class));
-    verify(orderStorage).delete(any(Order.class));
-
     assertEquals(OrderStatus.IN_ROUTE, orderCaptor.getValue().getStatus());
-
-    verify(notificationService).sendOrderCreatedNotification(eq(created));
-  }
-
-  @Test
-  public void shouldNotSendFtpIfAllowFtpTransferIsFalse() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedFalse);
-    OrderDto dto = OrderDto.newInstance(order, exporter);
-    dto.setId(null);
-
-    Order created = orderService.createOrder(dto, userDto.getId());
-    validateCreatedOrder(created, order);
-
-    verify(orderSender,never()).send(any(Order.class));
-    verify(orderStorage,never()).store(any(Order.class));
-  }
-
-  @Test
-  public void shouldNotSendEmailNotificationIfAllowSendingEmailIsFalse() {
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedFalse);
-    OrderDto dto = OrderDto.newInstance(order, exporter);
-    dto.setId(null);
-
-    Order created = orderService.createOrder(dto, userDto.getId());
-    validateCreatedOrder(created, order);
-
-    verify(notificationService,never()).sendOrderCreatedNotification(any(Order.class));
   }
 
   @Test
   public void shouldCreateRegularOrderIfFacilityNotSupportProgram() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
+    // given
     facility.setSupportedPrograms(emptyList());
-
     order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
-
     order.setStatus(OrderStatus.ORDERED);
 
+    // when
     Order created = orderService.createOrder(dto, userDto.getId());
 
     // then
     validateCreatedOrder(created, order);
-
     verify(entityManager).persist(orderCaptor.capture());
-    verify(orderStorage).store(any(Order.class));
-    verify(orderSender).send(any(Order.class));
-    verify(orderStorage).delete(any(Order.class));
-
     assertEquals(OrderStatus.IN_ROUTE, orderCaptor.getValue().getStatus());
-
-    verify(notificationService).sendOrderCreatedNotification(eq(created));
   }
 
   @Test
   public void shouldCreateOrderForFulfill() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
+    // given
     program.setSupportLocallyFulfilled(true);
-
     order.setId(null);
     OrderDto dto = OrderDto.newInstance(order, exporter);
-
     order.setStatus(OrderStatus.ORDERED);
 
+    // when
     Order created = orderService.createOrder(dto, userDto.getId());
 
     // then
     validateCreatedOrder(created, order);
-
     verify(entityManager).persist(orderCaptor.capture());
-    verify(orderStorage).store(any(Order.class));
-    verify(orderSender).send(any(Order.class));
-    verify(orderStorage).delete(any(Order.class));
-
     assertEquals(OrderStatus.ORDERED, orderCaptor.getValue().getStatus());
-
-    verify(notificationService).sendOrderCreatedNotification(eq(created));
   }
 
   @Test
   public void shouldSaveOrder() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
+    // when
     Order created = orderService.save(order);
 
     // then
     validateCreatedOrder(created, order);
     assertEquals(OrderStatus.IN_ROUTE, created.getStatus());
-
-    InOrder inOrder = inOrder(orderStorage, orderSender);
-    inOrder.verify(orderStorage).store(order);
-    inOrder.verify(orderSender).send(order);
-    inOrder.verify(orderStorage).delete(order);
-
-    verify(notificationService).sendOrderCreatedNotification(eq(created));
-    verify(orderStorage).store(eq(order));
-  }
-
-  @Test
-  public void shouldSaveOrderAndNotDeleteFileIfFtpSendFailure() {
-    when(configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    when(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder())
-            .thenReturn(stringReturnedTrue);
-    StatusChange statusChange = new StatusChange();
-    statusChange.setStatus(ExternalStatus.APPROVED);
-    statusChange.setCreatedDate(ZonedDateTime.now());
-    statusChange.setAuthorId(randomUUID());
-    order.setStatusChanges(Lists.newArrayList(statusChange));
-
-    when(orderSender.send(order)).thenReturn(false);
-    Order created = orderService.save(order);
-
-    // then
-    validateCreatedOrder(created, order);
-    assertEquals(OrderStatus.TRANSFER_FAILED, created.getStatus());
-
-    InOrder inOrder = inOrder(orderStorage, orderSender);
-    inOrder.verify(orderStorage).store(order);
-    inOrder.verify(orderSender).send(order);
-    inOrder.verify(orderStorage, never()).delete(order);
   }
 
   @Test
@@ -581,13 +464,13 @@ public class OrderServiceTest {
 
     when(extensionManager.getExtension(ExtensionPointId.ORDER_CREATE_POST_POINT_ID,
         OrderCreatePostProcessor.class))
-        .thenReturn(new DefaultOrderCreatePostProcessor());
+        .thenReturn(orderCreatePostProcessor);
+
+    doNothing().when(orderCreatePostProcessor).process(order);
 
     when(transferPropertiesRepository
         .findFirstByFacilityIdAndTransferType(any(),any()))
         .thenReturn(properties);
-
-    when(orderSender.send(order)).thenReturn(true);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
 

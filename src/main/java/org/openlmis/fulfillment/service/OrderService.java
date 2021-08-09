@@ -77,15 +77,6 @@ public class OrderService {
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Autowired
-  private FulfillmentNotificationService fulfillmentNotificationService;
-
-  @Autowired
-  private OrderStorage orderStorage;
-
-  @Autowired
-  private OrderSender orderSender;
-
-  @Autowired
   private PeriodReferenceDataService periodService;
 
   @Autowired
@@ -108,9 +99,6 @@ public class OrderService {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
-
-  @Autowired
-  private ConfigurationSettingService configurationSettingService;
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -210,32 +198,6 @@ public class OrderService {
     // save order
     if (order.getId() == null) {
       entityManager.persist(order);
-    }
-
-    String allowFtpTransfer = configurationSettingService
-            .getAllowFtpTransferOnRequisitionToOrder();
-    if (allowFtpTransfer == null || allowFtpTransfer.equalsIgnoreCase("true")) {
-      TransferProperties properties = transferPropertiesRepository
-              .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
-                      TransferType.ORDER);
-
-      if (properties instanceof FtpTransferProperties) {
-        orderStorage.store(order);
-        boolean success = orderSender.send(order);
-
-        if (success) {
-          orderStorage.delete(order);
-        } else {
-          order.setStatus(TRANSFER_FAILED);
-        }
-      }
-    }
-
-    // Send an email notification to the user that converted the order
-    String allowSendingEmail = configurationSettingService
-            .getAllowSendingEmailOnRequisitionToOrder();
-    if (allowSendingEmail == null || allowSendingEmail.equalsIgnoreCase("true")) {
-      fulfillmentNotificationService.sendOrderCreatedNotification(order);
     }
 
     entityManager.flush();
