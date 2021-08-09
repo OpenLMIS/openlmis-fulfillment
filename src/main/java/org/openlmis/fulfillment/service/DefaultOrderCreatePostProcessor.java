@@ -58,7 +58,7 @@ public class DefaultOrderCreatePostProcessor implements OrderCreatePostProcessor
 
     String allowFtpTransfer = configurationSettingService
         .getAllowFtpTransferOnRequisitionToOrder();
-    if (allowFtpTransfer == null || allowFtpTransfer.equalsIgnoreCase("true")) {
+    if (allowFtpTransfer == null || "true".equalsIgnoreCase(allowFtpTransfer)) {
       XLOGGER.debug("FTP transfer allowed");
       TransferProperties properties = transferPropertiesRepository
           .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(),
@@ -80,7 +80,7 @@ public class DefaultOrderCreatePostProcessor implements OrderCreatePostProcessor
     // Send an email notification to the user that converted the order
     String allowSendingEmail = configurationSettingService
         .getAllowSendingEmailOnRequisitionToOrder();
-    if (allowSendingEmail == null || allowSendingEmail.equalsIgnoreCase("true")) {
+    if (allowSendingEmail == null || "true".equalsIgnoreCase(allowSendingEmail)) {
       XLOGGER.debug("Notification enabled, send notification");
       fulfillmentNotificationService.sendOrderCreatedNotification(order);
     }

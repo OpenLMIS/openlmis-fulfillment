@@ -4,6 +4,9 @@
 New functionality added in a backwards-compatible manner:
 * [OLMIS-7345](https://openlmis.atlassian.net/browse/OLMIS-7345): Updated code due to /validDestinations returns Page<>
 
+Improvements:
+* Move FTP transfer and notification logic done after save to extension point, so that the logic can be overridden.
+
 9.0.1 / 2021-07-08
 ==================
 
