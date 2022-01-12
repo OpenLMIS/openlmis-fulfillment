@@ -26,8 +26,11 @@ import static org.openlmis.fulfillment.domain.OrderStatus.RECEIVED;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 
+import java.util.UUID;
+
 import org.junit.Test;
 import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 
 public class OrderTest {
 
@@ -81,5 +84,47 @@ public class OrderTest {
 
     order.setStatus(SHIPPED);
     assertFalse(order.canBeFulfilled());
+  }
+
+  @Test
+  public void shouldUpdateFromSetOrderQuantityOnLineItems() {
+    Long expectedOrderQuantity = 1L;
+    UUID orderItemId = UUID.randomUUID();
+
+    OrderLineItem newLineItem1 = new OrderLineItemDataBuilder()
+            .withOrderedQuantity(expectedOrderQuantity)
+            .build();
+
+    newLineItem1.setId(orderItemId);
+
+    OrderLineItem newLineItem2 = new OrderLineItemDataBuilder()
+            .withOrderedQuantity(expectedOrderQuantity)
+            .build();
+
+    newLineItem2.setId(UUID.randomUUID());
+
+
+    Order orderWithNewLineItems = new OrderDataBuilder()
+            .withLineItems(
+                    newLineItem1,
+                    newLineItem2
+            )
+            .build();
+
+    OrderLineItem lineItem = new OrderLineItemDataBuilder()
+            .withOrderedQuantity(expectedOrderQuantity + expectedOrderQuantity)
+            .build();
+
+    lineItem.setId(orderItemId);
+
+    Order order = new OrderDataBuilder()
+            .withLineItems(lineItem)
+            .build();
+
+    order.updateFrom(orderWithNewLineItems);
+
+    order.getOrderLineItems().forEach(item ->
+            assertEquals(expectedOrderQuantity, item.getOrderedQuantity())
+    );
   }
 }
