@@ -4,6 +4,9 @@
 Breaking changes:
 * [OLMIS-7472](https://openlmis.atlassian.net/browse/OLMIS-7472): Use postgres v12
 
+Improvements:
+* [OLMIS-7454](https://openlmis.atlassian.net/browse/OLMIS-7454): Added possibility to create requisition-less order.
+
 9.0.2 / 2021-10-29
 ==================
 

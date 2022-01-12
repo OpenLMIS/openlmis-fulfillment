@@ -44,6 +44,7 @@ public class OrderLineItem extends BaseEntity {
 
   @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "orderId", nullable = false)
+  @Getter
   @Setter
   private Order order;
 
@@ -62,6 +63,15 @@ public class OrderLineItem extends BaseEntity {
 
   @Embedded
   private OrderLineItemExtraDataEntity extraData;
+
+  /**
+   * Copy values of attributes into new or updated OrderLineItem.
+   *
+   * @param orderLineItem OrderLineItem with new values.
+   */
+  void updateFrom(OrderLineItem orderLineItem) {
+    this.orderedQuantity = orderLineItem.orderedQuantity;
+  }
 
   /**
    * Create new instance of OrderLineItem based on given {@link OrderLineItem.Importer}.

@@ -51,6 +51,7 @@ public class PermissionService {
   public static final String PODS_VIEW = "PODS_VIEW";
   public static final String ORDERS_VIEW = "ORDERS_VIEW";
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
+  public static final String ORDER_CREATE = "ORDER_CREATE";
   public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
   public static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
@@ -141,6 +142,14 @@ public class PermissionService {
 
   public void canEditOrder(OrderDto order) {
     checkPermission(ORDERS_EDIT, order.getSupplyingFacility().getId());
+  }
+
+  public void canCreateOrder(OrderDto order) {
+    checkPermission(ORDER_CREATE, order.getReceivingFacility().getId());
+  }
+
+  public void canCreateOrder(Order order) {
+    checkPermission(ORDER_CREATE, order.getReceivingFacilityId());
   }
 
   /**

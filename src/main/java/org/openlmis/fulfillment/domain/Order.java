@@ -18,6 +18,7 @@ package org.openlmis.fulfillment.domain;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +55,7 @@ import org.openlmis.fulfillment.web.util.StatusMessageDto;
 @Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("PMD.TooManyMethods")
 public class Order extends BaseEntity {
   public static final String SUPPLYING_FACILITY_ID = "supplyingFacilityId";
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
@@ -244,6 +246,33 @@ public class Order extends BaseEntity {
   public void forEachStatusChange(Consumer<StatusChange> consumer) {
     Optional.ofNullable(statusChanges)
             .ifPresent(list -> list.forEach(consumer));
+  }
+
+  /**
+   * Copy values of attributes into new or updated Order.
+   *
+   * @param order Order with new values.
+   */
+  public void updateFrom(Order order) {
+    updateLines(order.orderLineItems);
+  }
+
+  private void updateLines(Collection<OrderLineItem> newLineItems) {
+    if (null == newLineItems) {
+      return;
+    }
+
+    if (null == orderLineItems) {
+      orderLineItems = new ArrayList<>();
+    }
+
+    for (OrderLineItem item : newLineItems) {
+      orderLineItems
+          .stream()
+          .filter(l -> l.getId().equals(item.getId()))
+          .findFirst()
+          .ifPresent(existing -> existing.updateFrom(item));
+    }
   }
 
   /**

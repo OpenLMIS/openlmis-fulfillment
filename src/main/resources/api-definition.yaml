@@ -360,6 +360,66 @@ resourceTypes:
                 body:
                   application/json:
                     schema: localizedMessage
+      /orderItem/{id}:
+          uriParameters:
+            id:
+              displayName: id
+              type: string
+              required: true
+              repeat: false
+          delete:
+            is: [ secured ]
+            description: Delete order line item. This endpoint requires ORDER_CREATE right.
+            responses:
+              200:
+                headers:
+                  Keep-Alive:
+              409:
+                body:
+                  application/json:
+                    schema: localizedMessage
+              403:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
+              400:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
+      /requisitionLess:
+        post:
+          is: [ secured ]
+          description: Creates requisition-less order. This endpoint requires ORDER_CREATE right.
+          body:
+            application/json:
+              schema: orderDto
+          responses:
+            201:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: orderDto
+            409:
+              body:
+                application/json:
+                  schema: localizedMessage
+            403:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
+            400:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
       /{id}:
           uriParameters:
               id:
@@ -392,6 +452,53 @@ resourceTypes:
                       body:
                         application/json:
                           schema: localizedMessage
+          put:
+              is: [ secured ]
+              description: >
+                Update order. This endpoint requires ORDER_CREATE right.
+              body:
+                application/json:
+                  schema: orderDto
+              responses:
+                200:
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: orderDto
+                403:
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+                404:
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+          /requisitionLess/send:
+            get:
+              is: [ secured ]
+              description: >
+                Send requisition-less order. This endpoint requires ORDER_CREATE right.
+              responses:
+                200:
+                  headers:
+                    Keep-Alive:
+                403:
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedMessage
+                404:
+                  headers:
+                    Keep-Alive:
+                  body:
+                    application/json:
+                      schema: localizedMessage
           /export:
               get:
                   is: [ secured ]

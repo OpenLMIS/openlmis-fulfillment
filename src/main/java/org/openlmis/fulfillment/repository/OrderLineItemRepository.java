@@ -13,34 +13,12 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.domain;
+package org.openlmis.fulfillment.repository;
 
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import java.util.UUID;
+import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public enum OrderStatus {
-  CREATING,
-  ORDERED,
-  FULFILLING,
-  SHIPPED,
-  RECEIVED,
-  TRANSFER_FAILED,
-  IN_ROUTE,
-  READY_TO_PACK;
+public interface OrderLineItemRepository extends PagingAndSortingRepository<OrderLineItem, UUID> {
 
-  /**
-   * Find a correct {@link OrderStatus} instance based on the passed string. The method ignores
-   * the case.
-   *
-   * @param arg string representation of one of order status.
-   * @return instance of {@link OrderStatus} if the given string matches status; otherwise null.
-   */
-  public static OrderStatus fromString(String arg) {
-    for (OrderStatus status : values()) {
-      if (equalsIgnoreCase(arg, status.name())) {
-        return status;
-      }
-    }
-
-    return null;
-  }
 }

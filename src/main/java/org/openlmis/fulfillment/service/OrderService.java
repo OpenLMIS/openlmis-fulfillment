@@ -18,9 +18,11 @@ package org.openlmis.fulfillment.service;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.openlmis.fulfillment.domain.OrderStatus.CREATING;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_UPDATE_INVALID_STATUS;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
@@ -56,6 +58,8 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.OrderNotFoundException;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -113,18 +117,7 @@ public class OrderService {
     Order order = Order.newInstance(orderDto,
         new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
 
-    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
-
-    OrderNumberConfiguration orderNumberConfiguration =
-        orderNumberConfigurationRepository.findAll().iterator().next();
-
-    OrderNumberGenerator orderNumberGenerator =
-        extensionManager.getExtension(ExtensionPointId.ORDER_NUMBER_POINT_ID,
-            OrderNumberGenerator.class);
-
-    String orderNumber = orderNumberGenerator.generate(order);
-
-    order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
+    setOrderCode(order);
     Order newOrder = save(order);
 
     OrderCreatePostProcessor orderCreatePostProcessor = extensionManager.getExtension(
@@ -133,6 +126,51 @@ public class OrderService {
 
     XLOGGER.debug("Created new order with id: {}", order.getId());
     return newOrder;
+  }
+
+  /**
+   * Creates requisition-less order.
+   *
+   * @param orderDto object that order will be created from.
+   * @return created Order.
+   */
+  public Order createRequisitionLessOrder(OrderDto orderDto, UUID userId) {
+    Order order = Order.newInstance(orderDto,
+        new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
+
+    setOrderCode(order);
+    order.setStatus(CREATING);
+
+    entityManager.persist(order);
+
+    XLOGGER.debug("Created requisition-less order with id: {}", order.getId());
+    return order;
+  }
+
+  /**
+   * Updates requisition-less order.
+   *
+   * @param orderId UUID of order which we want to update.
+   * @param orderDto object that will be used to update order.
+   * @return updated Order.
+   */
+  public Order updateOrder(UUID orderId, OrderDto orderDto, UUID userId) {
+    Order order = Order.newInstance(orderDto,
+        new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
+
+    Order toUpdate = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    if (CREATING != toUpdate.getStatus()) {
+      throw new ValidationException(ORDER_UPDATE_INVALID_STATUS, CREATING.toString());
+    }
+
+    toUpdate.updateFrom(order);
+
+    orderRepository.save(toUpdate);
+
+    XLOGGER.debug("Updated requisition-less order with id: {}", toUpdate.getId());
+    return toUpdate;
   }
 
   /**
@@ -204,6 +242,21 @@ public class OrderService {
     entityManager.clear();
 
     return order;
+  }
+
+  private void setOrderCode(Order order) {
+    ProgramDto program = programReferenceDataService.findOne(order.getProgramId());
+
+    OrderNumberConfiguration orderNumberConfiguration =
+        orderNumberConfigurationRepository.findAll().iterator().next();
+
+    OrderNumberGenerator orderNumberGenerator =
+        extensionManager.getExtension(ExtensionPointId.ORDER_NUMBER_POINT_ID,
+            OrderNumberGenerator.class);
+
+    String orderNumber = orderNumberGenerator.generate(order);
+
+    order.setOrderCode(orderNumberConfiguration.formatOrderNumber(order, program, orderNumber));
   }
 
   private void setOrderStatus(Order order) {
