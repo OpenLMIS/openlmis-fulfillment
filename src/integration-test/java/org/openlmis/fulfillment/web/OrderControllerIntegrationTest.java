@@ -517,8 +517,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateOrder() {
-    given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class), eq(user.getId())))
-        .willReturn(firstOrder);
+    given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
+        eq(user.getId()))).willReturn(firstOrder);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

@@ -54,6 +54,7 @@ import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("PMD.UnusedPrivateField")
 @RunWith(MockitoJUnitRunner.class)
 public class OrderControllerTest {
 
