@@ -73,6 +73,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
+import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
@@ -126,6 +127,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String PRINT_URL = ID_URL + "/print";
+
+  private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
+  private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
+  private static final String ORDER_ITEM_ID_URL = RESOURCE_URL + "/orderItem/{id}";
 
   private static final String REQUESTING_FACILITY = "requestingFacilityId";
   private static final String SUPPLYING_FACILITY = "supplyingFacilityId";
@@ -186,6 +191,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @MockBean
   private OrderService orderService;
 
+  @MockBean
+  private OrderLineItemRepository orderLineItemRepository;
+
   @Autowired
   private ShipmentService shipmentService;
 
@@ -204,6 +212,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private Order firstOrder;
   private Order secondOrder;
   private Order thirdOrder;
+
+  private OrderLineItem firstOrderLineItem;
 
   private OrderDto firstOrderDto;
   private OrderDto secondOrderDto;
@@ -283,9 +293,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(periodReferenceDataService.findOne(period2Id))
         .thenReturn(period2);
 
+    firstOrderLineItem = createOrderLineItem(product1Id, 50L);
+
     firstOrder = createOrder(
         period1Id, program1Id, facilityId, facilityId, new BigDecimal("1.29"),
-        createOrderLineItem(product1Id, 50L)
+        firstOrderLineItem
     );
 
     secondOrder = createOrder(
@@ -477,6 +489,88 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
         is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
+  public void shouldCreateRequisitionLessOrder() {
+    given(orderService.createRequisitionLessOrder(any(OrderDto.class), eq(user.getId())))
+        .willReturn(firstOrder);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(firstOrderDto)
+        .when()
+        .post(REQUISITION_LESS_URL)
+        .then()
+        .statusCode(201);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    ArgumentCaptor<OrderDto> orderCaptor = ArgumentCaptor.forClass(OrderDto.class);
+    verify(orderService, times(1))
+        .createRequisitionLessOrder(orderCaptor.capture(), eq(user.getId()));
+
+    assertThat(orderCaptor.getAllValues().get(0).getQuotedCost(), is(BigDecimal.ZERO));
+    assertThat(orderCaptor.getAllValues().get(0).getEmergency(), is(Boolean.FALSE));
+  }
+
+  @Test
+  public void shouldUpdateOrder() {
+    given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class), eq(user.getId())))
+        .willReturn(firstOrder);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(orderService, times(1))
+        .updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class), eq(user.getId()));
+  }
+
+  @Test
+  public void shouldSendRequisitionLessOrder() {
+    given(orderService.save(eq(firstOrder))).willReturn(firstOrder);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .when()
+        .get(SEND_REQUISITION_LESS_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(orderService, times(1)).save(eq(firstOrder));
+  }
+
+  @Test
+  public void shouldDeleteOrderItem() {
+    given(orderLineItemRepository.findById(firstOrderLineItem.getId()))
+        .willReturn(Optional.of(firstOrderLineItem));
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderLineItem.getId())
+        .when()
+        .delete(ORDER_ITEM_ID_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(orderLineItemRepository, times(1)).delete(eq(firstOrderLineItem));
   }
 
   @Test

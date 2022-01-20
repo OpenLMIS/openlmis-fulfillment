@@ -27,6 +27,7 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
+import static org.openlmis.fulfillment.service.PermissionService.ORDER_CREATE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_MANAGE;
 import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
@@ -92,7 +93,7 @@ public class PermissionServiceTest {
   private SecurityContext securityContext;
 
   private UserDto user = DtoGenerator.of(UserDto.class);
-  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 8);
+  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 9);
   private Map<String, RightDto> rightsMap = ImmutableMap
       .<String, RightDto>builder()
       .put(ORDERS_TRANSFER, rights.get(0))
@@ -103,6 +104,7 @@ public class PermissionServiceTest {
       .put(SHIPMENTS_VIEW, rights.get(5))
       .put(SHIPMENTS_EDIT, rights.get(6))
       .put(SYSTEM_SETTINGS_MANAGE, rights.get(7))
+      .put(ORDER_CREATE, rights.get(8))
       .build();
 
   private ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
@@ -315,6 +317,22 @@ public class PermissionServiceTest {
     expectException(ORDERS_EDIT);
 
     permissionService.canEditOrder(order);
+  }
+
+  @Test
+  public void canCreateOrder() {
+    mockHasRight(ORDER_CREATE, null, null, order.getReceivingFacilityId());
+
+    permissionService.canCreateOrder(order);
+
+    verifyRight(ORDER_CREATE, null, null, order.getReceivingFacilityId());
+  }
+
+  @Test
+  public void cannotCreateOrder() {
+    expectException(ORDER_CREATE);
+
+    permissionService.canCreateOrder(order);
   }
 
   @Test

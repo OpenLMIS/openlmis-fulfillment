@@ -41,6 +41,7 @@ import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
@@ -86,6 +87,9 @@ public class OrderControllerTest {
   @Mock
   private OrderDtoBuilder orderDtoBuilder;
 
+  @Mock
+  private PermissionService permissionService;
+
   private static final String SERVICE_URL = "localhost";
 
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
@@ -125,6 +129,24 @@ public class OrderControllerTest {
     orderController.createOrder(orderDto, authentication);
 
     verify(orderService).createOrder(eq(orderDto), eq(lastUpdaterId));
+  }
+
+  @Test
+  public void shouldGetLastUpdaterFromDtoIfCurrentUserIsNullWhenUpdatingOrder() {
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    orderController.updateOrder(orderDto.getId(), orderDto);
+
+    verify(orderService).updateOrder(eq(orderDto.getId()), eq(orderDto), eq(lastUpdaterId));
+  }
+
+  @Test
+  public void shouldGetLastUpdaterFromDtoIfCurrentUserIsNullWhenCreatingRequisitionLessOrder() {
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    orderController.createRequisitionLessOrder(orderDto);
+
+    verify(orderService).createRequisitionLessOrder(eq(orderDto), eq(lastUpdaterId));
   }
 
   @Test

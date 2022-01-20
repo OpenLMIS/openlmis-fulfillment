@@ -41,6 +41,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import org.junit.Before;
 import org.junit.Rule;
@@ -89,6 +91,8 @@ import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.OrderNotFoundException;
+import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -376,6 +380,66 @@ public class OrderServiceTest {
     assertEquals(order, receivedOrders.getContent().get(0));
 
     verify(orderRepository, atLeastOnce()).searchOrders(anyObject(), anyObject(), anyObject());
+  }
+
+  @Test
+  public void shouldCreateRequisitionLessOrder() {
+    // given
+    order.setId(null);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    Order created = orderService.createRequisitionLessOrder(dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(created, order);
+    verify(entityManager).persist(orderCaptor.capture());
+    assertEquals(OrderStatus.CREATING, orderCaptor.getValue().getStatus());
+  }
+
+  @Test
+  public void shouldUpdateOrder() {
+    // given
+    order.setId(UUID.randomUUID());
+    order.setStatus(OrderStatus.CREATING);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+    Order updated = orderService.updateOrder(order.getId(), dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(updated, order);
+    verify(orderRepository).save(order);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenUpdateNonExistingOrder() {
+    // given
+    order.setId(UUID.randomUUID());
+    order.setStatus(OrderStatus.CREATING);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.empty());
+
+    exception.expect(OrderNotFoundException.class);
+    orderService.updateOrder(order.getId(), dto, userDto.getId());
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenUpdateOrderWithWrongStatus() {
+    // given
+    order.setId(UUID.randomUUID());
+    order.setStatus(OrderStatus.ORDERED);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+    exception.expect(ValidationException.class);
+    orderService.updateOrder(order.getId(), dto, userDto.getId());
   }
 
   private Order generateOrder() {
