@@ -73,7 +73,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
@@ -130,7 +129,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
-  private static final String ORDER_ITEM_ID_URL = RESOURCE_URL + "/orderItem/{id}";
 
   private static final String REQUESTING_FACILITY = "requestingFacilityId";
   private static final String SUPPLYING_FACILITY = "supplyingFacilityId";
@@ -190,9 +188,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderService orderService;
-
-  @MockBean
-  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private ShipmentService shipmentService;
@@ -538,39 +533,30 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldSendRequisitionLessOrder() {
-    given(orderService.save(eq(firstOrder))).willReturn(firstOrder);
+    given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
+        eq(user.getId()))).willReturn(firstOrder);
+
+    given(orderRepository.save(any(Order.class))).willReturn(firstOrder);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
         .when()
-        .get(SEND_REQUISITION_LESS_URL)
+        .put(SEND_REQUISITION_LESS_URL)
         .then()
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(orderService, times(1)).save(eq(firstOrder));
-  }
+    ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+    verify(orderService, times(1))
+        .updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class), eq(user.getId()));
+    verify(orderRepository, times(1)).save(orderCaptor.capture());
 
-  @Test
-  public void shouldDeleteOrderItem() {
-    given(orderLineItemRepository.findById(firstOrderLineItem.getId()))
-        .willReturn(Optional.of(firstOrderLineItem));
-
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON_VALUE)
-        .pathParam("id", firstOrderLineItem.getId())
-        .when()
-        .delete(ORDER_ITEM_ID_URL)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    verify(orderLineItemRepository, times(1)).delete(eq(firstOrderLineItem));
+    assertEquals(orderCaptor.getAllValues().size(), 1);
+    assertThat(orderCaptor.getAllValues().get(0).getStatus(), is(OrderStatus.ORDERED));
   }
 
   @Test

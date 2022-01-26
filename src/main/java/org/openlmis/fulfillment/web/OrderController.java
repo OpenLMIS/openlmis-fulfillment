@@ -36,11 +36,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
-import org.openlmis.fulfillment.repository.OrderLineItemRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
@@ -94,9 +92,6 @@ public class OrderController extends BaseController {
 
   @Autowired
   private OrderRepository orderRepository;
-
-  @Autowired
-  private OrderLineItemRepository orderLineItemRepository;
 
   @Autowired
   private OrderService orderService;
@@ -176,7 +171,7 @@ public class OrderController extends BaseController {
     permissionService.canCreateOrder(orderDto);
 
     orderDto.setId(null);
-    orderDto.setExternalId(UUID.randomUUID());
+    orderDto.setExternalId(null);
     orderDto.setQuotedCost(BigDecimal.ZERO);
     orderDto.setEmergency(Boolean.FALSE);
 
@@ -212,33 +207,22 @@ public class OrderController extends BaseController {
   /**
    * Send requisition-less order.
    *
-   * @param id UUID of order
+   * @param orderId UUID of order
+   * @param orderDto A order bound to the request body
    */
-  @RequestMapping(value = "/orders/{id}/requisitionLess/send", method = RequestMethod.GET)
+  @RequestMapping(value = "/orders/{id}/requisitionLess/send", method = RequestMethod.PUT)
   @ResponseBody
-  public void sendRequisitionLessOrder(@PathVariable("id") UUID id) {
-    Order order = orderRepository.findById(id)
-        .orElseThrow(() -> new OrderNotFoundException(id));
+  public void sendRequisitionLessOrder(@PathVariable("id") UUID orderId,
+      @RequestBody OrderDto orderDto) {
+    permissionService.canCreateOrder(orderDto);
 
-    permissionService.canCreateOrder(order);
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
 
-    orderService.save(order);
-  }
+    Order order = orderService.updateOrder(orderId, orderDto, userId);
+    order.prepareToLocalFulfill();
 
-  /**
-   * Delete order item.
-   *
-   * @param id UUID of order item
-   */
-  @RequestMapping(value = "/orders/orderItem/{id}", method = RequestMethod.DELETE)
-  @ResponseBody
-  public void deleteOrderItem(@PathVariable("id") UUID id) {
-    OrderLineItem orderLineItem = orderLineItemRepository.findById(id)
-        .orElseThrow(() -> new OrderNotFoundException(id));
-
-    permissionService.canCreateOrder(orderLineItem.getOrder());
-
-    orderLineItemRepository.delete(orderLineItem);
+    orderRepository.save(order);
   }
 
   /**

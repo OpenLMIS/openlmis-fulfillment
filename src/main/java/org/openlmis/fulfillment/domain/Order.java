@@ -65,7 +65,7 @@ public class Order extends BaseEntity {
   public static final String CREATED_DATE = "createdDate";
 
 
-  @Column(nullable = false, unique = true)
+  @Column(unique = true)
   @Getter
   @Setter
   @Type(type = UUID_TYPE)
@@ -258,21 +258,25 @@ public class Order extends BaseEntity {
   }
 
   private void updateLines(Collection<OrderLineItem> newLineItems) {
-    if (null == newLineItems) {
-      return;
+    List<OrderLineItem> updatedList = new ArrayList<>();
+    for (OrderLineItem newItem : newLineItems) {
+      Optional<OrderLineItem> existingItem = this.orderLineItems.stream()
+          .filter(l -> l.getId().equals(newItem.getId()))
+          .findFirst();
+
+      if (existingItem.isPresent()) {
+        OrderLineItem existing = existingItem.get();
+        existing.updateFrom(newItem);
+        updatedList.add(existing);
+      } else {
+        newItem.setId(null);
+        newItem.setOrder(this);
+        updatedList.add(newItem);
+      }
     }
 
-    if (null == orderLineItems) {
-      orderLineItems = new ArrayList<>();
-    }
-
-    for (OrderLineItem item : newLineItems) {
-      orderLineItems
-          .stream()
-          .filter(l -> l.getId().equals(item.getId()))
-          .findFirst()
-          .ifPresent(existing -> existing.updateFrom(item));
-    }
+    this.orderLineItems.clear();
+    this.orderLineItems.addAll(updatedList);
   }
 
   /**

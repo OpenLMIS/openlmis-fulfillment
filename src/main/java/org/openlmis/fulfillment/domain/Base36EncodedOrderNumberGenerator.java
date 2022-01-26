@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.domain;
 
 import java.math.BigInteger;
+import java.util.UUID;
 import org.openlmis.fulfillment.extension.point.OrderNumberGenerator;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +31,13 @@ public class Base36EncodedOrderNumberGenerator implements OrderNumberGenerator {
    * Generates unique number for given order.
    */
   public String generate(Order order) {
-    String id = order.getExternalId().toString();
+    String id;
+    if (order.getExternalId() != null) {
+      id = order.getExternalId().toString();
+    } else {
+      id = UUID.randomUUID().toString();
+    }
+
     String base36Id = new BigInteger(id.replace("-", ""), 16)
         .toString(36).toUpperCase();
     return base36Id.substring(0, 8);
