@@ -44,7 +44,7 @@ public class OrderValidator extends BaseValidator implements Validator {
     if (!hasUniqueLineItems) {
       errors.rejectValue(
           ORDER_LINE_ITEMS_FIELD,
-          MessageKeys.ERROR_LINE_ITEMS_MUST_BE_UNIQUE
+          MessageKeys.ERROR_ORDERABLES_MUST_BE_UNIQUE
       );
     }
   }

@@ -49,6 +49,7 @@ import org.springframework.validation.DirectFieldBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
+@SuppressWarnings("unused")
 public class OrderValidatorTest {
 
   @Rule
@@ -66,6 +67,7 @@ public class OrderValidatorTest {
   private OrderDtoBuilder orderDtoBuilder = new OrderDtoBuilder();
 
   @Mock
+  // INFO: Field used by orderDtoBuilder
   private OrderExportHelper orderExportHelper;
 
   @InjectMocks
@@ -119,7 +121,7 @@ public class OrderValidatorTest {
 
     assertTrue(errors.hasErrors());
     assertNotNull(fieldError);
-    assertEquals(MessageKeys.ERROR_LINE_ITEMS_MUST_BE_UNIQUE, fieldError.getCode());
+    assertEquals(MessageKeys.ERROR_ORDERABLES_MUST_BE_UNIQUE, fieldError.getCode());
   }
 
   private OrderDto buildOrderDtoWithOrderableIds(List<UUID> ids) {

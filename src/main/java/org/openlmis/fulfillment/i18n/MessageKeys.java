@@ -48,6 +48,7 @@ public abstract class MessageKeys {
   private static final String TEMPLATE = "template";
   private static final String LINE_ITEMS = "lineItems";
   private static final String JAVERS = "javers";
+  private static final String ORDERABLES = "orderables";
 
   private static final String REQUIRED = "required";
   private static final String NOT_FOUND = "notFound";
@@ -202,8 +203,8 @@ public abstract class MessageKeys {
   public static final String ERROR_SIZE_NOT_POSITIVE =
       join(ERROR_PREFIX,"pageable.size.notPositive");
 
-  public static final String ERROR_LINE_ITEMS_MUST_BE_UNIQUE =
-          join(VALIDATION_ERROR, LINE_ITEMS, MUST_BE_UNIQUE);
+  public static final String ERROR_ORDERABLES_MUST_BE_UNIQUE =
+          join(VALIDATION_ERROR, ORDERABLES, MUST_BE_UNIQUE);
 
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
