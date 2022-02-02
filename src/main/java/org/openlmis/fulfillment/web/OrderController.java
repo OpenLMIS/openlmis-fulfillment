@@ -57,6 +57,7 @@ import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderReportDto;
+import org.openlmis.fulfillment.web.validator.OrderValidator;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
@@ -72,8 +73,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -122,6 +125,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private BasicOrderDtoBuilder basicOrderDtoBuilder;
+
+  @Autowired
+  private OrderValidator orderValidator;
 
   @Autowired
   private ExporterBuilder exporter;
@@ -185,16 +191,22 @@ public class OrderController extends BaseController {
 
   /**
    * Allows updating orders.
-   * If the id is specified, it will be ignored.
    *
    * @param orderId UUID of order which we want to update
-   * @param orderDto A order bound to the request body
+   * @param orderDto An order bound to the request body
    * @return updated order
    */
-  @RequestMapping(value = "/orders/{id}", method = RequestMethod.PUT)
+  @PutMapping("/orders/{id}")
   @ResponseBody
-  public OrderDto updateOrder(@PathVariable("id") UUID orderId, @RequestBody OrderDto orderDto) {
+  public OrderDto updateOrder(
+          @PathVariable("id") UUID orderId,
+          @RequestBody OrderDto orderDto,
+          BindingResult bindingResult
+  ) {
     permissionService.canCreateOrder(orderDto);
+
+    orderValidator.validate(orderDto, bindingResult);
+    throwValidationExceptionIfHasError(bindingResult);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
@@ -208,13 +220,19 @@ public class OrderController extends BaseController {
    * Send requisition-less order.
    *
    * @param orderId UUID of order
-   * @param orderDto A order bound to the request body
+   * @param orderDto An order bound to the request body
    */
-  @RequestMapping(value = "/orders/{id}/requisitionLess/send", method = RequestMethod.PUT)
+  @PutMapping("/orders/{id}/requisitionLess/send")
   @ResponseBody
-  public void sendRequisitionLessOrder(@PathVariable("id") UUID orderId,
-      @RequestBody OrderDto orderDto) {
+  public void sendRequisitionLessOrder(
+          @PathVariable("id") UUID orderId,
+          @RequestBody OrderDto orderDto,
+          BindingResult bindingResult
+  ) {
     permissionService.canCreateOrder(orderDto);
+
+    orderValidator.validate(orderDto, bindingResult);
+    throwValidationExceptionIfHasError(bindingResult);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();

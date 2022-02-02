@@ -26,11 +26,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
 import org.javers.core.diff.Change;
 import org.javers.core.json.JsonConverter;
 import org.javers.repository.jql.QueryBuilder;
+import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.util.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -129,4 +132,12 @@ public abstract class BaseController {
     return Pagination.getPage(changes, page).getContent();
   }
 
+  protected void throwValidationExceptionIfHasError(Errors errors) {
+    if (errors.hasErrors()) {
+      FieldError fieldError = errors.getFieldError();
+      throw new ValidationException(
+              fieldError == null ? MessageKeys.ERROR_VALIDATION_GENERAL : fieldError.getCode()
+      );
+    }
+  }
 }

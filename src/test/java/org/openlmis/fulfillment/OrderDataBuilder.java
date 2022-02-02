@@ -81,6 +81,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withLineItems(List<OrderLineItem> lineItems) {
+    orderLineItems = lineItems;
+    return this;
+  }
+
   /**
    * Sets order line items that should be in the order.
    */

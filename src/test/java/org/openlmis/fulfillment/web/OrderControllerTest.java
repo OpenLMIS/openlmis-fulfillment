@@ -51,8 +51,10 @@ import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
+import org.openlmis.fulfillment.web.validator.OrderValidator;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.validation.BindingResult;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 @RunWith(MockitoJUnitRunner.class)
@@ -90,6 +92,9 @@ public class OrderControllerTest {
 
   @Mock
   private PermissionService permissionService;
+
+  @Mock
+  private OrderValidator orderValidator;
 
   private static final String SERVICE_URL = "localhost";
 
@@ -135,8 +140,10 @@ public class OrderControllerTest {
   @Test
   public void shouldGetLastUpdaterFromDtoIfCurrentUserIsNullWhenUpdatingOrder() {
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
+    BindingResult bindingResult = mock(BindingResult.class);
+    when(bindingResult.hasErrors()).thenReturn(false);
 
-    orderController.updateOrder(orderDto.getId(), orderDto);
+    orderController.updateOrder(orderDto.getId(), orderDto, bindingResult);
 
     verify(orderService).updateOrder(eq(orderDto.getId()), eq(orderDto), eq(lastUpdaterId));
   }

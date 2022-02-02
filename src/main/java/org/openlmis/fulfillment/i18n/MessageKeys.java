@@ -62,6 +62,7 @@ public abstract class MessageKeys {
   private static final String DUPLICATE = "duplicate";
   private static final String COLUMN = "column";
   private static final String FOUND = "found";
+  private static final String MUST_BE_UNIQUE = "mustBeUnique";
 
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
@@ -74,6 +75,7 @@ public abstract class MessageKeys {
   public static final String ERROR_IO = join(ERROR_PREFIX, "io");
   public static final String ERROR_ENCODING =
       join(ERROR_PREFIX, ENCODING, NOT_SUPPORTED);
+  public static final String ERROR_VALIDATION_GENERAL = join(VALIDATION_ERROR, "general");
 
   public static final String ERROR_JASPER = join(ERROR_PREFIX, JASPER);
   public static final String ERROR_JASPER_FILE_CREATION =
@@ -199,6 +201,9 @@ public abstract class MessageKeys {
       join(ERROR_PREFIX,"pageable.size.null");
   public static final String ERROR_SIZE_NOT_POSITIVE =
       join(ERROR_PREFIX,"pageable.size.notPositive");
+
+  public static final String ERROR_LINE_ITEMS_MUST_BE_UNIQUE =
+          join(VALIDATION_ERROR, LINE_ITEMS, MUST_BE_UNIQUE);
 
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
