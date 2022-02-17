@@ -49,6 +49,7 @@ public abstract class MessageKeys {
   private static final String LINE_ITEMS = "lineItems";
   private static final String JAVERS = "javers";
   private static final String ORDERABLES = "orderables";
+  private static final String QUANTITY = "quantity";
 
   private static final String REQUIRED = "required";
   private static final String NOT_FOUND = "notFound";
@@ -64,6 +65,7 @@ public abstract class MessageKeys {
   private static final String COLUMN = "column";
   private static final String FOUND = "found";
   private static final String MUST_BE_UNIQUE = "mustBeUnique";
+  private static final String MUST_BE_POSITIVE = "mustBePositive";
 
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
@@ -205,6 +207,12 @@ public abstract class MessageKeys {
 
   public static final String ERROR_ORDERABLES_MUST_BE_UNIQUE =
           join(VALIDATION_ERROR, ORDERABLES, MUST_BE_UNIQUE);
+
+  public static final String ERROR_ORDER_LINE_ITEMS_QUANTITY_REQUIRED =
+      join(VALIDATION_ERROR, ORDER, LINE_ITEMS, QUANTITY, REQUIRED);
+
+  public static final String ERROR_ORDER_LINE_ITEMS_QUANTITY_MUST_BE_POSITIVE =
+      join(VALIDATION_ERROR, ORDER, LINE_ITEMS, QUANTITY, MUST_BE_POSITIVE);
 
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));

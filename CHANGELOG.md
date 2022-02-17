@@ -7,7 +7,8 @@ Breaking changes:
 Improvements:
 * [OLMIS-7454](https://openlmis.atlassian.net/browse/OLMIS-7454): Added possibility to create requisition-less order.
 * [OLMIS-7517](https://openlmis.atlassian.net/browse/OLMIS-7517): Add unique validation for orderables when updating or sending requisition-less order
-* 
+* [OLMIS-7508](https://openlmis.atlassian.net/browse/OLMIS-7508): Add validation on product addition table.
+
 9.0.2 / 2021-10-29
 ==================
 

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.web.validator;
 
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.springframework.stereotype.Component;
@@ -46,6 +47,27 @@ public class OrderValidator extends BaseValidator implements Validator {
           ORDER_LINE_ITEMS_FIELD,
           MessageKeys.ERROR_ORDERABLES_MUST_BE_UNIQUE
       );
+    }
+  }
+
+  /**
+   * Validate Order Items quantity.
+   *
+   * @param target order that needs to be validated
+   * @param errors list od errors
+   */
+  public void validateItemsQuantity(Object target, Errors errors) {
+    OrderDto targetOrder = (OrderDto) target;
+
+    for (int i = 0; i < targetOrder.getOrderLineItems().size(); i++) {
+      OrderLineItem.Importer orderLineItem = targetOrder.getOrderLineItems().get(i);
+      if (orderLineItem.getOrderedQuantity() == null) {
+        errors.rejectValue("orderLineItems[" + i + "].orderedQuantity",
+            MessageKeys.ERROR_ORDER_LINE_ITEMS_QUANTITY_REQUIRED);
+      } else if (orderLineItem.getOrderedQuantity() < 0) {
+        errors.rejectValue("orderLineItems[" + i + "].orderedQuantity",
+            MessageKeys.ERROR_ORDER_LINE_ITEMS_QUANTITY_MUST_BE_POSITIVE);
+      }
     }
   }
 }

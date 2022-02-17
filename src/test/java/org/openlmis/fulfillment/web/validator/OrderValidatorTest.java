@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,6 +52,8 @@ import org.springframework.validation.FieldError;
 
 @SuppressWarnings("unused")
 public class OrderValidatorTest {
+
+  private static final String ORDER_DTO = "orderDto";
 
   @Rule
   public MockitoRule mockito = MockitoJUnit.rule();
@@ -83,11 +86,11 @@ public class OrderValidatorTest {
 
   @Test
   public void shouldNotFailValidationForUniqueOrderables() {
-    OrderDto orderDto = buildOrderDtoWithOrderableIds(
-        Arrays.asList(orderableIdA, orderableIdB)
+    OrderDto orderDto = buildOrderDtoWithOrderableIdsAndQuantity(
+        Arrays.asList(orderableIdA, orderableIdB), 1L
     );
 
-    Errors errors = new DirectFieldBindingResult(orderDto, "orderDto");
+    Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
 
     validator.validate(orderDto, errors);
 
@@ -96,11 +99,11 @@ public class OrderValidatorTest {
 
   @Test
   public void shouldFailValidationForNonUniqueOrderables() {
-    OrderDto orderDto = buildOrderDtoWithOrderableIds(
-        Arrays.asList(orderableIdA, orderableIdA)
+    OrderDto orderDto = buildOrderDtoWithOrderableIdsAndQuantity(
+        Arrays.asList(orderableIdA, orderableIdA), 1L
     );
 
-    Errors errors = new DirectFieldBindingResult(orderDto, "orderDto");
+    Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
 
     validator.validate(orderDto, errors);
 
@@ -109,11 +112,11 @@ public class OrderValidatorTest {
 
   @Test
   public void shouldFailValidationForNonUniqueOrderablesWithProperMessageKey() {
-    OrderDto orderDto = buildOrderDtoWithOrderableIds(
-        Arrays.asList(orderableIdA, orderableIdA)
+    OrderDto orderDto = buildOrderDtoWithOrderableIdsAndQuantity(
+        Arrays.asList(orderableIdA, orderableIdA), 1L
     );
 
-    Errors errors = new DirectFieldBindingResult(orderDto, "orderDto");
+    Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
 
     validator.validate(orderDto, errors);
 
@@ -124,7 +127,42 @@ public class OrderValidatorTest {
     assertEquals(MessageKeys.ERROR_ORDERABLES_MUST_BE_UNIQUE, fieldError.getCode());
   }
 
-  private OrderDto buildOrderDtoWithOrderableIds(List<UUID> ids) {
+  @Test
+  public void shouldFailValidationWhenOrderItemQuantityIsNull() {
+    OrderDto orderDto = buildOrderDtoWithOrderableIdsAndQuantity(
+        Collections.singletonList(orderableIdA), null
+    );
+
+    Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
+
+    validator.validateItemsQuantity(orderDto, errors);
+
+    FieldError fieldError = errors.getFieldError();
+
+    assertTrue(errors.hasErrors());
+    assertNotNull(fieldError);
+    assertEquals(MessageKeys.ERROR_ORDER_LINE_ITEMS_QUANTITY_REQUIRED, fieldError.getCode());
+  }
+
+  @Test
+  public void shouldFailValidationWhenOrderItemQuantityIsNegative() {
+    OrderDto orderDto = buildOrderDtoWithOrderableIdsAndQuantity(
+        Collections.singletonList(orderableIdA), -1L
+    );
+
+    Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
+
+    validator.validateItemsQuantity(orderDto, errors);
+
+    FieldError fieldError = errors.getFieldError();
+
+    assertTrue(errors.hasErrors());
+    assertNotNull(fieldError);
+    assertEquals(MessageKeys.ERROR_ORDER_LINE_ITEMS_QUANTITY_MUST_BE_POSITIVE,
+        fieldError.getCode());
+  }
+
+  private OrderDto buildOrderDtoWithOrderableIdsAndQuantity(List<UUID> ids, Long quantity) {
     Order order = orderDataBuilder.withLineItems(ids.stream()
         .map(id -> orderLineItemDataBuilder.withOrderable(id, 1L).build())
         .collect(Collectors.toList())
@@ -147,6 +185,7 @@ public class OrderValidatorTest {
     for (OrderLineItem lineItem : order.getOrderLineItems()) {
       orderLineItemDto = new OrderLineItemDto();
       exporterBuilder.export(lineItem, orderLineItemDto, orderableDtos);
+      orderLineItemDto.setOrderedQuantity(quantity);
       orderLineItemDtos.add(orderLineItemDto);
     }
 
