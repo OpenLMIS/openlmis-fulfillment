@@ -48,16 +48,6 @@ public class OrderValidator extends BaseValidator implements Validator {
           MessageKeys.ERROR_ORDERABLES_MUST_BE_UNIQUE
       );
     }
-  }
-
-  /**
-   * Validate Order Items quantity.
-   *
-   * @param target order that needs to be validated
-   * @param errors list od errors
-   */
-  public void validateItemsQuantity(Object target, Errors errors) {
-    OrderDto targetOrder = (OrderDto) target;
 
     for (int i = 0; i < targetOrder.getOrderLineItems().size(); i++) {
       OrderLineItem.Importer orderLineItem = targetOrder.getOrderLineItems().get(i);

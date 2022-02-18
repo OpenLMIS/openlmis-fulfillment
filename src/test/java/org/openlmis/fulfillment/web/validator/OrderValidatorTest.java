@@ -135,7 +135,7 @@ public class OrderValidatorTest {
 
     Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
 
-    validator.validateItemsQuantity(orderDto, errors);
+    validator.validate(orderDto, errors);
 
     FieldError fieldError = errors.getFieldError();
 
@@ -152,7 +152,7 @@ public class OrderValidatorTest {
 
     Errors errors = new DirectFieldBindingResult(orderDto, ORDER_DTO);
 
-    validator.validateItemsQuantity(orderDto, errors);
+    validator.validate(orderDto, errors);
 
     FieldError fieldError = errors.getFieldError();
 

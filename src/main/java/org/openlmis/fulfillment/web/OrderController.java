@@ -232,7 +232,6 @@ public class OrderController extends BaseController {
     permissionService.canCreateOrder(orderDto);
 
     orderValidator.validate(orderDto, bindingResult);
-    orderValidator.validateItemsQuantity(orderDto, bindingResult);
     throwValidationExceptionIfHasError(bindingResult);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
