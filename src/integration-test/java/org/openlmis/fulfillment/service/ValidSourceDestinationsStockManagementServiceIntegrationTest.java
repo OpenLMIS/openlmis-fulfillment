@@ -49,8 +49,8 @@ public class ValidSourceDestinationsStockManagementServiceIntegrationTest
 
   private static final String VALID_DESTINATIONS_RESPONSE = "{"
       + "\"content\":["
-      + "\"id\":\"8059d138-f34e-4286-bc79-4b8f60aecca6\","
       + "{"
+      + "\"id\":\"8059d138-f34e-4286-bc79-4b8f60aecca6\","
       + "\"programId\":\"10845cb9-d365-4aaa-badd-b4fa39c6a26a\","
       + "\"facilityTypeId\":\"ac1d268b-ce10-455f-bf87-9c667da8f060\","
       + "\"node\":{"
