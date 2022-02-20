@@ -2,7 +2,7 @@
  * This program is part of the OpenLMIS logistics management information system platform software.
  * Copyright © 2017 VillageReach
  *
- * This program is free software:you can redistribute it and/or modify it under the terms
+ * This program is free software: you can redistribute it and/or modify it under the terms
  * of the GNU Affero General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
  *
@@ -33,7 +33,8 @@ import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockMa
 import org.openlmis.fulfillment.web.BaseWebIntegrationTest;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 
-public class ValidSourceDestinationsStockManagementServiceIntegrationTest extends BaseWebIntegrationTest {
+public class ValidSourceDestinationsStockManagementServiceIntegrationTest
+    extends BaseWebIntegrationTest {
 
   @Inject
   private ValidDestinationsStockManagementService validDestinationsStockManagementService;
