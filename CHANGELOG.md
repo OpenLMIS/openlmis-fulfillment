@@ -9,6 +9,9 @@ Improvements:
 * [OLMIS-7517](https://openlmis.atlassian.net/browse/OLMIS-7517): Add unique validation for orderables when updating or sending requisition-less order
 * [OLMIS-7508](https://openlmis.atlassian.net/browse/OLMIS-7508): Add validation on product addition table.
 
+Bug fixes:
+* [OLMIS-7530](https://openlmis.atlassian.net/browse/OLMIS-7530): Fix retrieving valid sources in  ValidSourceDestinationsStockManagementService.search()
+
 9.0.2 / 2021-10-29
 ==================
 

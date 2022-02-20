@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.openlmis.fulfillment.service.request.RequestParameters;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 
@@ -50,7 +51,12 @@ public abstract class ValidSourceDestinationsStockManagementService
   }
 
   private Collection<ValidSourceDestinationDto> search(UUID programId, UUID fromFacilityId) {
-    return getPage(RequestParameters.init()
-        .set("programId", programId).set("facilityId", fromFacilityId)).getContent();
+    return getPage(
+        RequestParameters.init()
+            .set("facilityId", fromFacilityId)
+            .set("programId", programId)
+            .set("page", 0)
+            .set("size", Integer.MAX_VALUE)
+    ).getContent();
   }
 }

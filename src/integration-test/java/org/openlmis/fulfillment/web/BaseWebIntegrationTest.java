@@ -288,6 +288,29 @@ public abstract class BaseWebIntegrationTest {
   private static final String MOCK_HAS_RIGHT = "{ \"result\":true }";
   private static final String ORDER = "order";
 
+  public static final String MOCK_EMPTY_PAGE = "{\n"
+      + "  \"content\": [],\n"
+      + "  \"pageable\": {\n"
+      + "    \"sort\": [\n"
+      + "    ],\n"
+      + "    \"pageNumber\": 0,\n"
+      + "    \"pageSize\": 0,\n"
+      + "    \"offset\": 0,\n"
+      + "    \"unpaged\": false,\n"
+      + "    \"paged\": true\n"
+      + "  },\n"
+      + "  \"totalElements\": 0,\n"
+      + "  \"last\": true,\n"
+      + "  \"totalPages\": 0,\n"
+      + "  \"first\": true,\n"
+      + "  \"sort\": [\n"
+      + "  ],\n"
+      + "  \"numberOfElements\": 0,\n"
+      + "  \"size\": 0,\n"
+      + "  \"number\": 0,\n"
+      + "  \"empty\": true\n"
+      + "}";
+
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(80);
 
