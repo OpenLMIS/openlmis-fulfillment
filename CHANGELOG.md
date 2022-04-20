@@ -8,7 +8,7 @@ Improvements:
 * [OLMIS-7454](https://openlmis.atlassian.net/browse/OLMIS-7454): Added possibility to create requisition-less order.
 * [OLMIS-7517](https://openlmis.atlassian.net/browse/OLMIS-7517): Add unique validation for orderables when updating or sending requisition-less order
 * [OLMIS-7508](https://openlmis.atlassian.net/browse/OLMIS-7508): Add validation on product addition table.
-* [OLMIS-7568](https://openlmis.atlassian.net/browse/OLMIS-7568): Use openlmis/dev:7
+* [OLMIS-7568](https://openlmis.atlassian.net/browse/OLMIS-7568): Use openlmis/dev:7 and openlmis/service-base:6.1
 
 Bug fixes:
 * [OLMIS-7530](https://openlmis.atlassian.net/browse/OLMIS-7530): Fix retrieving valid sources in  ValidSourceDestinationsStockManagementService.search()
