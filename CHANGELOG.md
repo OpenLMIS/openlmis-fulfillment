@@ -1,3 +1,9 @@
+9.0.4-SNAPSHOT / WIP
+==================
+
+Improvements:
+* [OLMIS-7592](https://openlmis.atlassian.net/browse/OLMIS-7592): Proof of delivery - adding user's signature
+
 9.0.3 / 2022-04-21
 ==================
 

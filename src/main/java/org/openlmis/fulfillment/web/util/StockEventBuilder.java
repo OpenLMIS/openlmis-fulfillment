@@ -89,7 +89,7 @@ public class StockEventBuilder {
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
         shipment.getProgramId(), shipment.getSupplyingFacilityId(),
-        getLineItems(shipment, profiler), shipment.getShippedById()
+        getLineItems(shipment, profiler), shipment.getShippedById(), null
     );
 
     profiler.stop().log();
@@ -110,7 +110,7 @@ public class StockEventBuilder {
     profiler.start("BUILD_STOCK_EVENT");
     StockEventDto stockEventDto = new StockEventDto(
         proofOfDelivery.getProgramId(), proofOfDelivery.getReceivingFacilityId(),
-        getLineItems(proofOfDelivery, profiler), authenticationHelper.getCurrentUser().getId()
+        getLineItems(proofOfDelivery, profiler), authenticationHelper.getCurrentUser().getId(), getUserSignature()
     );
 
     profiler.stop().log();
@@ -255,4 +255,8 @@ public class StockEventBuilder {
     throw new ValidationException(EVENT_MISSING_SOURCE_DESTINATION, toFacility.getCode());
   }
 
+  private String getUserSignature() {
+    return authenticationHelper.getCurrentUser().getFirstName() + " " +
+        authenticationHelper.getCurrentUser().getLastName();
+  }
 }
