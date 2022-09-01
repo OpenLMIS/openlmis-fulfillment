@@ -82,6 +82,7 @@ dependencies {
     compile 'org.javers:javers-spring-boot-starter-sql:2.8.2'
     compile "org.slf4j:slf4j-ext"
 
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
     compile group: 'org.apache.poi', name: 'poi', version: '3.15'
     compile group: 'javax.interceptor', name: 'javax.interceptor-api', version: '1.2'
 
@@ -99,6 +100,7 @@ dependencies {
     testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
     testCompile "be.joengenduvel.java.verifiers:to-string:1.0.2"
     testCompile "com.github.tomakehurst:wiremock:1.58"
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.10'
 
     runtime fileTree(dir: '/extensions/', include: '*.jar')
 
@@ -209,7 +211,7 @@ jacocoTestReport {
         csv.enabled false
     }
 
-    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+    additionalSourceDirs(files(sourceSets.main.allJava.srcDirs))
 }
 
 checkstyle {

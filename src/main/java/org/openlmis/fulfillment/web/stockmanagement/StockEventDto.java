@@ -35,4 +35,5 @@ public final class StockEventDto {
   private UUID facilityId;
   private List<StockEventLineItemDto> lineItems;
   private UUID userId;
+  private String signature;
 }

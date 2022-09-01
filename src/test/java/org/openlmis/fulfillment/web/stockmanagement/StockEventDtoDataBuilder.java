@@ -52,6 +52,6 @@ public class StockEventDtoDataBuilder {
    * Builds instance of {@link StockEventDto}.
    */
   public StockEventDto build() {
-    return new StockEventDto(this.programId, this.facilityId, this.lineItems, this.userId);
+    return new StockEventDto(this.programId, this.facilityId, this.lineItems, this.userId, null);
   }
 }
