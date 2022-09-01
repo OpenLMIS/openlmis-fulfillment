@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.Shipment;
@@ -33,6 +35,7 @@ import org.openlmis.fulfillment.service.referencedata.FacilityDto;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockManagementService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourceDestinationsStockManagementService;
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
@@ -108,9 +111,12 @@ public class StockEventBuilder {
     LOGGER.debug("Building stock events for proof of delivery: {}", proofOfDelivery.getId());
 
     profiler.start("BUILD_STOCK_EVENT");
+
+    UserDto currentUser = authenticationHelper.getCurrentUser();
     StockEventDto stockEventDto = new StockEventDto(
         proofOfDelivery.getProgramId(), proofOfDelivery.getReceivingFacilityId(),
-        getLineItems(proofOfDelivery, profiler), authenticationHelper.getCurrentUser().getId(), getUserSignature()
+        getLineItems(proofOfDelivery, profiler), currentUser.getId(),
+        createUserSignature(currentUser)
     );
 
     profiler.stop().log();
@@ -255,8 +261,9 @@ public class StockEventBuilder {
     throw new ValidationException(EVENT_MISSING_SOURCE_DESTINATION, toFacility.getCode());
   }
 
-  private String getUserSignature() {
-    return authenticationHelper.getCurrentUser().getFirstName() + " " +
-        authenticationHelper.getCurrentUser().getLastName();
+  private String createUserSignature(UserDto currentUser) {
+    return new StringBuilder(currentUser.getFirstName())
+        .append(StringUtils.SPACE)
+          .append(currentUser.getLastName()).toString();
   }
 }
