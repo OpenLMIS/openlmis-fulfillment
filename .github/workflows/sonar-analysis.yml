@@ -34,8 +34,8 @@ jobs:
         continue-on-error: true
         run: |
           curl -o .env -L https://raw.githubusercontent.com/OpenLMIS/openlmis-ref-distro/master/settings-sample.env
-          docker-compose -f docker-compose.builder.yml run builder
           sudo chown -R $(whoami) ./
+          docker-compose -f docker-compose.builder.yml run builder
           cp ./build/reports/jacoco/test/jacocoTestReport.xml report.xml
           rm -rf ./build
       - name: Analyze
