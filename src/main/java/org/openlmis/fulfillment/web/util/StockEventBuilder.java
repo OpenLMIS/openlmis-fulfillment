@@ -147,6 +147,7 @@ public class StockEventBuilder {
         .getLineItems()
         .stream()
         .map(lineItem -> createLineItem(lineItem, orderables, destinationId))
+        .filter(lineItem -> lineItem.getQuantity() != 0)
         .collect(Collectors.toList());
   }
 
