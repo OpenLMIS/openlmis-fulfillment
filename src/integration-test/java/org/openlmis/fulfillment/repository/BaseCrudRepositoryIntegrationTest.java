@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @DirtiesContext
 @RunWith(SpringRunner.class)
+@ActiveProfiles("test-run")
 public abstract class BaseCrudRepositoryIntegrationTest<T extends BaseEntity> {
 
   private AtomicInteger instanceNumber = new AtomicInteger(0);

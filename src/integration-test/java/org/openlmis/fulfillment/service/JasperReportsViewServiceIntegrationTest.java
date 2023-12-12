@@ -36,10 +36,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.openlmis.fulfillment.domain.Template;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@ActiveProfiles("test-run")
 public class JasperReportsViewServiceIntegrationTest {
 
   private static final String EMPTY_REPORT_RESOURCE = "/empty-report.jrxml";
