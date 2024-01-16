@@ -114,6 +114,39 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
   }
 
   /**
+   * Method returns number of all Orders with matched parameters. It will filter out all orders
+   * that are not part of {@code availableSupplyingFacilities} or
+   * {@code availableRequestingFacilities}. If both sets are empty or {@code processingPeriodIds}
+   * is empty it will result in empty response.
+   *
+   * @param params search params (supplyingFacility, requestingFacility, program, statuses)
+   * @param processingPeriodIds set of Processing Period UUIDs
+   * @param availableSupplyingFacilities  a set of supplying facilities user has right for
+   * @param availableRequestingFacilities a set of requesting facilities user has right for
+   * @return Page of Orders with matched parameters.
+   */
+  @Override
+  public Long countOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
+    if ((isEmpty(availableSupplyingFacilities) && isEmpty(availableRequestingFacilities))) {
+      return 0L;
+    }
+    return count(params, processingPeriodIds, availableSupplyingFacilities,
+        availableRequestingFacilities);
+  }
+
+  private Long count(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    countQuery = prepareQuery(countQuery, params, processingPeriodIds, null, true,
+        availableSupplyingFacilities, availableRequestingFacilities);
+
+    return entityManager.createQuery(countQuery).getSingleResult();
+  }
+
+  /**
    * Retrieves the distinct UUIDs of the available requesting facilities.
    */
   @Override

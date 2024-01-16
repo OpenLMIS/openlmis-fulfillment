@@ -129,6 +129,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
+  private static final String NUMBER_OF_ORDERS_URL = RESOURCE_URL + "/numberOfOrdersData";
 
   private static final String REQUESTING_FACILITY = "requestingFacilityId";
   private static final String SUPPLYING_FACILITY = "supplyingFacilityId";
@@ -966,6 +967,26 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNumberOfOrdersToBeExecutedAndReceivedData() {
+    NumberOfOrdersData ordersData = new NumberOfOrdersData();
+    ordersData.setOrdersToBeExecuted(10L);
+    ordersData.setOrdersToBeReceived(1L);
+    given(orderService.getOrdersData()).willReturn(ordersData);
+
+    NumberOfOrdersData response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(NUMBER_OF_ORDERS_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(NumberOfOrdersData.class);
+
+    assertThat(response.getOrdersToBeExecuted(), is(equalTo(10L)));
+    assertThat(response.getOrdersToBeReceived(), is(equalTo(1L)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

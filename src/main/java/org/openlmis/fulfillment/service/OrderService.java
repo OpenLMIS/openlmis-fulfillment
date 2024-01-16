@@ -19,8 +19,12 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.openlmis.fulfillment.domain.OrderStatus.CREATING;
+import static org.openlmis.fulfillment.domain.OrderStatus.FULFILLING;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
+import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
+import static org.openlmis.fulfillment.domain.OrderStatus.RECEIVED;
+import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_UPDATE_INVALID_STATUS;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
@@ -36,6 +40,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.javers.common.collections.Sets;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
@@ -58,6 +63,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.NumberOfOrdersData;
 import org.openlmis.fulfillment.web.OrderNotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -220,6 +226,32 @@ public class OrderService {
     } else {
       return orderRepository.searchOrders(params, processingPeriodIds, pageable);
     }
+  }
+
+  /**
+   * Finds information about the number of orders to be executed and received.
+   *
+   * @return Map containing orders data.
+   */
+  public NumberOfOrdersData getOrdersData() {
+    UserDto user = authenticationHelper.getCurrentUser();
+    PermissionStrings.Handler handler = permissionService.getPermissionStrings(user.getId());
+
+    NumberOfOrdersData ordersData = new NumberOfOrdersData();
+    OrderSearchParams params = new OrderSearchParams();
+
+    params.setStatus(Sets.asSet(FULFILLING.name(), ORDERED.name()));
+    ordersData.setOrdersToBeExecuted(orderRepository.countOrders(params, null,
+        handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
+        handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)));
+
+    params.setStatus(Sets.asSet(TRANSFER_FAILED.name(), READY_TO_PACK.name(), RECEIVED.name(),
+        SHIPPED.name(), IN_ROUTE.name()));
+    ordersData.setOrdersToBeReceived(orderRepository.countOrders(params, null,
+        handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
+        handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)));
+
+    return ordersData;
   }
 
   /**

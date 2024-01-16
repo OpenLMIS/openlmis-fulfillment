@@ -289,6 +289,24 @@ public class OrderController extends BaseController {
   }
 
   /**
+   * Get information about number of orders.
+   *
+   * @return Data regarding number of orders to be executed and received.
+   */
+  @GetMapping("/orders/numberOfOrdersData")
+  @ResponseBody
+  public NumberOfOrdersData getOrdersData() {
+    Profiler profiler = new Profiler("COUNT_ORDERS");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("COUNT_ORDERS_IN_SERVICE");
+    NumberOfOrdersData ordersData = orderService.getOrdersData();
+
+    profiler.stop().log();
+    return ordersData;
+  }
+
+  /**
    * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get
