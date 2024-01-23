@@ -4,15 +4,15 @@
   "title": "Number of orders data",
   "description": "The object contains information about number of orders to be executed and received.",
   "properties": {
-    "versionNumber": {
-      "type": "number",
-      "title": "versionNumber",
-      "description": "The version number of a resource. The property contains the last known version of the resource."
+    "ordersToBeExecuted": {
+      "type": "integer",
+      "title": "ordersToBeExecuted",
+      "description": "Number of orders to be executed."
     },
-    "lastUpdated": {
-      "description": "When the resource last changed - e.g. when the version changed.",
-      "type": "string",
-      "title": "lastUpdated"
+    "ordersToBeReceived": {
+      "type": "integer",
+      "title": "ordersToBeReceived",
+      "description": "Number of orders to be received."
     }
   }
 }
