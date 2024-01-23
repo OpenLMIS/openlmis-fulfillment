@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Number of orders data",
+  "description": "The object contains information about number of orders to be executed and received.",
+  "properties": {
+    "ordersToBeExecuted": {
+      "type": "integer",
+      "title": "ordersToBeExecuted",
+      "description": "Number of orders to be executed."
+    },
+    "ordersToBeReceived": {
+      "type": "integer",
+      "title": "ordersToBeReceived",
+      "description": "Number of orders to be received."
+    }
+  }
+}

@@ -452,6 +452,24 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     assertThat(found.getId(), is(one.getId()));
   }
 
+  @Test
+  public void shouldCountOrderByParameters() {
+    Order one = orderRepository.save(generateInstance(OrderStatus.ORDERED));
+    Order two = orderRepository.save(generateInstance(OrderStatus.READY_TO_PACK));
+    Order three = orderRepository.save(generateInstance(OrderStatus.FULFILLING));
+    Order four = orderRepository.save(generateInstance(OrderStatus.TRANSFER_FAILED));
+    Order five = orderRepository.save(generateInstance(OrderStatus.SHIPPED));
+
+    HashSet<UUID> availableRequestingFacilities = newHashSet(one.getRequestingFacilityId(),
+        two.getRequestingFacilityId(),
+        three.getRequestingFacilityId(), four.getRequestingFacilityId(),
+        five.getRequestingFacilityId());
+    OrderSearchParams params = new OrderSearchParams();
+    Long result = orderRepository
+        .countOrders(params, null, null, availableRequestingFacilities);
+    assertEquals(result, Long.valueOf(5));
+  }
+
   private Order prepareOrdersForSearchByFacility() {
     orderRepository.save(generateInstance(OrderStatus.ORDERED));
     orderRepository.save(generateInstance(OrderStatus.ORDERED));

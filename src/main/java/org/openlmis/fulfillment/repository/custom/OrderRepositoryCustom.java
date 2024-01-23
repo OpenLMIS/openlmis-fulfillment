@@ -33,4 +33,7 @@ public interface OrderRepositoryCustom {
       Pageable pageable);
 
   List<UUID> getRequestingFacilities(List<UUID> supplyingFacilityIds);
+
+  Long countOrders(OrderSearchParams params, Set<UUID> processingPeriodIds,
+      Set<UUID> availableSupplyingFacilities, Set<UUID> availableRequestingFacilities);
 }

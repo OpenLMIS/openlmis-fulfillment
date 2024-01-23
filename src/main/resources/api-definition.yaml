@@ -17,6 +17,7 @@ schemas:
           "type": "array",
           "items": {"type": "object", "$ref": "schemas/basicOrderDto.json" }
       }
+  - numberOfOrdersData: !include schemas/numberOfOrdersData.json
   - orderDto: !include schemas/orderDto.json
   - orderDtoPage: !include schemas/orderDtoPage.json
   - orderDtoArray: |
@@ -613,7 +614,28 @@ resourceTypes:
                       body:
                         application/json:
                           schema: uuidArray
-
+      /numberOfOrdersData:
+        displayName: Number of orders data
+        get:
+          description: >
+            Get information about number of orders. This endpoint requires one of the following rights: ORDERS_EDIT,
+            ORDERS_VIEW, SHIPMENT_EDIT, SHIPMENT_VIEW (for supplying facility) POD_MANAGE,
+            POD_VIEW (for requesting facility)
+          responses:
+            200:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: numberOfOrdersData
+            403:
+              body:
+                application/json:
+                  schema: localizedMessage
+            404:
+              body:
+                application/json:
+                  schema: localizedMessage
   /orderNumberConfigurations:
       displayName: OrderNumberConfiguration
       get:

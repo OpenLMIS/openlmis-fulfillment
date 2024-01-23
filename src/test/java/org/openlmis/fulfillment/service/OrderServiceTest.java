@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import org.junit.Before;
@@ -91,6 +92,7 @@ import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.web.NumberOfOrdersData;
 import org.openlmis.fulfillment.web.OrderNotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -232,6 +234,40 @@ public class OrderServiceTest {
     // then
     validateCreatedOrder(created, order);
     assertEquals(OrderStatus.IN_ROUTE, created.getStatus());
+  }
+
+  @Test
+  public void shouldReturnOrdersData() {
+    UserDto user = new UserDataBuilder().build();
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
+    PermissionStrings.Handler handler = mock(PermissionStrings.Handler.class);
+    when(permissionService.getPermissionStrings(user.getId())).thenReturn(handler);
+    when(handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW))
+        .thenReturn(newHashSet(order.getSupplyingFacilityId()));
+    when(handler.getFacilityIds(PODS_MANAGE, PODS_VIEW))
+        .thenReturn(newHashSet(order.getRequestingFacilityId()));
+
+    OrderSearchParams toBeExecutedOrdersParams = new OrderSearchParams();
+    Set<String> toBeExecutedOrdersStatuses = newHashSet("FULFILLING", "ORDERED");
+    toBeExecutedOrdersParams.setStatus(toBeExecutedOrdersStatuses);
+    OrderSearchParams toBeReceivedOrdersParams = new OrderSearchParams();
+    Set<String> toBeReceivedOrdersStatuses = newHashSet("TRANSFER_FAILED", "READY_TO_PACK",
+        "RECEIVED", "SHIPPED", "IN_ROUTE");
+    toBeReceivedOrdersParams.setStatus(toBeReceivedOrdersStatuses);
+
+    when(orderRepository.countOrders(toBeExecutedOrdersParams, null,
+        newHashSet(order.getSupplyingFacilityId()),
+        newHashSet(order.getRequestingFacilityId())))
+        .thenReturn(100L);
+    when(orderRepository.countOrders(toBeReceivedOrdersParams, null,
+        newHashSet(order.getSupplyingFacilityId()),
+        newHashSet(order.getRequestingFacilityId())))
+        .thenReturn(200L);
+
+    NumberOfOrdersData result = orderService.getOrdersData();
+
+    assertEquals(Long.valueOf(100L), result.getOrdersToBeExecuted());
+    assertEquals(Long.valueOf(200L), result.getOrdersToBeReceived());
   }
 
   @Test
