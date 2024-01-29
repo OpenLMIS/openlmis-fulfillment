@@ -251,8 +251,7 @@ public class OrderServiceTest {
     Set<String> toBeExecutedOrdersStatuses = newHashSet("FULFILLING", "ORDERED");
     toBeExecutedOrdersParams.setStatus(toBeExecutedOrdersStatuses);
     OrderSearchParams toBeReceivedOrdersParams = new OrderSearchParams();
-    Set<String> toBeReceivedOrdersStatuses = newHashSet("TRANSFER_FAILED", "READY_TO_PACK",
-        "RECEIVED", "SHIPPED", "IN_ROUTE");
+    Set<String> toBeReceivedOrdersStatuses = newHashSet("READY_TO_PACK", "SHIPPED", "IN_ROUTE");
     toBeReceivedOrdersParams.setStatus(toBeReceivedOrdersStatuses);
 
     when(orderRepository.countOrders(toBeExecutedOrdersParams, null,
