@@ -23,7 +23,6 @@ import static org.openlmis.fulfillment.domain.OrderStatus.FULFILLING;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
-import static org.openlmis.fulfillment.domain.OrderStatus.RECEIVED;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_UPDATE_INVALID_STATUS;
@@ -245,8 +244,7 @@ public class OrderService {
         handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
         handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)));
 
-    params.setStatus(Sets.asSet(TRANSFER_FAILED.name(), READY_TO_PACK.name(), RECEIVED.name(),
-        SHIPPED.name(), IN_ROUTE.name()));
+    params.setStatus(Sets.asSet(READY_TO_PACK.name(), SHIPPED.name(), IN_ROUTE.name()));
     ordersData.setOrdersToBeReceived(orderRepository.countOrders(params, null,
         handler.getFacilityIds(ORDERS_EDIT, ORDERS_VIEW, SHIPMENTS_EDIT, SHIPMENTS_VIEW),
         handler.getFacilityIds(PODS_MANAGE, PODS_VIEW)));
