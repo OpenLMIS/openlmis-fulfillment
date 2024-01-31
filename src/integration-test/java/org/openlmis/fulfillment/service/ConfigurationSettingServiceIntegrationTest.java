@@ -32,7 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
 @SpringBootTest
 @TestPropertySource(properties = {"reasons.transferIn=d748d73c-cfa9-4cf0-81c6-b684f7c7e19c"})
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "test-run"})
 public class ConfigurationSettingServiceIntegrationTest {
   private static final UUID TRANSFER_IN_REASON_ID = UUID
       .fromString("d748d73c-cfa9-4cf0-81c6-b684f7c7e19c");
