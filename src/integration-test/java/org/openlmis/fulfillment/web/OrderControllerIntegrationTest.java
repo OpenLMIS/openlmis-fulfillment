@@ -56,7 +56,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -71,6 +73,7 @@ import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
+import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -130,6 +133,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
   private static final String NUMBER_OF_ORDERS_URL = RESOURCE_URL + "/numberOfOrdersData";
+  private static final String STATUSES_STATS_DATA_URL = RESOURCE_URL + "/statusesStatsData";
 
   private static final String REQUESTING_FACILITY = "requestingFacilityId";
   private static final String SUPPLYING_FACILITY = "supplyingFacilityId";
@@ -987,6 +991,48 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(response.getOrdersToBeExecuted(), is(equalTo(10L)));
     assertThat(response.getOrdersToBeReceived(), is(equalTo(1L)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnOrderStatsData() {
+    OrderStatsData statsData = new OrderStatsData();
+    statsData.setFacilityId(user.getHomeFacilityId());
+    Map<String, Long> statusesStats = new HashMap<>();
+    String testStatus = "test_status";
+    statusesStats.put(testStatus, 1L);
+    statsData.setStatusesStats(statusesStats);
+    given(orderService.getStatusesStatsData(user.getHomeFacilityId())).willReturn(statsData);
+
+    OrderStatsData response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(STATUSES_STATS_DATA_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderStatsData.class);
+
+    assertThat(response.getFacilityId(), is(equalTo(user.getHomeFacilityId())));
+    assertThat(response.getStatusesStats().size(), is(equalTo(1)));
+    assertThat(response.getStatusesStats().get(testStatus), is(equalTo(1L)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnOrderStatsDataWithNoDataIfNoHomeFacilityAssigned() {
+    user.setHomeFacilityId(null);
+    when(authenticationHelper.getCurrentUser()).thenReturn(user);
+
+    OrderStatsData response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .when()
+        .get(STATUSES_STATS_DATA_URL)
+        .then()
+        .statusCode(200)
+        .extract().as(OrderStatsData.class);
+
+    assertThat(response.getFacilityId(), is(equalTo(null)));
+    assertThat(response.getStatusesStats(), is(equalTo(null)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
@@ -63,6 +64,7 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.TransferType;
@@ -475,6 +477,21 @@ public class OrderServiceTest {
 
     exception.expect(ValidationException.class);
     orderService.updateOrder(order.getId(), dto, userDto.getId());
+  }
+
+  @Test
+  public void shouldReturnOrderStatsData() {
+    // given
+    int numberOfStatuses = OrderStatus.values().length;
+
+    // when
+    OrderStatsData result = orderService.getStatusesStatsData(userDto.getHomeFacilityId());
+
+    // then
+    verify(orderRepository, times(numberOfStatuses))
+        .countByFacilityIdAndStatus(anyObject(), anyObject());
+    assertEquals(userDto.getHomeFacilityId(), result.getFacilityId());
+    assertEquals(numberOfStatuses, result.getStatusesStats().size());
   }
 
   private Order generateOrder() {
