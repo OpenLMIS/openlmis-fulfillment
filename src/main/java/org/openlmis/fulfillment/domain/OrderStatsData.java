@@ -13,22 +13,18 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.domain;
 
+import java.util.Map;
 import java.util.UUID;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>,
-    OrderRepositoryCustom {
+@Setter
+@Getter
+public class OrderStatsData {
 
-  Order findByOrderCode(@Param("orderCode") String orderNumber);
-
-  Order findByExternalId(@Param("externalId") UUID externalId);
-
-  Long countByFacilityIdAndStatus(UUID facilityId, OrderStatus status);
+  private UUID facilityId;
+  private Map<String, Long> statusesStats;
 
 }

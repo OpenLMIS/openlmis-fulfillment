@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "OrderStatsData",
+  "description": "A single orderStatsData",
+  "properties": {
+    "statusesStats": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "title": "statusesStats"
+    },
+    "facilityId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "facilityId"
+    }
+  }
+}

@@ -99,6 +99,7 @@ schemas:
           "type": "array",
           "items": { "type": "object", "$ref": "schemas/auditLogEntry.json" }
       }
+  - orderStatsData: !include schemas/orderStatsData.json
 
 traits:
     - secured:
@@ -628,6 +629,25 @@ resourceTypes:
               body:
                 application/json:
                   schema: numberOfOrdersData
+            403:
+              body:
+                application/json:
+                  schema: localizedMessage
+            404:
+              body:
+                application/json:
+                  schema: localizedMessage
+      /statusesStatsData:
+        displayName: Number of orders data
+        get:
+          description: Get statistics on the number of orders depending on the status.
+          responses:
+            200:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: orderStatsData
             403:
               body:
                 application/json:
