@@ -315,13 +315,13 @@ public class OrderController extends BaseController {
   @GetMapping("/orders/statusesStatsData")
   @ResponseBody
   public OrderStatsData getOrderStatusesStatsData() {
-    Profiler profiler = new Profiler("COUNT_ORDERS_STATISTICS_DATA");
+    Profiler profiler = new Profiler("GET_ORDER_STATISTICS_DATA");
     profiler.setLogger(XLOGGER);
     UUID facilityId =  authenticationHelper.getCurrentUser().getHomeFacilityId();
     if (facilityId == null) {
       return new OrderStatsData();
     }
-    profiler.start("COUNT_ORDERS_STATUSES_DATA_IN_SERVICE");
+    profiler.start("COUNT_ORDERS_STATUSES_DATA");
     OrderStatsData orderStatusesData = orderService.getStatusesStatsData(facilityId);
 
     profiler.stop().log();
