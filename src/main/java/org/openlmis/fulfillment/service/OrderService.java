@@ -33,6 +33,8 @@ import static org.openlmis.fulfillment.service.PermissionService.PODS_VIEW;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -43,6 +45,8 @@ import org.javers.common.collections.Sets;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
+import org.openlmis.fulfillment.domain.OrderStatsData;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -272,6 +276,29 @@ public class OrderService {
     entityManager.clear();
 
     return order;
+  }
+
+
+  /**
+   * Returns statistics data regarding number of orders with each status available
+   * in the system.
+   *
+   * @param facilityId Facility ID.
+   * @return OrderStatsData object.
+   */
+  public OrderStatsData getStatusesStatsData(UUID facilityId) {
+    Map<String, Long> statusesStats = new HashMap<>();
+    for (OrderStatus status : OrderStatus.values()) {
+      statusesStats.put(
+          status.name(),
+          orderRepository.countByFacilityIdAndStatus(facilityId, status)
+      );
+    }
+    OrderStatsData orderStatsData = new OrderStatsData();
+    orderStatsData.setFacilityId(facilityId);
+    orderStatsData.setStatusesStats(statusesStats);
+
+    return orderStatsData;
   }
 
   private void setOrderCode(Order order) {

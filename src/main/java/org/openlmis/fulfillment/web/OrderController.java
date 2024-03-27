@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
@@ -304,6 +305,27 @@ public class OrderController extends BaseController {
 
     profiler.stop().log();
     return ordersData;
+  }
+
+  /**
+   * Get information about number of orders of each status for user's home facility.
+   *
+   * @return Orders statistics data.
+   */
+  @GetMapping("/orders/statusesStatsData")
+  @ResponseBody
+  public OrderStatsData getOrderStatusesStatsData() {
+    Profiler profiler = new Profiler("GET_ORDER_STATISTICS_DATA");
+    profiler.setLogger(XLOGGER);
+    UUID facilityId =  authenticationHelper.getCurrentUser().getHomeFacilityId();
+    if (facilityId == null) {
+      return new OrderStatsData();
+    }
+    profiler.start("COUNT_ORDERS_STATUSES_DATA");
+    OrderStatsData orderStatusesData = orderService.getStatusesStatsData(facilityId);
+
+    profiler.stop().log();
+    return orderStatusesData;
   }
 
   /**
