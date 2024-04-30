@@ -49,6 +49,7 @@ import org.springframework.data.domain.Sort;
 public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
   private static final String EXTERNAL_ID = "externalId";
+  
   @PersistenceContext
   private EntityManager entityManager;
 
