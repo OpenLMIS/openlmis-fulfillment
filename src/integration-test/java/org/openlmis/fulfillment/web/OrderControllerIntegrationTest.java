@@ -143,6 +143,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String MESSAGE_KEY = "messageKey";
   private static final String PERIOD_START_DATE = "periodStartDate";
   private static final String PERIOD_END_DATE = "periodEndDate";
+  private static final String REQUISITIONLESS = "requisitionless";
 
   private static final String CSV = "csv";
   private static final String EXPAND = "expand";
@@ -402,7 +403,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
         Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, 4, 5),
-        LocalDate.of(2018, 5, 5));
+        LocalDate.of(2018, 5, 5), true);
 
     given(orderService.searchOrders(params, pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 2));
@@ -415,6 +416,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(ORDER_STATUS, READY_TO_PACK.toString())
         .queryParam(PERIOD_START_DATE, "2018-04-05")
         .queryParam(PERIOD_END_DATE, "2018-05-05")
+        .queryParam(REQUISITIONLESS, true)
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

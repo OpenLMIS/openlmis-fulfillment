@@ -182,6 +182,24 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         Collections.singleton(two.getRequestingFacilityId())
     );
     assertSearchOrders(page, two);
+
+    params.setRequisitionless(Boolean.TRUE);
+    page = orderRepository.searchOrders(
+        params, null, pageable);
+    assertSearchOrders(page);
+  }
+
+  @Test
+  public void shouldFindRequisitionless() {
+    OrderSearchParams params = new OrderSearchParams();
+    params.setRequisitionless(true);
+    Order requisitionlessOrder = orderRepository.save(generateRequisitionlessOrder());
+    orderRepository.save(generateInstance());
+    orderRepository.save(generateInstance());
+
+    Page<Order> page = orderRepository
+        .searchOrders(params, null, pageable);
+    assertSearchOrders(page, requisitionlessOrder);
   }
 
   @Test
@@ -489,4 +507,11 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
   private Set<UUID> getIds(Stream<Order> stream) {
     return stream.map(BaseEntity::getId).collect(Collectors.toSet());
   }
+
+  private Order generateRequisitionlessOrder() {
+    Order order = generateInstance(OrderStatus.SHIPPED);
+    order.setExternalId(null);
+    return order;
+  }
+
 }
