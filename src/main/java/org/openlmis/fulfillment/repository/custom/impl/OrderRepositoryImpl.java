@@ -48,6 +48,8 @@ import org.springframework.data.domain.Sort;
 
 public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
+  private static final String EXTERNAL_ID = "externalId";
+  
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -198,6 +200,12 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     predicate = isOneOf(PROCESSING_PERIOD_ID, processingPeriodIds, root, predicate, builder);
     predicate = isOneOf(ORDER_STATUS, params.getStatusAsEnum(), root, predicate, builder);
 
+    if (params.getRequisitionless() != null) {
+      predicate = Boolean.TRUE.equals(params.getRequisitionless())
+          ? isNull(EXTERNAL_ID, root, predicate, builder)
+          : isNotNull(EXTERNAL_ID, root, predicate, builder);
+    }
+
     query.where(predicate);
 
     if (!count && pageable != null && pageable.getSort() != null) {
@@ -226,6 +234,16 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     return value != null
         ? builder.and(predicate, builder.equal(root.get(field), value))
         : predicate;
+  }
+
+  private Predicate isNull(String field, Root<Order> root, Predicate predicate,
+                           CriteriaBuilder builder) {
+    return builder.and(predicate, builder.isNull(root.get(field)));
+  }
+
+  private Predicate isNotNull(String field, Root<Order> root, Predicate predicate,
+                              CriteriaBuilder builder) {
+    return builder.and(predicate, builder.isNotNull(root.get(field)));
   }
 
   private <T> CriteriaQuery<T> addSortProperties(CriteriaQuery<T> query,

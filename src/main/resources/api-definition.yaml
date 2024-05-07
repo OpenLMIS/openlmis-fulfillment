@@ -318,6 +318,11 @@ resourceTypes:
                   type: string
                   required: false
                   repeat: false
+              requisitionless:
+                displayName: requisitionless
+                type: boolean
+                required: false
+                repeat: false
           responses:
               200:
                   headers:

@@ -286,7 +286,8 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null,
+        null
     );
     when(orderRepository.searchOrders(
         params, asSet(order.getProcessingPeriodId()),
@@ -316,7 +317,8 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null);
+        order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null,
+        null);
     when(orderRepository.searchOrders(
         params, asSet(order.getProcessingPeriodId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
@@ -344,7 +346,7 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
+        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate, null);
     when(orderRepository.searchOrders(
         params, asSet(period1.getId(), period2.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
@@ -369,7 +371,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()),
-        startDate, endDate);
+        startDate, endDate, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(0, receivedOrders.getContent().size());
@@ -389,7 +391,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         null, Sets.newHashSet(order.getStatus().toString()),
-        startDate, endDate);
+        startDate, endDate, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(0, receivedOrders.getContent().size());
@@ -404,7 +406,7 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate);
+        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate, null);
     when(orderRepository.searchOrders(
         params, asSet(period1.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));

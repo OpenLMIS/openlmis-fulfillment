@@ -172,6 +172,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withExternalId(UUID externalId) {
+    this.externalId = externalId;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link Order} based on passed data.
    */

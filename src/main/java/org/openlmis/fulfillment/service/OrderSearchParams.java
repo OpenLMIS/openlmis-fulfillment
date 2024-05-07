@@ -58,6 +58,8 @@ public class OrderSearchParams {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   LocalDate periodEndDate;
 
+  Boolean requisitionless;
+
   /**
    * Tries to convert the string representation of each status in the <strong>status</strong> field
    * to an instance of {@link OrderStatus}.
