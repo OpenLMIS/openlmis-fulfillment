@@ -91,4 +91,10 @@ public class FacilityDataBuilder {
     this.supportedPrograms = supportedPrograms;
     return this;
   }
+
+  public FacilityDataBuilder withType(FacilityTypeDto type) {
+    this.type = type;
+    return this;
+  }
+
 }

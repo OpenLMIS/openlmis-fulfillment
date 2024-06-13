@@ -214,6 +214,9 @@ public abstract class MessageKeys {
   public static final String ERROR_ORDER_LINE_ITEMS_QUANTITY_MUST_BE_POSITIVE =
       join(VALIDATION_ERROR, ORDER, LINE_ITEMS, QUANTITY, MUST_BE_POSITIVE);
 
+  public static final String ERROR_FACILITY_CANNOT_BE_WARD_SERVICE_TYPE =
+      join(VALIDATION_ERROR, ORDER, "facilityCannotBeWardServiceType");
+
   private static String join(String... params) {
     return String.join(DELIMITER, Arrays.asList(params));
   }

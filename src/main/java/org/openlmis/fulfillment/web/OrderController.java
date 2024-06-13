@@ -53,6 +53,7 @@ import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderDto;
@@ -133,6 +134,9 @@ public class OrderController extends BaseController {
   @Autowired
   private ExporterBuilder exporter;
 
+  @Autowired
+  private FacilityTypeHelper facilityTypeHelper;
+
   @Value("${groupingSeparator}")
   private String groupingSeparator;
 
@@ -176,6 +180,8 @@ public class OrderController extends BaseController {
   @ResponseBody
   public OrderDto createRequisitionLessOrder(@RequestBody OrderDto orderDto) {
     permissionService.canCreateOrder(orderDto);
+
+    checkOrderFacilityTypes(orderDto);
 
     orderDto.setId(null);
     orderDto.setExternalId(null);
@@ -548,6 +554,14 @@ public class OrderController extends BaseController {
 
     stopProfiler(profiler, orderDto);
     return order;
+  }
+
+  private void checkOrderFacilityTypes(OrderDto orderDto) {
+    Map<UUID, String> orderFacilities = new HashMap<>();
+    orderFacilities.put(orderDto.getReceivingFacility().getId(), "Receiving facility");
+    orderFacilities.put(orderDto.getRequestingFacility().getId(), "Requesting facility");
+    orderFacilities.put(orderDto.getSupplyingFacility().getId(), "Supplying facility");
+    facilityTypeHelper.checkIfFacilityHasSupportedType(orderFacilities);
   }
 
   void stopProfiler(Profiler profiler, Object... exitArgs) {
