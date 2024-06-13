@@ -27,11 +27,13 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollectionOf;
+import static org.mockito.ArgumentMatchers.anySetOf;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -106,6 +108,7 @@ import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
+import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
@@ -194,6 +197,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderService orderService;
+
+  @MockBean
+  private FacilityTypeHelper facilityTypeHelper;
 
   @Autowired
   private ShipmentService shipmentService;
@@ -497,6 +503,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldCreateRequisitionLessOrder() {
     given(orderService.createRequisitionLessOrder(any(OrderDto.class), eq(user.getId())))
         .willReturn(firstOrder);
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(anyMap());
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

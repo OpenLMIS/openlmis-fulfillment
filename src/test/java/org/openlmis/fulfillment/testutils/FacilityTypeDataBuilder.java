@@ -51,4 +51,10 @@ public class FacilityTypeDataBuilder {
     type.setId(id);
     return type;
   }
+
+  public FacilityTypeDataBuilder withCode(String code) {
+    this.code = code;
+    return this;
+  }
+
 }

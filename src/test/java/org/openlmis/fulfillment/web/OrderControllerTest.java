@@ -19,8 +19,10 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -47,8 +49,10 @@ import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataServi
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.openlmis.fulfillment.web.validator.OrderValidator;
@@ -95,6 +99,9 @@ public class OrderControllerTest {
 
   @Mock
   private OrderValidator orderValidator;
+
+  @Mock
+  private FacilityTypeHelper facilityTypeHelper;
 
   private static final String SERVICE_URL = "localhost";
 
@@ -151,6 +158,10 @@ public class OrderControllerTest {
   @Test
   public void shouldGetLastUpdaterFromDtoIfCurrentUserIsNullWhenCreatingRequisitionLessOrder() {
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
+    doNothing().when(facilityTypeHelper).checkIfFacilityHasSupportedType(anyMap());
+    orderDto.setReceivingFacility(new FacilityDataBuilder().build());
+    orderDto.setRequestingFacility(new FacilityDataBuilder().build());
+    orderDto.setSupplyingFacility(new FacilityDataBuilder().build());
 
     orderController.createRequisitionLessOrder(orderDto);
 
