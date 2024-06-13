@@ -64,6 +64,4 @@ public class FacilityTypeHelper {
         .get(facility.getId())));
   }
 
-
-
 }
