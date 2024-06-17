@@ -511,6 +511,7 @@ public class OrderController extends BaseController {
 
     if (CollectionUtils.isEmpty(ids)) {
       XLOGGER.info("Nothing to delete");
+      return;
     }
     Iterable<Order> orders = orderRepository.findAllById(ids);
     List<UUID> receivingIds = new ArrayList<>();

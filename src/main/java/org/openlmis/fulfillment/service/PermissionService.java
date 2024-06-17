@@ -156,7 +156,12 @@ public class PermissionService {
 
   public void canDeleteOrders(List<UUID> ids) {
     for (UUID id : ids) {
-      checkPermission(ORDER_DELETE, id);
+      if (hasPermission(ORDER_CREATE, id)
+          || hasPermission(ORDER_DELETE, id)) {
+        return;
+      }
+
+      throw new MissingPermissionException(ORDER_CREATE, ORDER_DELETE);
     }
   }
 
