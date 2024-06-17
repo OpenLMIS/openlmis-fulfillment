@@ -19,7 +19,6 @@ import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 
-import java.util.List;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 import org.openlmis.fulfillment.domain.Order;
@@ -53,7 +52,6 @@ public class PermissionService {
   public static final String ORDERS_VIEW = "ORDERS_VIEW";
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
   public static final String ORDER_CREATE = "ORDER_CREATE";
-  public static final String ORDER_DELETE = "ORDER_DELETE";
   public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
   public static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
@@ -152,12 +150,6 @@ public class PermissionService {
 
   public void canCreateOrder(Order order) {
     checkPermission(ORDER_CREATE, order.getReceivingFacilityId());
-  }
-
-  public void canDeleteOrders(List<UUID> ids) {
-    for (UUID id : ids) {
-      checkPermission(ORDER_DELETE, id);
-    }
   }
 
   /**
@@ -309,4 +301,5 @@ public class PermissionService {
 
     return false;
   }
+
 }
