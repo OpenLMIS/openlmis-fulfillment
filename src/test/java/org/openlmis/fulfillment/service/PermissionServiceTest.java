@@ -340,16 +340,17 @@ public class PermissionServiceTest {
 
   @Test
   public void canDeleteOrder() {
-    mockHasRight(ORDERS_DELETE, null, null, order.getReceivingFacilityId());
+    UUID receivingFacilityId = order.getReceivingFacilityId();
+    mockHasRight(ORDERS_DELETE, null, null, receivingFacilityId);
 
-    permissionService.canDeleteOrders(Collections.singletonList(order.getId()));
+    permissionService.canDeleteOrders(Collections.singletonList(receivingFacilityId));
 
-    verifyRight(ORDERS_DELETE, null, null, order.getReceivingFacilityId());
+    verifyRight(ORDERS_DELETE, null, null, receivingFacilityId);
   }
 
   @Test
   public void cannotDeleteOrder() {
-    expectException(ORDERS_DELETE);
+    expectException(ORDER_CREATE, ORDERS_DELETE);
 
     permissionService.canDeleteOrders(Collections.singletonList(order.getId()));
   }
