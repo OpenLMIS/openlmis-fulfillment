@@ -367,6 +367,33 @@ resourceTypes:
                 body:
                   application/json:
                     schema: localizedMessage
+      delete:
+        is: [ secured ]
+        description: Removes many orders by id. This endpoint requires ORDERE_DELETE right.
+        body:
+          application/json:
+            schema:
+              type: "array",
+              items: {
+                type: "string",
+              }
+        responses:
+          "204":
+            headers:
+              Keep-Alive:
+          "404":
+            body:
+              application/json:
+                schema: localizedErrorResponse
+          "409":
+            body:
+              application/json:
+          "403":
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedErrorResponse
       /requisitionLess:
         post:
           is: [ secured ]
