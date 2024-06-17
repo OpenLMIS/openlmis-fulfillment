@@ -95,7 +95,7 @@ public class PermissionServiceTest {
   private SecurityContext securityContext;
 
   private UserDto user = DtoGenerator.of(UserDto.class);
-  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 9);
+  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 10);
   private Map<String, RightDto> rightsMap = ImmutableMap
       .<String, RightDto>builder()
       .put(ORDERS_TRANSFER, rights.get(0))
@@ -107,6 +107,7 @@ public class PermissionServiceTest {
       .put(SHIPMENTS_EDIT, rights.get(6))
       .put(SYSTEM_SETTINGS_MANAGE, rights.get(7))
       .put(ORDER_CREATE, rights.get(8))
+      .put(ORDERS_DELETE, rights.get(9))
       .build();
 
   private ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
