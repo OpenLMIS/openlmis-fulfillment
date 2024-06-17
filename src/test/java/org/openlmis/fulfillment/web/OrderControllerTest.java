@@ -188,7 +188,7 @@ public class OrderControllerTest {
 
     List<Order> orders = new ArrayList();
     orders.add(orderTwo);
-    when(orderRepository.findAllByIdAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
+    when(orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
 
     List<UUID> receivingIds = new ArrayList<>();
     receivingIds.add(orderTwo.getReceivingFacilityId());
@@ -197,7 +197,7 @@ public class OrderControllerTest {
     orderController.deleteMultipleOrders(ids);
 
     //then
-    verify(orderRepository).findAllByIdAndStatus(ids, OrderStatus.CREATING.name());
+    verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING.name());
     verify(permissionService).canDeleteOrders(receivingIds);
     verify(orderRepository).deleteById(orderTwo.getId());
   }

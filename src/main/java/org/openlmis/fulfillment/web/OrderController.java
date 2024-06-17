@@ -520,7 +520,7 @@ public class OrderController extends BaseController {
       XLOGGER.info("Nothing to delete");
       return;
     }
-    Iterable<Order> orders = orderRepository.findAllByIdAndStatus(ids, OrderStatus.CREATING.name());
+    Iterable<Order> orders = orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name());
     List<UUID> receivingIds = new ArrayList<>();
     List<UUID> ordersToDeleteIds = new ArrayList<>();
     orders.forEach(order -> {

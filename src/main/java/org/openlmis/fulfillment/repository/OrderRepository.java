@@ -20,6 +20,8 @@ import java.util.UUID;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -32,5 +34,7 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
 
   Long countByFacilityIdAndStatus(UUID facilityId, OrderStatus status);
 
-  Iterable<Order> findAllByIdAndStatus(List<UUID> ids, String creating);
+  @Modifying
+  @Query("select o from Order o where id in ")
+  Iterable<Order> findByIdInAndStatus(List<UUID> ids, String status);
 }
