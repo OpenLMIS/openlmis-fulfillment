@@ -52,8 +52,8 @@ public class PermissionService {
   public static final String PODS_VIEW = "PODS_VIEW";
   public static final String ORDERS_VIEW = "ORDERS_VIEW";
   public static final String ORDERS_EDIT = "ORDERS_EDIT";
+  public static final String ORDERS_DELETE = "ORDERS_DELETE";
   public static final String ORDER_CREATE = "ORDER_CREATE";
-  public static final String ORDER_DELETE = "ORDER_DELETE";
   public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
   public static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
   static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
@@ -157,11 +157,11 @@ public class PermissionService {
   public void canDeleteOrders(List<UUID> ids) {
     for (UUID id : ids) {
       if (hasPermission(ORDER_CREATE, id)
-          || hasPermission(ORDER_DELETE, id)) {
+          || hasPermission(ORDERS_DELETE, id)) {
         return;
       }
 
-      throw new MissingPermissionException(ORDER_CREATE, ORDER_DELETE);
+      throw new MissingPermissionException(ORDER_CREATE, ORDERS_DELETE);
     }
   }
 

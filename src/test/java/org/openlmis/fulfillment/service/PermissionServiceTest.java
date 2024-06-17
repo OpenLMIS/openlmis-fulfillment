@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_DELETE;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -37,6 +38,7 @@ import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -335,6 +337,22 @@ public class PermissionServiceTest {
     permissionService.canCreateOrder(order);
   }
 
+  @Test
+  public void canDeleteOrder() {
+    mockHasRight(ORDERS_DELETE, null, null, order.getReceivingFacilityId());
+
+    permissionService.canDeleteOrders(Collections.singletonList(order.getId()));
+
+    verifyRight(ORDERS_DELETE, null, null, order.getReceivingFacilityId());
+  }
+
+  @Test
+  public void cannotDeleteOrder() {
+    expectException(ORDERS_DELETE);
+
+    permissionService.canDeleteOrders(Collections.singletonList(order.getId()));
+  }
+  
   @Test
   public void canManageShipment() {
     mockHasRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());

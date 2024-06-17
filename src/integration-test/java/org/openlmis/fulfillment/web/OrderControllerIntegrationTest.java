@@ -132,9 +132,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String PRINT_URL = ID_URL + "/print";
-
-  private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
+  private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String NUMBER_OF_ORDERS_URL = RESOURCE_URL + "/numberOfOrdersData";
   private static final String STATUSES_STATS_DATA_URL = RESOURCE_URL + "/statusesStatsData";
 
@@ -326,8 +325,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private Order createOrder(UUID processingPeriodId, UUID program, UUID facilityId,
-      UUID supplyingFacilityId, BigDecimal cost,
-      OrderLineItem... lineItems) {
+                            UUID supplyingFacilityId, BigDecimal cost,
+                            OrderLineItem... lineItems) {
     Order order = new OrderDataBuilder()
         .withProcessingPeriodId(processingPeriodId)
         .withQuotedCost(cost)
@@ -497,6 +496,34 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
         is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
+  public void shouldDeleteMultipleOrders() {
+
+    UUID firstOrderId = firstOrder.getId();
+    UUID secondOrderId = secondOrder.getId();
+    given(orderRepository.findById(firstOrderId))
+        .willReturn(Optional.of(firstOrder));
+    given(orderRepository.findById(secondOrderId))
+        .willReturn(Optional.of(secondOrder));
+    List<UUID> uuids = new ArrayList<>();
+    uuids.add(firstOrderId);
+    uuids.add(secondOrderId);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(uuids)
+        .when()
+        .post(RESOURCE_URL)
+        .then()
+        .statusCode(204);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(orderRepository).deleteById(firstOrderId);
+    verify(orderRepository).deleteById(secondOrderId);
   }
 
   @Test
