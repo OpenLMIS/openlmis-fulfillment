@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.fulfillment.service.PermissionService.ORDERS_DELETE;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_TRANSFER;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -37,6 +38,7 @@ import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder
 import static org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,7 +95,7 @@ public class PermissionServiceTest {
   private SecurityContext securityContext;
 
   private UserDto user = DtoGenerator.of(UserDto.class);
-  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 9);
+  private List<RightDto> rights = DtoGenerator.of(RightDto.class, 10);
   private Map<String, RightDto> rightsMap = ImmutableMap
       .<String, RightDto>builder()
       .put(ORDERS_TRANSFER, rights.get(0))
@@ -105,6 +107,7 @@ public class PermissionServiceTest {
       .put(SHIPMENTS_EDIT, rights.get(6))
       .put(SYSTEM_SETTINGS_MANAGE, rights.get(7))
       .put(ORDER_CREATE, rights.get(8))
+      .put(ORDERS_DELETE, rights.get(9))
       .build();
 
   private ProofOfDelivery pod = new ProofOfDeliveryDataBuilder().build();
@@ -335,6 +338,23 @@ public class PermissionServiceTest {
     permissionService.canCreateOrder(order);
   }
 
+  @Test
+  public void canDeleteOrder() {
+    UUID receivingFacilityId = order.getReceivingFacilityId();
+    mockHasRight(ORDERS_DELETE, null, null, receivingFacilityId);
+
+    permissionService.canDeleteOrders(Collections.singletonList(receivingFacilityId));
+
+    verifyRight(ORDERS_DELETE, null, null, receivingFacilityId);
+  }
+
+  @Test
+  public void cannotDeleteOrder() {
+    expectException(ORDER_CREATE, ORDERS_DELETE);
+
+    permissionService.canDeleteOrders(Collections.singletonList(order.getId()));
+  }
+  
   @Test
   public void canManageShipment() {
     mockHasRight(SHIPMENTS_EDIT, null, null, order.getSupplyingFacilityId());
