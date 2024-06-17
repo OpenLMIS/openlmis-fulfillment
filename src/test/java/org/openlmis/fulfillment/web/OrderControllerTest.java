@@ -28,6 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +43,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
@@ -102,6 +105,9 @@ public class OrderControllerTest {
 
   @Mock
   private FacilityTypeHelper facilityTypeHelper;
+
+  @Mock
+  private OrderRepository orderRepository;
 
   private static final String SERVICE_URL = "localhost";
 
@@ -183,5 +189,36 @@ public class OrderControllerTest {
     assertThat(shipment.getShippedDate(), is(order.getCreatedDate()));
     assertThat(shipment.getNotes(), is(nullValue()));
     assertThat(shipment.getExtraData(), hasEntry("external", "true"));
+  }
+
+  @Test
+  public void shouldDeleteMultipleOrders() {
+      //given
+      UUID id1 = UUID.randomUUID();
+      UUID id2 = UUID.randomUUID();
+    List<UUID> ids = new ArrayList<>();
+    ids.add(id1);
+    ids.add(id2);
+
+    Order orderTwo = new OrderDataBuilder().build();
+
+    List<Order> orders = new ArrayList();
+    orders.add(order);
+    orders.add(orderTwo);
+    when(orderRepository.findAllById(ids)).thenReturn(orders);
+
+
+    List<UUID> receivingIds  = new ArrayList<>();
+    receivingIds.add(order.getReceivingFacilityId());
+    receivingIds.add(orderTwo.getReceivingFacilityId());
+
+    //when
+    orderController.deleteMultipleOrders(ids);
+
+    //then
+    verify(orderRepository).findAllById(ids);
+    verify(permissionService).canDeleteOrders(receivingIds);
+    verify(orderRepository).deleteById(id1);
+    verify(orderRepository).deleteById(id2);
   }
 }
