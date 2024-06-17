@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -193,16 +195,16 @@ public class OrderController extends BaseController {
   /**
    * Allows updating orders.
    *
-   * @param orderId UUID of order which we want to update
+   * @param orderId  UUID of order which we want to update
    * @param orderDto An order bound to the request body
    * @return updated order
    */
   @PutMapping("/orders/{id}")
   @ResponseBody
   public OrderDto updateOrder(
-          @PathVariable("id") UUID orderId,
-          @RequestBody OrderDto orderDto,
-          BindingResult bindingResult
+      @PathVariable("id") UUID orderId,
+      @RequestBody OrderDto orderDto,
+      BindingResult bindingResult
   ) {
     permissionService.canCreateOrder(orderDto);
 
@@ -220,15 +222,15 @@ public class OrderController extends BaseController {
   /**
    * Send requisition-less order.
    *
-   * @param orderId UUID of order
+   * @param orderId  UUID of order
    * @param orderDto An order bound to the request body
    */
   @PutMapping("/orders/{id}/requisitionLess/send")
   @ResponseBody
   public void sendRequisitionLessOrder(
-          @PathVariable("id") UUID orderId,
-          @RequestBody OrderDto orderDto,
-          BindingResult bindingResult
+      @PathVariable("id") UUID orderId,
+      @RequestBody OrderDto orderDto,
+      BindingResult bindingResult
   ) {
     permissionService.canCreateOrder(orderDto);
 
@@ -255,7 +257,7 @@ public class OrderController extends BaseController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Iterable<BasicOrderDto> batchCreateOrders(@RequestBody List<OrderDto> orders,
-      OAuth2Authentication authentication) {
+                                                   OAuth2Authentication authentication) {
     List<Order> newOrders = orders
         .stream()
         .map(order -> createSingleOrder(order, authentication))
@@ -317,7 +319,7 @@ public class OrderController extends BaseController {
   public OrderStatsData getOrderStatusesStatsData() {
     Profiler profiler = new Profiler("GET_ORDER_STATISTICS_DATA");
     profiler.setLogger(XLOGGER);
-    UUID facilityId =  authenticationHelper.getCurrentUser().getHomeFacilityId();
+    UUID facilityId = authenticationHelper.getCurrentUser().getHomeFacilityId();
     if (facilityId == null) {
       return new OrderStatsData();
     }
@@ -332,7 +334,7 @@ public class OrderController extends BaseController {
    * Get chosen order.
    *
    * @param orderId UUID of order whose we want to get
-   * @param expand a set of field names to expand
+   * @param expand  a set of field names to expand
    * @return OrderDto.
    */
   @RequestMapping(value = "/orders/{id}", method = RequestMethod.GET)
@@ -356,7 +358,7 @@ public class OrderController extends BaseController {
   @ResponseBody
   public List<UUID> getRequestingFacilities(
       @RequestParam(name = "supplyingFacilityId", required = false)
-          List<UUID> supplyingFacilityIds) {
+      List<UUID> supplyingFacilityIds) {
     return orderRepository.getRequestingFacilities(supplyingFacilityIds);
   }
 
@@ -369,7 +371,7 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printOrder(@PathVariable("id") UUID orderId,
-                                 @RequestParam("format") String format) throws IOException {
+                                           @RequestParam("format") String format) throws IOException {
 
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -432,9 +434,9 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/export", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public void export(@PathVariable("id") UUID orderId,
-      @RequestParam(value = "type", required = false,
-          defaultValue = TYPE_CSV) String type,
-      HttpServletResponse response) throws IOException {
+                     @RequestParam(value = "type", required = false,
+                         defaultValue = TYPE_CSV) String type,
+                     HttpServletResponse response) throws IOException {
     if (!TYPE_CSV.equals(type)) {
       String msg = "Export type: " + type + " not allowed";
       XLOGGER.warn(msg);
@@ -495,6 +497,26 @@ public class OrderController extends BaseController {
 
     orderService.save(order);
     return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
+  }
+
+  @RequestMapping(value = "/orders", method = RequestMethod.DELETE)
+  @ResponseStatus(HttpStatus.OK)
+  public void deleteMultipleOrders(@RequestParam(name = "ids") List<UUID> ids) {
+
+    if (CollectionUtils.isEmpty(ids)) {
+      XLOGGER.info("Nothing to delete");
+    }
+    Iterable<Order> orders = orderRepository.findAllById(ids);
+    List<UUID> receivingIds = new ArrayList<>();
+    orders.forEach(order -> {
+      receivingIds.add(order.getReceivingFacilityId());
+    });
+
+    permissionService.canDeleteOrders(receivingIds);
+
+    for (UUID id : ids) {
+      orderRepository.deleteById(id);
+    }
   }
 
   private Order createSingleOrder(OrderDto orderDto,
