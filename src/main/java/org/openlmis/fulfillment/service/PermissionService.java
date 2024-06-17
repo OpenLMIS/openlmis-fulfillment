@@ -154,6 +154,11 @@ public class PermissionService {
     checkPermission(ORDER_CREATE, order.getReceivingFacilityId());
   }
 
+  /**
+   * Delete orders.
+   *
+   * @param ids
+   */
   public void canDeleteOrders(List<UUID> ids) {
     for (UUID id : ids) {
       if (hasPermission(ORDER_CREATE, id)

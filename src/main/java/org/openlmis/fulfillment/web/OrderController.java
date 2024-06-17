@@ -378,7 +378,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printOrder(@PathVariable("id") UUID orderId,
-                                           @RequestParam("format") String format) throws IOException {
+                                           @RequestParam("format") String format)
+      throws IOException {
 
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -506,6 +507,11 @@ public class OrderController extends BaseController {
     return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
   }
 
+  /**
+   * Delete multiple orders with status CREATING.
+   *
+   * @param ids ids of orders to be deleted
+   */
   @RequestMapping(value = "/orders", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteMultipleOrders(@RequestParam(name = "ids") List<UUID> ids) {

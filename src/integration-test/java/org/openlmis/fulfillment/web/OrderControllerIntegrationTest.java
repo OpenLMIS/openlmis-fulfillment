@@ -501,11 +501,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldDeleteMultipleOrders() {
 
-    UUID firstOrderId = firstOrder.getId();
-    UUID secondOrderId = secondOrder.getId();
 
     firstOrder.setStatus(OrderStatus.CREATING);
     secondOrder.setStatus(OrderStatus.CREATING);
+
+    UUID firstOrderId = firstOrder.getId();
+    UUID secondOrderId = secondOrder.getId();
 
     given(orderRepository.findById(firstOrderId))
         .willReturn(Optional.of(firstOrder));
