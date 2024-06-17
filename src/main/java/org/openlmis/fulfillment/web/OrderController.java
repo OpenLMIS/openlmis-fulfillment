@@ -38,6 +38,7 @@ import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileTemplate;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatsData;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
@@ -93,10 +94,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @SuppressWarnings("PMD.TooManyMethods")
 public class OrderController extends BaseController {
 
+  public static final String CREATING = "CREATING";
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(OrderController.class);
   private static final String DISPOSITION_BASE = "attachment; filename=";
   private static final String TYPE_CSV = "csv";
-
   @Autowired
   private OrderRepository orderRepository;
 
@@ -513,15 +514,17 @@ public class OrderController extends BaseController {
       XLOGGER.info("Nothing to delete");
       return;
     }
-    Iterable<Order> orders = orderRepository.findAllById(ids);
+    Iterable<Order> orders = orderRepository.findAllByIdAndStatus(ids, OrderStatus.CREATING.name());
     List<UUID> receivingIds = new ArrayList<>();
+    List<UUID> ordersToDeleteIds = new ArrayList<>();
     orders.forEach(order -> {
       receivingIds.add(order.getReceivingFacilityId());
+      ordersToDeleteIds.add(order.getId());
     });
 
     permissionService.canDeleteOrders(receivingIds);
 
-    for (UUID id : ids) {
+    for (UUID id : ordersToDeleteIds) {
       orderRepository.deleteById(id);
     }
   }

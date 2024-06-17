@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.repository;
 
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
@@ -31,4 +32,5 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
 
   Long countByFacilityIdAndStatus(UUID facilityId, OrderStatus status);
 
+  Iterable<Order> findAllByIdAndStatus(List<UUID> ids, String creating);
 }

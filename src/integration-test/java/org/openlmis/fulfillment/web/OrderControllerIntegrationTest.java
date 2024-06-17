@@ -503,6 +503,10 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     UUID firstOrderId = firstOrder.getId();
     UUID secondOrderId = secondOrder.getId();
+
+    firstOrder.setStatus(OrderStatus.CREATING);
+    secondOrder.setStatus(OrderStatus.CREATING);
+
     given(orderRepository.findById(firstOrderId))
         .willReturn(Optional.of(firstOrder));
     given(orderRepository.findById(secondOrderId))

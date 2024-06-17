@@ -67,50 +67,35 @@ import org.springframework.validation.BindingResult;
 @RunWith(MockitoJUnitRunner.class)
 public class OrderControllerTest {
 
+  private static final String SERVICE_URL = "localhost";
   @InjectMocks
   private OrderController orderController;
-
   @Mock
   private AuthenticationHelper authenticationHelper;
-
   @Mock
   private OrderService orderService;
-
   @Mock
   private ExporterBuilder exporterBuilder;
-
   @Mock
   private FacilityReferenceDataService facilities;
-
   @Mock
   private ProgramReferenceDataService programs;
-
   @Mock
   private PeriodReferenceDataService periods;
-
   @Mock
   private UserReferenceDataService users;
-
   @Mock
   private ShipmentService shipmentService;
-
   @Mock
   private OrderDtoBuilder orderDtoBuilder;
-
   @Mock
   private PermissionService permissionService;
-
   @Mock
   private OrderValidator orderValidator;
-
   @Mock
   private FacilityTypeHelper facilityTypeHelper;
-
   @Mock
   private OrderRepository orderRepository;
-
-  private static final String SERVICE_URL = "localhost";
-
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
   private UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
@@ -193,32 +178,27 @@ public class OrderControllerTest {
 
   @Test
   public void shouldDeleteMultipleOrders() {
-      //given
-      UUID id1 = UUID.randomUUID();
-      UUID id2 = UUID.randomUUID();
-    List<UUID> ids = new ArrayList<>();
-    ids.add(id1);
-    ids.add(id2);
+    //given
 
-    Order orderTwo = new OrderDataBuilder().build();
+    Order orderTwo = new OrderDataBuilder().withStatus(OrderStatus.CREATING).build();
+
+    List<UUID> ids = new ArrayList<>();
+    ids.add(order.getId());
+    ids.add(orderTwo.getId());
 
     List<Order> orders = new ArrayList();
-    orders.add(order);
     orders.add(orderTwo);
-    when(orderRepository.findAllById(ids)).thenReturn(orders);
+    when(orderRepository.findAllByIdAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
 
-
-    List<UUID> receivingIds  = new ArrayList<>();
-    receivingIds.add(order.getReceivingFacilityId());
+    List<UUID> receivingIds = new ArrayList<>();
     receivingIds.add(orderTwo.getReceivingFacilityId());
 
     //when
     orderController.deleteMultipleOrders(ids);
 
     //then
-    verify(orderRepository).findAllById(ids);
+    verify(orderRepository).findAllByIdAndStatus(ids, OrderStatus.CREATING.name());
     verify(permissionService).canDeleteOrders(receivingIds);
-    verify(orderRepository).deleteById(id1);
-    verify(orderRepository).deleteById(id2);
+    verify(orderRepository).deleteById(orderTwo.getId());
   }
 }
