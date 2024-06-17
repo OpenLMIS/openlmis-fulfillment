@@ -157,7 +157,7 @@ public class PermissionService {
   /**
    * Delete orders.
    *
-   * @param ids
+   * @param ids ids of orders to be checked
    */
   public void canDeleteOrders(List<UUID> ids) {
     for (UUID id : ids) {
