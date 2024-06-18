@@ -35,6 +35,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
@@ -278,7 +278,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findByIds(anySetOf(UUID.class))).thenReturn(Arrays.asList(
         facility, facility1, facility2));
 
-    EntityManager entityManager = Mockito.mock(EntityManager.class);
+    EntityManager entityManager = mock(EntityManager.class);
     ReflectionTestUtils.setField(shipmentService, "entityManager", entityManager);
 
     product1 = new OrderableDataBuilder().withId(product1Id).build();
@@ -511,7 +511,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     uuids.add(firstOrderId);
     uuids.add(secondOrderId);
 
-    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()));
+
+    Order mockOrderOne = mockOrder(firstOrderId);
+    Order mockOrderTwo = mockOrder(secondOrderId);
+    List<Order> mockOrders = new ArrayList<>();
+    mockOrders.add(mockOrderOne);
+    mockOrders.add(mockOrderTwo);
+
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+        .willReturn(mockOrders);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1101,5 +1109,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         ZonedDateTime.now(), user));
 
     return list;
+  }
+
+  private Order mockOrder(UUID id) {
+    Order mockOrder = mock(Order.class);
+    given(mockOrder.getId()).willReturn(id);
+    given(mockOrder.getReceivingFacilityId()).willReturn(UUID.randomUUID());
+    return mockOrder;
   }
 }
