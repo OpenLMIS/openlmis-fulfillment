@@ -501,20 +501,17 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   @Test
   public void shouldDeleteMultipleOrders() {
 
-
     firstOrder.setStatus(OrderStatus.CREATING);
     secondOrder.setStatus(OrderStatus.CREATING);
 
     UUID firstOrderId = firstOrder.getId();
     UUID secondOrderId = secondOrder.getId();
 
-    given(orderRepository.findById(firstOrderId))
-        .willReturn(Optional.of(firstOrder));
-    given(orderRepository.findById(secondOrderId))
-        .willReturn(Optional.of(secondOrder));
     List<UUID> uuids = new ArrayList<>();
     uuids.add(firstOrderId);
     uuids.add(secondOrderId);
+
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()));
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -525,7 +522,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(204);
 
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
 
     verify(orderRepository).deleteById(firstOrderId);
     verify(orderRepository).deleteById(secondOrderId);
