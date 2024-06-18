@@ -187,10 +187,12 @@ public class OrderControllerTest {
     ids.add(orderTwo.getId());
 
     List<Order> orders = new ArrayList();
+    orders.add(order);
     orders.add(orderTwo);
     when(orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
 
     List<UUID> receivingIds = new ArrayList<>();
+    receivingIds.add(order.getReceivingFacilityId());
     receivingIds.add(orderTwo.getReceivingFacilityId());
 
     //when
