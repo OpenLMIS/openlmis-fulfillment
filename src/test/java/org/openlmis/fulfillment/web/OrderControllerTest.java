@@ -28,6 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +43,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
@@ -64,47 +67,35 @@ import org.springframework.validation.BindingResult;
 @RunWith(MockitoJUnitRunner.class)
 public class OrderControllerTest {
 
+  private static final String SERVICE_URL = "localhost";
   @InjectMocks
   private OrderController orderController;
-
   @Mock
   private AuthenticationHelper authenticationHelper;
-
   @Mock
   private OrderService orderService;
-
   @Mock
   private ExporterBuilder exporterBuilder;
-
   @Mock
   private FacilityReferenceDataService facilities;
-
   @Mock
   private ProgramReferenceDataService programs;
-
   @Mock
   private PeriodReferenceDataService periods;
-
   @Mock
   private UserReferenceDataService users;
-
   @Mock
   private ShipmentService shipmentService;
-
   @Mock
   private OrderDtoBuilder orderDtoBuilder;
-
   @Mock
   private PermissionService permissionService;
-
   @Mock
   private OrderValidator orderValidator;
-
   @Mock
   private FacilityTypeHelper facilityTypeHelper;
-
-  private static final String SERVICE_URL = "localhost";
-
+  @Mock
+  private OrderRepository orderRepository;
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
   private UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
@@ -183,5 +174,33 @@ public class OrderControllerTest {
     assertThat(shipment.getShippedDate(), is(order.getCreatedDate()));
     assertThat(shipment.getNotes(), is(nullValue()));
     assertThat(shipment.getExtraData(), hasEntry("external", "true"));
+  }
+
+  @Test
+  public void shouldDeleteMultipleOrders() {
+    //given
+
+    Order orderTwo = new OrderDataBuilder().withStatus(OrderStatus.CREATING).build();
+
+    List<UUID> ids = new ArrayList<>();
+    ids.add(order.getId());
+    ids.add(orderTwo.getId());
+
+    List<Order> orders = new ArrayList();
+    orders.add(order);
+    orders.add(orderTwo);
+    when(orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
+
+    List<UUID> receivingIds = new ArrayList<>();
+    receivingIds.add(order.getReceivingFacilityId());
+    receivingIds.add(orderTwo.getReceivingFacilityId());
+
+    //when
+    orderController.deleteMultipleOrders(ids);
+
+    //then
+    verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING.name());
+    verify(permissionService).canDeleteOrders(receivingIds);
+    verify(orderRepository).deleteById(orderTwo.getId());
   }
 }

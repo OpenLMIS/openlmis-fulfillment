@@ -35,6 +35,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
@@ -132,9 +132,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
   private static final String PRINT_URL = ID_URL + "/print";
-
-  private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
+  private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
   private static final String NUMBER_OF_ORDERS_URL = RESOURCE_URL + "/numberOfOrdersData";
   private static final String STATUSES_STATS_DATA_URL = RESOURCE_URL + "/statusesStatsData";
 
@@ -279,7 +278,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     when(facilityService.findByIds(anySetOf(UUID.class))).thenReturn(Arrays.asList(
         facility, facility1, facility2));
 
-    EntityManager entityManager = Mockito.mock(EntityManager.class);
+    EntityManager entityManager = mock(EntityManager.class);
     ReflectionTestUtils.setField(shipmentService, "entityManager", entityManager);
 
     product1 = new OrderableDataBuilder().withId(product1Id).build();
@@ -326,8 +325,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   private Order createOrder(UUID processingPeriodId, UUID program, UUID facilityId,
-      UUID supplyingFacilityId, BigDecimal cost,
-      OrderLineItem... lineItems) {
+                            UUID supplyingFacilityId, BigDecimal cost,
+                            OrderLineItem... lineItems) {
     Order order = new OrderDataBuilder()
         .withProcessingPeriodId(processingPeriodId)
         .withQuotedCost(cost)
@@ -497,6 +496,76 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(orderCaptor.getAllValues().get(0).getExternalId(),
         is(firstOrderDto.getExternalId()));
+  }
+
+  @Test
+  public void shouldDeleteMultipleOrders() {
+
+    firstOrder.setStatus(OrderStatus.CREATING);
+    secondOrder.setStatus(OrderStatus.CREATING);
+
+    UUID firstOrderId = firstOrder.getId();
+    UUID secondOrderId = secondOrder.getId();
+
+    List<UUID> uuids = new ArrayList<>();
+    uuids.add(firstOrderId);
+    uuids.add(secondOrderId);
+
+    List<Order> orders = new ArrayList<>();
+    orders.add(firstOrder);
+    orders.add(secondOrder);
+
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+        .willReturn(orders);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(uuids)
+        .when()
+        .delete(RESOURCE_URL)
+        .then()
+        .statusCode(204);
+
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
+
+    verify(orderRepository).deleteById(firstOrderId);
+    verify(orderRepository).deleteById(secondOrderId);
+  }
+
+  @Test
+  public void shouldNotDeleteMultipleOrdersAsSomeOfTheIdsPointToOrdersWithAnotherStatus() {
+
+    firstOrder.setStatus(OrderStatus.CREATING);
+    secondOrder.setStatus(OrderStatus.ORDERED);
+
+    UUID firstOrderId = firstOrder.getId();
+    UUID secondOrderId = secondOrder.getId();
+    UUID notAvailableId = UUID.randomUUID();
+
+    List<UUID> uuids = new ArrayList<>();
+    uuids.add(firstOrderId);
+    uuids.add(secondOrderId);
+    uuids.add(notAvailableId);
+
+    List<Order> orders = new ArrayList<>();
+    orders.add(firstOrder);
+
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+        .willReturn(orders);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(uuids)
+        .when()
+        .delete(RESOURCE_URL)
+        .then()
+        .statusCode(404);
+
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
+
+    verify(orderRepository, times(0)).deleteById(any(UUID.class));
   }
 
   @Test
@@ -1072,5 +1141,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         ZonedDateTime.now(), user));
 
     return list;
+  }
+
+  private Order mockOrder(UUID id) {
+    Order mockOrder = mock(Order.class);
+    given(mockOrder.getId()).willReturn(id);
+    given(mockOrder.getReceivingFacilityId()).willReturn(UUID.randomUUID());
+    return mockOrder;
   }
 }
