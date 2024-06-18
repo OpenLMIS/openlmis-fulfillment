@@ -511,15 +511,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     uuids.add(firstOrderId);
     uuids.add(secondOrderId);
 
-
-    Order mockOrderOne = mockOrder(firstOrderId);
-    Order mockOrderTwo = mockOrder(secondOrderId);
-    List<Order> mockOrders = new ArrayList<>();
-    mockOrders.add(mockOrderOne);
-    mockOrders.add(mockOrderTwo);
+    List<Order> orders = new ArrayList<>();
+    orders.add(firstOrder);
+    orders.add(secondOrder);
 
     given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
-        .willReturn(mockOrders);
+        .willReturn(orders);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -534,6 +531,41 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     verify(orderRepository).deleteById(firstOrderId);
     verify(orderRepository).deleteById(secondOrderId);
+  }
+
+  @Test
+  public void shouldNotDeleteMultipleOrdersAsSomeOfTheIdsPointToOrdersWithAnotherStatus() {
+
+    firstOrder.setStatus(OrderStatus.CREATING);
+    secondOrder.setStatus(OrderStatus.ORDERED);
+
+    UUID firstOrderId = firstOrder.getId();
+    UUID secondOrderId = secondOrder.getId();
+    UUID notAvailableId = UUID.randomUUID();
+
+    List<UUID> uuids = new ArrayList<>();
+    uuids.add(firstOrderId);
+    uuids.add(secondOrderId);
+    uuids.add(notAvailableId);
+
+    List<Order> orders = new ArrayList<>();
+    orders.add(firstOrder);
+
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+        .willReturn(orders);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(uuids)
+        .when()
+        .delete(RESOURCE_URL)
+        .then()
+        .statusCode(404);
+
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
+
+    verify(orderRepository, times(0)).deleteById(any(UUID.class));
   }
 
   @Test

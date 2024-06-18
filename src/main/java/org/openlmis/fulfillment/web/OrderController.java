@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 
 import com.google.common.collect.ImmutableMap;
@@ -510,7 +511,7 @@ public class OrderController extends BaseController {
   /**
    * Delete multiple orders with status CREATING.
    *
-   * @param ids ids of orders to be deleted
+   * @param ids ids of orders to be deleted, should not be empty
    */
   @RequestMapping(value = "/orders", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -518,12 +519,25 @@ public class OrderController extends BaseController {
 
     if (CollectionUtils.isEmpty(ids)) {
       XLOGGER.info("Nothing to delete");
-      return;
+      throw new ValidationException("no ids given");
     }
-    Iterable<Order> orders = orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name());
+    List<Order> foundOrders = orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name());
+    if (foundOrders == null) {
+      throw new OrdersNotFoundException(ORDER_NOT_FOUND_OR_WRONG_STATUS);
+    } else if (foundOrders.size() < ids.size()) {
+      Set<UUID> foundOrderIds = foundOrders.stream()
+          .map(Order::getId)
+          .collect(Collectors.toSet());
+      Set<String> errorIds = ids.stream()
+          .filter(id -> !foundOrderIds.contains(id))
+          .map(UUID::toString)
+          .collect(Collectors.toSet());
+      throw OrdersNotFoundException.newExceptionWithUuids(errorIds);
+    }
+
     List<UUID> receivingIds = new ArrayList<>();
     List<UUID> ordersToDeleteIds = new ArrayList<>();
-    orders.forEach(order -> {
+    foundOrders.forEach(order -> {
       receivingIds.add(order.getReceivingFacilityId());
       ordersToDeleteIds.add(order.getId());
     });

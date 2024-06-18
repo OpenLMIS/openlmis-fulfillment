@@ -32,5 +32,5 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>
 
   Long countByFacilityIdAndStatus(UUID facilityId, OrderStatus status);
 
-  Iterable<Order> findByIdInAndStatus(List<UUID> ids, String status);
+  List<Order> findByIdInAndStatus(List<UUID> ids, String status);
 }
