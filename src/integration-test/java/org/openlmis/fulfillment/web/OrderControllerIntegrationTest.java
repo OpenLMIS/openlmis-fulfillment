@@ -521,7 +521,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .contentType(APPLICATION_JSON_VALUE)
         .body(uuids)
         .when()
-        .post(RESOURCE_URL)
+        .delete(RESOURCE_URL)
         .then()
         .statusCode(204);
 

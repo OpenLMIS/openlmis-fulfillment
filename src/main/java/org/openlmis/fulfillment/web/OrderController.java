@@ -514,7 +514,7 @@ public class OrderController extends BaseController {
    */
   @RequestMapping(value = "/orders", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteMultipleOrders(@RequestParam(name = "ids") List<UUID> ids) {
+  public void deleteMultipleOrders(@RequestBody List<UUID> ids) {
 
     if (CollectionUtils.isEmpty(ids)) {
       XLOGGER.info("Nothing to delete");
