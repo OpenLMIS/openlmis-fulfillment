@@ -56,6 +56,7 @@ import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.FacilityTypeHelper;
+import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.openlmis.fulfillment.web.validator.OrderValidator;
@@ -186,6 +187,8 @@ public class OrderControllerTest {
     ids.add(order.getId());
     ids.add(orderTwo.getId());
 
+    IdsDto idsDto = new IdsDto(ids);
+
     List<Order> orders = new ArrayList();
     orders.add(order);
     orders.add(orderTwo);
@@ -196,7 +199,7 @@ public class OrderControllerTest {
     receivingIds.add(orderTwo.getReceivingFacilityId());
 
     //when
-    orderController.deleteMultipleOrders(ids);
+    orderController.deleteMultipleOrders(idsDto);
 
     //then
     verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING.name());

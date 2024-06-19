@@ -59,6 +59,7 @@ import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
+import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.OrderReportDto;
@@ -511,12 +512,13 @@ public class OrderController extends BaseController {
   /**
    * Delete multiple orders with status CREATING.
    *
-   * @param ids ids of orders to be deleted, should not be empty
+   * @param idsDto ids of orders to be deleted, should not be empty
    */
   @RequestMapping(value = "/orders", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteMultipleOrders(@RequestBody List<UUID> ids) {
+  public void deleteMultipleOrders(@RequestBody IdsDto idsDto) {
 
+    List<UUID> ids = idsDto.getIds();
     if (CollectionUtils.isEmpty(ids)) {
       XLOGGER.info("Nothing to delete");
       throw new ValidationException("no ids given");
