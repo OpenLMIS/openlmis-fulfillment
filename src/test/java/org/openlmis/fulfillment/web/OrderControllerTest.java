@@ -187,8 +187,6 @@ public class OrderControllerTest {
     ids.add(order.getId());
     ids.add(orderTwo.getId());
 
-    IdsDto idsDto = new IdsDto(ids);
-
     List<Order> orders = new ArrayList();
     orders.add(order);
     orders.add(orderTwo);
@@ -198,12 +196,15 @@ public class OrderControllerTest {
     receivingIds.add(order.getReceivingFacilityId());
     receivingIds.add(orderTwo.getReceivingFacilityId());
 
+    IdsDto idsDto = new IdsDto(ids);
+
     //when
     orderController.deleteMultipleOrders(idsDto);
 
     //then
     verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING.name());
     verify(permissionService).canDeleteOrders(receivingIds);
+    verify(orderRepository).deleteById(order.getId());
     verify(orderRepository).deleteById(orderTwo.getId());
   }
 }

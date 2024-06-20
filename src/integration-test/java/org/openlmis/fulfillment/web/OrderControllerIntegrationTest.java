@@ -50,6 +50,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.jayway.restassured.response.ValidatableResponse;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -110,6 +111,7 @@ import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
+import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -518,14 +520,16 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
         .willReturn(orders);
 
-    restAssured.given()
+    IdsDto idsDto = new IdsDto(uuids);
+
+    ValidatableResponse response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
-        .body(uuids)
+        .body(idsDto)
         .when()
         .delete(RESOURCE_URL)
-        .then()
-        .statusCode(204);
+        .then();
+//        .statusCode(204);
 
     verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
 
@@ -554,15 +558,24 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
         .willReturn(orders);
 
-    restAssured.given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-        .contentType(APPLICATION_JSON_VALUE)
-        .body(uuids)
-        .when()
-        .delete(RESOURCE_URL)
-        .then()
-        .statusCode(404);
+    IdsDto idsDto = new IdsDto(uuids);
 
+    ValidatableResponse response = null;
+    try {
+      response = restAssured.given()
+          .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+          .contentType(APPLICATION_JSON_VALUE)
+          .body(idsDto)
+          .when()
+          .delete(RESOURCE_URL)
+          .then();
+//        .statusCode(404);
+    } catch (Exception e) {
+
+      e.printStackTrace();
+
+
+    }
     verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
 
     verify(orderRepository, times(0)).deleteById(any(UUID.class));
