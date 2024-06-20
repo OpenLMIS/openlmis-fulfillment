@@ -50,7 +50,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.jayway.restassured.response.ValidatableResponse;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -521,15 +520,14 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .willReturn(orders);
 
     IdsDto idsDto = new IdsDto(uuids);
-
-    ValidatableResponse response = restAssured.given()
+    restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .body(idsDto)
         .when()
         .delete(RESOURCE_URL)
-        .then();
-//        .statusCode(204);
+        .then()
+        .statusCode(204);
 
     verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
 
@@ -560,22 +558,15 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     IdsDto idsDto = new IdsDto(uuids);
 
-    ValidatableResponse response = null;
-    try {
-      response = restAssured.given()
-          .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-          .contentType(APPLICATION_JSON_VALUE)
-          .body(idsDto)
-          .when()
-          .delete(RESOURCE_URL)
-          .then();
-//        .statusCode(404);
-    } catch (Exception e) {
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(idsDto)
+        .when()
+        .delete(RESOURCE_URL)
+        .then()
+        .statusCode(404);
 
-      e.printStackTrace();
-
-
-    }
     verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
 
     verify(orderRepository, times(0)).deleteById(any(UUID.class));
