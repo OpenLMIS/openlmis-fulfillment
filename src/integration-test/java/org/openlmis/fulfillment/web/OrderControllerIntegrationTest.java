@@ -110,6 +110,7 @@ import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.util.FacilityTypeHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
+import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.StatusChangeDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -518,10 +519,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
         .willReturn(orders);
 
+    IdsDto idsDto = new IdsDto(uuids);
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
-        .body(uuids)
+        .body(idsDto)
         .when()
         .delete(RESOURCE_URL)
         .then()
@@ -554,10 +556,12 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
         .willReturn(orders);
 
+    IdsDto idsDto = new IdsDto(uuids);
+
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
-        .body(uuids)
+        .body(idsDto)
         .when()
         .delete(RESOURCE_URL)
         .then()

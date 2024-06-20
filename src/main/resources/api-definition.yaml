@@ -100,7 +100,7 @@ schemas:
           "items": { "type": "object", "$ref": "schemas/auditLogEntry.json" }
       }
   - orderStatsData: !include schemas/orderStatsData.json
-
+  - idsDto: !include schemas/idsDto.json
 traits:
   - secured:
       queryParameters:
@@ -369,10 +369,10 @@ resourceTypes:
               schema: localizedMessage
     delete:
       is: [ secured ]
-      description: Removes many orders by id. This endpoint requires ORDERE_DELETE right.
+      description: Removes many orders by id. This endpoint requires ORDERS_DELETE right.
       body:
         application/json:
-          schema: uuidArray
+          schema: idsDto
       responses:
         "204":
           headers:
