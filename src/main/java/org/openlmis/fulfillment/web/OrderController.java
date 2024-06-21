@@ -523,7 +523,7 @@ public class OrderController extends BaseController {
       XLOGGER.info("Nothing to delete");
       throw new ValidationException("no ids given");
     }
-    List<Order> foundOrders = orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name());
+    List<Order> foundOrders = orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING);
     if (foundOrders == null) {
       throw new OrdersNotFoundException(ORDER_NOT_FOUND_OR_WRONG_STATUS);
     } else if (foundOrders.size() < ids.size()) {

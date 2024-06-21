@@ -516,10 +516,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     orders.add(firstOrder);
     orders.add(secondOrder);
 
-    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING))
         .willReturn(orders);
 
-    IdsDto idsDto = new IdsDto(uuids);
+    IdsDto idsDto = new IdsDto();
+    idsDto.setIds(uuids);
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
@@ -529,7 +530,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(204);
 
-    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING);
 
     verify(orderRepository).deleteById(firstOrderId);
     verify(orderRepository).deleteById(secondOrderId);
@@ -553,10 +554,11 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     List<Order> orders = new ArrayList<>();
     orders.add(firstOrder);
 
-    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING.name()))
+    given(orderRepository.findByIdInAndStatus(uuids, OrderStatus.CREATING))
         .willReturn(orders);
 
-    IdsDto idsDto = new IdsDto(uuids);
+    IdsDto idsDto = new IdsDto();
+    idsDto.setIds(uuids);
 
     restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -567,7 +569,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .then()
         .statusCode(404);
 
-    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING.name());
+    verify(orderRepository).findByIdInAndStatus(uuids, OrderStatus.CREATING);
 
     verify(orderRepository, times(0)).deleteById(any(UUID.class));
   }

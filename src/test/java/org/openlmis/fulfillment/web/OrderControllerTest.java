@@ -97,6 +97,7 @@ public class OrderControllerTest {
   private FacilityTypeHelper facilityTypeHelper;
   @Mock
   private OrderRepository orderRepository;
+
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
   private UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
@@ -190,19 +191,20 @@ public class OrderControllerTest {
     List<Order> orders = new ArrayList();
     orders.add(order);
     orders.add(orderTwo);
-    when(orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING.name())).thenReturn(orders);
+    when(orderRepository.findByIdInAndStatus(ids, OrderStatus.CREATING)).thenReturn(orders);
 
     List<UUID> receivingIds = new ArrayList<>();
     receivingIds.add(order.getReceivingFacilityId());
     receivingIds.add(orderTwo.getReceivingFacilityId());
 
-    IdsDto idsDto = new IdsDto(ids);
+    IdsDto idsDto = new IdsDto();
+    idsDto.setIds(ids);
 
     //when
     orderController.deleteMultipleOrders(idsDto);
 
     //then
-    verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING.name());
+    verify(orderRepository).findByIdInAndStatus(ids, OrderStatus.CREATING);
     verify(permissionService).canDeleteOrders(receivingIds);
     verify(orderRepository).deleteById(order.getId());
     verify(orderRepository).deleteById(orderTwo.getId());
