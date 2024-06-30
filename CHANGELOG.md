@@ -1,6 +1,14 @@
 9.0.5-angola.1 / Ongoing
 ==================
 
+New functionality added in a backwards-compatible manner:
+* [OAM-17](https://openlmis.atlassian.net/browse/OAM-17): Added homepage UI alerts
+* [OAM-200](https://openlmis.atlassian.net/browse/OAM-200): Added delete endpoint for orders
+
+Improvements:
+* [OAM-90](https://openlmis.atlassian.net/browse/OAM-90): Added requisitionless param for orders searching
+* [OAM-184](https://openlmis.atlassian.net/browse/OAM-184): Added validation for requisitionless order facilities types
+
 9.0.4 / 2022-10-07
 ==================
 
