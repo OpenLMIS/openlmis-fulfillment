@@ -25,6 +25,7 @@ public class ResourceNames {
   public static final String ORDERABLES = "orderables";
   public static final String LOTS = "lots";
   public static final String SHIPMENTS = "shipments";
+  public static final String UNITS = "unitOfOrderables";
 
   private ResourceNames() {}
 

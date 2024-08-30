@@ -45,6 +45,7 @@ public class ShipmentDraftTest {
 
   private UUID lineItemId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private Long quantityShipped = 15L;
   private Map<String, String> extraData = new HashMap<>();
   private OrderableDto orderableDto = new OrderableDataBuilder()
@@ -62,10 +63,10 @@ public class ShipmentDraftTest {
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
     ShipmentDraft expected = createShipment();
-    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes,
-        Collections.singletonList(
+    DummyShipmentDraftDto shipmentDraftDto = new DummyShipmentDraftDto(id, order, notes, Collections
+        .singletonList(
             new DummyShipmentLineItemDto(lineItemId, orderableDto, lotId, quantityShipped,
-                extraData)));
+                unitOfOrderableId, extraData)));
 
     ShipmentDraft actual = ShipmentDraft.newInstance(shipmentDraftDto);
 

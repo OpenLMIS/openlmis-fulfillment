@@ -105,7 +105,7 @@ public class ShipmentLineItemBuilder {
 
       ShipmentLineItem lineItem = new ShipmentLineItem(
           new VersionEntityReference(orderable.getId(), orderable.getVersionNumber()),
-          quantityShipped, extraData);
+          quantityShipped, null, extraData);
       result.addLineItem(lineItem);
     }
     return result;

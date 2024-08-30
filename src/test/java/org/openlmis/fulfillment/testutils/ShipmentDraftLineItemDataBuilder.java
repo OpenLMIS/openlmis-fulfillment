@@ -25,6 +25,7 @@ public class ShipmentDraftLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private UUID lotId = UUID.randomUUID();
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private Long quantityShipped = new Random().nextLong();
 
   public ShipmentDraftLineItemDataBuilder withId(UUID id) {
@@ -42,6 +43,11 @@ public class ShipmentDraftLineItemDataBuilder {
     return this;
   }
 
+  public ShipmentDraftLineItemDataBuilder withUnitOfOrderableId(UUID id) {
+    this.unitOfOrderableId = id;
+    return this;
+  }
+
   public ShipmentDraftLineItemDataBuilder withQuantityShipped(Long quantityShipped) {
     this.quantityShipped = quantityShipped;
     return this;
@@ -56,7 +62,8 @@ public class ShipmentDraftLineItemDataBuilder {
    * Builds instance of {@link ShipmentDraftLineItem}.
    */
   public ShipmentDraftLineItem build() {
-    ShipmentDraftLineItem line = new ShipmentDraftLineItem(orderable, lotId, quantityShipped);
+    ShipmentDraftLineItem line =
+        new ShipmentDraftLineItem(orderable, lotId, quantityShipped, unitOfOrderableId);
     line.setId(id);
     return line;
   }

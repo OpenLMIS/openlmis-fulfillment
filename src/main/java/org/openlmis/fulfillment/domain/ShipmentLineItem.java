@@ -57,6 +57,10 @@ public class ShipmentLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private Long quantityShipped;
 
+  @Type(type = UUID_TYPE)
+  @Getter
+  private UUID unitOfOrderableId;
+
   @Column(name = "extradata", columnDefinition = "jsonb")
   @Convert(converter = ExtraDataConverter.class)
   @Getter
@@ -66,13 +70,14 @@ public class ShipmentLineItem extends BaseEntity {
   private ShipmentLineItem() {
   }
 
-  public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped) {
-    this(orderable, null, quantityShipped, null);
+  public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped,
+                          UUID unitOfOrderableId) {
+    this(orderable, null, quantityShipped, unitOfOrderableId, null);
   }
 
   public ShipmentLineItem(VersionEntityReference orderable, Long quantityShipped,
-      Map<String, String> extraData) {
-    this(orderable, null, quantityShipped, extraData);
+                          UUID unitOfOrderableId, Map<String, String> extraData) {
+    this(orderable, null, quantityShipped, unitOfOrderableId, extraData);
   }
 
   public UUID getOrderableId() {
@@ -94,9 +99,9 @@ public class ShipmentLineItem extends BaseEntity {
             orderableDto.getVersionNumber()))
         .orElse(null);
 
-    ShipmentLineItem shipmentLineItem = new ShipmentLineItem(
-        orderable, importer.getLotId(), importer.getQuantityShipped(),
-        importer.getExtraData());
+    ShipmentLineItem shipmentLineItem =
+        new ShipmentLineItem(orderable, importer.getLotId(), importer.getQuantityShipped(),
+            importer.getUnitOfOrderableId(), importer.getExtraData());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
   }
@@ -117,6 +122,7 @@ public class ShipmentLineItem extends BaseEntity {
     exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
+    exporter.setUnitOfOrderableId(unitOfOrderableId);
     exporter.setExtraData(extraData);
   }
 
@@ -124,7 +130,8 @@ public class ShipmentLineItem extends BaseEntity {
    * Returns a copy of line item.
    */
   public ShipmentLineItem copy() {
-    ShipmentLineItem clone = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
+    ShipmentLineItem clone =
+        new ShipmentLineItem(orderable, lotId, quantityShipped, unitOfOrderableId, extraData);
     clone.setId(id);
 
     return clone;
@@ -140,6 +147,8 @@ public class ShipmentLineItem extends BaseEntity {
 
     void setQuantityShipped(Long quantityShipped);
 
+    void setUnitOfOrderableId(UUID unitId);
+
     void setExtraData(Map<String, String> extraData);
   }
 
@@ -152,6 +161,8 @@ public class ShipmentLineItem extends BaseEntity {
     UUID getLotId();
 
     Long getQuantityShipped();
+
+    UUID getUnitOfOrderableId();
 
     Map<String, String> getExtraData();
   }

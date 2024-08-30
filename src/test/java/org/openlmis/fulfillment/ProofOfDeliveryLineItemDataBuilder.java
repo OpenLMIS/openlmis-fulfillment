@@ -27,6 +27,7 @@ public class ProofOfDeliveryLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private UUID lotId = UUID.randomUUID();
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private Integer quantityAccepted = RandomUtils.nextInt(1, 10);
   private boolean useVvm = true;
   private VvmStatus vvmStatus = VvmStatus.STAGE_1;
@@ -38,10 +39,8 @@ public class ProofOfDeliveryLineItemDataBuilder {
    * Builds new instance of {@link ProofOfDeliveryLineItem} without id.
    */
   public ProofOfDeliveryLineItem buildAsNew() {
-    return new ProofOfDeliveryLineItem(
-        orderable, lotId, quantityAccepted, vvmStatus,
-        quantityRejected, rejectionReasonId, notes
-    );
+    return new ProofOfDeliveryLineItem(orderable, lotId, unitOfOrderableId, quantityAccepted,
+        vvmStatus, quantityRejected, rejectionReasonId, notes);
   }
 
   public ProofOfDeliveryLineItemDataBuilder withOrderable(UUID orderableId, Long versionNumber) {

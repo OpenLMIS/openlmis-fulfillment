@@ -60,6 +60,10 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   @Getter(AccessLevel.PACKAGE)
   private UUID lotId;
 
+  @Type(type = UUID_TYPE)
+  @Getter(AccessLevel.PACKAGE)
+  private UUID unitOfOrderableId;
+
   @Getter(AccessLevel.PACKAGE)
   private Integer quantityAccepted;
 
@@ -78,10 +82,8 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
   private String notes;
 
   ProofOfDeliveryLineItem(ShipmentLineItem shipmentLineItem) {
-    this(
-        shipmentLineItem.getOrderable(), shipmentLineItem.getLotId(),
-        null, null, null, null, null
-    );
+    this(shipmentLineItem.getOrderable(), shipmentLineItem.getLotId(),
+        shipmentLineItem.getUnitOfOrderableId(), null, null, null, null, null);
   }
 
   /**
@@ -90,6 +92,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
    * @param proofOfDeliveryLineItem ProofOfDeliveryLineItem with new values.
    */
   void updateFrom(ProofOfDeliveryLineItem proofOfDeliveryLineItem) {
+    this.unitOfOrderableId = proofOfDeliveryLineItem.unitOfOrderableId;
     this.quantityAccepted = proofOfDeliveryLineItem.quantityAccepted;
     this.vvmStatus = proofOfDeliveryLineItem.vvmStatus;
     this.quantityRejected = proofOfDeliveryLineItem.quantityRejected;
@@ -153,11 +156,10 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
         orderableDto.getVersionNumber()))
         .orElse(null);
 
-    ProofOfDeliveryLineItem lineItem = new ProofOfDeliveryLineItem(
-        orderable, importer.getLotId(), importer.getQuantityAccepted(),
-        importer.getVvmStatus(), importer.getQuantityRejected(),
-        importer.getRejectionReasonId(), importer.getNotes()
-    );
+    ProofOfDeliveryLineItem lineItem =
+        new ProofOfDeliveryLineItem(orderable, importer.getLotId(), importer.getUnitOfOrderableId(),
+            importer.getQuantityAccepted(), importer.getVvmStatus(), importer.getQuantityRejected(),
+            importer.getRejectionReasonId(), importer.getNotes());
     lineItem.setId(importer.getId());
 
     return lineItem;
@@ -172,6 +174,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     exporter.setId(id);
     exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
+    exporter.setUnitOfOrderableId(unitOfOrderableId);
     exporter.setQuantityAccepted(quantityAccepted);
     exporter.setUseVvm(orderableDto.useVvm());
     exporter.setVvmStatus(vvmStatus);
@@ -186,6 +189,8 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     VersionIdentityDto getOrderableIdentity();
 
     UUID getLotId();
+
+    UUID getUnitOfOrderableId();
 
     Integer getQuantityAccepted();
 
@@ -205,6 +210,8 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
     void setOrderable(OrderableDto orderableDto);
 
     void setLotId(UUID lotId);
+
+    void setUnitOfOrderableId(UUID unitId);
 
     void setQuantityAccepted(Integer quantityAccepted);
 

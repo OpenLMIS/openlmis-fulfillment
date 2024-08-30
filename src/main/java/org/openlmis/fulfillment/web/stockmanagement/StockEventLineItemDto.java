@@ -50,6 +50,7 @@ public final class StockEventLineItemDto
   private UUID orderableId;
   private UUID lotId;
   private Integer quantity;
+  private UUID unitOfOrderableId;
   @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd")
   private LocalDate occurredDate;
   private UUID destinationId;
