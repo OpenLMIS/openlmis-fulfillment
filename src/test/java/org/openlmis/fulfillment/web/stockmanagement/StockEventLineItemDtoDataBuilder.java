@@ -27,6 +27,7 @@ public class StockEventLineItemDtoDataBuilder {
   private UUID lotId = UUID.randomUUID();
   private UUID destinationId = UUID.randomUUID();
   private Integer quantity = 10;
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private LocalDate occurredDate = LocalDate.now();
   private UUID reasonId = UUID.randomUUID();
   private UUID sourceId = UUID.randomUUID();
@@ -52,8 +53,7 @@ public class StockEventLineItemDtoDataBuilder {
    * Builds instance of {@link StockEventLineItemDto}.
    */
   public StockEventLineItemDto build() {
-    return new StockEventLineItemDto(
-        orderableId, lotId, quantity, occurredDate, destinationId, reasonId, sourceId, extraData
-    );
+    return new StockEventLineItemDto(orderableId, lotId, quantity, unitOfOrderableId, occurredDate,
+        destinationId, reasonId, sourceId, extraData);
   }
 }

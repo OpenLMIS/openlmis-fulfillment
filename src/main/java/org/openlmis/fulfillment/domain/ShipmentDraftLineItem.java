@@ -51,6 +51,9 @@ public class ShipmentDraftLineItem extends BaseEntity {
 
   private Long quantityShipped;
 
+  @Type(type = UUID_TYPE)
+  private UUID unitOfOrderableId;
+
   // Constructor needed by framework. Use all args constructor to create new instance.
   private ShipmentDraftLineItem() {}
 
@@ -69,8 +72,9 @@ public class ShipmentDraftLineItem extends BaseEntity {
             orderableDto.getVersionNumber()))
         .orElse(null);
 
-    ShipmentDraftLineItem shipmentLineItem = new ShipmentDraftLineItem(
-        orderable, importer.getLotId(), importer.getQuantityShipped());
+    ShipmentDraftLineItem shipmentLineItem =
+        new ShipmentDraftLineItem(orderable, importer.getLotId(), importer.getQuantityShipped(),
+            importer.getUnitOfOrderableId());
     shipmentLineItem.setId(importer.getId());
     return shipmentLineItem;
   }
@@ -85,13 +89,15 @@ public class ShipmentDraftLineItem extends BaseEntity {
     this.orderable = newItem.orderable;
     this.lotId = newItem.lotId;
     this.quantityShipped = newItem.quantityShipped;
+    this.unitOfOrderableId = newItem.unitOfOrderableId;
   }
 
   /**
    * Returns a copy of line item.
    */
   public ShipmentDraftLineItem copy() {
-    ShipmentDraftLineItem clone = new ShipmentDraftLineItem(orderable, lotId, quantityShipped);
+    ShipmentDraftLineItem clone =
+        new ShipmentDraftLineItem(orderable, lotId, quantityShipped, unitOfOrderableId);
     clone.setId(id);
 
     return clone;
@@ -106,5 +112,6 @@ public class ShipmentDraftLineItem extends BaseEntity {
     exporter.setOrderable(orderableDto);
     exporter.setLotId(lotId);
     exporter.setQuantityShipped(quantityShipped);
+    exporter.setUnitOfOrderableId(unitOfOrderableId);
   }
 }

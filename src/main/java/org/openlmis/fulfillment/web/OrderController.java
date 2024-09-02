@@ -589,7 +589,7 @@ public class OrderController extends BaseController {
       List<ShipmentLineItem> items = order
           .getOrderLineItems()
           .stream()
-          .map(line -> new ShipmentLineItem(line.getOrderable(), line.getOrderedQuantity()))
+          .map(line -> new ShipmentLineItem(line.getOrderable(), line.getOrderedQuantity(), null))
           .collect(Collectors.toList());
 
       profiler.start("CREATE_SHIPMENT");

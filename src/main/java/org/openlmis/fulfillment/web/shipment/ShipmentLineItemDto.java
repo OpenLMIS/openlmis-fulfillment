@@ -17,6 +17,7 @@ package org.openlmis.fulfillment.web.shipment;
 
 import static org.openlmis.fulfillment.service.ResourceNames.LOTS;
 import static org.openlmis.fulfillment.service.ResourceNames.ORDERABLES;
+import static org.openlmis.fulfillment.service.ResourceNames.UNITS;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -63,6 +64,10 @@ public final class ShipmentLineItemDto
 
   @Getter
   @Setter
+  private ObjectReferenceDto unitOfOrderable;
+
+  @Getter
+  @Setter
   private Map<String, String> extraData;
 
   @Override
@@ -89,6 +94,14 @@ public final class ShipmentLineItemDto
 
   @Override
   @JsonIgnore
+  public void setUnitOfOrderableId(UUID unitId) {
+    if (unitId != null) {
+      this.unitOfOrderable = ObjectReferenceDto.create(unitId, serviceUrl, UNITS);
+    }
+  }
+
+  @Override
+  @JsonIgnore
   public VersionIdentityDto getOrderableIdentity() {
     return Optional
         .ofNullable(orderable)
@@ -99,9 +112,12 @@ public final class ShipmentLineItemDto
   @Override
   @JsonIgnore
   public UUID getLotId() {
-    if (lot == null) {
-      return null;
-    }
-    return lot.getId();
+    return lot != null ? lot.getId() : null;
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getUnitOfOrderableId() {
+    return unitOfOrderable != null ? unitOfOrderable.getId() : null;
   }
 }

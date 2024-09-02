@@ -50,6 +50,7 @@ public class ShipmentTest {
   private UUID lineItemId = UUID.randomUUID();
   private UUID orderableId = UUID.randomUUID();
   private UUID lotId = UUID.randomUUID();
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private Long quantityShipped = 15L;
   private OrderableDto orderableDto = new OrderableDataBuilder()
       .withId(orderableId)
@@ -66,10 +67,10 @@ public class ShipmentTest {
   @Test
   public void shouldCreateInstanceBasedOnImporter() {
     Shipment expected = createShipment();
-    DummyShipmentDto shipmentDto =
-        new DummyShipmentDto(id, order, shipDetails, notes, Collections.singletonList(
+    DummyShipmentDto shipmentDto = new DummyShipmentDto(id, order, shipDetails, notes, Collections
+        .singletonList(
             new DummyShipmentLineItemDto(lineItemId, orderableDto, lotId, quantityShipped,
-                null)), null);
+                unitOfOrderableId, null)), null);
 
     Shipment actual = Shipment.newInstance(shipmentDto, order);
 

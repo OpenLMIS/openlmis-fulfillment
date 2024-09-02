@@ -27,6 +27,7 @@ public class ShipmentLineItemDataBuilder {
   private UUID id = UUID.randomUUID();
   private VersionEntityReference orderable = new VersionEntityReference(UUID.randomUUID(), 1L);
   private UUID lotId = UUID.randomUUID();
+  private UUID unitOfOrderableId = UUID.randomUUID();
   private Long quantityShipped = 10L;
   private Map<String, String> extraData = new HashMap<>();
 
@@ -74,7 +75,8 @@ public class ShipmentLineItemDataBuilder {
    * Builds instance of {@link ShipmentLineItem}.
    */
   public ShipmentLineItem build() {
-    ShipmentLineItem line = new ShipmentLineItem(orderable, lotId, quantityShipped, extraData);
+    ShipmentLineItem line =
+        new ShipmentLineItem(orderable, lotId, quantityShipped, unitOfOrderableId, extraData);
     line.setId(id);
     return line;
   }

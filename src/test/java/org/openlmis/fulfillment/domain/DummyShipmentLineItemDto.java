@@ -37,6 +37,7 @@ public class DummyShipmentLineItemDto
   private OrderableDto orderable;
   private UUID lotId;
   private Long quantityShipped;
+  private UUID unitOfOrderableId;
   private Map<String, String> extraData;
 
   @Override

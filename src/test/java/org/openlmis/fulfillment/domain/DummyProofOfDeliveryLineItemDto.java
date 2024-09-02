@@ -33,6 +33,7 @@ public class DummyProofOfDeliveryLineItemDto
   private UUID id;
   private OrderableDto orderable;
   private UUID lotId;
+  private UUID unitOfOrderableId;
   private Integer quantityAccepted;
   private Boolean useVvm;
   private VvmStatus vvmStatus;
@@ -41,11 +42,9 @@ public class DummyProofOfDeliveryLineItemDto
   private String notes;
 
   DummyProofOfDeliveryLineItemDto(ProofOfDeliveryLineItem line, OrderableDto orderableDto) {
-    this(
-        line.getId(), orderableDto, line.getLotId(), line.getQuantityAccepted(),
-        orderableDto.useVvm(), line.getVvmStatus(), line.getQuantityRejected(),
-        line.getRejectionReasonId(), line.getNotes()
-    );
+    this(line.getId(), orderableDto, line.getLotId(), line.getUnitOfOrderableId(),
+        line.getQuantityAccepted(), orderableDto.useVvm(), line.getVvmStatus(),
+        line.getQuantityRejected(), line.getRejectionReasonId(), line.getNotes());
   }
 
   @Override
@@ -56,5 +55,4 @@ public class DummyProofOfDeliveryLineItemDto
         .map(item -> new VersionIdentityDto(orderable.getId(), orderable.getVersionNumber()))
         .orElse(null);
   }
-
 }
