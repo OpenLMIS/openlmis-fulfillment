@@ -1,3 +1,12 @@
+9.0.6 / wip
+==================
+
+Improvements:
+* [OLMIS-8002](https://openlmis.atlassian.net/browse/OLMIS-8002): Proof of delivery - improved performance
+
+9.0.5 / 2023-12-12
+==================
+
 9.0.4 / 2022-10-07
 ==================
 
