@@ -13,24 +13,18 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.fulfillment.repository;
+package org.openlmis.fulfillment.web;
 
-import java.util.List;
-import java.util.UUID;
-import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
-import org.openlmis.fulfillment.repository.custom.OrderRepositoryCustom;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
+import java.util.Set;
+import org.openlmis.fulfillment.i18n.MessageKeys;
 
-public interface OrderRepository extends PagingAndSortingRepository<Order, UUID>,
-    OrderRepositoryCustom {
+public class OrdersNotFoundException extends NotFoundException {
+  public OrdersNotFoundException(String messageKey, String... params) {
+    super(messageKey, params);
+  }
 
-  Order findByOrderCode(@Param("orderCode") String orderNumber);
-
-  Order findByExternalId(@Param("externalId") UUID externalId);
-
-  Long countByFacilityIdAndStatus(UUID facilityId, OrderStatus status);
-
-  List<Order> findByIdInAndStatus(List<UUID> ids, OrderStatus status);
+  public static OrdersNotFoundException newExceptionWithUuids(Set<String> uuids) {
+    return new OrdersNotFoundException(MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS,
+        uuids.toArray(new String[uuids.size()]));
+  }
 }
