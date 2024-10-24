@@ -24,5 +24,4 @@ public class OrderNotFoundException extends NotFoundException {
   public OrderNotFoundException(UUID id) {
     super(ORDER_NOT_FOUND, id.toString());
   }
-
 }

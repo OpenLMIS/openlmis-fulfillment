@@ -66,6 +66,7 @@ public abstract class MessageKeys {
   private static final String FOUND = "found";
   private static final String MUST_BE_UNIQUE = "mustBeUnique";
   private static final String MUST_BE_POSITIVE = "mustBePositive";
+  private static final String NOT_FOUND_OR_WRONG_STATUS = "notFoundOrWrongStatus";
 
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
@@ -92,6 +93,8 @@ public abstract class MessageKeys {
   public static final String ORDER_EXISTS = join(ERROR_PREFIX, ORDER, EXISTS);
   public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
   public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);
+  public static final String ORDER_NOT_FOUND_OR_WRONG_STATUS =
+      join(ERROR_PREFIX, ORDER, NOT_FOUND_OR_WRONG_STATUS);
 
   public static final String ORDER_RETRY_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_RETRY, INVALID_STATUS);
