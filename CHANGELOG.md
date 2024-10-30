@@ -1,4 +1,4 @@
-9.0.6 / WIP
+9.0.6 / wip
 ==================
 
 New functionality added in a backwards-compatible manner:
@@ -10,9 +10,13 @@ New functionality added in a backwards-compatible manner:
 * [OLMIS-7987](https://openlmis.atlassian.net/browse/OLMIS-7987): Incorporate OAM-200. Add DELETE `api/orders` endpoint
 
 Improvements:
+* [OLMIS-8002](https://openlmis.atlassian.net/browse/OLMIS-8002): Proof of delivery - improved performance
 * [OAM-90](https://openlmis.atlassian.net/browse/OAM-90): Endpoint GET `/api/orders` has now an optional `requisitionless` parameter
 * [OIS-14](https://openlmis.atlassian.net/browse/OIS-14): Upgrade Transifex API version
 * [OIS-48](https://openlmis.atlassian.net/browse/OIS-48): Update service base images to versions without known vulnerabilities
+
+9.0.5 / 2023-12-12
+==================
 
 9.0.4 / 2022-10-07
 ==================
