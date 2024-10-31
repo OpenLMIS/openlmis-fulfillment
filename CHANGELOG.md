@@ -1,4 +1,4 @@
-9.0.6 / wip
+9.0.6 / 31.10.2024
 ==================
 
 New functionality added in a backwards-compatible manner:
