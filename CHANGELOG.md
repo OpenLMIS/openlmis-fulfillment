@@ -1,4 +1,4 @@
-9.0.5-angola.1 / Ongoing
+9.0.5-angola.r1 / 2024-11-08
 ==================
 
 New functionality added in a backwards-compatible manner:
@@ -121,7 +121,7 @@ Bug fixes and improvements:
 * [OLMIS-5671](https://openlmis.atlassian.net/browse/OLMIS-5671): Shipment file processing supports local file path as well as SFTP servers.
 * [OLMIS-5675](https://openlmis.atlassian.net/browse/OLMIS-5675): Capture shipment line items with unresolved orderable in extra data. File processing succeeds with unresolved orderable.
 * [OLMIS-5985](https://openlmis.atlassian.net/browse/OLMIS-5985): Archived shipment files are prefixed with date/time to avoid filename collision.
-* [OLMIS-5986](https://openlmis.atlassian.net/browse/OLMIS-5986): For shipment files that did not process successfully, write an error log file in the errors folder that describes why it failed to process. 
+* [OLMIS-5986](https://openlmis.atlassian.net/browse/OLMIS-5986): For shipment files that did not process successfully, write an error log file in the errors folder that describes why it failed to process.
 * [OLMIS-4531](https://openlmis.atlassian.net/browse/OLMIS-4531): Added compressing HTTP POST responses.
 
 8.0.0 / 2018-12-12
@@ -141,7 +141,7 @@ Bug fixes and improvements added in a backwards-compatible manner:
 * [OLMIS-4943](https://openlmis.atlassian.net/browse/OLMIS-4943): Fixed Jasper reports to use service locale settings.
 * [OLMIS-5668](https://openlmis.atlassian.net/browse/OLMIS-5668): Removed loginRestricted from the UserDto class.
 * [OLMIS-5670](https://openlmis.atlassian.net/browse/OLMIS-5670): Added spring integration code to configure message channels to poll ftp servers for shipment files.
-* [OLMIS-5473](https://openlmis.atlassian.net/browse/OLMIS-5673): Parse, create and persist shipment objects from csv files 
+* [OLMIS-5473](https://openlmis.atlassian.net/browse/OLMIS-5673): Parse, create and persist shipment objects from csv files
 * [OLMIS-5674](https://openlmis.atlassian.net/browse/OLMIS-5674): Add extraData column on shipment Line Item. Persist any extra column defined in shipment file template.
 
 7.0.1 / 2018-08-16
