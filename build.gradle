@@ -79,8 +79,9 @@ dependencies {
     compile 'org.apache.commons:commons-collections4:4.1'
     compile 'org.apache.commons:commons-lang3'
     compile 'org.apache.commons:commons-csv:1.4'
-    compile 'org.javers:javers-spring-boot-starter-sql:2.8.2'
+    compile 'org.javers:javers-spring-boot-starter-sql:5.13.2'
     compile "org.slf4j:slf4j-ext"
+    compile 'com.google.guava:guava:33.3.1-jre'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
     compile group: 'org.apache.poi', name: 'poi', version: '3.15'

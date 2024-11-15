@@ -22,7 +22,7 @@ services:
     env_file: .env
 
   ftp:
-    image: hauptmedia/proftpd
+    image: driesva/proftpd
     ports:
       - "21:21"
       - "20:20"
