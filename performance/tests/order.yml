@@ -1,25 +1,33 @@
 execution:
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: get-orders
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: get-order
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: search-orders
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: get-requesting-facilities
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: print-order-pdf
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: print-order-csv
-  - concurrency: 1
+  - concurrency: 10
     hold-for: 2m
+    iterations: 10
     scenario: export-order-csv
+
 
 scenarios:
   get-orders:

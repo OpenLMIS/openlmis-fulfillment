@@ -1,4 +1,6 @@
 modules:
+  monitoring:
+    disabled: true
   jmeter:
     properties:
       base-uri: http://localhost
