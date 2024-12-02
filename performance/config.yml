@@ -1,4 +1,6 @@
 modules:
+  local:
+    sequential: true
   monitoring:
     disabled: true
   jmeter:
