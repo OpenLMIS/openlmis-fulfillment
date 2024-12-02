@@ -2,7 +2,7 @@ execution:
   - concurrency: 10
     iterations: 10
     ramp-up: 1m
-    hold-for: 1m
+    hold-for: 10m
     scenario: get-orders
   - concurrency: 10
     iterations: 10
@@ -129,40 +129,33 @@ scenarios:
 reporting:
   - module: passfail
     criteria:
-      GetAllOrdersIsSuccessful: p90 of GetAllOrders<=1500ms
-      GetAllOrdersNeedsImprovement: p90 of GetAllOrders>1500ms and p90 of GetAllOrders<=2500ms
-      GetAllOrdersIsTooHigh: p90 of GetAllOrders>2500ms
-      GetAllOrdersErrorRateIsTooHigh: failures of GetAllOrders>1%
+      - 'p90>2500ms, continue as failed, label=GetAllOrders, title="GetAllOrders response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetAllOrders, title="GetAllOrders needs improvement"'
+      - 'failures>1%, continue as failed, label=GetAllOrders, title="GetAllOrders error rate too high"'
 
-      GetOrderIsSuccessful: p90 of GetOrder<=1500ms
-      GetOrderNeedsImprovement: p90 of GetOrder>1500ms and p90 of GetOrder<=2500ms
-      GetOrderIsTooHigh: p90 of GetOrder>2500ms
-      GetOrderErrorRateIsTooHigh: failures of GetOrder>1%
+      - 'p90>2500ms, continue as failed, label=GetOrder, title="GetOrder response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetOrder, title="GetOrder needs improvement"'
+      - 'failures>1%, continue as failed, label=GetOrder, title="GetOrder error rate too high"'
 
-      FindOrdersBySupplyingFacilityIsSuccessful: p90 of FindOrdersBySupplyingFacility<=1500ms
-      FindOrdersBySupplyingFacilityNeedsImprovement: p90 of FindOrdersBySupplyingFacility>1500ms and p90 of FindOrdersBySupplyingFacility<=2500ms
-      FindOrdersBySupplyingFacilityIsTooHigh: p90 of FindOrdersBySupplyingFacility>2500ms
-      FindOrdersBySupplyingFacilityErrorRateIsTooHigh: failures of FindOrdersBySupplyingFacility>1%
+      - 'p90>2500ms, continue as failed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility needs improvement"'
+      - 'failures>1%, continue as failed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility error rate too high"'
 
-      GetRequestingFacilitiesIsSuccessful: p90 of GetRequestingFacilities<=1500ms
-      GetRequestingFacilitiesNeedsImprovement: p90 of GetRequestingFacilities>1500ms and p90 of GetRequestingFacilities<=2500ms
-      GetRequestingFacilitiesIsTooHigh: p90 of GetRequestingFacilities>2500ms
-      GetRequestingFacilitiesErrorRateIsTooHigh: failures of GetRequestingFacilities>1%
+      - 'p90>2500ms, continue as failed, label=GetRequestingFacilities, title="GetRequestingFacilities response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetRequestingFacilities, title="GetRequestingFacilities needs improvement"'
+      - 'failures>1%, continue as failed, label=GetRequestingFacilities, title="GetRequestingFacilities error rate too high"'
 
-      PrintOrderAsPdfIsSuccessful: p90 of PrintOrderAsPdf<=1500ms
-      PrintOrderAsPdfNeedsImprovement: p90 of PrintOrderAsPdf>1500ms and p90 of PrintOrderAsPdf<=2500ms
-      PrintOrderAsPdfIsTooHigh: p90 of PrintOrderAsPdf>2500ms
-      PrintOrderAsPdfErrorRateIsTooHigh: failures of PrintOrderAsPdf>1%
+      - 'p90>2500ms, continue as failed, label=PrintOrderAsPdf, title="PrintOrderAsPdf response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintOrderAsPdf, title="PrintOrderAsPdf needs improvement"'
+      - 'failures>1%, continue as failed, label=PrintOrderAsPdf, title="PrintOrderAsPdf error rate too high"'
 
-      PrintOrderAsCsvIsSuccessful: p90 of PrintOrderAsCsv<=1500ms
-      PrintOrderAsCsvNeedsImprovement: p90 of PrintOrderAsCsv>1500ms and p90 of PrintOrderAsCsv<=2500ms
-      PrintOrderAsCsvIsTooHigh: p90 of PrintOrderAsCsv>2500ms
-      PrintOrderAsCsvErrorRateIsTooHigh: failures of PrintOrderAsCsv>1%
+      - 'p90>2500ms, continue as failed, label=PrintOrderAsCsv, title="PrintOrderAsCsv response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintOrderAsCsv, title="PrintOrderAsCsv needs improvement"'
+      - 'failures>1%, continue as failed, label=PrintOrderAsCsv, title="PrintOrderAsCsv error rate too high"'
 
-      ExportOrderAsCsvIsSuccessful: p90 of ExportOrderAsCsv<=1500ms
-      ExportOrderAsCsvNeedsImprovement: p90 of ExportOrderAsCsv>1500ms and p90 of ExportOrderAsCsv<=2500ms
-      ExportOrderAsCsvIsTooHigh: p90 of ExportOrderAsCsv>2500ms
-      ExportOrderAsCsvErrorRateIsTooHigh: failures of ExportOrderAsCsv>1%
+      - 'p90>2500ms, continue as failed, label=ExportOrderAsCsv, title="ExportOrderAsCsv response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=ExportOrderAsCsv, title="ExportOrderAsCsv needs improvement"'
+      - 'failures>1%, continue as failed, label=ExportOrderAsCsv, title="ExportOrderAsCsv error rate too high"'
   - module: final-stats
   - module: junit-xml
     dump-xml: ./build/performance-artifacts/stats.xml
