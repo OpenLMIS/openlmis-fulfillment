@@ -1,9 +1,10 @@
-#execution:
+# execution:
 #  - concurrency: 1
+#    iterations: 1
 #    hold-for: 2m
 #    scenario: shipment-workflow
-#
-#scenarios:
+
+# scenarios:
 #  get-token-for-divo:
 #    requests:
 #      - if: '${__javaScript(vars.get("divo_access_token") == null)}'
@@ -42,13 +43,13 @@
 #          script-text: |
 #            import groovy.json.JsonSlurper
 #            import groovy.json.JsonOutput
-#
+
 #            def jsonSlurper = new JsonSlurper()
 #            def random = new Random()
-#
+
 #            def response = prev.getResponseDataAsString()
 #            def products = jsonSlurper.parseText(response)
-#
+
 #            def orderLineItems = [];
 #            products.content.each { product ->
 #              orderLineItems.add([
@@ -56,7 +57,7 @@
 #                orderedQuantity: 10
 #              ])
 #            }
-#
+
 #            def order = [
 #              emergency: false,
 #              externalId: UUID.randomUUID().toString(),
@@ -70,7 +71,7 @@
 #              quotedCost: 0,
 #              orderLineItems: orderLineItems
 #            ]
-#
+
 #            vars.put("order", JsonOutput.toJson(order))
 #        body: ${order}
 #        extract-jsonpath:
@@ -89,12 +90,12 @@
 #          script-text: |
 #            import groovy.json.JsonSlurper
 #            import groovy.json.JsonOutput
-#
+
 #            def jsonSlurper = new JsonSlurper()
 #            def random = new Random()
-#
+
 #            def order = jsonSlurper.parseText(vars.get("order"))
-#
+
 #            def lineItems = []
 #            order.orderLineItems.each { line ->
 #              lineItems.add([
@@ -102,14 +103,14 @@
 #                quantityShipped: 0
 #              ])
 #            }
-#
+
 #            def shipment = [
 #              order: [ id: vars.get("order_id") ],
 #              shippedBy: [ id: vars.get("shipped_by_id") ],
 #              notes: "Performance test shipment",
 #              lineItems: lineItems
 #            ]
-#
+
 #            vars.put("shipment", JsonOutput.toJson(shipment))
 #        body: ${shipment}
 #        extract-jsonpath:
@@ -136,8 +137,8 @@
 #        headers:
 #          Authorization: Bearer ${divo_access_token}
 #          Content-Type: application/json
-#
-#reporting:
+
+# reporting:
 #    - module: passfail
 #      criteria:
 #        Finalize Shipment is too slow: p90 of FinalizeShipment>120000ms

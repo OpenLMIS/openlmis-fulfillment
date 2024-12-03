@@ -1,6 +1,8 @@
 execution:
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-order-file-template
 
 scenarios:
@@ -16,4 +18,6 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Get Order File Template is too slow: p90 of GetOrderFileTemplate>1500ms
+        - 'p90>2500ms, continue as failed, label=GetOrderFileTemplate, title="p90 response time too high"'
+        - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetOrderFileTemplate, title="Improvement needed"'
+        - 'failures>1%, continue as failed, label=GetOrderFileTemplate, title="Failure rate too high"'

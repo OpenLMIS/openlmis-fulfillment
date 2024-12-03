@@ -1,28 +1,63 @@
 execution:
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-orders
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-order
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: search-orders
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-requesting-facilities
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: print-order-pdf
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: print-order-csv
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: export-order-csv
+  # Spike test - uncomment it if necessary
+  # Gradual ramp-up to baseline
+  # - concurrency: 10
+  #   ramp-up: 2m         # Gradual ramp-up to 10 users over 2 minutes
+  #   hold-for: 2m        # Maintain baseline load for 2 minutes
+  #   scenario: get-orders
+
+  # # Spike phase
+  # - concurrency: 100    # Sudden spike to 100 users
+  #   ramp-up: 30s        # Spike occurs over 30 seconds
+  #   hold-for: 5m        # Hold spike load for 5 minutes
+  #   scenario: get-orders
+
+  # # Cooldown phase
+  # - concurrency: 10
+  #   ramp-up: 1m         # Gradual return to baseline over 1 minute
+  #   hold-for: 2m        # Maintain baseline load for 2 minutes
+  #   scenario: get-orders
+
+
 
 scenarios:
   get-orders:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders
@@ -32,6 +67,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   get-order:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders/${__P(order_id)}
@@ -41,6 +77,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   search-orders:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders?supplyingFacilityId=${__P(supplying_facility_id)}
@@ -50,6 +87,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   get-requesting-facilities:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders/requestingFacilities?supplyingFacilityId=${__P(supplying_facility_id)}
@@ -59,6 +97,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   print-order-pdf:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/print?format=pdf
@@ -68,6 +107,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   print-order-csv:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/print?format=csv
@@ -77,6 +117,7 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
   export-order-csv:
+    think-time: ~5s
     requests:
       - include-scenario: get-user-token
       - url: ${__P(base-uri)}/api/orders/${__P(order_id)}/export?type=csv
@@ -86,12 +127,37 @@ scenarios:
           Authorization: Bearer ${access_token}
           Content-Type: application/json
 reporting:
-    - module: passfail
-      criteria:
-        Get All Orders is too slow: p90 of GetAllOrders>4700ms
-        Get Order is too slow: p90 of GetOrder>8000ms
-        Find Order By Supplying Facility is too slow: p90 of FindOrdersBySupplyingFacility>4000ms
-        Get Requesting Facilities is too slow: p90 of GetRequestingFacilities>500ms
-        Print Order As Pdf is too slow: p90 of PrintOrderAsPdf>170000ms
-        Print Order As Csv is too slow: p90 of PrintOrderAsCsv>170000ms
-        Export Order As Csv is too slow: p90 of ExportOrderAsCsv>200000ms
+  - module: passfail
+    criteria:
+      - 'p90>2500ms, continue as failed, label=GetAllOrders, title="GetAllOrders response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetAllOrders, title="GetAllOrders needs improvement"'
+      - 'failures>1%, continue as failed, label=GetAllOrders, title="GetAllOrders error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=GetOrder, title="GetOrder response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetOrder, title="GetOrder needs improvement"'
+      - 'failures>1%, continue as failed, label=GetOrder, title="GetOrder error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility needs improvement"'
+      - 'failures>1%, continue as failed, label=FindOrdersBySupplyingFacility, title="FindOrdersBySupplyingFacility error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=GetRequestingFacilities, title="GetRequestingFacilities response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetRequestingFacilities, title="GetRequestingFacilities needs improvement"'
+      - 'failures>1%, continue as failed, label=GetRequestingFacilities, title="GetRequestingFacilities error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=PrintOrderAsPdf, title="PrintOrderAsPdf response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintOrderAsPdf, title="PrintOrderAsPdf needs improvement"'
+      - 'failures>1%, continue as failed, label=PrintOrderAsPdf, title="PrintOrderAsPdf error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=PrintOrderAsCsv, title="PrintOrderAsCsv response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintOrderAsCsv, title="PrintOrderAsCsv needs improvement"'
+      - 'failures>1%, continue as failed, label=PrintOrderAsCsv, title="PrintOrderAsCsv error rate too high"'
+
+      - 'p90>2500ms, continue as failed, label=ExportOrderAsCsv, title="ExportOrderAsCsv response time too high"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=ExportOrderAsCsv, title="ExportOrderAsCsv needs improvement"'
+      - 'failures>1%, continue as failed, label=ExportOrderAsCsv, title="ExportOrderAsCsv error rate too high"'
+  - module: final-stats
+  - module: junit-xml
+    dump-xml: ./build/performance-artifacts/stats.xml
+  - module: console
+

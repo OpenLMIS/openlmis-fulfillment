@@ -1,24 +1,38 @@
 execution:
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-pods
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-pods-by-order-id
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-pod
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-pod-expand
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: get-pod-expand-nested
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: print-pod-pdf
-  - concurrency: 1
-    hold-for: 2m
+  - concurrency: 10
+    iterations: 10
+    ramp-up: 1m
+    hold-for: 10m
     scenario: print-pod-csv
 
 scenarios:
@@ -87,12 +101,32 @@ scenarios:
           Content-Type: application/json
 
 reporting:
-    - module: passfail
-      criteria:
-        Get All PODs is too slow: p90 of GetAllProofsOfDelivery>12000ms
-        Get POD By Order Id is too slow: p90 of GetProofsOfDeliveryByOrderId>8000ms
-        Get POD is too slow: p90 of GetProofOfDelivery>8000ms
-        Get POD With Expand is too slow: p90 of GetProofOfDeliveryWithExpand>16000ms
-        Get POD With Nested Expand is too slow: p90 of GetProofOfDeliveryWithNestedExpand>26000ms
-        Print POD As Pdf is too slow: p90 of PrintProofOfDeliveryAsPdf>4000ms
-        Print POD As Csv is too slow: p90 of PrintProofOfDeliveryAsCsv>4000ms
+  - module: passfail
+    criteria:
+      - 'p90<=1500ms, continue as passed, label=GetAllProofsOfDelivery, title="Get All PODs is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetAllProofsOfDelivery, title="Get All PODs needs improvement"'
+      - 'p90>2500ms, continue as failed, label=GetAllProofsOfDelivery, title="Get All PODs is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=GetProofsOfDeliveryByOrderId, title="Get POD by Order ID is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetProofsOfDeliveryByOrderId, title="Get POD by Order ID needs improvement"'
+      - 'p90>2500ms, continue as failed, label=GetProofsOfDeliveryByOrderId, title="Get POD by Order ID is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=GetProofOfDelivery, title="Get POD is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetProofOfDelivery, title="Get POD needs improvement"'
+      - 'p90>2500ms, continue as failed, label=GetProofOfDelivery, title="Get POD is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=GetProofOfDeliveryWithExpand, title="Get POD with Expand is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetProofOfDeliveryWithExpand, title="Get POD with Expand needs improvement"'
+      - 'p90>2500ms, continue as failed, label=GetProofOfDeliveryWithExpand, title="Get POD with Expand is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=GetProofOfDeliveryWithNestedExpand, title="Get POD with Nested Expand is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=GetProofOfDeliveryWithNestedExpand, title="Get POD with Nested Expand needs improvement"'
+      - 'p90>2500ms, continue as failed, label=GetProofOfDeliveryWithNestedExpand, title="Get POD with Nested Expand is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=PrintProofOfDeliveryAsPdf, title="Print POD as PDF is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintProofOfDeliveryAsPdf, title="Print POD as PDF needs improvement"'
+      - 'p90>2500ms, continue as failed, label=PrintProofOfDeliveryAsPdf, title="Print POD as PDF is too slow"'
+
+      - 'p90<=1500ms, continue as passed, label=PrintProofOfDeliveryAsCsv, title="Print POD as CSV is successful"'
+      - 'p90>1500ms and p90<=2500ms, continue as passed, label=PrintProofOfDeliveryAsCsv, title="Print POD as CSV needs improvement"'
+      - 'p90>2500ms, continue as failed, label=PrintProofOfDeliveryAsCsv, title="Print POD as CSV is too slow"'
