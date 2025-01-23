@@ -234,7 +234,8 @@ public class ShipmentControllerIntegrationTest extends BaseWebIntegrationTest {
     when(orderRepository.findById(shipment.getOrder().getId()))
         .thenReturn(Optional.of(shipment.getOrder()));
     //necessary as SaveAnswer change shipment id value also in captor
-    when(stockEventBuilder.fromShipment(any(Shipment.class))).thenReturn(new StockEventDto());
+    when(stockEventBuilder.fromShipment(any(Shipment.class))).thenReturn(
+        Optional.of(new StockEventDto()));
 
     ShipmentDto extracted = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

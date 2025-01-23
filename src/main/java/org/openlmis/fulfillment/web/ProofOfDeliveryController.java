@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -55,6 +56,7 @@ import org.openlmis.fulfillment.web.util.ProofOfDeliveryDto;
 import org.openlmis.fulfillment.web.util.ProofOfDeliveryDtoBuilder;
 import org.openlmis.fulfillment.web.util.StockEventBuilder;
 import org.openlmis.fulfillment.web.util.VersionIdentityDto;
+import org.openlmis.fulfillment.web.validator.ProofOfDeliveryValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -70,6 +72,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -125,6 +128,9 @@ public class ProofOfDeliveryController extends BaseController {
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
 
+  @Autowired
+  private ProofOfDeliveryValidator proofOfDeliveryValidator;
+
   @Value("${dateFormat}")
   private String dateFormat;
 
@@ -173,16 +179,22 @@ public class ProofOfDeliveryController extends BaseController {
    *
    * @param proofOfDeliveryId UUID of proofOfDelivery which we want to update
    * @param dto               A proofOfDeliveryDto bound to the request body
+   * @param bindingResult     Binding Result
+   * @param authentication    Authentication details
    * @return ResponseEntity containing the updated proofOfDelivery
    */
   @RequestMapping(value = "/proofsOfDelivery/{id}", method = RequestMethod.PUT)
   @ResponseBody
   public ProofOfDeliveryDto updateProofOfDelivery(@PathVariable("id") UUID proofOfDeliveryId,
                                                   @RequestBody ProofOfDeliveryDto dto,
+                                                  BindingResult bindingResult,
                                                   OAuth2Authentication authentication) {
     XLOGGER.entry(proofOfDeliveryId, dto, authentication);
     Profiler profiler = new Profiler("UPDATE_POD");
     profiler.setLogger(XLOGGER);
+
+    proofOfDeliveryValidator.validate(dto, bindingResult);
+    throwValidationExceptionIfHasError(bindingResult);
 
     ProofOfDelivery toUpdate = findProofOfDelivery(proofOfDeliveryId, profiler);
 
@@ -196,6 +208,7 @@ public class ProofOfDeliveryController extends BaseController {
 
     profiler.start("CREATE_DOMAIN_FROM_DTO");
     ProofOfDelivery proofOfDelivery = ProofOfDelivery.newInstance(dto);
+
     // we always update resource
     profiler.start("UPDATE_POD");
     toUpdate.updateFrom(proofOfDelivery);
@@ -217,8 +230,8 @@ public class ProofOfDeliveryController extends BaseController {
       orderRepository.save(order);
 
       profiler.start("SEND_STOCK_EVENT");
-      StockEventDto event = stockEventBuilder.fromProofOfDelivery(toUpdate);
-      stockEventStockManagementService.submit(event);
+      Optional<StockEventDto> event = stockEventBuilder.fromProofOfDelivery(toUpdate);
+      event.ifPresent(stockEventStockManagementService::submit);
 
       fulfillmentNotificationService.sendPodConfirmedNotification(toUpdate);
     }

@@ -15,8 +15,6 @@
 
 package org.openlmis.fulfillment.domain;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,9 +43,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.TypeName;
-import org.openlmis.fulfillment.i18n.MessageKeys;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
-import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 
 @Entity
@@ -167,8 +163,6 @@ public class ProofOfDelivery extends BaseEntity {
    * @return instance of ProofOfDelivery.
    */
   public static ProofOfDelivery newInstance(Importer importer) {
-    validateLineItems(importer.getLineItems());
-
     List<ProofOfDeliveryLineItem> items = importer
         .getLineItems()
         .stream()
@@ -204,12 +198,6 @@ public class ProofOfDelivery extends BaseEntity {
         .collect(Collectors.toList());
 
     return new ProofOfDelivery(shipment, items);
-  }
-
-  private static void validateLineItems(List<?> lineItems) {
-    if (isEmpty(lineItems)) {
-      throw new ValidationException(MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
-    }
   }
 
   /**

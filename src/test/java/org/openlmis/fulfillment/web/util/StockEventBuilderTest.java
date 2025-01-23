@@ -15,11 +15,15 @@
 
 package org.openlmis.fulfillment.web.util;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.EVENT_MISSING_SOURCE_DESTINATION;
@@ -44,6 +48,7 @@ import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.service.ConfigurationSettingService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -55,6 +60,8 @@ import org.openlmis.fulfillment.service.stockmanagement.ValidDestinationsStockMa
 import org.openlmis.fulfillment.service.stockmanagement.ValidSourcesStockManagementService;
 import org.openlmis.fulfillment.testutils.DtoGenerator;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.testutils.ShipmentLineItemDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -143,14 +150,35 @@ public class StockEventBuilderTest {
         orderable.getId(), orderable.getVersionNumber()))))
         .thenReturn(Lists.newArrayList(orderable));
 
-    StockEventDto event = stockEventBuilder.fromShipment(shipment);
+    Optional<StockEventDto> event = stockEventBuilder.fromShipment(shipment);
 
-    assertThat(event.getFacilityId(), is(order.getSupplyingFacilityId()));
-    assertThat(event.getProgramId(), is(order.getProgramId()));
-    assertThat(event.getUserId(), is(shipment.getShippedById()));
+    assertTrue("Must create an event.", event.isPresent());
+    assertThat(event.get().getFacilityId(), is(order.getSupplyingFacilityId()));
+    assertThat(event.get().getProgramId(), is(order.getProgramId()));
+    assertThat(event.get().getUserId(), is(shipment.getShippedById()));
 
-    assertThat(event.getLineItems(), hasSize(shipment.getLineItems().size()));
-    assertEventLineItemOfShipment(event.getLineItems().get(0), orderable);
+    assertThat(event.get().getLineItems(), hasSize(shipment.getLineItems().size()));
+    assertEventLineItemOfShipment(event.get().getLineItems().get(0), orderable);
+  }
+
+  @Test
+  public void shouldNotCreateEventFromEmptyShipment() {
+    final ShipmentLineItem zeroItemsShippedLine =
+        new ShipmentLineItemDataBuilder().withQuantityShipped(0L).build();
+    final Shipment shipment = new ShipmentDataBuilder().withOrder(order)
+        .withLineItems(singletonList(zeroItemsShippedLine)).build();
+    final OrderableDto orderable = new OrderableDataBuilder()
+        .withId(shipment.getLineItems().get(0).getOrderable().getId())
+        .withVersionNumber(shipment.getLineItems().get(0).getOrderable().getVersionNumber())
+        .withNetContent(NET_CONTENT)
+        .build();
+    when(orderableReferenceDataService.findByIdentities(Sets.asSet(new VersionEntityReference(
+        orderable.getId(), orderable.getVersionNumber()))))
+        .thenReturn(Lists.newArrayList(orderable));
+
+    Optional<StockEventDto> event = stockEventBuilder.fromShipment(shipment);
+
+    assertFalse("Must not create an event.", event.isPresent());
   }
 
   @Test
@@ -164,14 +192,25 @@ public class StockEventBuilderTest {
         orderable.getId(), orderable.getVersionNumber()))))
         .thenReturn(Lists.newArrayList(orderable));
 
-    StockEventDto event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
+    Optional<StockEventDto> event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
 
-    assertThat(event.getFacilityId(), is(order.getReceivingFacilityId()));
-    assertThat(event.getProgramId(), is(order.getProgramId()));
-    assertThat(event.getUserId(), is(user.getId()));
+    assertTrue("Must not create an event.", event.isPresent());
+    assertThat(event.get().getFacilityId(), is(order.getReceivingFacilityId()));
+    assertThat(event.get().getProgramId(), is(order.getProgramId()));
+    assertThat(event.get().getUserId(), is(user.getId()));
 
-    assertThat(event.getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
-    assertEventLineItemOfProofOfDelivery(event.getLineItems().get(0), orderable);
+    assertThat(event.get().getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
+    assertEventLineItemOfProofOfDelivery(event.get().getLineItems().get(0), orderable);
+  }
+
+  @Test
+  public void shouldNotCreateEventFromEmptyProofOfDelivery() {
+    final ProofOfDelivery proofOfDelivery =
+        new ProofOfDeliveryDataBuilder().withShipment(shipment).withLineItems(emptyList()).build();
+
+    Optional<StockEventDto> event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
+
+    assertFalse("Must not create an event.", event.isPresent());
   }
 
   @Test

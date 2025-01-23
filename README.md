@@ -148,3 +148,14 @@ If you are using the [hauptmedia/proftpd](https://hub.docker.com/r/hauptmedia/pr
 * **FTP_PASSWORD** - the password of the FTP user.
 
 Note: the fulfillment service does not use the variables above for setting up any connections - the configuration is kept in the database and managed through the appropriate endpoints.
+
+* **SHIPMENT_POLLING_RATE_MILLISECONDS** - Rate in milliseconds how often shipment service should check for files over FTP
+, default `10000`
+/SFTP, ...
+* **SHIPMENT_SHIPPED_BY_ID** - OLMIS user to send shipment files as, default admin, `a337ec45-31a0-4f2b-9b2e-a105c4b669bb`
+
+* **ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER** - whether order file should be send over FTP, default `true`
+* **SEND_EMAIL_ON_REQUISITION_TO_ORDER** - whether order file should be send over email, default `true`
+
+* **ALLOW_EMPTY_SHIPMENT** - whether empty shipment (and consequently empty Proof of Delivery) should be accepted by
+ validation, default `false`

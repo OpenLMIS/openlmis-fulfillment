@@ -39,6 +39,11 @@ public class ShipmentLineItemDtoDataBuilder {
     return this;
   }
 
+  public ShipmentLineItemDtoDataBuilder withQuantityShipped(Long quantityShipped) {
+    shipmentLineItemDto.setQuantityShipped(quantityShipped);
+    return this;
+  }
+
   /**
    * Builds instance of {@link ShipmentLineItemDto}.
    */

@@ -15,6 +15,7 @@
 
 package org.openlmis.fulfillment.service;
 
+import java.util.Optional;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
@@ -49,10 +50,10 @@ public class DefaultShipmentCreatePostProcessor implements ShipmentCreatePostPro
     profiler.setLogger(XLOGGER);
 
     profiler.start("BUILD_STOCK_EVENT_FROM_SHIPMENT");
-    StockEventDto stockEventDto = stockEventBuilder.fromShipment(shipment);
+    Optional<StockEventDto> stockEventDto = stockEventBuilder.fromShipment(shipment);
 
     profiler.start("SUBMIT_STOCK_EVENT");
-    stockEventService.submit(stockEventDto);
+    stockEventDto.ifPresent(stockEventService::submit);
 
     profiler.stop().log();
     XLOGGER.exit();

@@ -399,7 +399,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     dto.setStatus(ProofOfDeliveryStatus.CONFIRMED);
 
     given(stockEventBuilder.fromProofOfDelivery(any(ProofOfDelivery.class)))
-        .willReturn(new StockEventDto());
+        .willReturn(Optional.of(new StockEventDto()));
 
     ProofOfDeliveryDto response = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
