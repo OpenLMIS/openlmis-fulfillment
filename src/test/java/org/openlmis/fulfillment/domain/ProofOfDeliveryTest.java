@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
-import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -157,17 +156,6 @@ public class ProofOfDeliveryTest {
       assertThat(line.getRejectionReasonId(), is(nullValue()));
       assertThat(line.getNotes(), is(nullValue()));
     }
-  }
-
-  @Test
-  public void shouldThrowExceptionIfLineItemsAreNotGiven() {
-    exception.expect(ValidationException.class);
-    exception.expectMessage(PROOF_OF_DELIVERY_LINE_ITEMS_REQUIRED);
-
-    ProofOfDelivery.Importer importer =
-        new DummyProofOfDeliveryDto(null, null, null, Collections.emptyList(), null, null, null);
-
-    ProofOfDelivery.newInstance(importer);
   }
 
   @Test

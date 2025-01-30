@@ -94,6 +94,18 @@ public class ProofOfDeliveryLineItemDataBuilder {
   }
 
   /**
+   * Sets QuantityAccepted and QuantityRejected to 0.
+   *
+   * @return the builder
+   */
+  public ProofOfDeliveryLineItemDataBuilder withoutQuantities() {
+    this.quantityAccepted = 0;
+    this.quantityRejected = 0;
+
+    return this;
+  }
+
+  /**
    * Sets quantity rejected as null value. The rejection reason id will have a null value as well.
    */
   public ProofOfDeliveryLineItemDataBuilder withoutQuantityRejected() {

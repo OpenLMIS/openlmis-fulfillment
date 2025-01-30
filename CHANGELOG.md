@@ -1,6 +1,9 @@
 9.1.0 / wip
 ==================
 
+Improvements:
+* [OPSD-20](https://openlmis.atlassian.net/browse/OPSD-20): Allow empty shipments and proof of deliveries, new ALLOW_EMPTY_SHIPMENT env variable.
+
 9.0.7 / 2024-10-31
 ==================
 

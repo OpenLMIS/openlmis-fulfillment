@@ -113,7 +113,7 @@ public class ShipmentControllerTest {
     when(orderRepository.findById(shipmentDto.getOrder().getId()))
         .thenReturn(Optional.of(order));
     when(stockEventBuilder.fromShipment(any(Shipment.class)))
-        .thenReturn(event);
+        .thenReturn(Optional.ofNullable(event));
     when(shipmentService.create(any(Shipment.class)))
         .thenReturn(shipment);
 
