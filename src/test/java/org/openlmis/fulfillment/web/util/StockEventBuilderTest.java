@@ -152,7 +152,7 @@ public class StockEventBuilderTest {
 
     Optional<StockEventDto> event = stockEventBuilder.fromShipment(shipment);
 
-    assertTrue("Must create an event.", event.isPresent());
+    assertTrue("Should create an event.", event.isPresent());
     assertThat(event.get().getFacilityId(), is(order.getSupplyingFacilityId()));
     assertThat(event.get().getProgramId(), is(order.getProgramId()));
     assertThat(event.get().getUserId(), is(shipment.getShippedById()));
@@ -178,7 +178,7 @@ public class StockEventBuilderTest {
 
     Optional<StockEventDto> event = stockEventBuilder.fromShipment(shipment);
 
-    assertFalse("Must not create an event.", event.isPresent());
+    assertFalse("Should not create an event.", event.isPresent());
   }
 
   @Test
@@ -194,7 +194,7 @@ public class StockEventBuilderTest {
 
     Optional<StockEventDto> event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
 
-    assertTrue("Must not create an event.", event.isPresent());
+    assertTrue("Should create an event.", event.isPresent());
     assertThat(event.get().getFacilityId(), is(order.getReceivingFacilityId()));
     assertThat(event.get().getProgramId(), is(order.getProgramId()));
     assertThat(event.get().getUserId(), is(user.getId()));
@@ -210,7 +210,7 @@ public class StockEventBuilderTest {
 
     Optional<StockEventDto> event = stockEventBuilder.fromProofOfDelivery(proofOfDelivery);
 
-    assertFalse("Must not create an event.", event.isPresent());
+    assertFalse("Should not create an event.", event.isPresent());
   }
 
   @Test

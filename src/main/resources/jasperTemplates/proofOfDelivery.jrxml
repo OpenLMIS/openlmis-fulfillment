@@ -55,9 +55,9 @@ join referencedata.processing_periods pp on pp.id = ord.processingperiodid
 join referencedata.programs p on p.id = ord.programid
 join referencedata.facilities ordering_facility on ordering_facility.id = ord.receivingfacilityid
 join referencedata.facilities supplying_facility on supplying_facility.id = ord.supplyingfacilityid
-join fulfillment.proof_of_delivery_line_items pod_li on pod_li.proofofdeliveryid = pod.id
-join referencedata.orderables orderable on orderable.id = pod_li.orderableid and orderable.versionnumber = pod_li.orderableversionnumber
-join referencedata.dispensables dispensable on dispensable.id = orderable.dispensableid
+left join fulfillment.proof_of_delivery_line_items pod_li on pod_li.proofofdeliveryid = pod.id
+left join referencedata.orderables orderable on orderable.id = pod_li.orderableid and orderable.versionnumber = pod_li.orderableversionnumber
+left join referencedata.dispensables dispensable on dispensable.id = orderable.dispensableid
 left join referencedata.orderable_identifiers pod_orderable_identifier on orderable.id = pod_orderable_identifier.orderableid
   and pod_orderable_identifier.orderableversionnumber = pod_li.orderableversionnumber
 left join fulfillment.order_line_items order_li on order_li.orderid = ord.id
@@ -286,6 +286,7 @@ order by orderProductName, productName, lotCode desc]]>
 		<groupHeader>
 			<band height="20">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<printWhenExpression><![CDATA[$F{productname} != null]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="100" height="20" uuid="24f87c60-2d32-4770-bfb9-af0887a8396b">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -679,6 +680,7 @@ order by orderProductName, productName, lotCode desc]]>
 	<detail>
 		<band height="20" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{productname} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="330" y="0" width="80" height="20" uuid="59068d4e-5e09-4316-ac21-ca8af3968af1">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
