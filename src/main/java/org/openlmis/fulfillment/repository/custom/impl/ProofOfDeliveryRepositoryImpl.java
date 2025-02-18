@@ -16,12 +16,11 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
 import static java.util.Collections.emptyList;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,49 +102,69 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       Set<UUID> receivingFacilityIds, Set<UUID> supplyingFacilityIds, Set<UUID> programIds,
       Pageable pageable, boolean count) {
 
-    List<String> sql = Lists.newArrayList(select);
-    List<String> where = Lists.newArrayList();
     Map<String, Object> params = Maps.newHashMap();
+    List<String> whereClauses = buildWhereClauses(shipmentId, orderId, receivingFacilityIds,
+        supplyingFacilityIds, programIds, params);
 
-    if (null != shipmentId) {
-      where.add(WITH_SHIPMENT_ID);
-      params.put("shipmentId", shipmentId);
-    } else if (null != orderId) {
-      where.add(WITH_ORDER_ID);
-      params.put("orderId", orderId);
-    }
+    String query = buildQuery(select, whereClauses, pageable, count);
 
-    if (isNotEmpty(receivingFacilityIds)) {
-      where.add(WITH_RECEIVING_FACILITIES);
-      params.put("receivingFacilityIds", receivingFacilityIds);
-    }
+    Class<?> resultClass = count ? Long.class : ProofOfDelivery.class;
+    TypedQuery<?> typedQuery = entityManager.createQuery(query, resultClass);
 
-    if (isNotEmpty(supplyingFacilityIds)) {
-      where.add(WITH_SUPPLYING_FACILITIES);
-      params.put("supplyingFacilityIds", supplyingFacilityIds);
-    }
-
-    if (isNotEmpty(programIds)) {
-      where.add(WITH_PROGRAM_IDS);
-      params.put("programIds", programIds);
-    }
-
-    if (!where.isEmpty()) {
-      sql.add(WHERE);
-      sql.add(Joiner.on(AND).join(where));
-    }
-
-    String query = Joiner.on(' ').join(sql);
-    if (!count && pageable.getSort() != Sort.unsorted()) {
-      query = Joiner.on(' ').join(Lists.newArrayList(query, ORDER_BY,
-          getOrderPredicate(pageable)));
-    }
-
-    Class resultClass = count ? Long.class : ProofOfDelivery.class;
-
-    TypedQuery typedQuery = entityManager.createQuery(query, resultClass);
     params.forEach(typedQuery::setParameter);
     return typedQuery;
+  }
+
+  private List<String> buildWhereClauses(UUID shipmentId, UUID orderId,
+      Set<UUID> receivingFacilityIds, Set<UUID> supplyingFacilityIds,
+      Set<UUID> programIds, Map<String, Object> params) {
+
+    List<String> where = new ArrayList<>();
+
+    addCondition(where, params, shipmentId, "shipmentId", WITH_SHIPMENT_ID);
+    addCondition(where, params, orderId, "orderId", WITH_ORDER_ID);
+
+    List<String> orConditions = new ArrayList<>();
+    addCondition(orConditions, params, receivingFacilityIds,
+        "receivingFacilityIds", WITH_RECEIVING_FACILITIES);
+    addCondition(orConditions, params, supplyingFacilityIds,
+        "supplyingFacilityIds", WITH_SUPPLYING_FACILITIES);
+
+    if (!orConditions.isEmpty()) {
+      where.add("(" + String.join(" OR ", orConditions) + ")");
+    }
+
+    addCondition(where, params, programIds, "programIds", WITH_PROGRAM_IDS);
+    return where;
+  }
+
+
+  private void addCondition(List<String> where, Map<String, Object> params, Object value,
+      String paramName, String condition) {
+
+    if (value != null && !(value instanceof Collection && ((Collection<?>) value).isEmpty())) {
+      where.add(condition);
+      params.put(paramName, value);
+    }
+  }
+
+  private String buildQuery(String select, List<String> whereClauses,
+      Pageable pageable, boolean count) {
+
+    List<String> sql = new ArrayList<>();
+    sql.add(select);
+
+    if (!whereClauses.isEmpty()) {
+      sql.add(WHERE);
+      sql.add(String.join(AND, whereClauses));
+    }
+
+    if (!count && pageable.getSort() != Sort.unsorted()) {
+      sql.add(ORDER_BY);
+      sql.add(getOrderPredicate(pageable));
+    }
+
+    return String.join(" ", sql);
   }
 
   private String getOrderPredicate(Pageable pageable) {
