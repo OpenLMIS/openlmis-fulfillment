@@ -16,13 +16,10 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
 import static java.util.Collections.emptyList;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +33,6 @@ import org.openlmis.fulfillment.util.Pagination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 
 public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryCustom {
 
@@ -53,10 +49,10 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
 
   private static final String WHERE = "WHERE";
   private static final String AND = " AND ";
+  private static final String OR = " OR ";
   private static final String ASC = "ASC";
   private static final String DESC = "DESC";
   private static final String ORDER_BY = "ORDER BY";
-
   private static final String WITH_SHIPMENT_ID = "s.id = :shipmentId";
   private static final String WITH_ORDER_ID = "o.id = :orderId";
   private static final String WITH_RECEIVING_FACILITIES =
@@ -70,100 +66,152 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
   private EntityManager entityManager;
 
   /**
-   * This method is supposed to retrieve all PODs with matched parameters.
+   * This method retrieves all Proofs of Delivery (PODs) matching the provided parameters.
+   * The receiving and supplying facility IDs are used in `OR` clauses to match the associated
+   * facilities.
    *
-   * @param shipmentId           UUID of associated shipment
-   * @param orderId              UUID of associated order
-   * @param receivingFacilityIds list of UUIDs of receiving facility in associated order
-   * @param supplyingFacilityIds list of UUIDs of supplying facility in associated order
-   * @param pageable             pagination parameters
-   * @return List of Facilities matching the parameters.
+   * @param shipmentId           UUID of the associated shipment.
+   * @param orderId              UUID of the associated order.
+   * @param receivingFacilityIds List of UUIDs of receiving facilities in the associated order.
+   * @param supplyingFacilityIds List of UUIDs of supplying facilities in the associated order.
+   * @param programIds           List of UUIDs of programs associated with the order.
+   * @param pageable             Pagination parameters to limit the result set.
+   * @return A list of Proofs of Delivery (PODs) matching the provided parameters.
    */
-  public Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Set<UUID> receivingFacilityIds,
-      Set<UUID> supplyingFacilityIds, Set<UUID> programIds, Pageable pageable) {
-
-    TypedQuery countQuery = prepareQuery(POD_COUNT, shipmentId, orderId, receivingFacilityIds,
-        supplyingFacilityIds, programIds, pageable, true);
-    Long count = (Long) countQuery.getSingleResult();
+  public Page<ProofOfDelivery> search(
+      UUID shipmentId,
+      UUID orderId,
+      Set<UUID> receivingFacilityIds,
+      Set<UUID> supplyingFacilityIds,
+      Set<UUID> programIds,
+      Pageable pageable
+  ) {
+    TypedQuery<Long> countQuery = prepareQuery(
+        POD_COUNT, shipmentId, orderId, receivingFacilityIds,
+        supplyingFacilityIds, programIds, pageable, Long.class
+    );
+    Long count = countQuery.getSingleResult();
 
     if (count > 0) {
-      TypedQuery searchQuery = prepareQuery(POD_SELECT, shipmentId, orderId, receivingFacilityIds,
-          supplyingFacilityIds, programIds, pageable, false);
+      TypedQuery<ProofOfDelivery> searchQuery = prepareQuery(
+          POD_SELECT, shipmentId, orderId, receivingFacilityIds,
+          supplyingFacilityIds, programIds, pageable, ProofOfDelivery.class
+      );
+
       List<ProofOfDelivery> pods = searchQuery
           .setMaxResults(pageable.getPageSize())
           .setFirstResult(Math.toIntExact(pageable.getOffset()))
           .getResultList();
+
       return Pagination.getPage(pods, pageable, count);
     }
 
     return Pagination.getPage(emptyList(), pageable, count);
   }
 
-  private TypedQuery prepareQuery(String select, UUID shipmentId, UUID orderId,
-      Set<UUID> receivingFacilityIds, Set<UUID> supplyingFacilityIds, Set<UUID> programIds,
-      Pageable pageable, boolean count) {
+  private <T> TypedQuery<T> prepareQuery(
+      String select,
+      UUID shipmentId,
+      UUID orderId,
+      Set<UUID> receivingFacilityIds,
+      Set<UUID> supplyingFacilityIds,
+      Set<UUID> programIds,
+      Pageable pageable,
+      Class<T> resultClass
+  ) {
+    Map<String, Object> params = new HashMap<>();
+    List<String> whereClauses = buildWhereClauses(
+        shipmentId, orderId, receivingFacilityIds,
+        supplyingFacilityIds, programIds, params
+    );
 
-    List<String> sql = Lists.newArrayList(select);
-    List<String> where = Lists.newArrayList();
-    Map<String, Object> params = Maps.newHashMap();
+    String query = buildQuery(select, whereClauses, pageable);
 
-    if (null != shipmentId) {
-      where.add(WITH_SHIPMENT_ID);
-      params.put("shipmentId", shipmentId);
-    } else if (null != orderId) {
-      where.add(WITH_ORDER_ID);
-      params.put("orderId", orderId);
-    }
-
-    if (isNotEmpty(receivingFacilityIds)) {
-      where.add(WITH_RECEIVING_FACILITIES);
-      params.put("receivingFacilityIds", receivingFacilityIds);
-    }
-
-    if (isNotEmpty(supplyingFacilityIds)) {
-      where.add(WITH_SUPPLYING_FACILITIES);
-      params.put("supplyingFacilityIds", supplyingFacilityIds);
-    }
-
-    if (isNotEmpty(programIds)) {
-      where.add(WITH_PROGRAM_IDS);
-      params.put("programIds", programIds);
-    }
-
-    if (!where.isEmpty()) {
-      sql.add(WHERE);
-      sql.add(Joiner.on(AND).join(where));
-    }
-
-    String query = Joiner.on(' ').join(sql);
-    if (!count && pageable.getSort() != Sort.unsorted()) {
-      query = Joiner.on(' ').join(Lists.newArrayList(query, ORDER_BY,
-          getOrderPredicate(pageable)));
-    }
-
-    Class resultClass = count ? Long.class : ProofOfDelivery.class;
-
-    TypedQuery typedQuery = entityManager.createQuery(query, resultClass);
+    TypedQuery<T> typedQuery = entityManager.createQuery(query, resultClass);
     params.forEach(typedQuery::setParameter);
+
     return typedQuery;
   }
 
-  private String getOrderPredicate(Pageable pageable) {
-    List<String> orderPredicate = new ArrayList<>();
-    List<String> sql = new ArrayList<>();
-    Iterator<Order> iterator = pageable.getSort().iterator();
-    Sort.Order order;
-    Sort.Direction sortDirection = Sort.Direction.ASC;
+  private List<String> buildWhereClauses(
+      UUID shipmentId,
+      UUID orderId,
+      Set<UUID> receivingFacilityIds,
+      Set<UUID> supplyingFacilityIds,
+      Set<UUID> programIds,
+      Map<String, Object> params
+  ) {
+    List<String> whereClauses = new ArrayList<>();
 
-    while (iterator.hasNext()) {
-      order = iterator.next();
-      orderPredicate.add("p.".concat(order.getProperty()));
-      sortDirection = order.getDirection();
+    addCondition(whereClauses, params, shipmentId, "shipmentId", WITH_SHIPMENT_ID);
+    addCondition(whereClauses, params, orderId, "orderId", WITH_ORDER_ID);
+
+    List<String> orConditions = new ArrayList<>();
+    addCondition(orConditions, params, receivingFacilityIds,
+        "receivingFacilityIds", WITH_RECEIVING_FACILITIES);
+    addCondition(orConditions, params, supplyingFacilityIds,
+        "supplyingFacilityIds", WITH_SUPPLYING_FACILITIES);
+
+    if (!orConditions.isEmpty()) {
+      whereClauses.add("(" + String.join(OR, orConditions) + ")");
     }
 
-    sql.add(Joiner.on(",").join(orderPredicate));
-    sql.add(sortDirection.isAscending() ? ASC : DESC);
+    addCondition(whereClauses, params, programIds, "programIds", WITH_PROGRAM_IDS);
+    return whereClauses;
+  }
 
-    return Joiner.on(' ').join(sql);
+  private void addCondition(
+      List<String> whereClauses,
+      Map<String, Object> params,
+      Object paramValue,
+      String paramName,
+      String condition
+  ) {
+    if (isParamValuePresent(paramValue)) {
+      whereClauses.add(condition);
+      params.put(paramName, paramValue);
+    }
+  }
+
+  private boolean isParamValuePresent(Object paramValue) {
+    return paramValue != null
+        && !(paramValue instanceof Collection
+        && ((Collection<?>) paramValue).isEmpty());
+  }
+
+  private String buildQuery(
+      String select,
+      List<String> whereClauses,
+      Pageable pageable
+  ) {
+    List<String> sql = new ArrayList<>();
+    sql.add(select);
+
+    if (!whereClauses.isEmpty()) {
+      sql.add(WHERE);
+      sql.add(String.join(AND, whereClauses));
+    }
+
+    if (select.equals(POD_SELECT) && pageable.getSort().isSorted()) {
+      sql.add(ORDER_BY);
+      sql.add(getOrderPredicate(pageable));
+    }
+
+    return String.join(" ", sql);
+  }
+
+  private String getOrderPredicate(Pageable pageable) {
+    List<String> orderPredicates = new ArrayList<>();
+
+    for (Sort.Order order : pageable.getSort()) {
+      String direction = order.getDirection().isAscending() ? ASC : DESC;
+      orderPredicates.add("p." + order.getProperty() + " " + direction);
+    }
+
+    if (orderPredicates.isEmpty()) {
+      return "";
+    }
+
+    return String.join(",", orderPredicates);
   }
 }
