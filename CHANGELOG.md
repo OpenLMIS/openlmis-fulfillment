@@ -1,3 +1,9 @@
+9.2.0 / wip
+==================
+
+Bugfix:
+* [SELV3-802](https://openlmis.atlassian.net/browse/SELV3-802): Allow user both fulfillment and PoD management
+
 9.1.0 / 2025-02-03
 ==================
 
