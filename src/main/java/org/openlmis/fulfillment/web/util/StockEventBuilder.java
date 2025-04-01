@@ -186,6 +186,7 @@ public class StockEventBuilder {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(dateHelper.getCurrentDate());
     dto.setDestinationId(destinationId);
+    dto.setReasonId(configurationSettingService.getReasonIdForShipment());
 
     final OrderableDto orderableDto = orderables.get(
         new VersionIdentityDto(lineItem.getOrderable()));
@@ -203,7 +204,7 @@ public class StockEventBuilder {
     StockEventLineItemDto dto = new StockEventLineItemDto();
     dto.setOccurredDate(proofOfDelivery.getReceivedDate());
     dto.setSourceId(sourceId);
-    dto.setReasonId(configurationSettingService.getTransferInReasonId());
+    dto.setReasonId(configurationSettingService.getReasonIdForProofOfDelivery());
 
     final OrderableDto orderableDto = orderables.get(
         new VersionIdentityDto(lineItem.getOrderable()));

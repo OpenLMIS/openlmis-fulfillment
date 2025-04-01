@@ -75,7 +75,8 @@ import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDtoDat
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.UnusedPrivateField"})
 public class StockEventBuilderTest {
-  private static final UUID TRANSFER_IN_REASON_ID = UUID.randomUUID();
+  private static final UUID POD_REASON_ID = UUID.randomUUID();
+  private static final UUID SHIPMENT_REASON_ID = UUID.randomUUID();
   private static final LocalDate CURRENT_DATE = LocalDate.now();
   private static final Long NET_CONTENT = 76L;
 
@@ -132,8 +133,10 @@ public class StockEventBuilderTest {
         .search(order.getProgramId(), fromFacilityDto.getId(), toFacilityDto.getId()))
         .thenReturn(Optional.of(destination));
 
-    when(configurationSettingService.getTransferInReasonId())
-        .thenReturn(TRANSFER_IN_REASON_ID);
+    when(configurationSettingService.getReasonIdForProofOfDelivery())
+        .thenReturn(POD_REASON_ID);
+    when(configurationSettingService.getReasonIdForShipment())
+            .thenReturn(SHIPMENT_REASON_ID);
 
     when(dateHelper.getCurrentDate()).thenReturn(CURRENT_DATE);
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
@@ -159,6 +162,9 @@ public class StockEventBuilderTest {
 
     assertThat(event.get().getLineItems(), hasSize(shipment.getLineItems().size()));
     assertEventLineItemOfShipment(event.get().getLineItems().get(0), orderable);
+
+    event.get().getLineItems().forEach(shipment ->
+        assertThat(shipment.getReasonId(), is(SHIPMENT_REASON_ID)));
   }
 
   @Test
@@ -201,6 +207,9 @@ public class StockEventBuilderTest {
 
     assertThat(event.get().getLineItems(), hasSize(proofOfDelivery.getLineItems().size()));
     assertEventLineItemOfProofOfDelivery(event.get().getLineItems().get(0), orderable);
+
+    event.get().getLineItems().forEach(pod ->
+        assertThat(pod.getReasonId(), is(POD_REASON_ID)));
   }
 
   @Test
@@ -259,7 +268,7 @@ public class StockEventBuilderTest {
         is(dto.getQuantityAccepted() * NET_CONTENT.intValue()));
     assertThat(eventLine.getOccurredDate(), is(proofOfDelivery.getReceivedDate()));
     assertThat(eventLine.getSourceId(), is(node.getId()));
-    assertThat(eventLine.getReasonId(), is(TRANSFER_IN_REASON_ID));
+    assertThat(eventLine.getReasonId(), is(POD_REASON_ID));
     assertThat(
         eventLine.getExtraData(),
         allOf(

@@ -15,6 +15,8 @@
 
 package org.openlmis.fulfillment.service;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +27,31 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 public class ConfigurationSettingService {
 
-  private static final String RESONS_SUFFIX = "reasons.";
-  static final String TRANSFER_IN = RESONS_SUFFIX + "transferIn";
+  static final String POD_REASON = "reasons.pod";
+  static final String SHIPMENT_REASON = "reasons.shipment";
   private static final String FTP_TRANSFER = "ftp.transfer.on.requisition.to.order";
   private static final String SEND_EMAIL = "send.email.on.requisition.to.order";
 
   @Autowired
   private Environment env;
 
-  public UUID getTransferInReasonId() {
-    return UUID.fromString(env.getProperty(TRANSFER_IN));
+  /**
+   * Returns reason id which should be used in proof of delivery - stock replenishment
+   * in receiving facility, by default Transfer in - e3fc3cf3-da18-44b0-a220-77c985202e06.
+   */
+  public UUID getReasonIdForProofOfDelivery() {
+    return UUID.fromString(Objects.requireNonNull(env.getProperty(POD_REASON)));
+  }
+
+  /**
+   * Returns reason id which should be used in shipment - stock consumption
+   * in supplying facility, if not present, returns null.
+   */
+  public UUID getReasonIdForShipment() {
+    return Optional.ofNullable(env.getProperty(SHIPMENT_REASON))
+        .filter(id -> !id.isEmpty())
+        .map(UUID::fromString)
+        .orElse(null);
   }
 
   public String getAllowFtpTransferOnRequisitionToOrder() {
