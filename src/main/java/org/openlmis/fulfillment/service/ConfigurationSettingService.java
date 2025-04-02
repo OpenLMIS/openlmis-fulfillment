@@ -16,9 +16,9 @@
 package org.openlmis.fulfillment.service;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -48,10 +48,11 @@ public class ConfigurationSettingService {
    * in supplying facility, if not present, returns null.
    */
   public UUID getReasonIdForShipment() {
-    return Optional.ofNullable(env.getProperty(SHIPMENT_REASON))
-        .filter(id -> !id.isEmpty())
-        .map(UUID::fromString)
-        .orElse(null);
+    String id = env.getProperty(SHIPMENT_REASON);
+    if (StringUtils.isBlank(id)) {
+      return null;
+    }
+    return UUID.fromString(id);
   }
 
   public String getAllowFtpTransferOnRequisitionToOrder() {
