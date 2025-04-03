@@ -1,6 +1,11 @@
 Upcoming Version (WIP)
 ==================
 
+Improvements:
+* [SELVSUP-43](https://openlmis.atlassian.net/browse/SELVSUP-43): Add Reason Assignment for Stock Event Line Item Creation During Shipment.
+  * Introduced a new variable in the `.env` file: `SHIPMENT_REASON_ID`. Default is set to `null`; if provided, the reason will be used during shipment creation.
+  * Renamed the existing `TRANSFER_IN_REASON_ID` in the `.env` file, used in Stock Event Line Item Creation During Proof of Delivery to `POD_REASON_ID`. The default reason ID remains unchanged (`e3fc3cf3-da18-44b0-a220-77c985202e06`).
+
 9.2.0 / 2025-03-31
 ==================
 

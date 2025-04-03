@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.UUID;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,17 +32,42 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootApplication(scanBasePackages = "org.openlmis.fulfillment")
 @SpringBootTest
-@TestPropertySource(properties = {"reasons.transferIn=d748d73c-cfa9-4cf0-81c6-b684f7c7e19c"})
+@TestPropertySource(properties = {
+    "reasons.pod=e3fc3cf3-da18-44b0-a220-77c985202e06",
+    "reasons.shipment=c1fc3cf3-da18-44b0-a220-77c985202e06",
+    "ftp.transfer.on.requisition.to.order=true",
+    "send.email.on.requisition.to.order=false"})
 @ActiveProfiles({"test", "test-run"})
 public class ConfigurationSettingServiceIntegrationTest {
-  private static final UUID TRANSFER_IN_REASON_ID = UUID
-      .fromString("d748d73c-cfa9-4cf0-81c6-b684f7c7e19c");
+  private static final UUID POD_REASON_ID = UUID.fromString(
+      "e3fc3cf3-da18-44b0-a220-77c985202e06");
+  private static final UUID SHIPMENT_REASON_ID = UUID.fromString(
+      "c1fc3cf3-da18-44b0-a220-77c985202e06");
+  private static final String ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER = "true";
+  private static final String ALLOW_SENDING_EMAIL_ON_REQUISITION_TO_ORDER = "false";
 
   @Autowired
   private ConfigurationSettingService configurationSettingService;
 
   @Test
-  public void shouldReturnTransferInReasonId() {
-    assertThat(configurationSettingService.getTransferInReasonId(), is(TRANSFER_IN_REASON_ID));
+  public void shouldReturnReasonIdForProofOfDelivery() {
+    assertThat(configurationSettingService.getReasonIdForProofOfDelivery(), is(POD_REASON_ID));
+  }
+
+  @Test
+  public void shouldReturnReasonIdForShipment() {
+    assertThat(configurationSettingService.getReasonIdForShipment(), is(SHIPMENT_REASON_ID));
+  }
+
+  @Test
+  public void shouldReturnAllowFtpTransferOnRequisitionToOrder() {
+    assertThat(configurationSettingService.getAllowFtpTransferOnRequisitionToOrder(),
+        is(ALLOW_FTP_TRANSFER_ON_REQUISITION_TO_ORDER));
+  }
+
+  @Test
+  public void shouldReturnAllowSendingEmailOnRequisitionToOrder() {
+    assertThat(configurationSettingService.getAllowSendingEmailOnRequisitionToOrder(),
+        is(ALLOW_SENDING_EMAIL_ON_REQUISITION_TO_ORDER));
   }
 }
