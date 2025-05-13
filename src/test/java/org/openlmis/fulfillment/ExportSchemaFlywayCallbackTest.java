@@ -16,7 +16,7 @@
 package org.openlmis.fulfillment;
 
 import static org.flywaydb.core.api.callback.Event.AFTER_MIGRATE;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;

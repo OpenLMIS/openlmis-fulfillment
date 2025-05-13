@@ -18,7 +18,7 @@ package org.openlmis.fulfillment.domain;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.ExtraDataConverter.TYPE_REFERENCE;

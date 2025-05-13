@@ -48,8 +48,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.TemplateRepository;
@@ -119,7 +119,7 @@ public class TemplateServiceTest {
     template.setName("Name");
     expectedException.expect(ReportingException.class);
     expectedException.expectMessage(REPORTING_TEMPLATE_EXISTS);
-    when(templateRepository.findByName(Matchers.anyObject())).thenReturn(template);
+    when(templateRepository.findByName(ArgumentMatchers.anyObject())).thenReturn(template);
 
     templateService.validateFileAndInsertTemplate(template, null);
   }
