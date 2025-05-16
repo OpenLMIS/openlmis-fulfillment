@@ -16,8 +16,8 @@
 package org.openlmis.fulfillment.web;
 
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.Optional;
