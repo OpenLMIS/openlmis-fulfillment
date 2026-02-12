@@ -51,10 +51,10 @@
 from fulfillment.proofs_of_delivery pod
 join fulfillment.shipments shipment on shipment.id = pod.shipmentid
 join fulfillment.orders ord on ord.id = shipment.orderid
-join referencedata.processing_periods pp on pp.id = ord.processingperiodid
 join referencedata.programs p on p.id = ord.programid
 join referencedata.facilities ordering_facility on ordering_facility.id = ord.receivingfacilityid
 join referencedata.facilities supplying_facility on supplying_facility.id = ord.supplyingfacilityid
+left join referencedata.processing_periods pp on pp.id = ord.processingperiodid
 left join fulfillment.proof_of_delivery_line_items pod_li on pod_li.proofofdeliveryid = pod.id
 left join referencedata.orderables orderable on orderable.id = pod_li.orderableid and orderable.versionnumber = pod_li.orderableversionnumber
 left join referencedata.dispensables dispensable on dispensable.id = orderable.dispensableid
