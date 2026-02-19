@@ -36,6 +36,8 @@ import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -50,6 +52,7 @@ public class OrderCsvHelper {
   private static final String FACILITY = "Facility";
   private static final String PRODUCT = "Orderable";
   private static final String PERIOD = "ProcessingPeriod";
+  private static final String PROGRAM = "Program";
 
   private static final String LINE_SEPARATOR = "\r\n";
   private static final Boolean ENCLOSE_VALUES_WITH_QUOTES = false;
@@ -62,6 +65,9 @@ public class OrderCsvHelper {
 
   @Autowired
   private OrderableReferenceDataService orderableReferenceDataService;
+
+  @Autowired
+  private ProgramReferenceDataService programReferenceDataService;
 
   @Value("${order.export.includeZeroQuantity}")
   private boolean includeZeroQuantity;
@@ -197,6 +203,10 @@ public class OrderCsvHelper {
       case PERIOD:
         ProcessingPeriodDto period = periodReferenceDataService.findOne(relatedId);
         columnValue = getValue(period, fileColumn.getRelatedKeyPath());
+        break;
+      case PROGRAM:
+        ProgramDto program = programReferenceDataService.findOne(relatedId);
+        columnValue = getValue(program, fileColumn.getRelatedKeyPath());
         break;
       default:
         columnValue = null;
