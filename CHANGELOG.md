@@ -1,8 +1,14 @@
 Upcoming Version / (WIP)
 ==================
 
+Changes: 
+* Added `Program code` field to Order print  
+
 Improvements:
 * Stabilized consul registration and health checks
+
+Bug Fixes:
+* Fixed PoD printout for requisition-less orders
 
 9.3.0 / 2025-11-27
 ==================

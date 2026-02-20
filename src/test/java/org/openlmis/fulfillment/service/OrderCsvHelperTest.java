@@ -49,6 +49,8 @@ import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramDto;
+import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -66,6 +68,7 @@ public class OrderCsvHelperTest {
   private static final String ORDER_DATE = "Order date";
   private static final String HEADER_ORDERABLE = "header.orderable";
   private static final String PRODUCT = "Product";
+  private static final String PROGRAM = "Program";
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -75,6 +78,9 @@ public class OrderCsvHelperTest {
 
   @Mock
   private OrderableReferenceDataService orderableReferenceDataService;
+
+  @Mock
+  private ProgramReferenceDataService programReferenceDataService;
 
   @InjectMocks
   private OrderCsvHelper orderCsvHelper;
@@ -90,6 +96,9 @@ public class OrderCsvHelperTest {
 
     UUID periodId = order.getProcessingPeriodId();
     when(periodReferenceDataService.findOne(periodId)).thenReturn(createPeriod());
+
+    UUID programId = order.getProgramId();
+    when(programReferenceDataService.findOne(programId)).thenReturn(createProgram());
 
     UUID productId = order.getOrderLineItems()
         .get(0).getOrderable().getId();
@@ -224,12 +233,14 @@ public class OrderCsvHelperTest {
         true, 3, null, LINE_ITEM, ORDERABLE, "Orderable", "fullProductName", null));
     fileColumns.add(new FileColumn(true, "header.period", PERIOD, true, 4,
         "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null));
+    fileColumns.add(new FileColumn(true, "header.program", PROGRAM, true, 5,
+        null, ORDER, "programId", "Program", "code", null));
 
     FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
         fileColumns);
 
     String csv = writeCsvFile(order, fileTemplate);
-    assertThat(csv, startsWith("facilityCode,productCode,productName,01/16"));
+    assertThat(csv, startsWith("facilityCode,productCode,productName,01/16,programCode"));
   }
 
   @Test
@@ -288,6 +299,13 @@ public class OrderCsvHelperTest {
     period.setStartDate(LocalDate.of(2016, Month.JANUARY, 1));
 
     return period;
+  }
+
+  private ProgramDto createProgram() {
+    ProgramDto program = new ProgramDto();
+    program.setCode("programCode");
+
+    return program;
   }
 
   private OrderableDto createProduct() {
