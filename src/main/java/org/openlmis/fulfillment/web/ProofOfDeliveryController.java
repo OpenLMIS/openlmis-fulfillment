@@ -41,12 +41,12 @@ import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
-import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ProofOfDeliveryService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -90,7 +90,7 @@ public class ProofOfDeliveryController extends BaseController {
   private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
 
   @Autowired
-  private JasperReportsViewService jasperReportsViewService;
+  private ReportService reportService;
 
   @Autowired
   private TemplateService templateService;
@@ -316,8 +316,9 @@ public class ProofOfDeliveryController extends BaseController {
     params.put("decimalFormat", decimalFormat);
     params.put("dateTimeFormat", dateTimeFormat);
     params.put("timeZoneId", timeZoneId);
+    params.put("format", "pdf");
 
-    byte[] bytes = jasperReportsViewService.generateReport(template, params);
+    byte[] bytes = reportService.generateReport(template, params);
 
     String fileName = template.getName().replaceAll("\\s+", "_");
 

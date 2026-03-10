@@ -12,7 +12,6 @@
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<property name="reportType" value="Timeliness Report"/>
-	<import value="org.openlmis.fulfillment.web.util.*"/>
 	<import value="java.text.DecimalFormat"/>
 	<import value="java.time.ZonedDateTime"/>
 	<import value="java.time.format.DateTimeFormatter"/>
@@ -22,7 +21,7 @@
 			<style backcolor="#F3F3F3"/>
 		</conditionalStyle>
 	</style>
-	<parameter name="order" class="org.openlmis.fulfillment.web.util.OrderReportDto" isForPrompting="false">
+	<parameter name="order" class="java.util.Map" isForPrompting="false">
 		<property name="displayName" value="Order"/>
 	</parameter>
 	<parameter name="loggedInUser" class="java.lang.String">
@@ -34,23 +33,23 @@
 	<parameter name="dateTimeFormat" class="java.lang.String" isForPrompting="false">
 		<property name="displayName" value="DateTimeFormat"/>
 	</parameter>
+    <parameter name="timeZoneId" class="java.lang.String" isForPrompting="false">
+        <property name="displayName" value="TimeZoneId"/>
+    </parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="orderedQuantity" class="java.lang.Long">
+	<field name="orderedQuantity" class="java.lang.Number">
 		<fieldDescription><![CDATA[orderedQuantity]]></fieldDescription>
 	</field>
-	<field name="totalDispensingUnits" class="java.lang.Long">
+	<field name="totalDispensingUnits" class="java.lang.Number">
 		<fieldDescription><![CDATA[totalDispensingUnits]]></fieldDescription>
 	</field>
-	<field name="orderable" class="org.openlmis.fulfillment.service.referencedata.OrderableDto">
+	<field name="orderable" class="java.util.Map">
 		<fieldDescription><![CDATA[orderable]]></fieldDescription>
 	</field>
-	<field name="id" class="java.util.UUID">
+	<field name="id" class="java.lang.String">
 		<fieldDescription><![CDATA[id]]></fieldDescription>
-	</field>
-	<field name="class" class="java.lang.Class">
-		<fieldDescription><![CDATA[class]]></fieldDescription>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -130,7 +129,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="25" width="145" height="15" uuid="e1f25574-b3f7-4455-bbe7-0a57f9ee9da4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{order}.getFacility().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("name")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="" x="410" y="0" width="145" height="15" isPrintWhenDetailOverflows="true" uuid="c3a4d043-8e85-48dc-8b3e-265cbd8df92a"/>
@@ -143,24 +142,24 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getOrderCode()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{order}.get("orderCode")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="40" width="145" height="15" uuid="59b73e19-33f5-4605-8854-d58e0adc7283"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{order}.getFacility().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("name")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="55" width="145" height="15" uuid="eabc21b2-8e7f-4fef-be54-a403f55b14b9">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{order}.getFacility().getCode()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("code")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="100" width="145" height="15" uuid="6969131b-b903-4273-801e-b69945c2615b"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{order}.getThirdLevelFacility().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("thirdLevelFacility")).get("name")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="85" width="145" height="15" uuid="af46019f-41a6-46a6-af27-8e5f64882e46"/>
@@ -173,7 +172,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="115" width="145" height="15" uuid="82a6e7bb-330c-4e2d-992e-3ed08974dfe2"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{order}.getSecondLevelFacility().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("secondLevelFacility")).get("name")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="145" width="145" height="15" uuid="abe3fdb1-aa3b-4233-ba3d-1353fa702441"/>
@@ -237,7 +236,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{orderable}.getFullProductName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orderable}.get("fullProductName")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="475" y="0" width="80" height="25" uuid="5e3e13b2-3de1-4613-927b-3d352faaed85">
@@ -284,7 +283,7 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{orderable}.getProductCode()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orderable}.get("productCode")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Row" stretchType="RelativeToTallestObject" mode="Opaque" x="400" y="0" width="75" height="25" uuid="325890b1-a7bb-4c2b-b9aa-0149b25d9968">
@@ -324,7 +323,15 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getAuthorizedStatusChange().getAuthor().printName()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author") != null ?
+                    (
+                        ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("firstName") != null ?
+                        (((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("lastName"))
+                        :
+                        ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("username")
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="100" width="100" height="20" uuid="c290ee34-95a5-48fb-b256-237ac3fb15d1"/>
@@ -344,7 +351,15 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getApprovedStatusChange().getAuthor().printName()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("approvedStatusChange")).get("author") != null ?
+                    (
+                        ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("firstName") != null ?
+                        (((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("lastName"))
+                        :
+                        ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("username")
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="120" width="100" height="20" uuid="9fa486a9-4156-4ddf-bb90-01fcfc403ad4"/>
@@ -364,7 +379,15 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{order}.getReleasedStatusChange().getAuthor().printName()]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("releasedStatusChange")).get("author") != null ?
+                    (
+                        ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("firstName") != null ?
+                        (((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("lastName"))
+                        :
+                        ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("username")
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="140" width="100" height="20" uuid="67c89e91-ab18-4969-8717-5787b78b787c"/>
@@ -426,8 +449,14 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getAuthorizedStatusChange().getCreatedDate())]]>
-				</textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("authorizedStatusChange")).get("createdDate") != null ?
+                    java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
+                        java.time.Instant.ofEpochSecond(
+                            ((java.lang.Number)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("createdDate")).longValue()
+                        ).atZone(java.time.ZoneId.of($P{timeZoneId}))
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="380" y="100" width="40" height="20" uuid="c8adb3e0-3283-482a-96a4-9898a6beb3a9"/>
@@ -447,7 +476,14 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getApprovedStatusChange().getCreatedDate())]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("approvedStatusChange")).get("createdDate") != null ?
+                    java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
+                        java.time.Instant.ofEpochSecond(
+                            ((java.lang.Number)((java.util.Map)$P{order}.get("approvedStatusChange")).get("createdDate")).longValue()
+                        ).atZone(java.time.ZoneId.of($P{timeZoneId}))
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="380" y="120" width="40" height="20" uuid="992fcd9b-f17f-4ee8-8aee-cf95482ae224"/>
@@ -467,7 +503,14 @@ Fax numbers: 01-241193,01-246288]]></text>
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateTimeFormat}).format($P{order}.getReleasedStatusChange().getCreatedDate())]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.Map)$P{order}.get("releasedStatusChange")).get("createdDate") != null ?
+                    java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
+                        java.time.Instant.ofEpochSecond(
+                            ((java.lang.Number)((java.util.Map)$P{order}.get("releasedStatusChange")).get("createdDate")).longValue()
+                        ).atZone(java.time.ZoneId.of($P{timeZoneId}))
+                    ) : null
+                ]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="430" y="140" width="122" height="20" uuid="2308393b-b536-4676-a4f7-8bd83528b662"/>

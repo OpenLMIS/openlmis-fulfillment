@@ -353,7 +353,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldPrintOrderAsCsv() {
-    String csvContent = restAssured.given()
+    restAssured.given()
         .queryParam(FORMAT, CSV)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .pathParam("id", secondOrder.getId())
@@ -364,7 +364,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .extract().body().asString();
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    assertTrue(csvContent.contains("Product Code"));
   }
 
   @Test

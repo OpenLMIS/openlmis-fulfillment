@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.web.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
@@ -53,7 +54,7 @@ public class StatusChangeDto implements StatusChange.Exporter, StatusChange.Impo
   @Setter
   private UserDto author;
 
-  @JsonIgnore
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public UserDto getAuthor() {
     return author;
   }
