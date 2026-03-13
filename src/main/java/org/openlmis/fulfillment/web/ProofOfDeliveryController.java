@@ -41,12 +41,12 @@ import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
-import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ProofOfDeliveryService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
+import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
@@ -90,7 +90,7 @@ public class ProofOfDeliveryController extends BaseController {
   private static final String CHECK_PERMISSION = "CHECK_PERMISSION";
 
   @Autowired
-  private JasperReportsViewService jasperReportsViewService;
+  private ReportService reportService;
 
   @Autowired
   private TemplateService templateService;
@@ -280,12 +280,17 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Prints proofOfDelivery in PDF format.
    *
-   * @param id UUID of ProofOfDelivery to print
+   * @param id             UUID of ProofOfDelivery to print
+   * @param authentication the authentication
+   * @param lang           the lang
+   * @return the response entity
+   * @throws IOException the io exception
    */
   @RequestMapping(value = "/proofsOfDelivery/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printProofOfDelivery(@PathVariable("id") UUID id,
-      OAuth2Authentication authentication) throws IOException {
+      OAuth2Authentication authentication,
+      @RequestParam(defaultValue = "en") String lang) throws IOException {
 
     XLOGGER.entry(id, authentication);
     Profiler profiler = new Profiler("GET_POD");
@@ -316,8 +321,10 @@ public class ProofOfDeliveryController extends BaseController {
     params.put("decimalFormat", decimalFormat);
     params.put("dateTimeFormat", dateTimeFormat);
     params.put("timeZoneId", timeZoneId);
+    params.put("format", "pdf");
+    params.put("lang", lang);
 
-    byte[] bytes = jasperReportsViewService.generateReport(template, params);
+    byte[] bytes = reportService.generateReport(template, params);
 
     String fileName = template.getName().replaceAll("\\s+", "_");
 

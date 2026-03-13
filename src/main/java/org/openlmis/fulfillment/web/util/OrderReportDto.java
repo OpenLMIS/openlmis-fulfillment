@@ -15,7 +15,6 @@
 
 package org.openlmis.fulfillment.web.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,7 +64,6 @@ public final class OrderReportDto extends OrderDto implements Order.Exporter {
    * Get zone of the facility that has the district level.
    * @return district of the facility.
    */
-  @JsonIgnore
   public GeographicZoneDto getThirdLevelFacility() {
     return getFacility().getZoneByLevelNumber(DISTRICT_LEVEL);
   }
@@ -74,7 +72,6 @@ public final class OrderReportDto extends OrderDto implements Order.Exporter {
    * Get zone of the facility that has the region level.
    * @return region of the facility.
    */
-  @JsonIgnore
   public GeographicZoneDto getSecondLevelFacility() {
     return getFacility().getZoneByLevelNumber(REGION_LEVEL);
   }
@@ -83,7 +80,6 @@ public final class OrderReportDto extends OrderDto implements Order.Exporter {
    * Get status change that is AUTHORIZED.
    * @return authorized status change.
    */
-  @JsonIgnore
   public StatusChangeDto getAuthorizedStatusChange() {
     return Optional.ofNullable(getStatusChangeByStatus(ExternalStatus.AUTHORIZED))
             .orElse(new StatusChangeDto());
@@ -93,7 +89,6 @@ public final class OrderReportDto extends OrderDto implements Order.Exporter {
    * Get status change that is APPROVED.
    * @return approved status change.
    */
-  @JsonIgnore
   public StatusChangeDto getApprovedStatusChange() {
     return Optional.ofNullable(getStatusChangeByStatus(ExternalStatus.APPROVED))
             .orElse(new StatusChangeDto());
@@ -103,7 +98,6 @@ public final class OrderReportDto extends OrderDto implements Order.Exporter {
    * Get status change that is RELEASED.
    * @return released status change.
    */
-  @JsonIgnore
   public StatusChangeDto getReleasedStatusChange() {
     return Optional.ofNullable(getStatusChangeByStatus(ExternalStatus.RELEASED))
             .orElse(new StatusChangeDto());

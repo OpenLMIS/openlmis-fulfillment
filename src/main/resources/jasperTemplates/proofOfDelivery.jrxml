@@ -22,6 +22,9 @@
 	<parameter name="timeZoneId" isForPrompting="false">
 		<property name="displayName" value="TimeZoneId"/>
 	</parameter>
+    <parameter name="headerTemplate" class="net.sf.jasperreports.engine.JasperReport" isForPrompting="false">
+        <property name="displayName" value="HeaderTemplate"/>
+    </parameter>
 	<queryString language="SQL">
 		<![CDATA[select distinct on (orderProductName, productname, lotcode)
   p."name" as programName,
@@ -184,7 +187,8 @@ order by orderProductName, productName, lotCode desc]]>
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
 					</box>
 					<textElement verticalAlignment="Middle"/>
-					<textFieldExpression><![CDATA[$F{quantityordered} != null ? $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityordered} != null ?
+$P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="620" y="0" width="80" height="20" backcolor="#F0F0F0" uuid="fee7ae94-a0b2-4ffe-84d0-9624f2b76451">
@@ -427,10 +431,17 @@ order by orderProductName, productName, lotCode desc]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="100" splitType="Stretch">
+		<band height="190" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+            <subreport overflowType="Stretch">
+                <reportElement positionType="Float" mode="Transparent" x="0" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34"/>
+                <parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
+                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                <subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
+            </subreport>
 			<textField>
-				<reportElement x="0" y="0" width="800" height="18" uuid="8cb24d09-0d5b-438d-9449-705428247a20">
+				<reportElement positionType="Float" x="0" y="90" width="800" height="18"
+                               uuid="8cb24d09-0d5b-438d-9449-705428247a20">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box>
@@ -443,10 +454,11 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement>
 					<font size="14" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Proof of Delivery for " + $F{programname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{report.title.proofOfDeliveryFor} + " " + $F{programname}]]></textFieldExpression>
 			</textField>
 			<frame>
-				<reportElement x="0" y="30" width="800" height="65" uuid="7eb68997-e2c7-4b99-a497-6e69aa52ee81">
+				<reportElement positionType="Float" x="0" y="120" width="800" height="65"
+                               uuid="7eb68997-e2c7-4b99-a497-6e69aa52ee81">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<rectangle radius="4">
@@ -458,16 +470,16 @@ order by orderProductName, productName, lotCode desc]]>
 						<pen lineColor="#BEBEBE"/>
 					</graphicElement>
 				</rectangle>
-				<staticText>
+				<textField>
 					<reportElement x="420" y="9" width="110" height="15" uuid="427a0e98-8858-4140-93a4-67a420156957">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Order Date]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.header.orderDate}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="290" y="9" width="120" height="15" uuid="d7359e09-d700-49c3-a066-621f28881f4d">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -475,36 +487,36 @@ order by orderProductName, productName, lotCode desc]]>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Ordering Facility]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.header.orderingFacility}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="540" y="9" width="130" height="15" uuid="976df0bb-2396-4db1-a65c-375b043775a5">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Reporting Period]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.header.reportingPeriodTitle}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="20" y="10" width="100" height="15" uuid="e4140e17-41af-484d-992e-a80f6d6905da">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Order No.]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.column.orderNo}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="680" y="9" width="110" height="15" uuid="198334fa-23d7-4409-878c-0f9f3a9427ee">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Supplying Facility]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.header.supplyingFacility}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="185" y="10" width="95" height="15" uuid="7173a943-1f7d-44cd-98c6-f3fb41c66b65">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -513,8 +525,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Order Status]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA[$R{report.header.orderStatus}]]></textFieldExpression>
+				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement stretchType="RelativeToTallestObject" x="20" y="25" width="159" height="20" uuid="884fadf8-ba37-4d75-b597-2d24b17f8943">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -554,7 +566,7 @@ order by orderProductName, productName, lotCode desc]]>
 	<columnHeader>
 		<band height="30" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<staticText>
+			<textField>
 				<reportElement mode="Opaque" x="100" y="0" width="90" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="8a782996-25b8-431e-8f60-a4e655c2c5f4">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -564,9 +576,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Product Unit]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.productUnit}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="620" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="f9d6f98e-afd8-4ce5-8157-220bd9fa8446">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -576,9 +588,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Rejection Reason]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.rejectionReason}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="410" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="3667b897-6566-4a00-9115-84b1bd096b63">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -588,9 +600,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Quantity Accepted]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.quantityAccepted}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="550" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="d72c000a-17fc-4a96-8117-65f457417583">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -600,9 +612,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Quantity Returned]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.quantityReturned}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="700" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4f61abba-d09f-476f-b326-8128d8beabf6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -613,9 +625,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Notes]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.notes}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="330" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="b9210c7f-69d9-46a7-b90a-b762cba5722e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -625,9 +637,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Lot Code]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.lotCode}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="190" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="6b057f3a-3628-4b32-89a5-19424bd9a0a1">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -637,9 +649,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Quantity Ordered]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.quantityOrdered}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="260" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="956509d5-6869-481c-ac40-3c532d43f180">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -649,9 +661,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Quantity Shipped]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.quantityShipped}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="0" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="8d8bd2db-ee0f-4eda-8ae3-b7f5a67b1a36">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -661,9 +673,9 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Product Name]]></text>
-			</staticText>
-			<staticText>
+				<textFieldExpression><![CDATA[$R{report.column.productName}]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement mode="Opaque" x="480" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4dd0ebe8-9fe8-47bc-bd24-a2f0cc58a70d">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -673,8 +685,8 @@ order by orderProductName, productName, lotCode desc]]>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[VVM Status]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{report.column.vvmStatus}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
@@ -693,7 +705,7 @@ order by orderProductName, productName, lotCode desc]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
 				</box>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[($F{lotcode} == null) ? "No Lot Defined" : $F{lotcode}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{lotcode} == null) ? $R{report.value.noLotDefined} : $F{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="70" height="20" uuid="03b293b8-2dd4-4a9c-9f15-fc4c01005f47">
@@ -707,7 +719,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
 				</box>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{quantityshipped} != null ? $P{decimalFormat}.format($F{quantityshipped}).toString() : ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityshipped} != null ?
+$P{decimalFormat}.format($F{quantityshipped}).toString() : ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="700" y="0" width="100" height="20" uuid="3d74a886-184c-4912-9be8-d505876fe76c">
@@ -750,7 +763,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
 				</box>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{quantityaccepted} != null ? $P{decimalFormat}.format($F{quantityaccepted}).toString() : ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityaccepted} != null ?
+$P{decimalFormat}.format($F{quantityaccepted}).toString() : ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="550" y="0" width="70" height="20" uuid="a313b3f1-4386-4e49-bc65-cf3e9cc4f4b2">
@@ -764,7 +778,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#DDDDDD"/>
 				</box>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{quantityreturned} != null ? $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityreturned} != null ?
+$P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="190" y="0" width="70" height="20" uuid="12c21d58-5a3e-4b22-be39-ae601e5baece">
@@ -866,7 +881,7 @@ order by orderProductName, productName, lotCode desc]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{receivedby}]]></textFieldExpression>
 				</textField>
-				<staticText>
+				<textField>
 					<reportElement x="570" y="5" width="122" height="15" uuid="ff7b9efe-95f0-4b0f-8524-c2af24d10242">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -879,9 +894,9 @@ order by orderProductName, productName, lotCode desc]]>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Received Date]]></text>
-				</staticText>
-				<staticText>
+					<textFieldExpression><![CDATA[$R{report.summary.receivedDate}]]></textFieldExpression>
+				</textField>
+				<textField>
 					<reportElement x="20" y="5" width="100" height="15" uuid="489a10e5-5392-4e47-ac5a-725c2f342aac">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -894,8 +909,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Delivered By]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA[$R{report.summary.deliveredBy}]]></textFieldExpression>
+				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="" stretchType="RelativeToTallestObject" x="570" y="20" width="210" height="15" uuid="3ba2d258-9b3f-458d-af70-589b63aeee9e">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -913,7 +928,7 @@ order by orderProductName, productName, lotCode desc]]>
 					</textElement>
 					<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.parse($F{receiveddate}))]]></textFieldExpression>
 				</textField>
-				<staticText>
+				<textField>
 					<reportElement x="299" y="5" width="100" height="15" uuid="394ecbca-a192-4d4d-855f-7a2b29775a1f">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -926,8 +941,8 @@ order by orderProductName, productName, lotCode desc]]>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Received By]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA[$R{report.summary.receivedBy}]]></textFieldExpression>
+				</textField>
 			</frame>
 		</band>
 	</summary>
