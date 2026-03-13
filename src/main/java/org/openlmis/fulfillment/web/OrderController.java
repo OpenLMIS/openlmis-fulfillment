@@ -374,7 +374,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printOrder(@PathVariable("id") UUID orderId,
-                                           @RequestParam("format") String format)
+                                           @RequestParam("format") String format,
+                                           @RequestParam(defaultValue = "en") String lang)
       throws IOException {
 
     Order order = orderRepository.findById(orderId)
@@ -394,6 +395,7 @@ public class OrderController extends BaseController {
 
     Map<String, Object> params = new HashMap<>();
     params.put("format", format);
+    params.put("lang", lang);
     DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
     decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);

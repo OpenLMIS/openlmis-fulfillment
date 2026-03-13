@@ -280,12 +280,17 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Prints proofOfDelivery in PDF format.
    *
-   * @param id UUID of ProofOfDelivery to print
+   * @param id             UUID of ProofOfDelivery to print
+   * @param authentication the authentication
+   * @param lang           the lang
+   * @return the response entity
+   * @throws IOException the io exception
    */
   @RequestMapping(value = "/proofsOfDelivery/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printProofOfDelivery(@PathVariable("id") UUID id,
-      OAuth2Authentication authentication) throws IOException {
+      OAuth2Authentication authentication,
+      @RequestParam(defaultValue = "en") String lang) throws IOException {
 
     XLOGGER.entry(id, authentication);
     Profiler profiler = new Profiler("GET_POD");
@@ -317,6 +322,7 @@ public class ProofOfDeliveryController extends BaseController {
     params.put("dateTimeFormat", dateTimeFormat);
     params.put("timeZoneId", timeZoneId);
     params.put("format", "pdf");
+    params.put("lang", lang);
 
     byte[] bytes = reportService.generateReport(template, params);
 
