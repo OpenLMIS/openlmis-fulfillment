@@ -1,5 +1,8 @@
-Upcoming Version / (WIP)
+9.3.2 / WIP
 ==================
+
+New functionality added in a backwards-compatible manner:
+* Added extension Flyway migration support - extensions can now ship their own SQL migrations in `db/extension/`, tracked independently in a separate `extension_schema_version` table
 
 9.3.1 / 2026-03-02
 ==================
