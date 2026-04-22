@@ -1,6 +1,8 @@
 Upcoming Version / (WIP)
 ==================
 
+Improvements:
+* [ODRC-24](https://openlmis.atlassian.net/browse/ODRC-24) Global header and translations implemented for reports
 New functionality added in a backwards-compatible manner:
 * Added extension Flyway migration support - extensions can now ship their own SQL migrations in `db/extension/`, tracked independently in a separate `extension_schema_version` table
 

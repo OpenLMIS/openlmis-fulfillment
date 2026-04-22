@@ -46,7 +46,6 @@ import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
-import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.openlmis.fulfillment.service.OrderService;
@@ -55,6 +54,7 @@ import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
+import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
@@ -115,7 +115,7 @@ public class OrderController extends BaseController {
   private PermissionService permissionService;
 
   @Autowired
-  private JasperReportsViewService jasperReportsViewService;
+  private ReportService reportService;
 
   @Autowired
   private TemplateService templateService;
@@ -374,7 +374,8 @@ public class OrderController extends BaseController {
   @RequestMapping(value = "/orders/{id}/print", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<byte[]> printOrder(@PathVariable("id") UUID orderId,
-                                           @RequestParam("format") String format)
+                                           @RequestParam("format") String format,
+                                           @RequestParam(defaultValue = "en") String lang)
       throws IOException {
 
     Order order = orderRepository.findById(orderId)
@@ -394,6 +395,7 @@ public class OrderController extends BaseController {
 
     Map<String, Object> params = new HashMap<>();
     params.put("format", format);
+    params.put("lang", lang);
     DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
     decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
     DecimalFormat decimalFormat = new DecimalFormat("", decimalFormatSymbols);
@@ -406,7 +408,7 @@ public class OrderController extends BaseController {
     params.put("loggedInUser", null != authenticationHelper
         ? authenticationHelper.getCurrentUser().printName() : null);
 
-    byte[] bytes = jasperReportsViewService.generateReport(template, params);
+    byte[] bytes = reportService.generateReport(template, params);
 
     MediaType mediaType;
     if (TYPE_CSV.equals(format)) {
