@@ -30,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
-import org.openlmis.fulfillment.domain.naming.VvmStatus;
 import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -94,7 +93,7 @@ public class ProofOfDeliveryLineItemTest {
     exception.expectMessage(startsWith(ERROR_INCORRECT_VVM_STATUS));
     new ProofOfDeliveryLineItemDataBuilder()
         .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
-        .withVvmStatus(VvmStatus.STAGE_4)
+        .withVvmStatus(null)
         .build()
         .validate(null, orderables);
   }
