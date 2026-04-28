@@ -120,7 +120,7 @@ public class ProofOfDeliveryLineItem extends BaseEntity {
 
     if (quantityAccepted > 0
         && useVvm
-        && (null == vvmStatus || vvmStatus.isGreaterThan(2))) {
+        && (null == vvmStatus || vvmStatus.isGreaterThan(4))) {
       throw new ValidationException(ERROR_INCORRECT_VVM_STATUS);
     }
 
