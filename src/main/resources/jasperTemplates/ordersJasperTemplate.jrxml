@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order" pageWidth="595" pageHeight="842" orientation="Portrait" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="6e843fe2-ce72-4257-a4c3-1df03728dc95">
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="6e843fe2-ce72-4257-a4c3-1df03728dc95">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -12,9 +12,10 @@
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<property name="reportType" value="Timeliness Report"/>
-	<import value="java.text.DecimalFormat"/>
 	<import value="java.time.ZonedDateTime"/>
 	<import value="java.time.format.DateTimeFormatter"/>
+	<import value="java.text.DecimalFormat"/>
+    <style name="BaseStyle" isDefault="true" fontName="DejaVu Sans"/>
 	<style name="Row" mode="Transparent">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
@@ -33,12 +34,12 @@
 	<parameter name="dateTimeFormat" class="java.lang.String" isForPrompting="false">
 		<property name="displayName" value="DateTimeFormat"/>
 	</parameter>
-    <parameter name="timeZoneId" class="java.lang.String" isForPrompting="false">
-        <property name="displayName" value="TimeZoneId"/>
-    </parameter>
-    <parameter name="headerTemplate" class="net.sf.jasperreports.engine.JasperReport" isForPrompting="false">
-        <property name="displayName" value="HeaderTemplate"/>
-    </parameter>
+	<parameter name="timeZoneId" class="java.lang.String" isForPrompting="false">
+		<property name="displayName" value="TimeZoneId"/>
+	</parameter>
+	<parameter name="headerTemplate" class="net.sf.jasperreports.engine.JasperReport" isForPrompting="false">
+		<property name="displayName" value="HeaderTemplate"/>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -58,59 +59,23 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="200" splitType="Stretch">
-            <subreport overflowType="Stretch">
-                <reportElement positionType="Float" mode="Transparent" x="0" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34"/>
-                <parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
-                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-                <subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
-            </subreport>
-			<textField>
-				<reportElement positionType="Float" x="170" y="90" width="382" height="79" forecolor="#3D9297"
-                               uuid="9425a6c9-4546-4c90-9119-7a7f300b6fb5"/>
-				<textElement textAlignment="Center">
-					<font size="16" isBold="false"/>
-					<paragraph lineSpacing="Double" lineSpacingSize="2.0"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{report.title.issueVoucher}]]></textFieldExpression>
-			</textField>
+		<band height="92" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<subreport overflowType="Stretch">
+				<reportElement positionType="Float" mode="Transparent" x="0" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34"/>
+				<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
+			</subreport>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="170">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
-				<reportElement x="0" y="10" width="250" height="60" uuid="69507ad9-863a-4e09-a591-90e161383f9e"/>
-				<textElement>
-					<font size="10"/>
-					<paragraph lineSpacing="Fixed" lineSpacingSize="12.0"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{report.header.toManagingDirector}]]></textFieldExpression>
-			</textField>
+		<band height="90">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
 				<reportElement x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$R{report.header.facility}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="145" width="80" height="15" uuid="e6b5e990-9d52-4bc4-addd-e0d12a9e0545"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.fax}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="100" width="80" height="15" uuid="e50f5e30-bc3e-48c6-a0cd-5fc2c4549f7a"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.district}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="115" width="80" height="15" uuid="41672a04-8b3f-4edb-9755-9ab38e5f5084"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.region}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="130" width="80" height="15" uuid="5d8a3b43-4b11-4b19-bf7d-9c6491fb978f"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.phone}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
@@ -121,11 +86,6 @@
 				<reportElement x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$R{report.header.facilityCode}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="85" width="80" height="15" uuid="4f9ec696-9521-48b0-86da-e67131811da6"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.address}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="320" y="0" width="80" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
@@ -162,62 +122,40 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("code")]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="100" width="145" height="15" uuid="6969131b-b903-4273-801e-b69945c2615b"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("thirdLevelFacility")).get("name")]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="85" width="145" height="15" uuid="af46019f-41a6-46a6-af27-8e5f64882e46"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="130" width="145" height="15" uuid="a42100af-d8f4-4a4c-b005-394ea577797f"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="115" width="145" height="15" uuid="82a6e7bb-330c-4e2d-992e-3ed08974dfe2"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("secondLevelFacility")).get("name")]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="145" width="145" height="15" uuid="abe3fdb1-aa3b-4233-ba3d-1353fa702441"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="30">
-			<textField>
-				<reportElement mode="Opaque" x="0" y="0" width="50" height="30" backcolor="#3D9297" uuid="7972837a-4e14-4bc0-94ef-c9f465914ad5"/>
+		<band height="30" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="50" height="30" backcolor="#3D9297" uuid="7972837a-4e14-4bc0-94ef-c9f465914ad5"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.lineNumber}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement mode="Opaque" x="50" y="0" width="90" height="30" backcolor="#3D9297" uuid="f1296dcd-3a59-4110-99af-f111c9e49196"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="50" y="0" width="90" height="30" backcolor="#3D9297" uuid="f1296dcd-3a59-4110-99af-f111c9e49196"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.productCode}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement mode="Opaque" x="140" y="0" width="260" height="30" backcolor="#3D9297" uuid="fcca10b0-2b26-46d1-b532-5386fbf3bbc4"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="140" y="0" width="260" height="30" backcolor="#3D9297" uuid="fcca10b0-2b26-46d1-b532-5386fbf3bbc4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.description}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement mode="Opaque" x="400" y="0" width="75" height="30" backcolor="#3D9297" uuid="8e7db4f0-de17-4a0a-b56c-452be828d4db"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="400" y="0" width="75" height="30" backcolor="#3D9297" uuid="8e7db4f0-de17-4a0a-b56c-452be828d4db"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.orderedQuantity}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement mode="Opaque" x="475" y="0" width="80" height="30" backcolor="#3D9297" uuid="646a24fe-b770-4291-8a0d-13db58237726"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="475" y="0" width="80" height="30" backcolor="#3D9297" uuid="646a24fe-b770-4291-8a0d-13db58237726"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
@@ -329,15 +267,13 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author") != null ?
                     (
                         ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("firstName") != null ?
                         (((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("lastName"))
                         :
                         ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("username")
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="100" width="100" height="20" uuid="c290ee34-95a5-48fb-b256-237ac3fb15d1"/>
@@ -357,15 +293,13 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("approvedStatusChange")).get("author") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("approvedStatusChange")).get("author") != null ?
                     (
                         ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("firstName") != null ?
                         (((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("lastName"))
                         :
                         ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("username")
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="120" width="100" height="20" uuid="9fa486a9-4156-4ddf-bb90-01fcfc403ad4"/>
@@ -385,15 +319,13 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("releasedStatusChange")).get("author") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("releasedStatusChange")).get("author") != null ?
                     (
                         ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("firstName") != null ?
                         (((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("firstName") + " " + ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("lastName"))
                         :
                         ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("username")
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="140" width="100" height="20" uuid="67c89e91-ab18-4969-8717-5787b78b787c"/>
@@ -455,14 +387,12 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("authorizedStatusChange")).get("createdDate") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("authorizedStatusChange")).get("createdDate") != null ?
                     java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
                         java.time.Instant.ofEpochSecond(
                             ((java.lang.Number)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("createdDate")).longValue()
                         ).atZone(java.time.ZoneId.of($P{timeZoneId}))
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="380" y="100" width="40" height="20" uuid="c8adb3e0-3283-482a-96a4-9898a6beb3a9"/>
@@ -482,14 +412,12 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("approvedStatusChange")).get("createdDate") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("approvedStatusChange")).get("createdDate") != null ?
                     java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
                         java.time.Instant.ofEpochSecond(
                             ((java.lang.Number)((java.util.Map)$P{order}.get("approvedStatusChange")).get("createdDate")).longValue()
                         ).atZone(java.time.ZoneId.of($P{timeZoneId}))
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="380" y="120" width="40" height="20" uuid="992fcd9b-f17f-4ee8-8aee-cf95482ae224"/>
@@ -509,14 +437,12 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.Map)$P{order}.get("releasedStatusChange")).get("createdDate") != null ?
+				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("releasedStatusChange")).get("createdDate") != null ?
                     java.time.format.DateTimeFormatter.ofPattern($P{dateTimeFormat}).format(
                         java.time.Instant.ofEpochSecond(
                             ((java.lang.Number)((java.util.Map)$P{order}.get("releasedStatusChange")).get("createdDate")).longValue()
                         ).atZone(java.time.ZoneId.of($P{timeZoneId}))
-                    ) : null
-                ]]></textFieldExpression>
+                    ) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="430" y="140" width="122" height="20" uuid="2308393b-b536-4676-a4f7-8bd83528b662"/>
