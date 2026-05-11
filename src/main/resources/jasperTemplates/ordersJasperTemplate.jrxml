@@ -15,7 +15,7 @@
 	<import value="java.time.ZonedDateTime"/>
 	<import value="java.time.format.DateTimeFormatter"/>
 	<import value="java.text.DecimalFormat"/>
-    <style name="BaseStyle" isDefault="true" fontName="DejaVu Sans"/>
+	<style name="BaseStyle" isDefault="true" fontName="DejaVu Sans"/>
 	<style name="Row" mode="Transparent">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
@@ -59,14 +59,23 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="92" splitType="Stretch">
+		<band height="140" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<subreport overflowType="Stretch">
-				<reportElement positionType="Float" mode="Transparent" x="0" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34"/>
+				<reportElement positionType="Float" mode="Transparent" x="-22" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
 				<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
 			</subreport>
+			<textField>
+				<reportElement x="-20" y="80" width="595" height="50" uuid="605e5036-a123-4c06-ab67-6e62d80480d2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="26" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{report.title.orderReport}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -145,7 +154,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.column.description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{report.column.productName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="400" y="0" width="75" height="30" backcolor="#3D9297" uuid="8e7db4f0-de17-4a0a-b56c-452be828d4db"/>
@@ -306,7 +315,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.reviewedByLMU}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{report.summary.reviewedBy}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="110" y="120" width="100" height="20" uuid="8547d29e-6e35-453e-8a2a-375ea27f57c7"/>
