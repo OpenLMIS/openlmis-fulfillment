@@ -84,7 +84,7 @@
 			<textField>
 				<reportElement x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.facility}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{report.order.header.facility}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
@@ -94,7 +94,7 @@
 			<textField>
 				<reportElement x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.facilityCode}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{report.order.header.facilityCode}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="320" y="0" width="80" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
