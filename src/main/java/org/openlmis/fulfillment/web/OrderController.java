@@ -15,10 +15,12 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_NO_FTP_CONFIGURED;
 
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -37,18 +39,24 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.FileTemplate;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.domain.TransferProperties;
+import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
 import org.openlmis.fulfillment.service.OrderSearchParams;
+import org.openlmis.fulfillment.service.OrderSender;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.OrderStorage;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.ShipmentService;
@@ -125,6 +133,15 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ShipmentService shipmentService;
+
+  @Autowired
+  private TransferPropertiesRepository transferPropertiesRepository;
+
+  @Autowired
+  private OrderStorage orderStorage;
+
+  @Autowired
+  private OrderSender orderSender;
 
   @Autowired
   private OrderDtoBuilder orderDtoBuilder;
@@ -484,8 +501,10 @@ public class OrderController extends BaseController {
   }
 
   /**
-   * Manually retry for transferring order file via FTP after updating or checking the FTP
-   * transfer properties.
+   * Manually retry transmitting the order CSV to the configured FTP target. The order must be
+   * in {@link OrderStatus#TRANSFER_FAILED} and the supplying facility must have
+   * {@link FtpTransferProperties} configured. On a successful upload the order moves to
+   * {@link OrderStatus#IN_ROUTE}; on failure it remains in {@code TRANSFER_FAILED}.
    *
    * @param id UUID of order
    */
@@ -501,8 +520,20 @@ public class OrderController extends BaseController {
       throw new ValidationException(ORDER_RETRY_INVALID_STATUS, TRANSFER_FAILED.toString());
     }
 
-    orderService.save(order);
-    return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
+    TransferProperties properties = transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(order.getSupplyingFacilityId(), TransferType.ORDER);
+    if (!(properties instanceof FtpTransferProperties)) {
+      throw new ValidationException(ORDER_RETRY_NO_FTP_CONFIGURED);
+    }
+
+    orderStorage.store(order);
+    boolean success = orderSender.send(order);
+    if (success) {
+      order.setStatus(IN_ROUTE);
+      orderStorage.delete(order);
+    }
+
+    return new ResultDto<>(success);
   }
 
   /**

@@ -99,6 +99,9 @@ public abstract class MessageKeys {
   public static final String ORDER_RETRY_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_RETRY, INVALID_STATUS);
 
+  public static final String ORDER_RETRY_NO_FTP_CONFIGURED =
+      join(ERROR_PREFIX, ORDER_RETRY, "noFtpConfigured");
+
   public static final String ORDER_UPDATE_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_UPDATE, INVALID_STATUS);
 

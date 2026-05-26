@@ -7,6 +7,15 @@ New functionality added in a backwards-compatible manner:
 * Added extension Flyway migration support - extensions can now ship their own SQL migrations in `db/extension/`, tracked independently in a separate `extension_schema_version` table
 * [ODRC-66](https://openlmis.atlassian.net/browse/ODRC-66) Update VVM status validator
 
+Bug Fixes:
+* [OE-191](https://openlmis.atlassian.net/browse/OE-191) Manual order retry endpoint (`GET /api/orders/{id}/retry`) now actually re-attempts the FTP transmission and reports the real outcome. The previous implementation merely re-ran `OrderService.save`, which reclassified the order's status based on the current supplying-facility configuration without ever sending the file; an order would flip out of `TRANSFER_FAILED` and the endpoint would report success even though nothing was transmitted to the supplier.
+
+Contract changes:
+* [OE-191](https://openlmis.atlassian.net/browse/OE-191) `GET /api/orders/{id}/retry` response semantics:
+  * The `result` field in a 200 response now reflects the actual FTP transmission outcome. Orders for which the FTP send fails return `{result: false}` where the previous implementation returned `{result: true}` whenever FTP transfer properties were present, regardless of the real send outcome.
+  * Requests targeting an order whose supplying facility has no FTP transfer properties configured (or has only non-FTP transfer properties such as `LocalTransferProperties`) now return HTTP 400 with message key `fulfillment.error.orderRetry.noFtpConfigured`. The previous implementation returned HTTP 200 with `{result: false}` in this case.
+  * The order creation flow is unchanged.
+
 9.3.1 / 2026-03-02
 ==================
 

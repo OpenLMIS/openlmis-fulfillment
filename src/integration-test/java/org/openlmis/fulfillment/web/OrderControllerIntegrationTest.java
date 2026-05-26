@@ -21,7 +21,6 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -34,6 +33,7 @@ import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +41,7 @@ import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_NO_FTP_CONFIGURED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -71,6 +72,7 @@ import org.mockito.Mock;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.ExternalStatus;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatsData;
@@ -78,6 +80,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
@@ -194,6 +197,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private OrderService orderService;
+
+  @MockBean
+  private TransferPropertiesRepository transferPropertiesRepository;
 
   @Autowired
   private ShipmentService shipmentService;
@@ -894,6 +900,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
 
     given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    given(transferPropertiesRepository.findFirstByFacilityIdAndTransferType(any(), any()))
+        .willReturn(new FtpTransferProperties());
+    given(orderFtpSender.send(firstOrder)).willReturn(true);
 
     ResultDto result = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -907,8 +916,58 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .as(ResultDto.class);
 
     assertThat(result, is(notNullValue()));
-    assertThat(result.getResult(), is(notNullValue()));
-    assertThat(result.getResult(), is(instanceOf(Boolean.class)));
+    assertThat(result.getResult(), is(Boolean.TRUE));
+    verify(orderStorage).store(firstOrder);
+    verify(orderFtpSender).send(firstOrder);
+    verify(orderStorage).delete(firstOrder);
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnFalseResultWhenManualRetryAttemptFails() {
+    firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
+
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    given(transferPropertiesRepository.findFirstByFacilityIdAndTransferType(any(), any()))
+        .willReturn(new FtpTransferProperties());
+    given(orderFtpSender.send(firstOrder)).willReturn(false);
+
+    ResultDto result = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(RETRY_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .body()
+        .as(ResultDto.class);
+
+    assertThat(result.getResult(), is(Boolean.FALSE));
+    verify(orderStorage, never()).delete(any(Order.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectManualRetryWhenSupplyingFacilityHasNoFtpConfigured() {
+    firstOrder.setStatus(OrderStatus.TRANSFER_FAILED);
+
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    given(transferPropertiesRepository.findFirstByFacilityIdAndTransferType(any(), any()))
+        .willReturn(null);
+
+    String message = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .get(RETRY_URL)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path(MESSAGE_KEY);
+
+    assertThat(message, equalTo(ORDER_RETRY_NO_FTP_CONFIGURED));
+    verify(orderFtpSender, never()).send(any(Order.class));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
