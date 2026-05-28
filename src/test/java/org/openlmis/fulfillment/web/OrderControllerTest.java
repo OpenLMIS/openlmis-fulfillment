@@ -18,16 +18,21 @@ package org.openlmis.fulfillment.web;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,14 +42,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.domain.FtpTransferProperties;
+import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
+import org.openlmis.fulfillment.service.OrderSender;
 import org.openlmis.fulfillment.service.OrderService;
+import org.openlmis.fulfillment.service.OrderStorage;
 import org.openlmis.fulfillment.service.PermissionService;
+import org.openlmis.fulfillment.service.ResultDto;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
@@ -60,7 +71,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.validation.BindingResult;
 
-@SuppressWarnings("PMD.UnusedPrivateField")
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class OrderControllerTest {
 
@@ -92,6 +103,15 @@ public class OrderControllerTest {
 
   @Mock
   private OrderRepository orderRepository;
+
+  @Mock
+  private TransferPropertiesRepository transferPropertiesRepository;
+
+  @Mock
+  private OrderStorage orderStorage;
+
+  @Mock
+  private OrderSender orderSender;
 
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
@@ -199,5 +219,116 @@ public class OrderControllerTest {
     verify(permissionService).canDeleteOrders(receivingIds);
     verify(orderRepository).deleteById(order.getId());
     verify(orderRepository).deleteById(orderTwo.getId());
+  }
+
+  @Test
+  public void retryShouldSendFileAndReturnTrueOnSuccess() {
+    Order failedOrder = new OrderDataBuilder()
+        .withStatus(OrderStatus.TRANSFER_FAILED)
+        .withUpdateDetails(updateDetails)
+        .build();
+    when(orderRepository.findById(failedOrder.getId()))
+        .thenReturn(Optional.of(failedOrder));
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(new FtpTransferProperties());
+    when(orderSender.send(failedOrder)).thenReturn(true);
+
+    ResultDto<Boolean> result = orderController.retryOrderTransfer(failedOrder.getId());
+
+    assertTrue(result.getResult());
+    assertEquals(OrderStatus.IN_ROUTE, failedOrder.getStatus());
+    verify(orderStorage).store(failedOrder);
+    verify(orderSender).send(failedOrder);
+    verify(orderStorage).delete(failedOrder);
+    verify(permissionService).canTransferOrder(failedOrder);
+  }
+
+  @Test
+  public void retryShouldReturnFalseAndKeepStatusWhenSendFails() {
+    Order failedOrder = new OrderDataBuilder()
+        .withStatus(OrderStatus.TRANSFER_FAILED)
+        .withUpdateDetails(updateDetails)
+        .build();
+    when(orderRepository.findById(failedOrder.getId()))
+        .thenReturn(Optional.of(failedOrder));
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(new FtpTransferProperties());
+    when(orderSender.send(failedOrder)).thenReturn(false);
+
+    ResultDto<Boolean> result = orderController.retryOrderTransfer(failedOrder.getId());
+
+    assertFalse(result.getResult());
+    assertEquals(OrderStatus.TRANSFER_FAILED, failedOrder.getStatus());
+    verify(orderStorage).store(failedOrder);
+    verify(orderSender).send(failedOrder);
+    verify(orderStorage, never()).delete(any(Order.class));
+  }
+
+  @Test(expected = ValidationException.class)
+  public void retryShouldRejectOrdersNotInTransferFailed() {
+    Order inRouteOrder = new OrderDataBuilder()
+        .withStatus(OrderStatus.IN_ROUTE)
+        .withUpdateDetails(updateDetails)
+        .build();
+    when(orderRepository.findById(inRouteOrder.getId()))
+        .thenReturn(Optional.of(inRouteOrder));
+
+    try {
+      orderController.retryOrderTransfer(inRouteOrder.getId());
+    } finally {
+      verify(orderSender, never()).send(any(Order.class));
+    }
+  }
+
+  @Test(expected = ValidationException.class)
+  public void retryShouldThrowWhenNoFtpTargetConfigured() {
+    Order failedOrder = new OrderDataBuilder()
+        .withStatus(OrderStatus.TRANSFER_FAILED)
+        .withUpdateDetails(updateDetails)
+        .build();
+    when(orderRepository.findById(failedOrder.getId()))
+        .thenReturn(Optional.of(failedOrder));
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(null);
+
+    try {
+      orderController.retryOrderTransfer(failedOrder.getId());
+    } finally {
+      verify(orderSender, never()).send(any(Order.class));
+    }
+  }
+
+  @Test(expected = ValidationException.class)
+  public void retryShouldThrowWhenTransferPropertiesAreNotFtp() {
+    Order failedOrder = new OrderDataBuilder()
+        .withStatus(OrderStatus.TRANSFER_FAILED)
+        .withUpdateDetails(updateDetails)
+        .build();
+    when(orderRepository.findById(failedOrder.getId()))
+        .thenReturn(Optional.of(failedOrder));
+    when(transferPropertiesRepository
+        .findFirstByFacilityIdAndTransferType(any(), any()))
+        .thenReturn(new LocalTransferProperties());
+
+    try {
+      orderController.retryOrderTransfer(failedOrder.getId());
+    } finally {
+      verify(orderSender, never()).send(any(Order.class));
+    }
+  }
+
+  @Test(expected = OrderNotFoundException.class)
+  public void retryShouldThrowWhenOrderDoesNotExist() {
+    UUID missing = UUID.randomUUID();
+    when(orderRepository.findById(missing)).thenReturn(Optional.empty());
+
+    try {
+      orderController.retryOrderTransfer(missing);
+    } finally {
+      verify(orderSender, never()).send(any(Order.class));
+    }
   }
 }

@@ -540,7 +540,12 @@ resourceTypes:
       /retry:
         get:
           is: [ secured ]
-          description: Manually retry for transferring order file via FTP after updating or checking the FTP transfer properties.
+          description: >
+            Manually retry transmitting the order CSV to the configured FTP target.
+            The order must be in TRANSFER_FAILED status and the supplying facility must
+            have FTP transfer properties configured; otherwise the request is rejected
+            with HTTP 400. The response body contains {result: true} when the file was
+            actually delivered and {result: false} when the FTP attempt itself failed.
           responses:
             200:
               headers:
