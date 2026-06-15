@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
@@ -78,6 +79,7 @@ import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.service.ObjReferenceExpander;
 import org.openlmis.fulfillment.service.OrderFileStorage;
 import org.openlmis.fulfillment.service.OrderFtpSender;
@@ -129,6 +131,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String ID_URL = RESOURCE_URL + "/{id}";
   private static final String EXPORT_URL = ID_URL + "/export";
   private static final String RETRY_URL = ID_URL + "/retry";
+  private static final String CANCEL_URL = ID_URL + "/cancel";
   private static final String PRINT_URL = ID_URL + "/print";
   private static final String SEND_REQUISITION_LESS_URL = ID_URL + "/requisitionLess/send";
   private static final String REQUISITION_LESS_URL = RESOURCE_URL + "/requisitionLess";
@@ -185,6 +188,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private ProofOfDeliveryRepository proofOfDeliveryRepository;
+
+  @MockBean
+  private ShipmentDraftRepository shipmentDraftRepository;
 
   @MockBean
   private AuthenticationHelper authenticationHelper;
@@ -1109,6 +1115,69 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(response.getFacilityId(), is(equalTo(null)));
     assertThat(response.getStatusesStats(), is(equalTo(null)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldCancelOrder() {
+    firstOrder.setStatus(OrderStatus.ORDERED);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    given(shipmentDraftRepository.findByOrder(firstOrder)).willReturn(Collections.emptyList());
+    given(orderRepository.save(any(Order.class))).willReturn(firstOrder);
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .body(Collections.singletonMap("cancellationReason", "No stock available"))
+        .when()
+        .put(CANCEL_URL)
+        .then()
+        .statusCode(200);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenCancellingOrderWithInvalidStatus() {
+    firstOrder.setStatus(OrderStatus.SHIPPED);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    given(shipmentDraftRepository.findByOrder(firstOrder)).willReturn(Collections.emptyList());
+
+    String message = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .put(CANCEL_URL)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path(MESSAGE_KEY);
+
+    assertThat(message, equalTo(ORDER_CANCEL_INVALID_STATUS));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnForbiddenWhenUserHasNoRightsToCancelOrder() {
+    firstOrder.setStatus(OrderStatus.ORDERED);
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
+    doThrow(new MissingPermissionException(ORDERS_EDIT))
+        .when(permissionService).canCancelOrder(any(Order.class));
+
+    String response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .put(CANCEL_URL)
+        .then()
+        .statusCode(403)
+        .extract()
+        .path(MESSAGE_KEY);
+
+    assertThat(response, is(equalTo(PERMISSION_MISSING)));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
