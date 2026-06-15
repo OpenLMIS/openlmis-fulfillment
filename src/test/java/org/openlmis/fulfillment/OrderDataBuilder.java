@@ -57,6 +57,7 @@ public class OrderDataBuilder {
   private List<StatusChange> statusChanges = Lists.newArrayList();
   private UpdateDetails updateDetails = new UpdateDetails(lastUpdaterId, ZonedDateTime.now());
   private ExtraDataEntity extraData = new ExtraDataEntity();
+  private String cancellationReason = null;
 
   public OrderDataBuilder() {
     orderLineItems.add(new OrderLineItemDataBuilder().withRandomOrderedQuantity().build());
@@ -177,6 +178,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withCancellationReason(String reason) {
+    this.cancellationReason = reason;
+    return this;
+  }
+
   /**
    * Creates new instance of {@link Order} based on passed data.
    */
@@ -184,7 +190,8 @@ public class OrderDataBuilder {
     Order order = new Order(
         externalId, emergency, facilityId, processingPeriodId, createdDate, createdById, programId,
         requestingFacilityId, receivingFacilityId, supplyingFacilityId, orderCode, status,
-        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails,extraData
+        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails, extraData,
+        cancellationReason
     );
     order.setId(id);
     order.forEachLine(line -> prepareLineItems(line, order));

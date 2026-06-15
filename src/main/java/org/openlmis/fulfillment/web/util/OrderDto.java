@@ -109,6 +109,10 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
 
   @Getter
   @Setter
+  private String cancellationReason;
+
+  @Getter
+  @Setter
   private BigDecimal quotedCost;
 
   @Setter

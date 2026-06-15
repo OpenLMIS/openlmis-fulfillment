@@ -98,6 +98,10 @@ public class BasicOrderDto implements Order.Exporter, UpdateDetails.Exporter {
 
   @Getter
   @Setter
+  private String cancellationReason;
+
+  @Getter
+  @Setter
   private BigDecimal quotedCost;
 
   @Getter

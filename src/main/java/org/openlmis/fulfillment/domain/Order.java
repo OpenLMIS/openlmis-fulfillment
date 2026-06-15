@@ -178,6 +178,11 @@ public class Order extends BaseEntity {
   @Embedded
   private ExtraDataEntity extraData = new ExtraDataEntity();
 
+  @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
+  @Getter
+  @Setter
+  private String cancellationReason;
+
   /**
    * Constructor with update details.
    */
@@ -313,6 +318,7 @@ public class Order extends BaseEntity {
 
     order.setOrderCode(importer.getOrderCode());
     order.setStatus(importer.getStatus());
+    order.setCancellationReason(importer.getCancellationReason());
     order.setQuotedCost(importer.getQuotedCost());
 
     Optional.ofNullable(importer.getProcessingPeriod())
@@ -361,6 +367,7 @@ public class Order extends BaseEntity {
     if (getUpdateDetails() != null) {
       exporter.setUpdateDetails(getUpdateDetails());
     }
+    exporter.setCancellationReason(getCancellationReason());
   }
 
   public void setExtraData(Map<String, String> extraData) {
@@ -408,6 +415,8 @@ public class Order extends BaseEntity {
     void setUpdateDetails(UpdateDetails updateDetails);
 
     void setServiceUrl(String serviceUrl);
+
+    void setCancellationReason(String cancellationReason);
   }
 
   public interface Importer {
@@ -448,6 +457,8 @@ public class Order extends BaseEntity {
     UpdateDetails getUpdateDetails();
 
     Map<String,String> getExtraData();
+
+    String getCancellationReason();
   }
 
 }
