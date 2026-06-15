@@ -15,7 +15,9 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.domain.OrderStatus.CANCELLED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
@@ -27,7 +29,9 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +45,12 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
 import org.openlmis.fulfillment.service.OrderCsvHelper;
@@ -58,6 +65,7 @@ import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
+import org.openlmis.fulfillment.web.util.CancelOrderRequest;
 import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
@@ -137,6 +145,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ExporterBuilder exporter;
+
+  @Autowired
+  private ShipmentDraftRepository shipmentDraftRepository;
 
   @Value("${groupingSeparator}")
   private String groupingSeparator;
@@ -503,6 +514,41 @@ public class OrderController extends BaseController {
 
     orderService.save(order);
     return new ResultDto<>(TRANSFER_FAILED != order.getStatus());
+  }
+
+  /**
+   * Cancel an order that cannot be fulfilled (e.g. supplier has zero stock), instead of
+   * confirming a blank shipment. Removes any shipment draft for the order.
+   *
+   * @param orderId UUID of the order to cancel
+   * @param request optional body carrying the cancellation reason
+   * @return cancelled order
+   */
+  @PutMapping("/orders/{id}/cancel")
+  @ResponseBody
+  public OrderDto cancelOrder(@PathVariable("id") UUID orderId,
+                              @RequestBody(required = false) CancelOrderRequest request) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    permissionService.canCancelOrder(order);
+
+    if (!order.canBeCancelled()) {
+      throw new ValidationException(ORDER_CANCEL_INVALID_STATUS, order.getStatus().toString());
+    }
+
+    Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
+    drafts.forEach(shipmentDraftRepository::delete);
+
+    if (request != null) {
+      order.setCancellationReason(request.getCancellationReason());
+    }
+
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    order.updateStatus(CANCELLED, new UpdateDetails(currentUser.getId(), ZonedDateTime.now()));
+    orderRepository.save(order);
+
+    return orderDtoBuilder.build(order);
   }
 
   /**

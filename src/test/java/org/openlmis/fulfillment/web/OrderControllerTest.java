@@ -93,6 +93,9 @@ public class OrderControllerTest {
   @Mock
   private OrderRepository orderRepository;
 
+  @Mock
+  private org.openlmis.fulfillment.repository.ShipmentDraftRepository shipmentDraftRepository;
+
   private UUID lastUpdaterId = UUID.fromString("35316636-6264-6331-2d34-3933322d3462");
   private OAuth2Authentication authentication = mock(OAuth2Authentication.class);
   private UpdateDetails updateDetails = new UpdateDetailsDataBuilder()
@@ -199,5 +202,67 @@ public class OrderControllerTest {
     verify(permissionService).canDeleteOrders(receivingIds);
     verify(orderRepository).deleteById(order.getId());
     verify(orderRepository).deleteById(orderTwo.getId());
+  }
+
+  @Test
+  public void shouldCancelOrder() {
+    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order)).thenReturn(java.util.Collections.emptyList());
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
+
+    orderController.cancelOrder(order.getId(), null);
+
+    verify(permissionService).canCancelOrder(order);
+    verify(orderRepository).save(order);
+    assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
+  }
+
+  @Test(expected = ValidationException.class)
+  public void shouldNotCancelOrderWithWrongStatus() {
+    order.setStatus(OrderStatus.SHIPPED);
+    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
+
+    orderController.cancelOrder(order.getId(), null);
+  }
+
+  @Test(expected = MissingPermissionException.class)
+  public void shouldNotCancelOrderWhenNoPermission() {
+    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
+    org.mockito.Mockito.doThrow(new MissingPermissionException("ORDERS_EDIT"))
+        .when(permissionService).canCancelOrder(order);
+
+    orderController.cancelOrder(order.getId(), null);
+  }
+
+  @Test
+  public void shouldDeleteShipmentDraftsWhenCancellingOrder() {
+    org.openlmis.fulfillment.domain.ShipmentDraft draft =
+        org.mockito.Mockito.mock(org.openlmis.fulfillment.domain.ShipmentDraft.class);
+    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order))
+        .thenReturn(java.util.Collections.singletonList(draft));
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
+
+    orderController.cancelOrder(order.getId(), null);
+
+    verify(shipmentDraftRepository).delete(draft);
+    assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
+  }
+
+  @Test
+  public void shouldSetCancellationReasonFromRequest() {
+    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order)).thenReturn(java.util.Collections.emptyList());
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
+    org.openlmis.fulfillment.web.util.CancelOrderRequest request =
+        new org.openlmis.fulfillment.web.util.CancelOrderRequest();
+    request.setCancellationReason("No stock");
+
+    orderController.cancelOrder(order.getId(), request);
+
+    assertThat(order.getCancellationReason(), is("No stock"));
   }
 }
