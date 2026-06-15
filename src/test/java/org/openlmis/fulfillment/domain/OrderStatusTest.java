@@ -19,6 +19,7 @@ import static java.util.Locale.ENGLISH;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
@@ -47,5 +48,10 @@ public class OrderStatusTest {
     assertThat(OrderStatus.fromString(""), is(nullValue()));
     assertThat(OrderStatus.fromString("     "), is(nullValue()));
     assertThat(OrderStatus.fromString(RandomStringUtils.random(10)), is(nullValue()));
+  }
+
+  @Test
+  public void fromStringShouldResolveCancelled() {
+    assertEquals(OrderStatus.CANCELLED, OrderStatus.fromString("CANCELLED"));
   }
 }
