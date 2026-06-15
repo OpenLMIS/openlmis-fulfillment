@@ -18,6 +18,8 @@ package org.openlmis.fulfillment.domain;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.openlmis.fulfillment.domain.OrderStatus.CANCELLED;
+import static org.openlmis.fulfillment.domain.OrderStatus.CREATING;
 import static org.openlmis.fulfillment.domain.OrderStatus.FULFILLING;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
@@ -84,6 +86,16 @@ public class OrderTest {
 
     order.setStatus(SHIPPED);
     assertFalse(order.canBeFulfilled());
+  }
+
+  @Test
+  public void canBeCancelledOnlyForOrderedOrFulfilling() {
+    assertTrue(new OrderDataBuilder().withStatus(ORDERED).build().canBeCancelled());
+    assertTrue(new OrderDataBuilder().withStatus(FULFILLING).build().canBeCancelled());
+    assertFalse(new OrderDataBuilder().withStatus(CREATING).build().canBeCancelled());
+    assertFalse(new OrderDataBuilder().withStatus(SHIPPED).build().canBeCancelled());
+    assertFalse(new OrderDataBuilder().withStatus(RECEIVED).build().canBeCancelled());
+    assertFalse(new OrderDataBuilder().withStatus(CANCELLED).build().canBeCancelled());
   }
 
   @Test
