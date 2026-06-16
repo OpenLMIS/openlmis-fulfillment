@@ -570,6 +570,8 @@ resourceTypes:
                 application/json:
                   schema: orderDto
             400:
+              headers:
+                Keep-Alive:
               body:
                 application/json:
                   schema: localizedMessage

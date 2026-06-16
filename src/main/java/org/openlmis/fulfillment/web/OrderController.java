@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +62,7 @@ import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.IdsDto;
@@ -129,6 +129,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private AuthenticationHelper authenticationHelper;
+
+  @Autowired
+  private DateHelper dateHelper;
 
   @Autowired
   private ShipmentService shipmentService;
@@ -538,7 +541,9 @@ public class OrderController extends BaseController {
     drafts.forEach(shipmentDraftRepository::delete);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
-    order.updateStatus(CANCELLED, new UpdateDetails(currentUser.getId(), ZonedDateTime.now()));
+    UUID updaterId = currentUser == null ? null : currentUser.getId();
+    order.updateStatus(CANCELLED,
+        new UpdateDetails(updaterId, dateHelper.getCurrentDateTimeWithSystemZone()));
     orderRepository.save(order);
 
     return orderDtoBuilder.build(order);

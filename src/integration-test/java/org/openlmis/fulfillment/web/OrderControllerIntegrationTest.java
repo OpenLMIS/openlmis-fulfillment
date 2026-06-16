@@ -1141,7 +1141,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   public void shouldReturnBadRequestWhenCancellingOrderWithInvalidStatus() {
     firstOrder.setStatus(OrderStatus.SHIPPED);
     given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.of(firstOrder));
-    given(shipmentDraftRepository.findByOrder(firstOrder)).willReturn(Collections.emptyList());
 
     String message = restAssured.given()
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -1177,6 +1176,22 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .path(MESSAGE_KEY);
 
     assertThat(response, is(equalTo(PERMISSION_MISSING)));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnNotFoundWhenCancellingNonExistentOrder() {
+    given(orderRepository.findById(firstOrder.getId())).willReturn(Optional.empty());
+
+    restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrder.getId())
+        .when()
+        .put(CANCEL_URL)
+        .then()
+        .statusCode(404);
+
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
