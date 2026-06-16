@@ -82,7 +82,6 @@ public class ExporterBuilder {
     exporter.setCreatedBy(getIfPresent(users, order.getCreatedById()));
     exporter.setCreatedDate(order.getCreatedDate());
     exporter.setUpdateDetails(order.getUpdateDetails());
-    exporter.setCancellationReason(order.getCancellationReason());
   }
 
   /**

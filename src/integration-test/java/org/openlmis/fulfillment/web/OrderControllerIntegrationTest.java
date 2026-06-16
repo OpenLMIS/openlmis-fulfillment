@@ -1129,7 +1129,6 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam("id", firstOrder.getId())
-        .body(Collections.singletonMap("cancellationReason", "No stock available"))
         .when()
         .put(CANCEL_URL)
         .then()

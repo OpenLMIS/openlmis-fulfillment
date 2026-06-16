@@ -211,7 +211,7 @@ public class OrderControllerTest {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
 
-    orderController.cancelOrder(order.getId(), null);
+    orderController.cancelOrder(order.getId());
 
     verify(permissionService).canCancelOrder(order);
     verify(orderRepository).save(order);
@@ -223,7 +223,7 @@ public class OrderControllerTest {
     order.setStatus(OrderStatus.SHIPPED);
     when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
 
-    orderController.cancelOrder(order.getId(), null);
+    orderController.cancelOrder(order.getId());
   }
 
   @Test(expected = MissingPermissionException.class)
@@ -232,7 +232,7 @@ public class OrderControllerTest {
     org.mockito.Mockito.doThrow(new MissingPermissionException("ORDERS_EDIT"))
         .when(permissionService).canCancelOrder(order);
 
-    orderController.cancelOrder(order.getId(), null);
+    orderController.cancelOrder(order.getId());
   }
 
   @Test
@@ -245,24 +245,10 @@ public class OrderControllerTest {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
 
-    orderController.cancelOrder(order.getId(), null);
+    orderController.cancelOrder(order.getId());
 
     verify(shipmentDraftRepository).delete(draft);
     assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
   }
 
-  @Test
-  public void shouldSetCancellationReasonFromRequest() {
-    when(orderRepository.findById(order.getId())).thenReturn(java.util.Optional.of(order));
-    when(shipmentDraftRepository.findByOrder(order)).thenReturn(java.util.Collections.emptyList());
-    when(authenticationHelper.getCurrentUser())
-        .thenReturn(new org.openlmis.fulfillment.service.referencedata.UserDto());
-    org.openlmis.fulfillment.web.util.CancelOrderRequest request =
-        new org.openlmis.fulfillment.web.util.CancelOrderRequest();
-    request.setCancellationReason("No stock");
-
-    orderController.cancelOrder(order.getId(), request);
-
-    assertThat(order.getCancellationReason(), is("No stock"));
-  }
 }

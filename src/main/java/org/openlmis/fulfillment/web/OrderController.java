@@ -65,7 +65,6 @@ import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
-import org.openlmis.fulfillment.web.util.CancelOrderRequest;
 import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
@@ -521,13 +520,11 @@ public class OrderController extends BaseController {
    * confirming a blank shipment. Removes any shipment draft for the order.
    *
    * @param orderId UUID of the order to cancel
-   * @param request optional body carrying the cancellation reason
    * @return cancelled order
    */
   @PutMapping("/orders/{id}/cancel")
   @ResponseBody
-  public OrderDto cancelOrder(@PathVariable("id") UUID orderId,
-                              @RequestBody(required = false) CancelOrderRequest request) {
+  public OrderDto cancelOrder(@PathVariable("id") UUID orderId) {
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -539,10 +536,6 @@ public class OrderController extends BaseController {
 
     Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
     drafts.forEach(shipmentDraftRepository::delete);
-
-    if (request != null) {
-      order.setCancellationReason(request.getCancellationReason());
-    }
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
     order.updateStatus(CANCELLED, new UpdateDetails(currentUser.getId(), ZonedDateTime.now()));

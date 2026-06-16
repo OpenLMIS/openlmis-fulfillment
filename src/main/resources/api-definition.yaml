@@ -562,16 +562,6 @@ resourceTypes:
         put:
           is: [ secured ]
           description: Cancel an order that cannot be fulfilled and remove its shipment draft.
-          body:
-            application/json:
-              schema: |
-                {
-                  "type": "object",
-                  "$schema": "http://json-schema.org/draft-04/schema#",
-                  "properties": {
-                    "cancellationReason": { "type": "string" }
-                  }
-                }
           responses:
             200:
               headers:
