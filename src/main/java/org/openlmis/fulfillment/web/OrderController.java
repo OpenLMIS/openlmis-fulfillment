@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,6 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -537,8 +535,7 @@ public class OrderController extends BaseController {
       throw new ValidationException(ORDER_CANCEL_INVALID_STATUS, order.getStatus().toString());
     }
 
-    Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
-    drafts.forEach(shipmentDraftRepository::delete);
+    shipmentDraftRepository.findByOrder(order).forEach(shipmentDraftRepository::delete);
 
     UserDto currentUser = authenticationHelper.getCurrentUser();
     UUID updaterId = currentUser == null ? null : currentUser.getId();

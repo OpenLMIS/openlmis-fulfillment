@@ -219,11 +219,6 @@ public class Order extends BaseEntity {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
   }
 
-  /**
-   * Whether the order may be cancelled. Currently the same pre-shipment states as
-   * {@link #canBeFulfilled()}, but kept as a separate concept (the cancellable window) so the
-   * two can diverge without silently affecting each other.
-   */
   public boolean canBeCancelled() {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
   }
