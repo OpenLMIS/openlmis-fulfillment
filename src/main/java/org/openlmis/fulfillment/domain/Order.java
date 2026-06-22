@@ -220,7 +220,7 @@ public class Order extends BaseEntity {
   }
 
   public boolean canBeCancelled() {
-    return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
+    return canBeFulfilled();
   }
 
   /**
