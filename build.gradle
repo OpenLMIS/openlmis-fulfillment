@@ -35,6 +35,7 @@ ext.set("signing.password", System.getenv("SIGNING_PASSWORD"))
 group = serviceGroup
 version = serviceVersion
 archivesBaseName = rootProject.name
+description = serviceDescription
 project.ext.buildTime = java.time.Instant.now().toString() // for versioning
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -328,6 +329,36 @@ uploadArchives {
 }
 
 uploadArchives.onlyIf { project.getProperty("ossrhUsername") && project.getProperty("ossrhPassword") }
+
+// uploadArchives deploys to the OSSRH staging API; the Portal won't publish until that repo is
+// promoted. This promotes it (user_managed = lands Validated, so we Publish or Drop it manually).
+// Only bare X.Y.Z releases are promoted; any pre-release (-SNAPSHOT, -RC1, -...) is skipped.
+task promoteToPortal {
+    onlyIf {
+        System.getenv('OSSRH_USERNAME') && System.getenv('OSSRH_PASSWORD') &&
+                uploadArchives.state.failure == null &&
+                !version.toString().contains('-')
+    }
+    doLast {
+        def base = 'https://ossrh-staging-api.central.sonatype.com'
+        def token = "${System.getenv('OSSRH_USERNAME')}:${System.getenv('OSSRH_PASSWORD')}".bytes.encodeBase64().toString()
+
+        def list = new URL("${base}/manual/search/repositories?state=open").openConnection()
+        list.setRequestProperty('Authorization', "Bearer ${token}")
+        def repo = new groovy.json.JsonSlurper().parse(list.inputStream).repositories
+                .find { it.key.endsWith("/${project.group}--default-repository") }
+        if (!repo) throw new GradleException("No open staging repo for ${project.group}")
+
+        def key = URLEncoder.encode(repo.key, 'UTF-8')
+        def post = (HttpURLConnection) new URL("${base}/manual/upload/repository/${key}?publishing_type=user_managed").openConnection()
+        post.requestMethod = 'POST'
+        post.setRequestProperty('Authorization', "Bearer ${token}")
+        if (post.responseCode >= 400) throw new GradleException("Promote failed (${post.responseCode}): ${post.errorStream?.text}")
+        logger.lifecycle("Promoted ${repo.key} to Portal")
+    }
+}
+
+uploadArchives.finalizedBy promoteToPortal
 
 apply from: "documentation.gradle"
 integrationTest.dependsOn copyRamlToBuild
