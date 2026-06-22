@@ -81,6 +81,16 @@ public class OrderableDataBuilder {
     return this;
   }
 
+  public OrderableDataBuilder withPackRoundingThreshold(long packRoundingThreshold) {
+    this.packRoundingThreshold = packRoundingThreshold;
+    return this;
+  }
+
+  public OrderableDataBuilder withRoundToZero(boolean roundToZero) {
+    this.roundToZero = roundToZero;
+    return this;
+  }
+
   public OrderableDataBuilder withVersionNumber(Long versionNumber) {
     this.versionNumber = versionNumber;
     return this;

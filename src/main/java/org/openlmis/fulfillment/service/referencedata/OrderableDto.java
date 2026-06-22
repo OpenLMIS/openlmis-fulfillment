@@ -53,6 +53,34 @@ public class OrderableDto extends BaseDto {
     return null != extraData && parseBoolean(extraData.get(USE_VVM));
   }
 
+  /**
+   * Returns the number of packs to order. For this Orderable given a desired number of
+   * dispensing units, will return the number of packs that should be ordered. Canonical
+   * implementation lives in referencedata Orderable#packsToOrder (also mirrored in requisition's
+   * BasicOrderableDto) - keep this copy byte-identical.
+   *
+   * @param dispensingUnits # of dispensing units we'd like to order for
+   * @return the number of packs that should be ordered.
+   */
+  public long packsToOrder(long dispensingUnits) {
+    if (dispensingUnits <= 0 || netContent == 0) {
+      return 0;
+    }
+
+    long packsToOrder = dispensingUnits / netContent;
+    long remainderQuantity = dispensingUnits % netContent;
+
+    if (remainderQuantity > 0 && remainderQuantity > packRoundingThreshold) {
+      packsToOrder += 1;
+    }
+
+    if (packsToOrder == 0 && !roundToZero) {
+      packsToOrder = 1;
+    }
+
+    return packsToOrder;
+  }
+
   @JsonIgnore
   public Long getVersionNumber() {
     return meta.getVersionNumber();

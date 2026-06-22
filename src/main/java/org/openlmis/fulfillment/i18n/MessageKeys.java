@@ -29,6 +29,7 @@ public abstract class MessageKeys {
   private static final String ORDER = "order";
   private static final String ORDER_RETRY = "orderRetry";
   private static final String ORDER_UPDATE = "orderUpdate";
+  private static final String ORDER_REQUISITION_LESS = "orderRequisitionLess";
   private static final String ORDER_FILE_TEMPLATE = "fileTemplate";
   private static final String REFERENCE_DATA = "referenceData";
   private static final String REPORTING = "reporting";
@@ -104,6 +105,9 @@ public abstract class MessageKeys {
 
   public static final String ORDER_UPDATE_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_UPDATE, INVALID_STATUS);
+
+  public static final String ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND =
+      join(ERROR_PREFIX, ORDER_REQUISITION_LESS, ORDERABLES, NOT_FOUND);
 
   public static final String ERROR_ORDER_FILE_TEMPLATE_CREATION =
       join(ERROR_PREFIX, ORDER_FILE_TEMPLATE, CREATION);

@@ -25,6 +25,7 @@ import static org.openlmis.fulfillment.domain.OrderStatus.ORDERED;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.domain.OrderStatus.SHIPPED;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_UPDATE_INVALID_STATUS;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.ORDERS_VIEW;
@@ -34,6 +35,7 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_VIEW;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -44,12 +46,14 @@ import javax.persistence.PersistenceContext;
 import org.javers.common.collections.Sets;
 import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.extension.ExtensionManager;
 import org.openlmis.fulfillment.extension.point.ExtensionPointId;
 import org.openlmis.fulfillment.extension.point.OrderCreatePostProcessor;
@@ -58,6 +62,8 @@ import org.openlmis.fulfillment.repository.OrderNumberConfigurationRepository;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.OrderableDto;
+import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.ProcessingPeriodDto;
@@ -70,6 +76,7 @@ import org.openlmis.fulfillment.web.NumberOfOrdersData;
 import org.openlmis.fulfillment.web.OrderNotFoundException;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.openlmis.fulfillment.web.util.OrderDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +104,9 @@ public class OrderService {
 
   @Autowired
   private FacilityReferenceDataService facilityReferenceDataService;
+
+  @Autowired
+  private OrderableReferenceDataService orderableReferenceDataService;
 
   @Autowired
   private OrderNumberConfigurationRepository orderNumberConfigurationRepository;
@@ -180,6 +190,44 @@ public class OrderService {
 
     XLOGGER.debug("Updated requisition-less order with id: {}", toUpdate.getId());
     return toUpdate;
+  }
+
+  /**
+   * Converts the ordered quantities of a requisition-less order from dispensing units (doses) to
+   * packs, applying each orderable's pack rounding configuration - so the stored quantity matches
+   * the packs contract used by requisition-based orders and by all fulfillment consumers. No-op for
+   * requisition-based orders (externalId set), which already carry packs.
+   *
+   * @param order the order whose line item quantities should be converted in place
+   */
+  public void convertOrderedQuantitiesToPacks(Order order) {
+    if (order.getExternalId() != null) {
+      // defense-in-depth: only requisition-less orders store ordered quantity in doses;
+      // packsToOrder is not idempotent, so it must never run on a requisition-based (packs) order
+      return;
+    }
+
+    List<OrderLineItem> lineItems = order.getOrderLineItems();
+    if (isEmpty(lineItems)) {
+      return;
+    }
+
+    Set<VersionEntityReference> identities = lineItems.stream()
+        .map(OrderLineItem::getOrderable)
+        .collect(Collectors.toSet());
+
+    Map<VersionIdentityDto, OrderableDto> orderables = orderableReferenceDataService
+        .findByIdentities(identities)
+        .stream()
+        .collect(Collectors.toMap(OrderableDto::getIdentity, orderable -> orderable));
+
+    for (OrderLineItem lineItem : lineItems) {
+      OrderableDto orderable = orderables.get(new VersionIdentityDto(lineItem.getOrderable()));
+      if (null == orderable) {
+        throw new ValidationException(ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND);
+      }
+      lineItem.setOrderedQuantity(orderable.packsToOrder(lineItem.getOrderedQuantity()));
+    }
   }
 
   /**
