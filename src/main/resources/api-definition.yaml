@@ -308,6 +308,7 @@ resourceTypes:
             - TRANSFER_FAILED
             - IN_ROUTE
             - READY_TO_PACK
+            - CANCELLED
         periodStartDate:
           displayName: periodStartDate
           type: string
