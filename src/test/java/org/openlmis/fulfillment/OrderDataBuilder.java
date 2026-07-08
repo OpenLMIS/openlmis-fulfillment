@@ -184,7 +184,7 @@ public class OrderDataBuilder {
     Order order = new Order(
         externalId, emergency, facilityId, processingPeriodId, createdDate, createdById, programId,
         requestingFacilityId, receivingFacilityId, supplyingFacilityId, orderCode, status,
-        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails,extraData
+        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails, extraData
     );
     order.setId(id);
     order.forEachLine(line -> prepareLineItems(line, order));

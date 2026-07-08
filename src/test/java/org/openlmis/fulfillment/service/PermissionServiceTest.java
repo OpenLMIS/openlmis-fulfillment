@@ -160,6 +160,22 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canCancelOrder() {
+    mockHasRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
+
+    permissionService.canCancelOrder(order);
+
+    verifyRight(ORDERS_EDIT, null, null, order.getSupplyingFacilityId());
+  }
+
+  @Test
+  public void cannotCancelOrder() {
+    expectException(ORDERS_EDIT);
+
+    permissionService.canCancelOrder(order);
+  }
+
+  @Test
   public void canManageSystemSettingsByServiceToken() {
     when(securityContext.getAuthentication()).thenReturn(trustedClient);
 

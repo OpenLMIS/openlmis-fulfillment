@@ -219,6 +219,10 @@ public class Order extends BaseEntity {
     return OrderStatus.ORDERED == status || OrderStatus.FULFILLING == status;
   }
 
+  public boolean canBeCancelled() {
+    return canBeFulfilled();
+  }
+
   /**
    * Check if the given order is external.
    */
