@@ -32,6 +32,7 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -68,6 +69,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.OrderLineItemDataBuilder;
@@ -640,7 +642,13 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
     verify(orderService, times(1))
         .updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class), eq(user.getId()));
+    verify(orderService, times(1)).convertOrderedQuantitiesToPacks(any(Order.class));
     verify(orderRepository, times(1)).save(orderCaptor.capture());
+
+    // doses -> packs conversion must run before the order is saved
+    InOrder inOrder = inOrder(orderService, orderRepository);
+    inOrder.verify(orderService).convertOrderedQuantitiesToPacks(any(Order.class));
+    inOrder.verify(orderRepository).save(any(Order.class));
 
     assertEquals(orderCaptor.getAllValues().size(), 1);
     assertThat(orderCaptor.getAllValues().get(0).getStatus(), is(OrderStatus.ORDERED));

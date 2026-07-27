@@ -562,6 +562,57 @@ public class OrderServiceTest {
     orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
   }
 
+  @Test
+  public void shouldConvertEachLineItemUsingItsOwnOrderableConfig() {
+    // given - two orderables with different net content
+    OrderableDto first = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+    OrderableDto second = new OrderableDataBuilder()
+        .withNetContent(25)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+    OrderLineItem firstLine = new OrderLineItemDataBuilder()
+        .withOrderable(first.getId(), first.getVersionNumber())
+        .withOrderedQuantity(23L)
+        .build();
+    OrderLineItem secondLine = new OrderLineItemDataBuilder()
+        .withOrderable(second.getId(), second.getVersionNumber())
+        .withOrderedQuantity(30L)
+        .build();
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withLineItems(firstLine, secondLine)
+        .build();
+    when(orderableReferenceDataService.findByIdentities(anySet()))
+        .thenReturn(asList(first, second));
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+
+    // then - each line converted with its own net content (23/10 -> 3, 30/25 -> 2)
+    assertEquals(Long.valueOf(3), firstLine.getOrderedQuantity());
+    assertEquals(Long.valueOf(2), secondLine.getOrderedQuantity());
+  }
+
+  @Test
+  public void shouldNotLookUpOrderablesWhenRequisitionLessOrderHasNoLineItems() {
+    // given
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withoutLineItems()
+        .build();
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+
+    // then
+    verify(orderableReferenceDataService, never()).findByIdentities(anySet());
+  }
+
   private Order generateOrder() {
     return new OrderDataBuilder().withOrderedStatus().build();
   }

@@ -67,6 +67,18 @@ public class OrderableDtoTest {
   }
 
   @Test
+  public void packsToOrderShouldNotRoundUpWhenRemainderEqualsThreshold() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(3)
+        .withRoundToZero(false)
+        .build();
+
+    // remainder 3 == threshold 3, and the comparison is strict '>', so no round-up
+    assertEquals(2L, orderable.packsToOrder(23));
+  }
+
+  @Test
   public void packsToOrderShouldRoundToOneWhenResultZeroAndRoundToZeroFalse() {
     OrderableDto orderable = new OrderableDataBuilder()
         .withNetContent(10)

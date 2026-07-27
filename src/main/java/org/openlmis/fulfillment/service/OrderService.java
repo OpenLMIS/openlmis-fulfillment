@@ -148,7 +148,10 @@ public class OrderService {
   }
 
   /**
-   * Creates requisition-less order.
+   * Creates requisition-less order. The ordered quantities are stored as received, i.e. in
+   * dispensing units (doses); they are converted to packs by
+   * {@link #convertOrderedQuantitiesToPacks(Order)} at send time. Until then a requisition-less
+   * order's line item quantities are NOT in the packs unit that the rest of fulfillment assumes.
    *
    * @param orderDto object that order will be created from.
    * @return created Order.
@@ -222,9 +225,16 @@ public class OrderService {
         .collect(Collectors.toMap(OrderableDto::getIdentity, orderable -> orderable));
 
     for (OrderLineItem lineItem : lineItems) {
+      if (null == lineItem.getOrderedQuantity()) {
+        // OrderValidator rejects null quantities before send; skip defensively so a caller that
+        // bypasses validation does not hit an NPE when unboxing into packsToOrder(long)
+        continue;
+      }
+
       OrderableDto orderable = orderables.get(new VersionIdentityDto(lineItem.getOrderable()));
       if (null == orderable) {
-        throw new ValidationException(ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND);
+        throw new ValidationException(ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND,
+            lineItem.getOrderable().getId().toString());
       }
       lineItem.setOrderedQuantity(orderable.packsToOrder(lineItem.getOrderedQuantity()));
     }
