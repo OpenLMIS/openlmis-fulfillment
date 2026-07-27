@@ -146,6 +146,10 @@ public class PermissionService {
     checkPermission(ORDERS_EDIT, order.getSupplyingFacility().getId());
   }
 
+  public void canCancelOrder(Order order) {
+    checkPermission(ORDERS_EDIT, order.getSupplyingFacilityId());
+  }
+
   public void canCreateOrder(OrderDto order) {
     checkPermission(ORDER_CREATE, order.getReceivingFacility().getId());
   }

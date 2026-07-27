@@ -15,8 +15,10 @@
 
 package org.openlmis.fulfillment.web;
 
+import static org.openlmis.fulfillment.domain.OrderStatus.CANCELLED;
 import static org.openlmis.fulfillment.domain.OrderStatus.IN_ROUTE;
 import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
@@ -48,7 +50,9 @@ import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
+import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.FileTemplateService;
@@ -64,6 +68,7 @@ import org.openlmis.fulfillment.service.TemplateService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.BasicOrderDto;
 import org.openlmis.fulfillment.web.util.BasicOrderDtoBuilder;
 import org.openlmis.fulfillment.web.util.IdsDto;
@@ -132,6 +137,9 @@ public class OrderController extends BaseController {
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
+  private DateHelper dateHelper;
+
+  @Autowired
   private ShipmentService shipmentService;
 
   @Autowired
@@ -154,6 +162,9 @@ public class OrderController extends BaseController {
 
   @Autowired
   private ExporterBuilder exporter;
+
+  @Autowired
+  private ShipmentDraftRepository shipmentDraftRepository;
 
   @Value("${groupingSeparator}")
   private String groupingSeparator;
@@ -535,6 +546,36 @@ public class OrderController extends BaseController {
     }
 
     return new ResultDto<>(success);
+  }
+
+  /**
+   * Cancel an order that cannot be fulfilled (e.g. supplier has zero stock), instead of
+   * confirming a blank shipment. Removes any shipment draft for the order.
+   *
+   * @param orderId UUID of the order to cancel
+   * @return cancelled order
+   */
+  @PutMapping("/orders/{id}/cancel")
+  @ResponseBody
+  public OrderDto cancelOrder(@PathVariable("id") UUID orderId) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    permissionService.canCancelOrder(order);
+
+    if (!order.canBeCancelled()) {
+      throw new ValidationException(ORDER_CANCEL_INVALID_STATUS, order.getStatus().toString());
+    }
+
+    shipmentDraftRepository.findByOrder(order).forEach(shipmentDraftRepository::delete);
+
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    UUID updaterId = currentUser == null ? null : currentUser.getId();
+    order.updateStatus(CANCELLED,
+        new UpdateDetails(updaterId, dateHelper.getCurrentDateTimeWithSystemZone()));
+    orderRepository.save(order);
+
+    return orderDtoBuilder.build(order);
   }
 
   /**

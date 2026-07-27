@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,8 +49,10 @@ import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.TransferPropertiesRepository;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.OrderSender;
@@ -60,9 +64,11 @@ import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.FacilityReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PeriodReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
+import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
 import org.openlmis.fulfillment.testutils.UpdateDetailsDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.util.IdsDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
@@ -103,6 +109,12 @@ public class OrderControllerTest {
 
   @Mock
   private OrderRepository orderRepository;
+
+  @Mock
+  private ShipmentDraftRepository shipmentDraftRepository;
+
+  @Mock
+  private DateHelper dateHelper;
 
   @Mock
   private TransferPropertiesRepository transferPropertiesRepository;
@@ -219,6 +231,67 @@ public class OrderControllerTest {
     verify(permissionService).canDeleteOrders(receivingIds);
     verify(orderRepository).deleteById(order.getId());
     verify(orderRepository).deleteById(orderTwo.getId());
+  }
+
+  @Test
+  public void shouldCancelOrder() {
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order)).thenReturn(Collections.emptyList());
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(new UserDto());
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
+
+    orderController.cancelOrder(order.getId());
+
+    verify(permissionService).canCancelOrder(order);
+    verify(orderRepository).save(order);
+    assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
+  }
+
+  @Test
+  public void shouldCancelOrderWhenCurrentUserIsNull() {
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order)).thenReturn(Collections.emptyList());
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
+
+    orderController.cancelOrder(order.getId());
+
+    verify(orderRepository).save(order);
+    assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
+  }
+
+  @Test(expected = ValidationException.class)
+  public void shouldNotCancelOrderWithWrongStatus() {
+    order.setStatus(OrderStatus.SHIPPED);
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+    orderController.cancelOrder(order.getId());
+  }
+
+  @Test(expected = MissingPermissionException.class)
+  public void shouldNotCancelOrderWhenNoPermission() {
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+    doThrow(new MissingPermissionException("ORDERS_EDIT"))
+        .when(permissionService).canCancelOrder(order);
+
+    orderController.cancelOrder(order.getId());
+  }
+
+  @Test
+  public void shouldDeleteShipmentDraftsWhenCancellingOrder() {
+    ShipmentDraft draft = mock(ShipmentDraft.class);
+    when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+    when(shipmentDraftRepository.findByOrder(order))
+        .thenReturn(Collections.singletonList(draft));
+    when(authenticationHelper.getCurrentUser())
+        .thenReturn(new UserDto());
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
+
+    orderController.cancelOrder(order.getId());
+
+    verify(shipmentDraftRepository).delete(draft);
+    assertThat(order.getStatus(), is(OrderStatus.CANCELLED));
   }
 
   @Test

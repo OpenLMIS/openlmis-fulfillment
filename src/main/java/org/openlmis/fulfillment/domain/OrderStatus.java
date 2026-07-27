@@ -25,7 +25,8 @@ public enum OrderStatus {
   RECEIVED,
   TRANSFER_FAILED,
   IN_ROUTE,
-  READY_TO_PACK;
+  READY_TO_PACK,
+  CANCELLED;
 
   /**
    * Find a correct {@link OrderStatus} instance based on the passed string. The method ignores
