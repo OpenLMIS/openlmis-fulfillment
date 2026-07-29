@@ -496,6 +496,123 @@ public class OrderServiceTest {
     assertEquals(numberOfStatuses, result.getStatusesStats().size());
   }
 
+  @Test
+  public void shouldConvertOrderedQuantitiesToPacksForRequisitionLessOrder() {
+    // given - a requisition-less order (no externalId) with quantity in doses
+    OrderableDto orderableDto = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+    OrderLineItem lineItem = new OrderLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .withOrderedQuantity(23L)
+        .build();
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withLineItems(lineItem)
+        .build();
+    when(orderableReferenceDataService.findByIdentities(anySet()))
+        .thenReturn(Collections.singletonList(orderableDto));
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+
+    // then - 23 doses -> 3 packs (rounded up, threshold 0)
+    assertEquals(Long.valueOf(3), lineItem.getOrderedQuantity());
+  }
+
+  @Test
+  public void shouldNotConvertOrderedQuantitiesForRequisitionBasedOrder() {
+    // given - an order with externalId (requisition-based), quantity already in packs
+    OrderLineItem lineItem = new OrderLineItemDataBuilder()
+        .withOrderedQuantity(5L)
+        .build();
+    Order requisitionOrder = new OrderDataBuilder()
+        .withExternalId(UUID.randomUUID())
+        .withLineItems(lineItem)
+        .build();
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(requisitionOrder);
+
+    // then - quantity unchanged, no orderable lookup performed
+    assertEquals(Long.valueOf(5), lineItem.getOrderedQuantity());
+    verify(orderableReferenceDataService, never()).findByIdentities(anySet());
+  }
+
+  @Test
+  public void shouldThrowWhenOrderableNotFoundDuringConversion() {
+    // given
+    OrderableDto orderableDto = new OrderableDataBuilder().build();
+    OrderLineItem lineItem = new OrderLineItemDataBuilder()
+        .withOrderable(orderableDto.getId(), orderableDto.getVersionNumber())
+        .withOrderedQuantity(23L)
+        .build();
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withLineItems(lineItem)
+        .build();
+    when(orderableReferenceDataService.findByIdentities(anySet())).thenReturn(emptyList());
+
+    // then
+    exception.expect(ValidationException.class);
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+  }
+
+  @Test
+  public void shouldConvertEachLineItemUsingItsOwnOrderableConfig() {
+    // given - two orderables with different net content
+    OrderableDto first = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+    OrderableDto second = new OrderableDataBuilder()
+        .withNetContent(25)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+    OrderLineItem firstLine = new OrderLineItemDataBuilder()
+        .withOrderable(first.getId(), first.getVersionNumber())
+        .withOrderedQuantity(23L)
+        .build();
+    OrderLineItem secondLine = new OrderLineItemDataBuilder()
+        .withOrderable(second.getId(), second.getVersionNumber())
+        .withOrderedQuantity(30L)
+        .build();
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withLineItems(firstLine, secondLine)
+        .build();
+    when(orderableReferenceDataService.findByIdentities(anySet()))
+        .thenReturn(asList(first, second));
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+
+    // then - each line converted with its own net content (23/10 -> 3, 30/25 -> 2)
+    assertEquals(Long.valueOf(3), firstLine.getOrderedQuantity());
+    assertEquals(Long.valueOf(2), secondLine.getOrderedQuantity());
+  }
+
+  @Test
+  public void shouldNotLookUpOrderablesWhenRequisitionLessOrderHasNoLineItems() {
+    // given
+    Order reqlessOrder = new OrderDataBuilder()
+        .withExternalId(null)
+        .withoutLineItems()
+        .build();
+
+    // when
+    orderService.convertOrderedQuantitiesToPacks(reqlessOrder);
+
+    // then
+    verify(orderableReferenceDataService, never()).findByIdentities(anySet());
+  }
+
   private Order generateOrder() {
     return new OrderDataBuilder().withOrderedStatus().build();
   }

@@ -56,6 +56,8 @@ public class OrderLineItem extends BaseEntity {
   @Getter
   private VersionEntityReference orderable;
 
+  // Requisition-based orders store this in packs. Requisition-less orders store it in dispensing
+  // units (doses) until OrderService#convertOrderedQuantitiesToPacks converts it to packs at send.
   @Column(nullable = false)
   @Getter
   @Setter

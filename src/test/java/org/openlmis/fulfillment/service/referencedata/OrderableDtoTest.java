@@ -15,9 +15,12 @@
 
 package org.openlmis.fulfillment.service.referencedata;
 
+import static org.junit.Assert.assertEquals;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 
 public class OrderableDtoTest {
 
@@ -28,5 +31,91 @@ public class OrderableDtoTest {
         .suppress(Warning.STRICT_INHERITANCE) // suppress class not final
         .suppress(Warning.NONFINAL_FIELDS)
         .verify();
+  }
+
+  @Test
+  public void packsToOrderShouldReturnPacksForExactMultiple() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+
+    assertEquals(2L, orderable.packsToOrder(20));
+  }
+
+  @Test
+  public void packsToOrderShouldRoundUpWhenRemainderExceedsThreshold() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(0)
+        .withRoundToZero(false)
+        .build();
+
+    assertEquals(3L, orderable.packsToOrder(23));
+  }
+
+  @Test
+  public void packsToOrderShouldNotRoundUpWhenRemainderWithinThreshold() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(5)
+        .withRoundToZero(false)
+        .build();
+
+    assertEquals(2L, orderable.packsToOrder(23));
+  }
+
+  @Test
+  public void packsToOrderShouldNotRoundUpWhenRemainderEqualsThreshold() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(3)
+        .withRoundToZero(false)
+        .build();
+
+    // remainder 3 == threshold 3, and the comparison is strict '>', so no round-up
+    assertEquals(2L, orderable.packsToOrder(23));
+  }
+
+  @Test
+  public void packsToOrderShouldRoundToOneWhenResultZeroAndRoundToZeroFalse() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(5)
+        .withRoundToZero(false)
+        .build();
+
+    assertEquals(1L, orderable.packsToOrder(3));
+  }
+
+  @Test
+  public void packsToOrderShouldRoundToZeroWhenResultZeroAndRoundToZeroTrue() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .withPackRoundingThreshold(5)
+        .withRoundToZero(true)
+        .build();
+
+    assertEquals(0L, orderable.packsToOrder(3));
+  }
+
+  @Test
+  public void packsToOrderShouldReturnZeroForZeroNetContent() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(0)
+        .build();
+
+    assertEquals(0L, orderable.packsToOrder(10));
+  }
+
+  @Test
+  public void packsToOrderShouldReturnZeroForNonPositiveQuantity() {
+    OrderableDto orderable = new OrderableDataBuilder()
+        .withNetContent(10)
+        .build();
+
+    assertEquals(0L, orderable.packsToOrder(0));
+    assertEquals(0L, orderable.packsToOrder(-5));
   }
 }

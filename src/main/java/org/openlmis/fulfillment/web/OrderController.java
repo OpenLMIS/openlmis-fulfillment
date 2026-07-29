@@ -272,6 +272,7 @@ public class OrderController extends BaseController {
     UUID userId = currentUser == null ? orderDto.getLastUpdater().getId() : currentUser.getId();
 
     Order order = orderService.updateOrder(orderId, orderDto, userId);
+    orderService.convertOrderedQuantitiesToPacks(order);
     order.prepareToLocalFulfill();
 
     orderRepository.save(order);
