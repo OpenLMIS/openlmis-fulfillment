@@ -88,7 +88,8 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
             "/fulfillment",
             "/webjars/**",
             "/fulfillment/webjars/**",
-            "/fulfillment/docs/**"
+            "/fulfillment/docs/**",
+            "/actuator/prometheus"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }
