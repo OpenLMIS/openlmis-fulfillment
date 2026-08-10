@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.20.5.final using JasperReports Library version 6.20.5-3efcf2e67f959db3888d79f73dde2dbd7acb4f8e  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proofOfDelivery" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="c9b88bba-e685-4f37-89f1-8175e056a730">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proofOfDelivery" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="c9b88bba-e685-4f37-89f1-8175e056a730">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="java.time.ZonedDateTime"/>
 	<import value="java.time.LocalDate"/>
@@ -453,7 +453,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				<textElement>
 					<font size="14" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.title.proofOfDeliveryFor} + " " + $F{programname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.title.proofOfDeliveryFor}, $F{programname})]]></textFieldExpression>
 			</textField>
 			<frame>
 				<reportElement positionType="Float" x="0" y="120" width="800" height="65" uuid="7eb68997-e2c7-4b99-a497-6e69aa52ee81">
@@ -529,7 +529,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 						<textElement verticalAlignment="Bottom">
 							<font isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[$R{report.header.orderingFacility}]]></textFieldExpression>
+						<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderingFacility})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true">
 						<reportElement stretchType="RelativeToTallestObject" x="540" y="6" width="130" height="15" uuid="976df0bb-2396-4db1-a65c-375b043775a5">
@@ -570,7 +570,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 						<textElement verticalAlignment="Bottom">
 							<font isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[$R{report.header.orderStatus}]]></textFieldExpression>
+						<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderStatus})]]></textFieldExpression>
 					</textField>
 				</frame>
 			</frame>
