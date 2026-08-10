@@ -131,6 +131,16 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("code")]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="321" y="70" width="80" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$R{report.header.orderStatus}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="" x="411" y="70" width="145" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a62"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{order}.get("status")]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
