@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="6e843fe2-ce72-4257-a4c3-1df03728dc95">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="order" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="6e843fe2-ce72-4257-a4c3-1df03728dc95">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -84,22 +84,22 @@
 			<textField>
 				<reportElement x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.order.header.facility}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facility})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.consignTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.consignTo})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.order.header.facilityCode}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facilityCode})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="320" y="0" width="80" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.orderNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderNo})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="25" width="145" height="15" uuid="e1f25574-b3f7-4455-bbe7-0a57f9ee9da4"/>
@@ -134,7 +134,7 @@
 			<textField>
 				<reportElement x="321" y="70" width="80" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$R{report.header.orderStatus}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderStatus})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="411" y="70" width="145" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a62"/>
@@ -273,7 +273,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.authorizedBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.authorizedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="110" y="80" width="100" height="20" uuid="8886edad-567d-4be0-9789-84f4588bbe33"/>
@@ -299,7 +299,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.approvedByDist}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.approvedByDist})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="110" y="100" width="100" height="20" uuid="23ede21b-50f3-420e-acf5-57e1e890b731"/>
@@ -325,7 +325,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.reviewedBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.reviewedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="110" y="120" width="100" height="20" uuid="8547d29e-6e35-453e-8a2a-375ea27f57c7"/>
@@ -351,7 +351,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.printedBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.printedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="110" y="140" width="100" height="20" uuid="965ee62a-0b9d-41d8-917c-7b59abfa8324"/>
@@ -383,14 +383,14 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.signature}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.signature})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="380" y="80" width="40" height="20" uuid="7e7f0007-4f65-4e1b-8cda-7e6bf961e029"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="430" y="80" width="122" height="20" uuid="f76d2dd7-8927-41db-a38d-6a8b43807d84">
@@ -418,7 +418,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="" x="430" y="100" width="122" height="20" uuid="c959fb03-6225-4035-acb1-e2731b6f59cc"/>
@@ -443,7 +443,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="" x="430" y="120" width="122" height="20" uuid="e8582379-9cd9-4274-ae51-f8b1fcdf323f"/>
@@ -480,7 +480,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{report.summary.date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="5" width="280" height="20" uuid="88faf2a1-accc-4685-908c-3a65a2ed8fe6">
