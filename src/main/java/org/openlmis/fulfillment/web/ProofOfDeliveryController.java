@@ -304,7 +304,7 @@ public class ProofOfDeliveryController extends BaseController {
     ClassLoader classLoader = getClass().getClassLoader();
 
     Template template = new Template();
-    template.setName("ordersJasperTemplate");
+    template.setName("proofOfDelivery");
 
     try (InputStream fis = classLoader.getResourceAsStream(filePath)) {
       templateService.createTemplateParameters(template, fis);

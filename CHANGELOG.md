@@ -2,6 +2,7 @@
 ==================
 
 Bug Fixes:
+* [OLMIS-8224](https://openlmis.atlassian.net/browse/OLMIS-8224): Proof of Delivery print - the downloaded file is named proofOfDelivery.pdf (instead of ordersJasperTemplate.pdf)
 * [OLMIS-8244](https://openlmis.atlassian.net/browse/OLMIS-8244): Requisition-less orders now store ordered quantity in packs - converted from doses at send time using the orderable's pack rounding configuration (`netContent`, `packRoundingThreshold`, `roundToZero`), matching requisition-based orders. Previously the ordered quantity stayed in doses and was multiplied by net content again during fulfillment (Fulfill view and order PDF), inflating the displayed quantity. Requisition-less orders already sent before this change are intentionally not migrated (their stored value is left as-is).
 
 Improvements:
