@@ -15,9 +15,10 @@
 
 package org.openlmis.fulfillment.service.report;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -37,8 +38,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.service.AuthService;
+import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -139,7 +142,16 @@ public class ReportServiceTest {
   }
 
   @Test
-  public void shouldReturnEmptyArrayOnHttpError() {
+  public void shouldThrowExceptionOnHttpError() {
+    expectGenerateReportFailure(HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenReportServiceRejectsTheServiceToken() {
+    expectGenerateReportFailure(HttpStatus.FORBIDDEN);
+  }
+
+  private void expectGenerateReportFailure(HttpStatus upstreamStatus) {
     String reportName = "report";
     byte[] reportData = "data".getBytes();
     Map<String, Object> params = new HashMap<>();
@@ -149,11 +161,13 @@ public class ReportServiceTest {
         eq(HttpMethod.POST),
         any(HttpEntity.class),
         eq(byte[].class)
-    )).thenThrow(new HttpStatusCodeException(
-        org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Error") {});
+    )).thenThrow(new HttpStatusCodeException(upstreamStatus, "Error") {});
 
-    byte[] result = reportService.fillAndExportReport(reportName, reportData, params);
-
-    assertArrayEquals(new byte[0], result);
+    try {
+      reportService.fillAndExportReport(reportName, reportData, params);
+      fail("expected JasperReportViewException for upstream " + upstreamStatus);
+    } catch (JasperReportViewException ex) {
+      assertThat(ex.getCause(), instanceOf(HttpStatusCodeException.class));
+    }
   }
 }
