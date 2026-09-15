@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
@@ -80,6 +81,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
@@ -105,6 +107,7 @@ import org.openlmis.fulfillment.service.referencedata.ProgramDto;
 import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ProcessingPeriodDataBuilder;
@@ -207,6 +210,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   private OrderService orderService;
 
   @MockBean
+  private ReportService reportService;
+
+  @MockBean
   private TransferPropertiesRepository transferPropertiesRepository;
 
   @Autowired
@@ -253,6 +259,9 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     this.setUpBootstrapData();
 
     when(authenticationHelper.getCurrentUser()).thenReturn(user);
+
+    given(reportService.generateReport(any(Template.class), anyMap()))
+        .willReturn(new byte[1]);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(
         ZonedDateTime.of(2015, 5, 7, 10, 5, 20, 500, ZoneId.systemDefault()));

@@ -32,6 +32,7 @@ import org.openlmis.fulfillment.service.DataRetrievalException;
 import org.openlmis.fulfillment.service.DuplicateTransferPropertiesException;
 import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.service.IncorrectTransferPropertiesException;
+import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.OrderFileException;
 import org.openlmis.fulfillment.service.OrderStorageException;
 import org.openlmis.fulfillment.service.ReportingException;
@@ -50,6 +51,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Controller advice responsible for handling errors from service layer.
  */
 @ControllerAdvice
+@SuppressWarnings("PMD.TooManyMethods")
 public class ServiceErrorHandling extends AbstractErrorHandling {
 
   private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
@@ -71,6 +73,21 @@ public class ServiceErrorHandling extends AbstractErrorHandling {
   @ResponseBody
   public Message.LocalizedMessage handlerReportingException(ReportingException ex) {
     return logErrorAndRespond("Reporting error", ex);
+  }
+
+  /**
+   * Handles a failure to render a Jasper report, including one the report service refused to
+   * generate. Reported as a server error: the caller's request was valid, so a 4xx would send
+   * people looking for a missing right instead of a broken service configuration.
+   *
+   * @param ex the exception that caused the issue
+   * @return the error response
+   */
+  @ExceptionHandler(JasperReportViewException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleJasperReportViewException(JasperReportViewException ex) {
+    return logErrorAndRespond("Unable to generate the Jasper report", ex);
   }
 
   /**

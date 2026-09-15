@@ -15,12 +15,14 @@
 
 package org.openlmis.fulfillment.service.report;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE;
+
 import java.net.URI;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.ArrayUtils;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.service.AuthService;
+import org.openlmis.fulfillment.service.JasperReportViewException;
 import org.openlmis.fulfillment.service.request.RequestHeaders;
 import org.openlmis.fulfillment.service.request.RequestHelper;
 import org.slf4j.Logger;
@@ -85,11 +87,12 @@ public class ReportService {
       return response.getBody();
     } catch (HttpStatusCodeException ex) {
       logger.error(
-          "Unable to generate report. Error code: {}, response message: {}",
-          ex.getStatusCode(), ex.getResponseBodyAsString()
+          "Unable to generate report {}. Error code: {}, response message: {}",
+          reportName, ex.getStatusCode(), ex.getResponseBodyAsString()
       );
+      throw new JasperReportViewException(ex, ERROR_JASPER_REPORT_CREATION_WITH_MESSAGE,
+          ex.getStatusCode().toString());
     }
-    return ArrayUtils.EMPTY_BYTE_ARRAY;
   }
 
   private GenerateReportDto buildGenerateReportRequest(String name, byte[] data, Map<String,

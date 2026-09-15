@@ -61,7 +61,6 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.FulfillmentNotificationService;
-import org.openlmis.fulfillment.service.JasperReportsViewService;
 import org.openlmis.fulfillment.service.PageDto;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ProofOfDeliveryService;
@@ -69,6 +68,7 @@ import org.openlmis.fulfillment.service.referencedata.OrderableDto;
 import org.openlmis.fulfillment.service.referencedata.OrderableReferenceDataService;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
 import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
+import org.openlmis.fulfillment.service.report.ReportService;
 import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.util.Pagination;
@@ -123,7 +123,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
   private FulfillmentNotificationService fulfillmentNotificationService;
 
   @MockBean
-  private JasperReportsViewService jasperReportsViewService;
+  private ReportService reportService;
 
   @SpyBean
   private OrderableReferenceDataService orderableReferenceDataService;
@@ -148,6 +148,9 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
         .willAnswer(new SaveAnswer<>());
     given(shipmentRepository.findById(proofOfDelivery.getShipment().getId()))
         .willReturn(Optional.of(proofOfDelivery.getShipment()));
+
+    given(reportService.generateReport(any(Template.class), anyMap()))
+        .willReturn(new byte[1]);
 
     given(permissionService.getPermissionStrings(INITIAL_USER_ID))
         .willReturn(permissionStringsHandler);
@@ -505,10 +508,6 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
   @Test
   public void shouldPrintProofOfDelivery() {
-    given(jasperReportsViewService
-        .generateReport(any(Template.class), anyMap()))
-        .willReturn(new byte[1]);
-
     restAssured.given()
         .pathParam("id", proofOfDelivery.getId())
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
