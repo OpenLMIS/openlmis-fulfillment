@@ -62,7 +62,7 @@
 		<band height="140" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<subreport overflowType="Stretch">
-				<reportElement positionType="Float" mode="Transparent" x="-22" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34">
+				<reportElement positionType="Float" mode="Transparent" x="-22" y="0" width="595" height="80" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
@@ -70,7 +70,7 @@
 				<subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
 			</subreport>
 			<textField>
-				<reportElement x="-20" y="80" width="595" height="50" uuid="605e5036-a123-4c06-ab67-6e62d80480d2"/>
+				<reportElement positionType="Float" x="-20" y="80" width="595" height="50" uuid="605e5036-a123-4c06-ab67-6e62d80480d2"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="26" isBold="true"/>
 				</textElement>
