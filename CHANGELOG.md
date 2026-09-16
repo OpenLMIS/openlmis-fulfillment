@@ -1,6 +1,10 @@
 9.4.0-SNAPSHOT (WIP)
 ==================
 
+New functionality added in a backwards-compatible manner:
+* [OPSD-45](https://openlmis.atlassian.net/browse/OPSD-45): Allow cancelling an order that cannot be fulfilled instead of confirming a blank shipment.
+* [MW-1471](https://openlmis.atlassian.net/browse/MW-1471): Exposed the Prometheus metrics endpoint at `/actuator/prometheus`.
+
 Bug Fixes:
 * [OLMIS-8224](https://openlmis.atlassian.net/browse/OLMIS-8224): Jasper report print fixes.
   * A failure of the report service is surfaced. The print endpoints previously answered `200` with an empty body when `POST /api/reports/generate` failed, which reached the user as a blank PDF.
@@ -22,7 +26,6 @@ Improvements:
 Improvements:
 * [ODRC-24](https://openlmis.atlassian.net/browse/ODRC-24) Global header and translations implemented for reports
 New functionality added in a backwards-compatible manner:
-* [OPSD-45](https://openlmis.atlassian.net/browse/OPSD-45): Allow cancelling an order that cannot be fulfilled instead of confirming a blank shipment.
 * Added extension Flyway migration support - extensions can now ship their own SQL migrations in `db/extension/`, tracked independently in a separate `extension_schema_version` table
 * [ODRC-66](https://openlmis.atlassian.net/browse/ODRC-66) Update VVM status validator
 
