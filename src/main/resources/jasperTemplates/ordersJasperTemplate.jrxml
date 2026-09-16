@@ -82,22 +82,22 @@
 		<band height="90">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
+				<reportElement positionType="Float" x="191" y="40" width="210" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facility})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
+				<reportElement positionType="Float" x="191" y="25" width="210" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.consignTo})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
+				<reportElement positionType="Float" x="191" y="55" width="210" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facilityCode})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="320" y="0" width="80" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
+				<reportElement x="190" y="0" width="210" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderNo})]]></textFieldExpression>
 			</textField>
@@ -132,7 +132,7 @@
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("code")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="321" y="70" width="80" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
+				<reportElement positionType="Float" x="191" y="70" width="210" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderStatus})]]></textFieldExpression>
 			</textField>
