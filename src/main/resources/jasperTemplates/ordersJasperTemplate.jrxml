@@ -62,15 +62,15 @@
 		<band height="140" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<subreport overflowType="Stretch">
-				<reportElement positionType="Float" mode="Transparent" x="-22" y="0" width="595" height="80" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34">
+				<reportElement positionType="Float" mode="Transparent" x="-22" y="0" width="595" height="90" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="57924a28-dd0b-4ed5-8b5c-8867c356fb34">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
 			</subreport>
-			<textField>
-				<reportElement positionType="Float" x="-20" y="80" width="595" height="50" uuid="605e5036-a123-4c06-ab67-6e62d80480d2"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="-20" y="80" width="595" height="50" uuid="605e5036-a123-4c06-ab67-6e62d80480d2"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="26" isBold="true"/>
 				</textElement>
@@ -81,28 +81,28 @@
 	<pageHeader>
 		<band height="90">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
-				<reportElement x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="321" y="40" width="80" height="15" uuid="2ebe95a1-27cc-45b6-86c0-4fe603b2a68c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facility})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="321" y="25" width="80" height="15" uuid="102b0dd5-e20b-461b-9540-0eb0a71f38ce"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.consignTo})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="321" y="55" width="80" height="15" uuid="62ee4443-5adc-4e23-964a-4059a379e61f"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.order.header.facilityCode})]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="320" y="0" width="80" height="15" uuid="b0ded7f9-4d1f-4f78-90bb-bf32b906dc78"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderNo})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="25" width="145" height="15" uuid="e1f25574-b3f7-4455-bbe7-0a57f9ee9da4"/>
+				<reportElement positionType="Float" key="" x="411" y="25" width="145" height="15" uuid="e1f25574-b3f7-4455-bbe7-0a57f9ee9da4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("name")]]></textFieldExpression>
 			</textField>
@@ -120,24 +120,24 @@
 				<textFieldExpression><![CDATA[$P{order}.get("orderCode")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="40" width="145" height="15" uuid="59b73e19-33f5-4605-8854-d58e0adc7283"/>
+				<reportElement positionType="Float" key="" x="411" y="40" width="145" height="15" uuid="59b73e19-33f5-4605-8854-d58e0adc7283"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("name")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="55" width="145" height="15" uuid="eabc21b2-8e7f-4fef-be54-a403f55b14b9">
+				<reportElement positionType="Float" key="" x="411" y="55" width="145" height="15" uuid="eabc21b2-8e7f-4fef-be54-a403f55b14b9">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[((java.util.Map)$P{order}.get("facility")).get("code")]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="321" y="70" width="80" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="321" y="70" width="80" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a61"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.header.orderStatus})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="411" y="70" width="145" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a62"/>
+				<reportElement positionType="Float" key="" x="411" y="70" width="145" height="15" uuid="c1a2b3c4-d5e6-47f8-9a0b-1c2d3e4f5a62"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$P{order}.get("status")]]></textFieldExpression>
 			</textField>
@@ -268,15 +268,15 @@
 	</detail>
 	<summary>
 		<band height="200">
-			<textField>
-				<reportElement x="0" y="80" width="100" height="20" uuid="03a21e09-32d8-4534-b3cc-76cc27c65e39"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="80" width="100" height="20" uuid="03a21e09-32d8-4534-b3cc-76cc27c65e39"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.authorizedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="110" y="80" width="100" height="20" uuid="8886edad-567d-4be0-9789-84f4588bbe33"/>
+				<reportElement positionType="Float" key="" x="110" y="80" width="100" height="20" uuid="8886edad-567d-4be0-9789-84f4588bbe33"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -294,15 +294,15 @@
                         ((java.util.Map)((java.util.Map)$P{order}.get("authorizedStatusChange")).get("author")).get("username")
                     ) : null]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="100" width="100" height="20" uuid="c290ee34-95a5-48fb-b256-237ac3fb15d1"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="100" width="100" height="20" uuid="c290ee34-95a5-48fb-b256-237ac3fb15d1"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.approvedByDist})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="110" y="100" width="100" height="20" uuid="23ede21b-50f3-420e-acf5-57e1e890b731"/>
+				<reportElement positionType="Float" key="" x="110" y="100" width="100" height="20" uuid="23ede21b-50f3-420e-acf5-57e1e890b731"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -320,15 +320,15 @@
                         ((java.util.Map)((java.util.Map)$P{order}.get("approvedStatusChange")).get("author")).get("username")
                     ) : null]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="120" width="100" height="20" uuid="9fa486a9-4156-4ddf-bb90-01fcfc403ad4"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="120" width="100" height="20" uuid="9fa486a9-4156-4ddf-bb90-01fcfc403ad4"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.reviewedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="110" y="120" width="100" height="20" uuid="8547d29e-6e35-453e-8a2a-375ea27f57c7"/>
+				<reportElement positionType="Float" key="" x="110" y="120" width="100" height="20" uuid="8547d29e-6e35-453e-8a2a-375ea27f57c7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -346,15 +346,15 @@
                         ((java.util.Map)((java.util.Map)$P{order}.get("releasedStatusChange")).get("author")).get("username")
                     ) : null]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="140" width="100" height="20" uuid="67c89e91-ab18-4969-8717-5787b78b787c"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="140" width="100" height="20" uuid="67c89e91-ab18-4969-8717-5787b78b787c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.printedBy})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="110" y="140" width="100" height="20" uuid="965ee62a-0b9d-41d8-917c-7b59abfa8324"/>
+				<reportElement positionType="Float" key="" x="110" y="140" width="100" height="20" uuid="965ee62a-0b9d-41d8-917c-7b59abfa8324"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -367,7 +367,7 @@
 				<textFieldExpression><![CDATA[$P{loggedInUser}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="290" y="140" width="80" height="20" uuid="1bf18c7f-35a2-4b7c-b8a5-5b9bacf1183d"/>
+				<reportElement positionType="Float" key="" x="290" y="140" width="80" height="20" uuid="1bf18c7f-35a2-4b7c-b8a5-5b9bacf1183d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -378,22 +378,22 @@
 					<font size="10"/>
 				</textElement>
 			</textField>
-			<textField>
-				<reportElement x="220" y="140" width="60" height="20" uuid="753ab777-4b4c-48e9-9ea8-7a06a4ea55df"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="220" y="140" width="60" height="20" uuid="753ab777-4b4c-48e9-9ea8-7a06a4ea55df"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.signature})]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="380" y="80" width="40" height="20" uuid="7e7f0007-4f65-4e1b-8cda-7e6bf961e029"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="380" y="80" width="40" height="20" uuid="7e7f0007-4f65-4e1b-8cda-7e6bf961e029"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="430" y="80" width="122" height="20" uuid="f76d2dd7-8927-41db-a38d-6a8b43807d84">
+				<reportElement positionType="Float" key="" x="430" y="80" width="122" height="20" uuid="f76d2dd7-8927-41db-a38d-6a8b43807d84">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -413,15 +413,15 @@
                         ).atZone(java.time.ZoneId.of($P{timeZoneId}))
                     ) : null]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="380" y="100" width="40" height="20" uuid="c8adb3e0-3283-482a-96a4-9898a6beb3a9"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="380" y="100" width="40" height="20" uuid="c8adb3e0-3283-482a-96a4-9898a6beb3a9"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="430" y="100" width="122" height="20" uuid="c959fb03-6225-4035-acb1-e2731b6f59cc"/>
+				<reportElement positionType="Float" key="" x="430" y="100" width="122" height="20" uuid="c959fb03-6225-4035-acb1-e2731b6f59cc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -438,15 +438,15 @@
                         ).atZone(java.time.ZoneId.of($P{timeZoneId}))
                     ) : null]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="380" y="120" width="40" height="20" uuid="992fcd9b-f17f-4ee8-8aee-cf95482ae224"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="380" y="120" width="40" height="20" uuid="992fcd9b-f17f-4ee8-8aee-cf95482ae224"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="" x="430" y="120" width="122" height="20" uuid="e8582379-9cd9-4274-ae51-f8b1fcdf323f"/>
+				<reportElement positionType="Float" key="" x="430" y="120" width="122" height="20" uuid="e8582379-9cd9-4274-ae51-f8b1fcdf323f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -464,7 +464,7 @@
                     ) : null]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="" x="430" y="140" width="122" height="20" uuid="2308393b-b536-4676-a4f7-8bd83528b662"/>
+				<reportElement positionType="Float" key="" x="430" y="140" width="122" height="20" uuid="2308393b-b536-4676-a4f7-8bd83528b662"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -475,14 +475,14 @@
 					<font size="10"/>
 				</textElement>
 			</textField>
-			<textField>
-				<reportElement x="380" y="140" width="40" height="20" uuid="a64dde3f-b081-496c-a33d-521309f2407e"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="380" y="140" width="40" height="20" uuid="a64dde3f-b081-496c-a33d-521309f2407e"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[msg($R{report.pattern.label}, $R{report.summary.date})]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="5" width="280" height="20" uuid="88faf2a1-accc-4685-908c-3a65a2ed8fe6">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>

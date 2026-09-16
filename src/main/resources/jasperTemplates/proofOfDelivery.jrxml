@@ -439,7 +439,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{headerTemplate}]]></subreportExpression>
 			</subreport>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="90" width="800" height="18" uuid="8cb24d09-0d5b-438d-9449-705428247a20">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -579,7 +579,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 	<columnHeader>
 		<band height="30" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="100" y="0" width="90" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="8a782996-25b8-431e-8f60-a4e655c2c5f4">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -591,7 +591,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.productUnit}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="620" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="f9d6f98e-afd8-4ce5-8157-220bd9fa8446">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -603,7 +603,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.rejectionReason}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="410" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="3667b897-6566-4a00-9115-84b1bd096b63">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -615,7 +615,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.quantityAccepted}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="550" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="d72c000a-17fc-4a96-8117-65f457417583">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -627,7 +627,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.quantityReturned}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="700" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4f61abba-d09f-476f-b326-8128d8beabf6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -640,7 +640,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.notes}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="330" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="b9210c7f-69d9-46a7-b90a-b762cba5722e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -652,7 +652,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.lotCode}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="190" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="6b057f3a-3628-4b32-89a5-19424bd9a0a1">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -664,7 +664,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.quantityOrdered}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="260" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="956509d5-6869-481c-ac40-3c532d43f180">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -676,7 +676,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.quantityShipped}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="0" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="8d8bd2db-ee0f-4eda-8ae3-b7f5a67b1a36">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -688,7 +688,7 @@ $P{decimalFormat}.format($F{quantityordered}).toString() : ""]]></textFieldExpre
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.column.productName}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement mode="Opaque" x="480" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#3D3D3D" uuid="4dd0ebe8-9fe8-47bc-bd24-a2f0cc58a70d">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -865,7 +865,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					</graphicElement>
 				</rectangle>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="" stretchType="RelativeToTallestObject" x="20" y="20" width="259" height="15" uuid="32593177-d2bf-48c5-ad66-080252ffb65c">
+					<reportElement positionType="Float" key="" stretchType="RelativeToTallestObject" x="20" y="20" width="259" height="15" uuid="32593177-d2bf-48c5-ad66-080252ffb65c">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<box>
@@ -880,7 +880,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					<textFieldExpression><![CDATA[$F{deliveredby}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="" stretchType="RelativeToTallestObject" x="299" y="20" width="251" height="15" uuid="15793880-e2bf-4c2a-b559-335cc6be8203">
+					<reportElement positionType="Float" key="" stretchType="RelativeToTallestObject" x="299" y="20" width="251" height="15" uuid="15793880-e2bf-4c2a-b559-335cc6be8203">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<box>
@@ -894,7 +894,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					</textElement>
 					<textFieldExpression><![CDATA[$F{receivedby}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isStretchWithOverflow="true">
 					<reportElement x="570" y="5" width="122" height="15" uuid="ff7b9efe-95f0-4b0f-8524-c2af24d10242">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -909,7 +909,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					</textElement>
 					<textFieldExpression><![CDATA[$R{report.summary.receivedDate}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isStretchWithOverflow="true">
 					<reportElement x="20" y="5" width="100" height="15" uuid="489a10e5-5392-4e47-ac5a-725c2f342aac">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
@@ -925,7 +925,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					<textFieldExpression><![CDATA[$R{report.summary.deliveredBy}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="" stretchType="RelativeToTallestObject" x="570" y="20" width="210" height="15" uuid="3ba2d258-9b3f-458d-af70-589b63aeee9e">
+					<reportElement positionType="Float" key="" stretchType="RelativeToTallestObject" x="570" y="20" width="210" height="15" uuid="3ba2d258-9b3f-458d-af70-589b63aeee9e">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -941,7 +941,7 @@ $P{decimalFormat}.format($F{quantityreturned}).toString() : ""]]></textFieldExpr
 					</textElement>
 					<textFieldExpression><![CDATA[DateTimeFormatter.ofPattern($P{dateFormat}).format(LocalDate.parse($F{receiveddate}))]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isStretchWithOverflow="true">
 					<reportElement x="299" y="5" width="100" height="15" uuid="394ecbca-a192-4d4d-855f-7a2b29775a1f">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
