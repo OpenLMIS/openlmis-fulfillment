@@ -1,4 +1,4 @@
-9.4.0-SNAPSHOT (WIP)
+9.4.0 / 2026-09-28
 ==================
 
 New functionality added in a backwards-compatible manner:
