@@ -21,7 +21,6 @@ import org.openlmis.fulfillment.interceptor.MvcInterceptor;
 import org.openlmis.fulfillment.util.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -32,7 +31,6 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-@EnableCaching
 public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 
   @Value("${service.url}")

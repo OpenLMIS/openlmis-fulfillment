@@ -2,7 +2,7 @@
 ==================
 
 Improvements:
-* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): Order CSV export looks up the facility, processing period and program once per order and fetches products in one batch instead of once per cell; the service token is cached between reference data calls.
+* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): Order CSV export looks up the facility, processing period and program once per order and fetches products in one batch instead of once per cell.
 
 9.4.0 / 2026-09-28
 ==================
