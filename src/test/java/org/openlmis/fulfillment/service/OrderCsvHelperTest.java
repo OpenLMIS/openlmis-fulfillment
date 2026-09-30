@@ -19,6 +19,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -27,11 +32,17 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -69,6 +80,8 @@ public class OrderCsvHelperTest {
   private static final String HEADER_ORDERABLE = "header.orderable";
   private static final String PRODUCT = "Product";
   private static final String PROGRAM = "Program";
+  private static final String RELATED_ORDERABLE = "Orderable";
+  private static final String CODE = "code";
 
   @Mock
   private FacilityReferenceDataService facilityReferenceDataService;
@@ -226,15 +239,15 @@ public class OrderCsvHelperTest {
   public void shouldExportRelatedFields() throws IOException {
     List<FileColumn> fileColumns = new ArrayList<>();
     fileColumns.add(new FileColumn(true, "header.facility.code", "Facility code",
-        true, 1, null, ORDER, "facilityId", "Facility", "code", null));
+        true, 1, null, ORDER, "facilityId", "Facility", CODE, null));
     fileColumns.add(new FileColumn(true, "header.product.code", PRODUCT_CODE,
-        true, 2, null, LINE_ITEM, ORDERABLE, "Orderable", "productCode", null));
+        true, 2, null, LINE_ITEM, ORDERABLE, RELATED_ORDERABLE, "productCode", null));
     fileColumns.add(new FileColumn(true, "header.product.name", "Product name",
-        true, 3, null, LINE_ITEM, ORDERABLE, "Orderable", "fullProductName", null));
+        true, 3, null, LINE_ITEM, ORDERABLE, RELATED_ORDERABLE, "fullProductName", null));
     fileColumns.add(new FileColumn(true, "header.period", PERIOD, true, 4,
         "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null));
     fileColumns.add(new FileColumn(true, "header.program", PROGRAM, true, 5,
-        null, ORDER, "programId", "Program", "code", null));
+        null, ORDER, "programId", "Program", CODE, null));
 
     FileTemplate fileTemplate = new FileTemplate("O", false, TemplateType.ORDER,
         fileColumns);
@@ -258,6 +271,74 @@ public class OrderCsvHelperTest {
     String date = order.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yy"));
 
     assertThat(csv, startsWith("01/16," + date));
+  }
+
+  @Test
+  public void shouldLookUpOrderLevelRelatedObjectsOncePerExport() throws IOException {
+    order = createOrderWithLineItems(3);
+    mockOrderLevelRelatedObjects();
+
+    writeCsvFile(order, new FileTemplate("O", false, TemplateType.ORDER,
+        createOrderLevelRelatedColumns()));
+
+    verify(facilityReferenceDataService, times(1)).findOne(order.getFacilityId());
+    verify(periodReferenceDataService, times(1)).findOne(order.getProcessingPeriodId());
+    verify(programReferenceDataService, times(1)).findOne(order.getProgramId());
+  }
+
+  @Test
+  public void shouldFetchProductsInSingleBatch() throws IOException {
+    order = createOrderWithLineItems(3);
+    List<OrderableDto> products = order.getOrderLineItems()
+        .stream()
+        .map(lineItem -> createProduct(lineItem.getOrderable().getId()))
+        .collect(Collectors.toList());
+    when(orderableReferenceDataService.findByIds(anyCollectionOf(UUID.class)))
+        .thenReturn(products);
+
+    String csv = writeCsvFile(order, new FileTemplate("O", false, TemplateType.ORDER,
+        createProductColumns()));
+    assertThat(csv.split("\r\n").length, is(3));
+    assertThat(csv, startsWith("productCode,productName"));
+
+    ArgumentCaptor<Set<UUID>> captor = productIdsCaptor();
+    verify(orderableReferenceDataService, times(1)).findByIds(captor.capture());
+    assertThat(captor.getValue(), is(getProductIds(order)));
+    verify(orderableReferenceDataService, never()).findOne(any(UUID.class));
+  }
+
+  @Test
+  public void shouldLookUpProductOnceWhenMissingFromBatch() throws IOException {
+    UUID productId = order.getOrderLineItems().get(0).getOrderable().getId();
+    when(orderableReferenceDataService.findByIds(anyCollectionOf(UUID.class)))
+        .thenReturn(Collections.emptyList());
+
+    String csv = writeCsvFile(order, new FileTemplate("O", false, TemplateType.ORDER,
+        createProductColumns()));
+
+    verify(orderableReferenceDataService, times(1)).findOne(productId);
+    assertThat(csv, startsWith("productCode,productName"));
+  }
+
+  @Test
+  public void shouldNotFetchProductsWithoutProductColumns() throws IOException {
+    writeCsvFile(order, new FileTemplate("O", false, TemplateType.ORDER,
+        createOrderLevelRelatedColumns()));
+
+    verify(orderableReferenceDataService, never()).findByIds(anyCollectionOf(UUID.class));
+  }
+
+  @Test
+  public void shouldFetchProductsOnlyForExportedLineItems() throws IOException {
+    ReflectionTestUtils.setField(orderCsvHelper, "includeZeroQuantity", false);
+
+    writeCsvFile(order, new FileTemplate("O", false, TemplateType.ORDER,
+        createProductColumns()));
+
+    ArgumentCaptor<Set<UUID>> captor = productIdsCaptor();
+    verify(orderableReferenceDataService).findByIds(captor.capture());
+    assertThat(captor.getValue(), is(Collections.singleton(
+        order.getOrderLineItems().get(0).getOrderable().getId())));
   }
 
   private String writeCsvFile(Order order, FileTemplate fileTemplate)
@@ -284,6 +365,60 @@ public class OrderCsvHelperTest {
         .withoutId()
         .withLineItems(orderLineItem1, orderLineItem2)
         .build();
+  }
+
+  private Order createOrderWithLineItems(int count) {
+    OrderLineItem[] lineItems = new OrderLineItem[count];
+    for (int i = 0; i < count; i++) {
+      lineItems[i] = new OrderLineItemDataBuilder()
+          .withOrderable(UUID.randomUUID(), 1L)
+          .withOrderedQuantity(10L)
+          .build();
+    }
+
+    return new OrderDataBuilder()
+        .withoutId()
+        .withLineItems(lineItems)
+        .build();
+  }
+
+  private void mockOrderLevelRelatedObjects() {
+    when(facilityReferenceDataService.findOne(order.getFacilityId()))
+        .thenReturn(createFacility());
+    when(periodReferenceDataService.findOne(order.getProcessingPeriodId()))
+        .thenReturn(createPeriod());
+    when(programReferenceDataService.findOne(order.getProgramId()))
+        .thenReturn(createProgram());
+  }
+
+  private List<FileColumn> createOrderLevelRelatedColumns() {
+    return new ArrayList<>(Arrays.asList(
+        new FileColumn(true, "header.facility.code", "Facility code",
+            true, 1, null, ORDER, "facilityId", "Facility", CODE, null),
+        new FileColumn(true, "header.period", PERIOD, true, 2,
+            "MM/yy", ORDER, "processingPeriodId", "ProcessingPeriod", "startDate", null),
+        new FileColumn(true, "header.program", PROGRAM, true, 3,
+            null, ORDER, "programId", "Program", CODE, null)));
+  }
+
+  private List<FileColumn> createProductColumns() {
+    return new ArrayList<>(Arrays.asList(
+        new FileColumn(true, "header.product.code", PRODUCT_CODE,
+            true, 1, null, "lineItemOrderable", "id", RELATED_ORDERABLE, "productCode", null),
+        new FileColumn(true, "header.product.name", "Product name",
+            true, 2, null, "lineItemOrderable", "id", RELATED_ORDERABLE, "fullProductName", null)));
+  }
+
+  private Set<UUID> getProductIds(Order order) {
+    return order.getOrderLineItems()
+        .stream()
+        .map(lineItem -> lineItem.getOrderable().getId())
+        .collect(Collectors.toCollection(HashSet::new));
+  }
+
+  @SuppressWarnings("unchecked")
+  private ArgumentCaptor<Set<UUID>> productIdsCaptor() {
+    return ArgumentCaptor.forClass((Class<Set<UUID>>) (Class<?>) Set.class);
   }
 
   private FacilityDto createFacility() {
@@ -313,6 +448,13 @@ public class OrderCsvHelperTest {
     product.setProductCode("productCode");
     product.setFullProductName("productName");
     product.setDispensable(new DispensableDto("each", "Each"));
+
+    return product;
+  }
+
+  private OrderableDto createProduct(UUID id) {
+    OrderableDto product = createProduct();
+    product.setId(id);
 
     return product;
   }
