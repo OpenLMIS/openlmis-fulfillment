@@ -1,3 +1,9 @@
+9.2.0-hotfix.2 / WIP
+====================
+
+Improvements:
+* [OLMIS-8369](https://openlmis.atlassian.net/browse/OLMIS-8369): Order CSV export looks up the facility and processing period once per order and fetches products in one batch instead of once per cell.
+
 9.2.0 / 2025-03-31
 ==================
 
