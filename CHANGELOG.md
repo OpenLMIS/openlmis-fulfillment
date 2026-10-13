@@ -1,6 +1,9 @@
 9.5.0-SNAPSHOT (WIP)
 ==================
 
+Bug fixes:
+* [OLMIS-8396](https://openlmis.atlassian.net/browse/OLMIS-8396): A release is published to Maven Central from its own staging repository, so another service's upload cannot fail it or be published with it, and the Central Portal publishes it without a manual step. Only X.Y.Z releases built on master are published; release candidates upload nothing. A Maven publishing failure marks the build unstable and does not stop the Docker image.
+
 9.4.1 / 2026-10-05
 ==================
 
