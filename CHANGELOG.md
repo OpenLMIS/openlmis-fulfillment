@@ -1,6 +1,9 @@
 9.4.3-SNAPSHOT (WIP)
 ==================
 
+Bug fixes:
+* [OLMIS-8406](https://openlmis.atlassian.net/browse/OLMIS-8406): GET `/api/proofOfDeliveries` now pages identifiers in the database rather than loading every matching row and paging in memory (`HHH000104`). An unsorted search is now ordered by identifier, where before it had no order at all.
+
 9.4.2 / 2026-10-16
 ==================
 
