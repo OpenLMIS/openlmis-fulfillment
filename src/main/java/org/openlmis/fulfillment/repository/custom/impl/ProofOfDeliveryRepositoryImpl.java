@@ -16,12 +16,16 @@
 package org.openlmis.fulfillment.repository.custom.impl;
 
 import static java.util.Collections.emptyList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -41,6 +45,11 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       + " INNER JOIN FETCH p.shipment AS s"
       + " INNER JOIN FETCH s.order AS o"
       + " LEFT JOIN FETCH p.lineItems";
+
+  private static final String POD_ID_SELECT = "SELECT p.id"
+      + " FROM ProofOfDelivery AS p"
+      + " INNER JOIN p.shipment AS s"
+      + " INNER JOIN s.order AS o";
 
   private static final String POD_COUNT = "SELECT DISTINCT COUNT(*)"
       + " FROM ProofOfDelivery AS p"
@@ -93,20 +102,41 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
     Long count = countQuery.getSingleResult();
 
     if (count > 0) {
-      TypedQuery<ProofOfDelivery> searchQuery = prepareQuery(
-          POD_SELECT, shipmentId, orderId, receivingFacilityIds,
-          supplyingFacilityIds, programIds, pageable, ProofOfDelivery.class
+      TypedQuery<UUID> idQuery = prepareQuery(
+          POD_ID_SELECT, shipmentId, orderId, receivingFacilityIds,
+          supplyingFacilityIds, programIds, pageable, UUID.class
       );
 
-      List<ProofOfDelivery> pods = searchQuery
+      List<UUID> ids = idQuery
           .setMaxResults(pageable.getPageSize())
           .setFirstResult(Math.toIntExact(pageable.getOffset()))
           .getResultList();
 
-      return Pagination.getPage(pods, pageable, count);
+      return Pagination.getPage(retrieveProofsOfDelivery(ids), pageable, count);
     }
 
     return Pagination.getPage(emptyList(), pageable, count);
+  }
+
+  private List<ProofOfDelivery> retrieveProofsOfDelivery(List<UUID> ids) {
+    if (ids.isEmpty()) {
+      return emptyList();
+    }
+
+    List<ProofOfDelivery> pods = entityManager
+        .createQuery(POD_SELECT + " " + WHERE + " p.id IN (:ids)", ProofOfDelivery.class)
+        .setParameter("ids", ids)
+        .getResultList();
+
+    Map<UUID, ProofOfDelivery> podById = pods
+        .stream()
+        .collect(toMap(ProofOfDelivery::getId, identity(), (left, right) -> left));
+
+    return ids
+        .stream()
+        .map(podById::get)
+        .filter(Objects::nonNull)
+        .collect(toList());
   }
 
   private <T> TypedQuery<T> prepareQuery(
@@ -192,7 +222,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       sql.add(String.join(AND, whereClauses));
     }
 
-    if (select.equals(POD_SELECT) && pageable.getSort().isSorted()) {
+    if (select.equals(POD_ID_SELECT)) {
       sql.add(ORDER_BY);
       sql.add(getOrderPredicate(pageable));
     }
@@ -208,9 +238,8 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       orderPredicates.add("p." + order.getProperty() + " " + direction);
     }
 
-    if (orderPredicates.isEmpty()) {
-      return "";
-    }
+    // the identifiers are paged in the database, so the order has to be total
+    orderPredicates.add("p.id");
 
     return String.join(",", orderPredicates);
   }

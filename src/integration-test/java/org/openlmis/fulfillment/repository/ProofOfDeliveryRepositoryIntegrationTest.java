@@ -34,6 +34,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import org.javers.core.Javers;
@@ -67,6 +69,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @SuppressWarnings("PMD.TooManyMethods")
 public class ProofOfDeliveryRepositoryIntegrationTest extends
     BaseCrudRepositoryIntegrationTest<ProofOfDelivery> {
+
+  private static final int PAGE_SIZE = 2;
 
   private static final String EXPECTED_NEW_POD_SNAPSHOT =
       "There should be new snapshot for PoD";
@@ -423,10 +427,43 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     ProofOfDelivery lastPod = null;
     for (ProofOfDelivery pod : found.getContent()) {
       if (null != lastPod) {
-        assertThat(lastPod.getId(), lessThanOrEqualTo(lastPod.getId()));
+        assertThat(lastPod.getId().toString(), lessThanOrEqualTo(pod.getId().toString()));
       }
       lastPod = pod;
     }
+  }
+
+  @Test
+  public void shouldNotRepeatOrSkipProofsOfDeliveryWhenPaging() {
+    List<ProofOfDelivery> list = Lists.newArrayList();
+
+    for (int i = 0; i < 5; ++i) {
+      list.add(generateInstance());
+    }
+
+    proofOfDeliveryRepository.saveAll(list);
+
+    long total = proofOfDeliveryRepository.count();
+    List<UUID> found = new ArrayList<>();
+
+    for (int page = 0; page * PAGE_SIZE < total; ++page) {
+      Page<ProofOfDelivery> result = proofOfDeliveryRepository.search(
+          null,
+          null,
+          emptySet(),
+          emptySet(),
+          emptySet(),
+          PageRequest.of(page, PAGE_SIZE));
+
+      assertThat(result.getTotalElements(), equalTo(total));
+
+      for (ProofOfDelivery pod : result.getContent()) {
+        found.add(pod.getId());
+      }
+    }
+
+    assertThat(found, hasSize((int) total));
+    assertThat(new HashSet<>(found), hasSize((int) total));
   }
 
   private List<CdoSnapshot> getSnapshots(UUID id, Class type) {
