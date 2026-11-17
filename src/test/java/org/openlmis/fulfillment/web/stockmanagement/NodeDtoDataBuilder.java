@@ -27,6 +27,11 @@ public class NodeDtoDataBuilder {
     return this;
   }
 
+  public NodeDtoDataBuilder asOrganization() {
+    this.isRefDataFacility = false;
+    return this;
+  }
+
   /**
    * Builds instance of {@link NodeDto}.
    */

@@ -44,6 +44,7 @@ import static org.openlmis.fulfillment.domain.Order.ORDER_TYPE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_REQUISITION_LESS_WRONG_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_NO_FTP_CONFIGURED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
@@ -619,6 +620,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateOrder() {
+    firstOrder.setType(OrderType.REQUISITION_LESS);
     given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
         eq(user.getId()))).willReturn(firstOrder);
 
@@ -639,7 +641,48 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotUpdateTransferRequestThroughOrderEndpoint() {
+    firstOrder.setType(OrderType.TRANSFER_REQUEST);
+
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(messageKey, is(ORDER_REQUISITION_LESS_WRONG_TYPE));
+    verify(orderService, never()).updateOrder(any(UUID.class), any(OrderDto.class),
+        any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSendRequisitionOrderThroughRequisitionLessEndpoint() {
+    // firstOrder is a REQUISITION order; transfer requests are rejected the same way
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
+        .when()
+        .put(SEND_REQUISITION_LESS_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(messageKey, is(ORDER_REQUISITION_LESS_WRONG_TYPE));
+    verify(orderRepository, never()).save(any(Order.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldSendRequisitionLessOrder() {
+    firstOrder.setType(OrderType.REQUISITION_LESS);
     given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
         eq(user.getId()))).willReturn(firstOrder);
 

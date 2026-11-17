@@ -48,6 +48,7 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.LocalTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentDraft;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -169,6 +170,9 @@ public class OrderControllerTest {
     when(authenticationHelper.getCurrentUser()).thenReturn(null);
     BindingResult bindingResult = mock(BindingResult.class);
     when(bindingResult.hasErrors()).thenReturn(false);
+    Order requisitionLessOrder = new OrderDataBuilder().withExternalId(null)
+        .withType(OrderType.REQUISITION_LESS).build();
+    when(orderRepository.findById(orderDto.getId())).thenReturn(Optional.of(requisitionLessOrder));
 
     orderController.updateOrder(orderDto.getId(), orderDto, bindingResult);
 

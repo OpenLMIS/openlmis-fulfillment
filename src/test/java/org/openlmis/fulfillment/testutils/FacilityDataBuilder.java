@@ -87,6 +87,16 @@ public class FacilityDataBuilder {
     return this;
   }
 
+  public FacilityDataBuilder withType(FacilityTypeDto type) {
+    this.type = type;
+    return this;
+  }
+
+  public FacilityDataBuilder withGeographicZone(GeographicZoneDto geographicZone) {
+    this.geographicZone = geographicZone;
+    return this;
+  }
+
   public FacilityDataBuilder withSupportedPrograms(List<ProgramDto> supportedPrograms) {
     this.supportedPrograms = supportedPrograms;
     return this;

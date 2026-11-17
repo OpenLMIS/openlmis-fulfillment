@@ -18,9 +18,12 @@ package org.openlmis.fulfillment.service.stockmanagement;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.openlmis.fulfillment.service.request.RequestParameters;
+import org.openlmis.fulfillment.web.stockmanagement.NodeDto;
 import org.openlmis.fulfillment.web.stockmanagement.ValidSourceDestinationDto;
 
 public abstract class ValidSourceDestinationsStockManagementService
@@ -34,6 +37,23 @@ public abstract class ValidSourceDestinationsStockManagementService
   @Override
   protected Class<ValidSourceDestinationDto[]> getArrayResultClass() {
     return ValidSourceDestinationDto[].class;
+  }
+
+  /**
+   * Returns ids of the reference data facilities that are valid sources/destinations of the
+   * given facility for the given program. Organizations (non-facility nodes) are skipped. The
+   * geographic level affinity of each assignment is applied by stock management, relative to the
+   * given facility.
+   */
+  public Set<UUID> findFacilityIds(UUID programId, UUID facilityId) {
+    return search(programId, facilityId)
+        .stream()
+        .map(ValidSourceDestinationDto::getNode)
+        .filter(Objects::nonNull)
+        .filter(NodeDto::isRefDataFacility)
+        .map(NodeDto::getReferenceId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
   }
 
   /**
