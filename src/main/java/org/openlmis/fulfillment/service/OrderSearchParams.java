@@ -87,10 +87,10 @@ public class OrderSearchParams {
    */
   @JsonIgnore
   public Set<OrderType> getTypeAsEnum() {
-    return !isEmpty(type)
-        ? type.stream().filter(StringUtils::isNotBlank).map(OrderSearchParams::toOrderType)
-            .collect(Collectors.toSet())
-        : null;
+    return isEmpty(type)
+        ? null
+        : type.stream().filter(StringUtils::isNotBlank).map(OrderSearchParams::toOrderType)
+            .collect(Collectors.toSet());
   }
 
   private static OrderType toOrderType(String value) {

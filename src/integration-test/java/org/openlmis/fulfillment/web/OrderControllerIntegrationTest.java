@@ -57,6 +57,7 @@ import com.google.common.collect.Sets;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -427,8 +428,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     OrderSearchParams params = new OrderSearchParams(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
-        Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, 4, 5),
-        LocalDate.of(2018, 5, 5), true, Sets.newHashSet(OrderType.REQUISITION_LESS.name()));
+        Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, Month.APRIL, 5),
+        LocalDate.of(2018, Month.MAY, 5), true, Sets.newHashSet(OrderType.REQUISITION_LESS.name()));
 
     given(orderService.searchOrders(params, pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 2));

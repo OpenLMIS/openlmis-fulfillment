@@ -146,8 +146,6 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
         .willReturn(true);
   }
 
-  // GET /api/transfers/partners
-
   @Test
   public void shouldReturnTransferPartners() {
     given(transferPartnerService
@@ -208,8 +206,6 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
 
     verify(transferPartnerService, never()).getPartners(any(), any(), any());
   }
-
-  // POST /api/transfers/requests
 
   @Test
   public void shouldCreateTransferRequest() {
@@ -311,8 +307,6 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  // PUT /api/transfers/requests/{id}
-
   @Test
   public void shouldUpdateTransferRequest() {
     given(orderService.updateOrder(eq(transferRequest.getId()), any(OrderDto.class),
@@ -395,8 +389,6 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
-
-  // PUT /api/transfers/requests/{id}/send
 
   @Test
   public void shouldSendTransferRequest() {
