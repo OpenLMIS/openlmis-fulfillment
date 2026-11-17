@@ -95,6 +95,7 @@ public abstract class MessageKeys {
   public static final String ORDER_EXISTS = join(ERROR_PREFIX, ORDER, EXISTS);
   public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
   public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);
+  public static final String ORDER_INVALID_TYPE = join(ERROR_PREFIX, ORDER, "invalidType");
   public static final String ORDER_NOT_FOUND_OR_WRONG_STATUS =
       join(ERROR_PREFIX, ORDER, NOT_FOUND_OR_WRONG_STATUS);
 

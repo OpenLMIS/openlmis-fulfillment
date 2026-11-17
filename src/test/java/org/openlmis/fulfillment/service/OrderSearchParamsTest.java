@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_TYPE;
 import static org.openlmis.fulfillment.service.OrderSearchParams.builder;
 
 import com.google.common.collect.Sets;
@@ -32,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.web.ValidationException;
 
 public class OrderSearchParamsTest {
@@ -63,5 +65,28 @@ public class OrderSearchParamsTest {
     exception.expect(hasProperty("messageKey", equalTo(ORDER_INVALID_STATUS)));
 
     builder().status(Sets.newHashSet("ala has a cat")).build().getStatusAsEnum();
+  }
+
+  @Test
+  public void shouldConvertTypeToNullIfTypeFieldIsBlank() {
+    assertThat(builder().type(null).build().getTypeAsEnum(), is(nullValue()));
+    assertThat(builder().type(Sets.newHashSet()).build().getTypeAsEnum(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldConvertTypeToEnumIgnoringCase() {
+    assertThat(
+        builder().type(Sets.newHashSet("transfer_request", "REQUISITION", " ")).build()
+            .getTypeAsEnum(),
+        is(equalTo(EnumSet.of(OrderType.TRANSFER_REQUEST, OrderType.REQUISITION)))
+    );
+  }
+
+  @Test
+  public void shouldThrowExceptionIfTypeIsIncorrect() {
+    exception.expect(ValidationException.class);
+    exception.expect(hasProperty("messageKey", equalTo(ORDER_INVALID_TYPE)));
+
+    builder().type(Sets.newHashSet("TRANSFER")).build().getTypeAsEnum();
   }
 }

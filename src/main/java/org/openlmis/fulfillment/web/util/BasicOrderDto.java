@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
 import org.openlmis.fulfillment.service.ExporterBuilder;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -99,6 +100,10 @@ public class BasicOrderDto implements Order.Exporter, UpdateDetails.Exporter {
   @Getter
   @Setter
   private BigDecimal quotedCost;
+
+  @Getter
+  @Setter
+  private OrderType type;
 
   @Getter
   private ObjectReferenceDto lastUpdater;

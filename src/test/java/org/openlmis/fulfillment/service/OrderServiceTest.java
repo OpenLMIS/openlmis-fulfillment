@@ -66,6 +66,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.extension.ExtensionManager;
@@ -287,7 +288,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null,
-        null
+        null, null
     );
     when(orderRepository.searchOrders(
         params, asSet(order.getProcessingPeriodId()),
@@ -318,7 +319,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()), null, null,
-        null);
+        null, null);
     when(orderRepository.searchOrders(
         params, asSet(order.getProcessingPeriodId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
@@ -346,7 +347,7 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate, null);
+        null, Sets.newHashSet(order.getStatus().toString()), startDate, endDate, null, null);
     when(orderRepository.searchOrders(
         params, asSet(period1.getId(), period2.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
@@ -371,7 +372,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         order.getProcessingPeriodId(), Sets.newHashSet(order.getStatus().toString()),
-        startDate, endDate, null);
+        startDate, endDate, null, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(0, receivedOrders.getContent().size());
@@ -391,7 +392,7 @@ public class OrderServiceTest {
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
         null, Sets.newHashSet(order.getStatus().toString()),
-        startDate, endDate, null);
+        startDate, endDate, null, null);
     Page<Order> receivedOrders = orderService.searchOrders(params, pageable);
 
     assertEquals(0, receivedOrders.getContent().size());
@@ -406,7 +407,8 @@ public class OrderServiceTest {
 
     OrderSearchParams params = new OrderSearchParams(
         order.getSupplyingFacilityId(), order.getRequestingFacilityId(), order.getProgramId(),
-        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate, null);
+        period1.getId(), Sets.newHashSet(order.getStatus().toString()), startDate, endDate,
+        null, null);
     when(orderRepository.searchOrders(
         params, asSet(period1.getId()), pageable))
         .thenReturn(new PageImpl<>(Collections.singletonList(order), pageable, 1));
@@ -434,6 +436,36 @@ public class OrderServiceTest {
     validateCreatedOrder(created, order);
     verify(entityManager).persist(orderCaptor.capture());
     assertEquals(OrderStatus.CREATING, orderCaptor.getValue().getStatus());
+  }
+
+  @Test
+  public void shouldCreateRequisitionLessOrderWithRequisitionLessType() {
+    // given
+    order.setId(null);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    orderService.createRequisitionLessOrder(dto, userDto.getId());
+
+    // then
+    verify(entityManager).persist(orderCaptor.capture());
+    assertEquals(OrderType.REQUISITION_LESS, orderCaptor.getValue().getType());
+  }
+
+  @Test
+  public void shouldCreateTransferRequest() {
+    // given
+    order.setId(null);
+    OrderDto dto = OrderDto.newInstance(order, exporter);
+
+    // when
+    Order created = orderService.createTransferRequest(dto, userDto.getId());
+
+    // then
+    validateCreatedOrder(created, order);
+    verify(entityManager).persist(orderCaptor.capture());
+    assertEquals(OrderStatus.CREATING, orderCaptor.getValue().getStatus());
+    assertEquals(OrderType.TRANSFER_REQUEST, orderCaptor.getValue().getType());
   }
 
   @Test

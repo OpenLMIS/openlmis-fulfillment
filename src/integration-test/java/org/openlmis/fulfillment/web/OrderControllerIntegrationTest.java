@@ -40,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
+import static org.openlmis.fulfillment.domain.Order.ORDER_TYPE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
@@ -81,6 +82,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -425,7 +427,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
         Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, 4, 5),
-        LocalDate.of(2018, 5, 5), true);
+        LocalDate.of(2018, 5, 5), true, Sets.newHashSet(OrderType.REQUISITION_LESS.name()));
 
     given(orderService.searchOrders(params, pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 2));
@@ -439,6 +441,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PERIOD_START_DATE, "2018-04-05")
         .queryParam(PERIOD_END_DATE, "2018-05-05")
         .queryParam(REQUISITIONLESS, true)
+        .queryParam(ORDER_TYPE, OrderType.REQUISITION_LESS.name())
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())

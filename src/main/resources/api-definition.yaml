@@ -321,9 +321,20 @@ resourceTypes:
           repeat: false
         requisitionless:
           displayName: requisitionless
+          description: >
+            true returns orders without an externalId (requisition-less orders and transfers),
+            false returns orders created from requisitions.
           type: boolean
           required: false
           repeat: false
+        type:
+          displayName: type
+          description: >
+            Order type, may be repeated: REQUISITION, REQUISITION_LESS, TRANSFER_REQUEST,
+            TRANSFER_PUSH. Unknown values return 400.
+          type: string
+          required: false
+          repeat: true
       responses:
         200:
           headers:
