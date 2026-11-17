@@ -40,9 +40,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.domain.Order.ORDER_STATUS;
+import static org.openlmis.fulfillment.domain.Order.ORDER_TYPE;
 import static org.openlmis.fulfillment.domain.OrderStatus.READY_TO_PACK;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_REQUISITION_LESS_WRONG_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_NO_FTP_CONFIGURED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
@@ -55,6 +57,7 @@ import com.google.common.collect.Sets;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -81,6 +84,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.Template;
 import org.openlmis.fulfillment.domain.VersionEntityReference;
 import org.openlmis.fulfillment.repository.OrderRepository;
@@ -424,8 +428,8 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
     OrderSearchParams params = new OrderSearchParams(
         firstOrder.getSupplyingFacilityId(), firstOrder.getRequestingFacilityId(),
         firstOrder.getProgramId(), firstOrder.getProcessingPeriodId(),
-        Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, 4, 5),
-        LocalDate.of(2018, 5, 5), true);
+        Sets.newHashSet(READY_TO_PACK.toString()), LocalDate.of(2018, Month.APRIL, 5),
+        LocalDate.of(2018, Month.MAY, 5), true, Sets.newHashSet(OrderType.REQUISITION_LESS.name()));
 
     given(orderService.searchOrders(params, pageable))
         .willReturn(new PageImpl<>(Lists.newArrayList(firstOrder), pageable, 2));
@@ -439,6 +443,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
         .queryParam(PERIOD_START_DATE, "2018-04-05")
         .queryParam(PERIOD_END_DATE, "2018-05-05")
         .queryParam(REQUISITIONLESS, true)
+        .queryParam(ORDER_TYPE, OrderType.REQUISITION_LESS.name())
         .queryParam(PAGE, 0)
         .queryParam(SIZE, 10)
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
@@ -616,6 +621,7 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @Test
   public void shouldUpdateOrder() {
+    firstOrder.setType(OrderType.REQUISITION_LESS);
     given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
         eq(user.getId()))).willReturn(firstOrder);
 
@@ -636,7 +642,48 @@ public class OrderControllerIntegrationTest extends BaseWebIntegrationTest {
   }
 
   @Test
+  public void shouldNotUpdateTransferRequestThroughOrderEndpoint() {
+    firstOrder.setType(OrderType.TRANSFER_REQUEST);
+
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
+        .when()
+        .put(ID_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(messageKey, is(ORDER_REQUISITION_LESS_WRONG_TYPE));
+    verify(orderService, never()).updateOrder(any(UUID.class), any(OrderDto.class),
+        any(UUID.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotSendRequisitionOrderThroughRequisitionLessEndpoint() {
+    // firstOrder is a REQUISITION order; transfer requests are rejected the same way
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .pathParam("id", firstOrderDto.getId())
+        .body(firstOrderDto)
+        .when()
+        .put(SEND_REQUISITION_LESS_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertThat(messageKey, is(ORDER_REQUISITION_LESS_WRONG_TYPE));
+    verify(orderRepository, never()).save(any(Order.class));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldSendRequisitionLessOrder() {
+    firstOrder.setType(OrderType.REQUISITION_LESS);
     given(orderService.updateOrder(eq(firstOrderDto.getId()), any(OrderDto.class),
         eq(user.getId()))).willReturn(firstOrder);
 

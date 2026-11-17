@@ -50,6 +50,7 @@ import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderNumberConfiguration;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.TransferProperties;
 import org.openlmis.fulfillment.domain.TransferType;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -157,15 +158,32 @@ public class OrderService {
    * @return created Order.
    */
   public Order createRequisitionLessOrder(OrderDto orderDto, UUID userId) {
+    return createManualOrder(orderDto, userId, OrderType.REQUISITION_LESS);
+  }
+
+  /**
+   * Creates a transfer request: an order in which the requesting facility asks a transfer partner
+   * for stock. It is stored like a requisition-less order (ordered quantities in doses until sent),
+   * but with the {@link OrderType#TRANSFER_REQUEST} type.
+   *
+   * @param orderDto object that order will be created from.
+   * @return created Order.
+   */
+  public Order createTransferRequest(OrderDto orderDto, UUID userId) {
+    return createManualOrder(orderDto, userId, OrderType.TRANSFER_REQUEST);
+  }
+
+  private Order createManualOrder(OrderDto orderDto, UUID userId, OrderType type) {
     Order order = Order.newInstance(orderDto,
         new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
 
     setOrderCode(order);
     order.setStatus(CREATING);
+    order.setType(type);
 
     entityManager.persist(order);
 
-    XLOGGER.debug("Created requisition-less order with id: {}", order.getId());
+    XLOGGER.debug("Created {} order with id: {}", type, order.getId());
     return order;
   }
 

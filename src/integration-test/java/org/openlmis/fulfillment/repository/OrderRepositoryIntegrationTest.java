@@ -44,6 +44,7 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.BaseEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.service.OrderSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -91,6 +92,27 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
         .withSupplyingFacilityId(supplyingFacilityId)
         .withRequestingFacilityId(requestingFacilityId)
         .build();
+  }
+
+  @Test
+  public void shouldDeriveTypeFromExternalIdWhenNotSet() {
+    Order requisitionOrder = orderRepository.save(new OrderDataBuilder()
+        .withoutId().withoutLineItems().withType(null).build());
+    final Order requisitionLessOrder = orderRepository.save(new OrderDataBuilder()
+        .withoutId().withoutLineItems().withType(null).withExternalId(null).build());
+
+    assertThat(requisitionOrder.getType(), is(OrderType.REQUISITION));
+    assertThat(requisitionLessOrder.getType(), is(OrderType.REQUISITION_LESS));
+  }
+
+  @Test
+  public void shouldKeepTypeSetExplicitly() {
+    Order transferRequest = orderRepository.save(new OrderDataBuilder()
+        .withoutId().withoutLineItems().withExternalId(null)
+        .withType(OrderType.TRANSFER_REQUEST).build());
+
+    assertThat(orderRepository.findById(transferRequest.getId()).get().getType(),
+        is(OrderType.TRANSFER_REQUEST));
   }
 
   @Test
@@ -187,6 +209,31 @@ public class OrderRepositoryIntegrationTest extends BaseCrudRepositoryIntegratio
     page = orderRepository.searchOrders(
         params, null, pageable);
     assertSearchOrders(page);
+  }
+
+  @Test
+  public void shouldFindOrdersByType() {
+    final Order requisitionOrder = orderRepository.save(generateInstance());
+    final Order requisitionLessOrder = orderRepository.save(new OrderDataBuilder()
+        .withoutId().withoutLineItems().withExternalId(null)
+        .withType(OrderType.REQUISITION_LESS).build());
+    Order transferRequest = orderRepository.save(new OrderDataBuilder()
+        .withoutId().withoutLineItems().withExternalId(null)
+        .withType(OrderType.TRANSFER_REQUEST).build());
+
+    OrderSearchParams params = new OrderSearchParams();
+    params.setType(newHashSet(OrderType.TRANSFER_REQUEST.name()));
+    assertSearchOrders(orderRepository.searchOrders(params, null, pageable), transferRequest);
+
+    params.setType(newHashSet(OrderType.REQUISITION.name(), OrderType.REQUISITION_LESS.name()));
+    assertSearchOrders(orderRepository.searchOrders(params, null, pageable),
+        requisitionOrder, requisitionLessOrder);
+
+    // requisitionless keeps its externalId meaning: transfers count as requisition-less
+    params.setType(null);
+    params.setRequisitionless(true);
+    assertSearchOrders(orderRepository.searchOrders(params, null, pageable),
+        requisitionLessOrder, transferRequest);
   }
 
   @Test

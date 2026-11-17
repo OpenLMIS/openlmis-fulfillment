@@ -33,6 +33,11 @@ public class ValidSourceDestinationDtoDataBuilder {
     return this;
   }
 
+  public ValidSourceDestinationDtoDataBuilder withOrganizationNode(UUID referenceId) {
+    node = new NodeDtoDataBuilder().withReferenceId(referenceId).asOrganization().build();
+    return this;
+  }
+
   /**
    * Builds instance of {@link ValidSourceDestinationDto}.
    */

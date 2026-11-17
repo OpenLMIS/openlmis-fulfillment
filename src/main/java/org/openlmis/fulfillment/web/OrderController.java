@@ -21,6 +21,7 @@ import static org.openlmis.fulfillment.domain.OrderStatus.TRANSFER_FAILED;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_CANCEL_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_EXISTS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_NOT_FOUND_OR_WRONG_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_REQUISITION_LESS_WRONG_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_INVALID_STATUS;
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_RETRY_NO_FTP_CONFIGURED;
 
@@ -45,6 +46,7 @@ import org.openlmis.fulfillment.domain.FtpTransferProperties;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatsData;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.Shipment;
 import org.openlmis.fulfillment.domain.ShipmentLineItem;
 import org.openlmis.fulfillment.domain.Template;
@@ -238,6 +240,7 @@ public class OrderController extends BaseController {
       BindingResult bindingResult
   ) {
     permissionService.canCreateOrder(orderDto);
+    checkIsRequisitionLess(orderId);
 
     orderValidator.validate(orderDto, bindingResult);
     throwValidationExceptionIfHasError(bindingResult);
@@ -264,6 +267,7 @@ public class OrderController extends BaseController {
       BindingResult bindingResult
   ) {
     permissionService.canCreateOrder(orderDto);
+    checkIsRequisitionLess(orderId);
 
     orderValidator.validate(orderDto, bindingResult);
     throwValidationExceptionIfHasError(bindingResult);
@@ -276,6 +280,21 @@ public class OrderController extends BaseController {
     order.prepareToLocalFulfill();
 
     orderRepository.save(order);
+  }
+
+  /**
+   * Only requisition-less orders can be edited and sent through the order endpoints. Transfer
+   * requests have their own endpoints, which also check that the facilities are still transfer
+   * partners, so they must not be changed here.
+   */
+  private void checkIsRequisitionLess(UUID orderId) {
+    Order existing = orderRepository.findById(orderId)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    if (OrderType.REQUISITION_LESS != existing.getType()) {
+      throw new ValidationException(ORDER_REQUISITION_LESS_WRONG_TYPE, orderId.toString(),
+          String.valueOf(existing.getType()));
+    }
   }
 
   /**

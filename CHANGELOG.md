@@ -1,6 +1,14 @@
 9.4.3-SNAPSHOT (WIP)
 ==================
 
+New functionality added in a backwards-compatible manner:
+* [OLMIS-8457](https://openlmis.atlassian.net/browse/OLMIS-8457): Stock reallocation and transfer requests between facilities in fulfillment
+  * Orders have a new `type`: REQUISITION, REQUISITION_LESS, TRANSFER_REQUEST or TRANSFER_PUSH. Existing orders are REQUISITION when they have an `externalId` and REQUISITION_LESS otherwise.
+  * GET `/api/orders` accepts a repeatable `type` parameter to filter orders by type.
+  * New `GET /api/transfers/partners` lists the facilities a facility may transfer stock with: both a valid destination and a valid source must exist, with their geo affinity.
+  * New `/api/transfers/requests` endpoints create, edit and send transfer requests, and reject facilities that are not transfer partners.
+  * The requisition-less order endpoints reject orders of any other type.
+
 Bug fixes:
 * [OLMIS-8406](https://openlmis.atlassian.net/browse/OLMIS-8406): GET `/api/proofsOfDelivery` now pages identifiers in the database rather than loading every matching row and paging in memory (`HHH000104`). An unsorted search is now ordered by identifier, where before it had no order at all.
 

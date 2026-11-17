@@ -35,6 +35,7 @@ import org.openlmis.fulfillment.domain.ExternalStatus;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.StatusMessage;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -110,6 +111,10 @@ public class OrderDto implements Order.Importer, Order.Exporter, UpdateDetails.E
   @Getter
   @Setter
   private BigDecimal quotedCost;
+
+  @Getter
+  @Setter
+  private OrderType type;
 
   @Setter
   private List<OrderLineItemDto> orderLineItems;

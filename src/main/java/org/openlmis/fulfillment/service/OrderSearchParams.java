@@ -16,6 +16,7 @@
 package org.openlmis.fulfillment.service;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_TYPE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -33,6 +35,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.web.ValidationException;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -60,6 +63,8 @@ public class OrderSearchParams {
 
   Boolean requisitionless;
 
+  Set<String> type;
+
   /**
    * Tries to convert the string representation of each status in the <strong>status</strong> field
    * to an instance of {@link OrderStatus}.
@@ -72,6 +77,27 @@ public class OrderSearchParams {
     return !isEmpty(status)
         ? status.stream().filter(StringUtils::isNotBlank).map(TO_ENUM).collect(Collectors.toSet())
         : null;
+  }
+
+  /**
+   * Converts each value of the <strong>type</strong> field to an {@link OrderType}, ignoring case.
+   *
+   * @return a set with instances of {@link OrderType} or {@code null} if the field is empty.
+   * @throws ValidationException if the field contains a value that is not an order type.
+   */
+  @JsonIgnore
+  public Set<OrderType> getTypeAsEnum() {
+    return isEmpty(type)
+        ? null
+        : type.stream().filter(StringUtils::isNotBlank).map(OrderSearchParams::toOrderType)
+            .collect(Collectors.toSet());
+  }
+
+  private static OrderType toOrderType(String value) {
+    return Stream.of(OrderType.values())
+        .filter(orderType -> orderType.name().equalsIgnoreCase(value.trim()))
+        .findFirst()
+        .orElseThrow(() -> new ValidationException(ORDER_INVALID_TYPE, value));
   }
 
   private static final class ToEnum implements Function<String, OrderStatus> {

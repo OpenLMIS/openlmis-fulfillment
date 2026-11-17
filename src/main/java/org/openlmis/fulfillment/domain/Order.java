@@ -61,6 +61,7 @@ public class Order extends BaseEntity {
   public static final String REQUESTING_FACILITY_ID = "requestingFacilityId";
   public static final String PROGRAM_ID = "programId";
   public static final String ORDER_STATUS = "status";
+  public static final String ORDER_TYPE = "type";
   public static final String PROCESSING_PERIOD_ID = "processingPeriodId";
   public static final String CREATED_DATE = "createdDate";
 
@@ -137,6 +138,12 @@ public class Order extends BaseEntity {
   @Setter
   private BigDecimal quotedCost;
 
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  @Getter
+  @Setter
+  private OrderType type;
+
   @OneToMany(
       mappedBy = "order",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
@@ -195,6 +202,9 @@ public class Order extends BaseEntity {
   @PrePersist
   private void prePersist() {
     this.createdDate = ZonedDateTime.now();
+    if (null == type) {
+      type = null == externalId ? OrderType.REQUISITION_LESS : OrderType.REQUISITION;
+    }
     forEachLine(line -> line.setOrder(this));
     forEachStatus(status -> status.setOrder(this));
     forEachStatusChange(change -> change.setOrder(this));
@@ -205,6 +215,10 @@ public class Order extends BaseEntity {
     forEachLine(line -> line.setOrder(this));
     forEachStatus(status -> status.setOrder(this));
     forEachStatusChange(change -> change.setOrder(this));
+  }
+
+  public boolean isTransferRequest() {
+    return OrderType.TRANSFER_REQUEST == type;
   }
 
   public boolean isOrdered() {
@@ -357,6 +371,7 @@ public class Order extends BaseEntity {
     exporter.setOrderCode(getOrderCode());
     exporter.setStatus(getStatus());
     exporter.setQuotedCost(getQuotedCost());
+    exporter.setType(getType());
     exporter.setCreatedDate(getCreatedDate());
     if (getUpdateDetails() != null) {
       exporter.setUpdateDetails(getUpdateDetails());
@@ -394,6 +409,8 @@ public class Order extends BaseEntity {
     void setStatus(OrderStatus orderStatus);
 
     void setQuotedCost(BigDecimal quotedCost);
+
+    void setType(OrderType type);
 
     void setProcessingPeriod(ProcessingPeriodDto period);
 

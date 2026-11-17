@@ -25,6 +25,11 @@ schemas:
           "type": "array",
           "items": {"type": "object", "$ref": "schemas/orderDto.json" }
       }
+  - facilityDtoArray: |
+      {
+          "type": "array",
+          "items": {"type": "object", "$ref": "schemas/facilityDto.json" }
+      }
   - orderLineItemDto: !include schemas/orderLineItemDto.json
   - orderLineItemDtoArray: |
       {
@@ -321,9 +326,20 @@ resourceTypes:
           repeat: false
         requisitionless:
           displayName: requisitionless
+          description: >
+            true returns orders without an externalId (requisition-less orders and transfers),
+            false returns orders created from requisitions.
           type: boolean
           required: false
           repeat: false
+        type:
+          displayName: type
+          description: >
+            Order type, may be repeated: REQUISITION, REQUISITION_LESS, TRANSFER_REQUEST,
+            TRANSFER_PUSH. Unknown values return 400.
+          type: string
+          required: false
+          repeat: true
       responses:
         200:
           headers:
@@ -456,7 +472,8 @@ resourceTypes:
       put:
         is: [ secured ]
         description: >
-          Update order. This endpoint requires ORDER_CREATE right.
+          Update a requisition-less order in CREATING status. This endpoint requires ORDER_CREATE
+          right. Returns 400 for an order that is not REQUISITION_LESS.
         body:
           application/json:
             schema: orderDto
@@ -467,6 +484,12 @@ resourceTypes:
             body:
               application/json:
                 schema: orderDto
+          400:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
           403:
             headers:
               Keep-Alive:
@@ -484,6 +507,7 @@ resourceTypes:
           is: [ secured ]
           description: >
             Send requisition-less order. This endpoint requires ORDER_CREATE right.
+            Returns 400 for an order that is not REQUISITION_LESS.
           body:
             application/json:
               schema: orderDto
@@ -491,6 +515,12 @@ resourceTypes:
             200:
               headers:
                 Keep-Alive:
+            400:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
             403:
               headers:
                 Keep-Alive:
@@ -719,6 +749,162 @@ resourceTypes:
             body:
               application/json:
                 schema: localizedMessage
+  /transfers:
+    /partners:
+      get:
+        is: [ secured ]
+        description: >
+          Returns the facilities the given facility may transfer stock with for the program.
+          A facility S may send to a facility R only when R is a valid destination of S and S
+          is a valid source of R (stock management valid sources/destinations, including their
+          geographic level affinity). Only facilities are returned, never organizations.
+          Requires ORDER_CREATE (direction REQUEST) or SHIPMENTS_EDIT (direction SEND) on the
+          given facility.
+        queryParameters:
+          facilityId:
+            displayName: facilityId
+            type: string
+            required: true
+            repeat: false
+          programId:
+            displayName: programId
+            type: string
+            required: true
+            repeat: false
+          direction:
+            displayName: direction
+            description: >
+              SEND returns facilities the given facility may send to; REQUEST returns
+              facilities it may request from.
+            type: string
+            enum: [ SEND, REQUEST ]
+            required: true
+            repeat: false
+        responses:
+          200:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: facilityDtoArray
+          400:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
+          403:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
+    /requests:
+      post:
+        is: [ secured ]
+        description: >
+          Creates a transfer request in CREATING status: the requesting facility orders stock
+          from a transfer partner (supplying facility). The facility and the receiving facility
+          are set to the requesting facility and the creator to the current user; values sent
+          for them are ignored. Line items are optional and are usually added later with PUT. Requires ORDER_CREATE on the requesting facility. Returns 400
+          when the facilities are not transfer partners for the program.
+        body:
+          application/json:
+            schema: orderDto
+        responses:
+          201:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: orderDto
+          400:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
+          403:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
+      /{id}:
+        uriParameters:
+          id:
+            displayName: id
+            type: string
+            required: true
+            repeat: false
+        put:
+          is: [ secured ]
+          description: >
+            Updates the line items of a transfer request in CREATING status. Requires
+            ORDER_CREATE on the requesting facility. Returns 400 when the order is not a transfer
+            request or the facilities are no longer transfer partners for the program.
+          body:
+            application/json:
+              schema: orderDto
+          responses:
+            200:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: orderDto
+            400:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
+            403:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
+            404:
+              headers:
+                Keep-Alive:
+              body:
+                application/json:
+                  schema: localizedMessage
+        /send:
+          put:
+            is: [ secured ]
+            description: >
+              Saves and sends a transfer request in CREATING status. Ordered quantities are
+              converted to packs and the order becomes ORDERED. Requires ORDER_CREATE on the
+              requesting facility. Returns 400 when the order is not a transfer request, the
+              facilities are no longer transfer partners for the program, or no line item has a
+              quantity greater than zero.
+            body:
+              application/json:
+                schema: orderDto
+            responses:
+              200:
+                headers:
+                  Keep-Alive:
+              400:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
+              403:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
+              404:
+                headers:
+                  Keep-Alive:
+                body:
+                  application/json:
+                    schema: localizedMessage
   /orderNumberConfigurations:
     displayName: OrderNumberConfiguration
     get:

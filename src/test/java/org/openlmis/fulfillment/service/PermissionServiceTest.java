@@ -59,6 +59,7 @@ import org.openlmis.fulfillment.repository.OrderRepository;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.service.transfer.TransferDirection;
 import org.openlmis.fulfillment.testutils.DtoGenerator;
 import org.openlmis.fulfillment.testutils.OAuth2AuthenticationDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
@@ -352,6 +353,59 @@ public class PermissionServiceTest {
     expectException(ORDER_CREATE);
 
     permissionService.canCreateOrder(order);
+  }
+
+  @Test
+  public void canCreateTransferRequest() {
+    UUID requestingFacilityId = order.getRequestingFacilityId();
+    mockHasRight(ORDER_CREATE, null, null, requestingFacilityId);
+
+    permissionService.canCreateTransferRequest(requestingFacilityId);
+
+    verifyRight(ORDER_CREATE, null, null, requestingFacilityId);
+  }
+
+  @Test
+  public void cannotCreateTransferRequest() {
+    expectException(ORDER_CREATE);
+
+    permissionService.canCreateTransferRequest(order.getRequestingFacilityId());
+  }
+
+  @Test
+  public void canViewRequestTransferPartnersWithOrderCreate() {
+    UUID facilityId = order.getRequestingFacilityId();
+    mockHasRight(ORDER_CREATE, null, null, facilityId);
+
+    permissionService.canViewTransferPartners(facilityId, TransferDirection.REQUEST);
+
+    verifyRight(ORDER_CREATE, null, null, facilityId);
+  }
+
+  @Test
+  public void cannotViewRequestTransferPartnersWithoutOrderCreate() {
+    expectException(ORDER_CREATE);
+
+    permissionService.canViewTransferPartners(order.getRequestingFacilityId(),
+        TransferDirection.REQUEST);
+  }
+
+  @Test
+  public void canViewSendTransferPartnersWithShipmentsEdit() {
+    UUID facilityId = order.getSupplyingFacilityId();
+    mockHasRight(SHIPMENTS_EDIT, null, null, facilityId);
+
+    permissionService.canViewTransferPartners(facilityId, TransferDirection.SEND);
+
+    verifyRight(SHIPMENTS_EDIT, null, null, facilityId);
+  }
+
+  @Test
+  public void cannotViewSendTransferPartnersWithoutShipmentsEdit() {
+    expectException(SHIPMENTS_EDIT);
+
+    permissionService.canViewTransferPartners(order.getSupplyingFacilityId(),
+        TransferDirection.SEND);
   }
 
   @Test

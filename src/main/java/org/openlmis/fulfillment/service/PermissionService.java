@@ -31,6 +31,7 @@ import org.openlmis.fulfillment.service.referencedata.PermissionStrings;
 import org.openlmis.fulfillment.service.referencedata.RightDto;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.referencedata.UserReferenceDataService;
+import org.openlmis.fulfillment.service.transfer.TransferDirection;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.MissingPermissionException;
 import org.openlmis.fulfillment.web.ValidationException;
@@ -156,6 +157,27 @@ public class PermissionService {
 
   public void canCreateOrder(Order order) {
     checkPermission(ORDER_CREATE, order.getReceivingFacilityId());
+  }
+
+  /**
+   * Checks if user can create or edit a transfer request on behalf of the requesting facility.
+   *
+   * @param requestingFacilityId id of the facility that requests stock
+   */
+  public void canCreateTransferRequest(UUID requestingFacilityId) {
+    checkPermission(ORDER_CREATE, requestingFacilityId);
+  }
+
+  /**
+   * Checks if user can look up transfer partners of the given facility. Requesting needs
+   * ORDER_CREATE, sending needs SHIPMENTS_EDIT on that facility.
+   *
+   * @param facilityId id of the facility asking for partners
+   * @param direction  side of the transfer the facility is on
+   */
+  public void canViewTransferPartners(UUID facilityId, TransferDirection direction) {
+    checkPermission(
+        TransferDirection.SEND == direction ? SHIPMENTS_EDIT : ORDER_CREATE, facilityId);
   }
 
   /**

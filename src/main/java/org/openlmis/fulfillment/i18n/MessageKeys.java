@@ -31,6 +31,7 @@ public abstract class MessageKeys {
   private static final String ORDER_UPDATE = "orderUpdate";
   private static final String ORDER_REQUISITION_LESS = "orderRequisitionLess";
   private static final String ORDER_CANCEL = "orderCancel";
+  private static final String TRANSFER = "transfer";
   private static final String ORDER_FILE_TEMPLATE = "fileTemplate";
   private static final String REFERENCE_DATA = "referenceData";
   private static final String REPORTING = "reporting";
@@ -95,6 +96,7 @@ public abstract class MessageKeys {
   public static final String ORDER_EXISTS = join(ERROR_PREFIX, ORDER, EXISTS);
   public static final String ORDER_NOT_FOUND = join(ERROR_PREFIX, ORDER, NOT_FOUND);
   public static final String ORDER_INVALID_STATUS = join(ERROR_PREFIX, ORDER, INVALID_STATUS);
+  public static final String ORDER_INVALID_TYPE = join(ERROR_PREFIX, ORDER, "invalidType");
   public static final String ORDER_NOT_FOUND_OR_WRONG_STATUS =
       join(ERROR_PREFIX, ORDER, NOT_FOUND_OR_WRONG_STATUS);
 
@@ -109,6 +111,15 @@ public abstract class MessageKeys {
 
   public static final String ORDER_REQUISITION_LESS_ORDERABLE_NOT_FOUND =
       join(ERROR_PREFIX, ORDER_REQUISITION_LESS, ORDERABLES, NOT_FOUND);
+  public static final String ORDER_REQUISITION_LESS_WRONG_TYPE =
+      join(ERROR_PREFIX, ORDER_REQUISITION_LESS, "wrongType");
+
+  public static final String TRANSFER_INVALID_PAIR = join(ERROR_PREFIX, TRANSFER, "invalidPair");
+  public static final String TRANSFER_REQUIRED_FIELD = join(ERROR_PREFIX, TRANSFER, REQUIRED);
+  public static final String TRANSFER_NOTHING_TO_SEND =
+      join(ERROR_PREFIX, TRANSFER, "nothingToSend");
+  public static final String TRANSFER_NOT_TRANSFER_REQUEST =
+      join(ERROR_PREFIX, TRANSFER, "notTransferRequest");
 
   public static final String ORDER_CANCEL_INVALID_STATUS =
       join(ERROR_PREFIX, ORDER_CANCEL, INVALID_STATUS);

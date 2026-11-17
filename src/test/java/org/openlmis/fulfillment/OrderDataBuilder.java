@@ -31,6 +31,7 @@ import org.openlmis.fulfillment.domain.ExtraDataEntity;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderLineItem;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.StatusChange;
 import org.openlmis.fulfillment.domain.StatusMessage;
 import org.openlmis.fulfillment.domain.UpdateDetails;
@@ -52,6 +53,7 @@ public class OrderDataBuilder {
   private String orderCode = "ORDER-" + RandomStringUtils.randomNumeric(8) + "R";
   private OrderStatus status = TRANSFER_FAILED;
   private BigDecimal quotedCost = new BigDecimal("1.29");
+  private OrderType type = OrderType.REQUISITION;
   private List<OrderLineItem> orderLineItems = Lists.newArrayList(); // check constructor
   private List<StatusMessage> statusMessages = Lists.emptyList();
   private List<StatusChange> statusChanges = Lists.newArrayList();
@@ -172,6 +174,11 @@ public class OrderDataBuilder {
     return this;
   }
 
+  public OrderDataBuilder withType(OrderType type) {
+    this.type = type;
+    return this;
+  }
+
   public OrderDataBuilder withExternalId(UUID externalId) {
     this.externalId = externalId;
     return this;
@@ -184,7 +191,7 @@ public class OrderDataBuilder {
     Order order = new Order(
         externalId, emergency, facilityId, processingPeriodId, createdDate, createdById, programId,
         requestingFacilityId, receivingFacilityId, supplyingFacilityId, orderCode, status,
-        quotedCost, orderLineItems, statusMessages, statusChanges, updateDetails, extraData
+        quotedCost, type, orderLineItems, statusMessages, statusChanges, updateDetails, extraData
     );
     order.setId(id);
     order.forEachLine(line -> prepareLineItems(line, order));

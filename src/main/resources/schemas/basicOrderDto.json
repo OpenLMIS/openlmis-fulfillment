@@ -9,8 +9,9 @@
       "title": "id"
     },
     "externalId": {
-      "type": "string",
-      "title": "externalId"
+      "type": ["string", "null"],
+      "title": "externalId",
+      "description": "Requisition id; null for requisition-less orders and transfers"
     },
     "emergency": {
       "type": "boolean",
@@ -22,9 +23,12 @@
       "$ref": "facilityDto.json"
     },
     "processingPeriod": {
-      "type": "object",
       "title": "processingPeriod",
-      "$ref": "processingPeriodDto.json"
+      "description": "Null for requisition-less orders and transfers",
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "processingPeriodDto.json" }
+      ]
     },
     "createdDate": {
       "type": "string",
@@ -68,6 +72,15 @@
         "null"
       ],
       "title": "status"
+    },
+    "type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": ["REQUISITION", "REQUISITION_LESS", "TRANSFER_REQUEST", "TRANSFER_PUSH", null],
+      "title": "type",
+      "description": "How the order was created; set by the server and ignored on input"
     },
     "quotedCost": {
       "type": "number",

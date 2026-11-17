@@ -29,7 +29,9 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,5 +110,42 @@ public abstract class ValidSourceDestinationsStockManagementServiceTest
     HttpEntity<String> entity = entityCaptor.getValue();
     assertAuthHeader(entity);
     assertThat(entity.getBody(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldFindFacilityIdsSkippingOrganizations() {
+    // given
+    UUID facility = UUID.randomUUID();
+    UUID organization = UUID.randomUUID();
+    ResponseEntity response = mock(ResponseEntity.class);
+    when(response.getBody()).thenReturn(new PageDto<>(new PageImpl<>(Arrays.asList(
+        new ValidSourceDestinationDtoDataBuilder().withNode(facility).build(),
+        new ValidSourceDestinationDtoDataBuilder().withOrganizationNode(organization).build()))));
+
+    when(restTemplate
+        .exchange(any(URI.class), eq(HttpMethod.GET), any(HttpEntity.class),
+            any(ParameterizedTypeReference.class)))
+        .thenReturn(response);
+
+    // when
+    UUID program = UUID.randomUUID();
+    UUID homeFacilityId = UUID.randomUUID();
+    Set<UUID> ids = service.findFacilityIds(program, homeFacilityId);
+
+    // then
+    assertThat(ids, is(Collections.singleton(facility)));
+
+    verify(restTemplate)
+        .exchange(uriCaptor.capture(), eq(HttpMethod.GET), entityCaptor.capture(),
+            any(ParameterizedTypeReference.class));
+
+    assertThat(
+        uriCaptor.getValue().toString(),
+        allOf(
+            startsWith(service.getServiceUrl() + getUrl()),
+            containsString("programId=" + program),
+            containsString("facilityId=" + homeFacilityId)
+        )
+    );
   }
 }
