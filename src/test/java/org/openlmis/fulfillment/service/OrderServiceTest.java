@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.javers.common.collections.Sets.asSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anySet;
@@ -466,6 +467,23 @@ public class OrderServiceTest {
     verify(entityManager).persist(orderCaptor.capture());
     assertEquals(OrderStatus.CREATING, orderCaptor.getValue().getStatus());
     assertEquals(OrderType.TRANSFER_REQUEST, orderCaptor.getValue().getType());
+  }
+
+  @Test
+  public void shouldCreateTransferPushAsOrdered() {
+    // given
+    order.setId(null);
+    order.setOrderCode(null);
+
+    // when
+    Order created = orderService.createTransferPush(order);
+
+    // then
+    verify(entityManager).persist(orderCaptor.capture());
+    assertEquals(created, orderCaptor.getValue());
+    assertEquals(OrderStatus.ORDERED, created.getStatus());
+    assertEquals(OrderType.TRANSFER_PUSH, created.getType());
+    assertNotNull(created.getOrderCode());
   }
 
   @Test

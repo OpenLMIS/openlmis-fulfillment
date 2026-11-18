@@ -16,7 +16,6 @@
 package org.openlmis.fulfillment.service;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_STATUS;
-import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_TYPE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +24,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -87,17 +85,7 @@ public class OrderSearchParams {
    */
   @JsonIgnore
   public Set<OrderType> getTypeAsEnum() {
-    return isEmpty(type)
-        ? null
-        : type.stream().filter(StringUtils::isNotBlank).map(OrderSearchParams::toOrderType)
-            .collect(Collectors.toSet());
-  }
-
-  private static OrderType toOrderType(String value) {
-    return Stream.of(OrderType.values())
-        .filter(orderType -> orderType.name().equalsIgnoreCase(value.trim()))
-        .findFirst()
-        .orElseThrow(() -> new ValidationException(ORDER_INVALID_TYPE, value));
+    return OrderType.fromNames(type);
   }
 
   private static final class ToEnum implements Function<String, OrderStatus> {

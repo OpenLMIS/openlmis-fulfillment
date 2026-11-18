@@ -169,6 +169,15 @@ public class PermissionService {
   }
 
   /**
+   * Checks if user can send stock to a transfer partner on behalf of the supplying facility.
+   *
+   * @param supplyingFacilityId id of the facility that sends stock
+   */
+  public void canSendTransfer(UUID supplyingFacilityId) {
+    checkPermission(SHIPMENTS_EDIT, supplyingFacilityId);
+  }
+
+  /**
    * Checks if user can look up transfer partners of the given facility. Requesting needs
    * ORDER_CREATE, sending needs SHIPMENTS_EDIT on that facility.
    *

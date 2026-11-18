@@ -16,12 +16,14 @@
 package org.openlmis.fulfillment.web;
 
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_INVALID_PAIR;
+import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_INVALID_QUANTITY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_NOTHING_TO_SEND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_NOT_TRANSFER_REQUEST;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_REQUIRED_FIELD;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
@@ -37,15 +39,19 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.transfer.TransferDirection;
 import org.openlmis.fulfillment.service.transfer.TransferPartnerService;
+import org.openlmis.fulfillment.service.transfer.TransferSendService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.web.util.BaseDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderDtoBuilder;
+import org.openlmis.fulfillment.web.util.TransferSendDto;
+import org.openlmis.fulfillment.web.util.UserObjectReferenceDto;
 import org.openlmis.fulfillment.web.validator.OrderValidator;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,7 +66,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Facility-to-facility stock transfers. A transfer request is an order the requesting facility
  * places with a transfer partner; it follows the requisition-less order flow (create, edit, send)
- * but the facility pair is checked against {@link TransferPartnerService} on every step.
+ * but the facility pair is checked against {@link TransferPartnerService} on every step. A
+ * transfer push is stock a facility sends to a transfer partner unasked; it is shipped at once.
  */
 @Controller
 @Transactional
@@ -70,6 +77,8 @@ public class TransferController extends BaseController {
   private static final XLogger XLOGGER = XLoggerFactory.getXLogger(TransferController.class);
 
   private final TransferPartnerService transferPartnerService;
+
+  private final TransferSendService transferSendService;
 
   private final OrderService orderService;
 
@@ -179,7 +188,7 @@ public class TransferController extends BaseController {
         .map(OrderLineItem.Importer::getOrderedQuantity)
         .anyMatch(quantity -> quantity != null && quantity > 0);
     if (!hasQuantityToSend) {
-      throw new ValidationException(TRANSFER_NOTHING_TO_SEND, orderId.toString());
+      throw new ValidationException(TRANSFER_NOTHING_TO_SEND);
     }
 
     Order order = orderService.updateOrder(orderId, orderDto, getCurrentUserId(orderDto));
@@ -188,6 +197,56 @@ public class TransferController extends BaseController {
 
     orderRepository.save(order);
     XLOGGER.debug("Sent transfer request with id: {}", orderId);
+  }
+
+  /**
+   * Sends stock to a transfer partner without a prior request. In one transaction it creates a
+   * TRANSFER_PUSH order, ships it, creates its Proof Of Delivery and submits the issue stock
+   * event; when the stock event is rejected (e.g. not enough stock) nothing is saved.
+   * Quantities are in packs.
+   *
+   * @param transfer what to send, from where and to where
+   * @return the shipped order
+   */
+  // the service commits before the response is built, so a reference data failure while
+  // building it cannot roll back a transfer whose stock event was already accepted
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  @PostMapping("/transfers/send")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public OrderDto sendTransfer(@RequestBody TransferSendDto transfer) {
+    UUID supplyingFacilityId = requireId(transfer.getSupplyingFacilityId(),
+        "supplyingFacilityId");
+    UUID receivingFacilityId = requireId(transfer.getReceivingFacilityId(),
+        "receivingFacilityId");
+    UUID programId = requireId(transfer.getProgramId(), "programId");
+
+    permissionService.canSendTransfer(supplyingFacilityId);
+    validatePair(supplyingFacilityId, receivingFacilityId, programId);
+    validateLineItems(transfer.getLineItems());
+
+    Order order = transferSendService.send(transfer, getCurrentUserId(transfer));
+
+    XLOGGER.debug("Sent transfer with order id: {}", order.getId());
+    return orderDtoBuilder.build(order);
+  }
+
+  private void validateLineItems(List<TransferSendDto.LineItem> lineItems) {
+    if (lineItems == null || lineItems.isEmpty()) {
+      throw new ValidationException(TRANSFER_NOTHING_TO_SEND);
+    }
+
+    for (TransferSendDto.LineItem lineItem : lineItems) {
+      UUID orderableId = requireId(lineItem.getOrderable(), "lineItems.orderable");
+      if (lineItem.getOrderable().getVersionNumber() == null) {
+        throw new ValidationException(TRANSFER_REQUIRED_FIELD,
+            "lineItems.orderable.versionNumber");
+      }
+      if (lineItem.getQuantity() == null || lineItem.getQuantity() <= 0) {
+        throw new ValidationException(TRANSFER_INVALID_QUANTITY, orderableId.toString(),
+            Objects.toString(lineItem.getQuantity()));
+      }
+    }
   }
 
   private void checkCanEdit(UUID orderId, OrderDto orderDto, BindingResult bindingResult) {
@@ -234,10 +293,23 @@ public class TransferController extends BaseController {
   }
 
   private UUID requireId(BaseDto reference, String field) {
-    if (reference == null || reference.getId() == null) {
+    return requireId(reference == null ? null : reference.getId(), field);
+  }
+
+  private UUID requireId(UUID id, String field) {
+    if (id == null) {
       throw new ValidationException(TRANSFER_REQUIRED_FIELD, field);
     }
-    return reference.getId();
+    return id;
+  }
+
+  private UUID getCurrentUserId(TransferSendDto transfer) {
+    UserDto currentUser = authenticationHelper.getCurrentUser();
+    if (currentUser != null) {
+      return currentUser.getId();
+    }
+    UserObjectReferenceDto shippedBy = transfer.getShippedBy();
+    return requireId(shippedBy == null ? null : shippedBy.getId(), "shippedBy");
   }
 
   private UUID getCurrentUserId(OrderDto orderDto) {

@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "TransferSendDto",
+  "description": "Stock a facility sends to a transfer partner. All fields except notes, lotId and shippedBy are required.",
+  "properties": {
+    "programId": {
+      "type": "string",
+      "title": "programId"
+    },
+    "supplyingFacilityId": {
+      "type": "string",
+      "title": "supplyingFacilityId",
+      "description": "Facility the stock is sent from"
+    },
+    "receivingFacilityId": {
+      "type": "string",
+      "title": "receivingFacilityId",
+      "description": "Facility the stock is sent to"
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "title": "notes",
+      "description": "Shipment notes"
+    },
+    "lineItems": {
+      "type": "array",
+      "title": "lineItems",
+      "items": {
+        "type": "object",
+        "properties": {
+          "orderable": {
+            "type": "object",
+            "title": "orderable",
+            "properties": {
+              "id": {
+                "type": "string",
+                "title": "id"
+              },
+              "versionNumber": {
+                "type": "integer",
+                "title": "versionNumber"
+              }
+            }
+          },
+          "lotId": {
+            "type": ["string", "null"],
+            "title": "lotId"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "quantity",
+            "description": "Quantity in packs, greater than zero"
+          }
+        }
+      }
+    },
+    "shippedBy": {
+      "type": ["object", "null"],
+      "title": "shipped by",
+      "description": "User who sends the stock; required only with a service-level token",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "id"
+        },
+        "href": {
+          "type": ["string", "null"],
+          "title": "href"
+        }
+      }
+    }
+  }
+}

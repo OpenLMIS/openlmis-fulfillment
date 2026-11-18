@@ -23,21 +23,13 @@ import static org.openlmis.fulfillment.i18n.MessageKeys.SHIPMENT_ORDER_STATUS_IN
 import static org.openlmis.fulfillment.service.ResourceNames.BASE_PATH;
 import static org.openlmis.fulfillment.web.shipment.ShipmentController.RESOURCE_PATH;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.openlmis.fulfillment.domain.CreationDetails;
 import org.openlmis.fulfillment.domain.Order;
-import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentDraft;
-import org.openlmis.fulfillment.domain.UpdateDetails;
-import org.openlmis.fulfillment.extension.ExtensionManager;
-import org.openlmis.fulfillment.extension.point.ExtensionPointId;
-import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ShipmentService;
@@ -86,9 +78,6 @@ public class ShipmentController extends BaseController {
   private OrderRepository orderRepository;
 
   @Autowired
-  private ShipmentDraftRepository shipmentDraftRepository;
-
-  @Autowired
   private AuthenticationHelper authenticationHelper;
 
   @Autowired
@@ -99,9 +88,6 @@ public class ShipmentController extends BaseController {
 
   @Autowired
   private ShipmentService shipmentService;
-
-  @Autowired
-  private ExtensionManager extensionManager;
 
   /**
    * Allows creating new shipment. If the id is specified, it will be ignored.
@@ -138,21 +124,8 @@ public class ShipmentController extends BaseController {
 
     Shipment shipment = Shipment.newInstance(shipmentDto, order);
 
-    profiler.start("SAVE_SHIPMENT");
-    shipment = shipmentService.create(shipment);
-
-    profiler.start("UPDATE_ORDER");
-    order.updateStatus(OrderStatus.SHIPPED, new UpdateDetails(
-        authenticationHelper.getCurrentUser().getId(),
-        dateHelper.getCurrentDateTimeWithSystemZone()));
-    orderRepository.save(order);
-
-    profiler.start("REMOVE_DRAFT_SHIPMENTS");
-    findAndRemoveShipmentDraftsForOrder(order);
-
-    ShipmentCreatePostProcessor shipmentCreatePostProcessor = extensionManager.getExtension(
-        ExtensionPointId.SHIPMENT_CREATE_POST_POINT_ID, ShipmentCreatePostProcessor.class);
-    shipmentCreatePostProcessor.process(shipment);
+    profiler.start("SHIP");
+    shipment = shipmentService.ship(shipment, shipment.getShippedById());
 
     profiler.start("BUILD_SHIPMENT_DTO");
     ShipmentDto dto = shipmentDtoBuilder.build(shipment);
@@ -244,12 +217,5 @@ public class ShipmentController extends BaseController {
 
     shipmentDto.setShipDetails(
         new CreationDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
-  }
-
-  private void findAndRemoveShipmentDraftsForOrder(Order order) {
-    Collection<ShipmentDraft> drafts = shipmentDraftRepository.findByOrder(order);
-    for (ShipmentDraft draft : drafts) {
-      shipmentDraftRepository.delete(draft);
-    }
   }
 }
