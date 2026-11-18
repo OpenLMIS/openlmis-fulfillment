@@ -15,18 +15,40 @@
 
 package org.openlmis.fulfillment.service;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.UUID;
 import javax.persistence.EntityManager;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.fulfillment.OrderDataBuilder;
+import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.Shipment;
+import org.openlmis.fulfillment.domain.ShipmentDraft;
+import org.openlmis.fulfillment.domain.UpdateDetails;
+import org.openlmis.fulfillment.extension.ExtensionManager;
+import org.openlmis.fulfillment.extension.point.ExtensionPointId;
+import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
+import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.testutils.ShipmentDataBuilder;
+import org.openlmis.fulfillment.util.DateHelper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ShipmentServiceTest {
@@ -34,14 +56,84 @@ public class ShipmentServiceTest {
   @Mock
   private EntityManager entityManager;
 
+  @Mock
+  private OrderRepository orderRepository;
+
+  @Mock
+  private ShipmentDraftRepository shipmentDraftRepository;
+
+  @Mock
+  private DateHelper dateHelper;
+
+  @Mock
+  private ExtensionManager extensionManager;
+
+  @Mock
+  private ShipmentCreatePostProcessor shipmentCreatePostProcessor;
+
   @InjectMocks
   private ShipmentService shipmentService;
 
+  private final UUID userId = UUID.randomUUID();
+  private final ZonedDateTime now = ZonedDateTime.now();
+  private Order order;
+  private Shipment shipment;
+
+  @Before
+  public void setUp() {
+    order = new OrderDataBuilder().withOrderedStatus().build();
+    shipment = new ShipmentDataBuilder().withOrder(order).build();
+  }
+
+  private void ship() {
+    when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(now);
+    when(extensionManager.getExtension(ExtensionPointId.SHIPMENT_CREATE_POST_POINT_ID,
+        ShipmentCreatePostProcessor.class)).thenReturn(shipmentCreatePostProcessor);
+
+    shipmentService.ship(shipment, userId);
+  }
+
+  @Test
+  public void shouldMarkOrderAsShippedWhenShipping() {
+    ship();
+
+    ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+    verify(orderRepository).save(captor.capture());
+    assertThat(captor.getValue().getStatus(), is(OrderStatus.SHIPPED));
+    assertThat(captor.getValue().getUpdateDetails(), is(new UpdateDetails(userId, now)));
+  }
+
+  @Test
+  public void shouldSaveShipmentWithProofOfDeliveryWhenShipping() {
+    ship();
+
+    verify(entityManager).persist(shipment);
+    verify(entityManager).persist(any(ProofOfDelivery.class));
+  }
+
+  @Test
+  public void shouldRemoveDraftsWhenShipping() {
+    ShipmentDraft draft = mock(ShipmentDraft.class);
+    when(shipmentDraftRepository.findByOrder(order)).thenReturn(Collections.singletonList(draft));
+
+    ship();
+
+    verify(shipmentDraftRepository).delete(draft);
+  }
+
+  @Test
+  public void shouldRunPostProcessorAfterSavingWhenShipping() {
+    ship();
+
+    InOrder inOrder = inOrder(entityManager, orderRepository, shipmentCreatePostProcessor);
+    inOrder.verify(entityManager).persist(shipment);
+    inOrder.verify(orderRepository).save(order);
+    inOrder.verify(entityManager).flush();
+    inOrder.verify(shipmentCreatePostProcessor).process(shipment);
+  }
+
   @Test
   public void shouldSaveShipmentAndCreateProofOfDelivery() {
-    // given
-    final Shipment shipment = new ShipmentDataBuilder().build();
-
     // when
     shipmentService.create(shipment);
 

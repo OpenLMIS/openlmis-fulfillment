@@ -106,6 +106,7 @@ schemas:
       }
   - orderStatsData: !include schemas/orderStatsData.json
   - idsDto: !include schemas/idsDto.json
+  - transferSendDto: !include schemas/transferSendDto.json
 traits:
   - secured:
       queryParameters:
@@ -905,6 +906,41 @@ resourceTypes:
                 body:
                   application/json:
                     schema: localizedMessage
+    /send:
+      post:
+        is: [ secured ]
+        description: >
+          Sends stock to a transfer partner without a prior request. In one transaction it
+          creates a TRANSFER_PUSH order, ships it (shipment and issue stock event) and creates
+          its proof of delivery; when stock management rejects the stock event (for example
+          because there is not enough stock) nothing is saved. Quantities are in packs.
+          Requires SHIPMENTS_EDIT on the supplying facility; a service token must pass
+          shippedBy. Returns 400 when the facilities are not transfer partners for the program,
+          a field is missing, there are no line items, or any line's quantity is missing or not
+          greater than zero. Quantities rejected on the proof of delivery are not returned to
+          the supplying facility.
+        body:
+          application/json:
+            schema: transferSendDto
+        responses:
+          201:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: orderDto
+          400:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
+          403:
+            headers:
+              Keep-Alive:
+            body:
+              application/json:
+                schema: localizedMessage
   /orderNumberConfigurations:
     displayName: OrderNumberConfiguration
     get:
@@ -969,6 +1005,14 @@ resourceTypes:
           type: string
           required: false
           repeat: false
+        type:
+          displayName: type
+          description: >
+            Type of the POD's order, may be repeated: REQUISITION, REQUISITION_LESS,
+            TRANSFER_REQUEST, TRANSFER_PUSH. Unknown values return 400.
+          type: string
+          required: false
+          repeat: true
       responses:
         200:
           headers:

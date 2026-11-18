@@ -373,6 +373,23 @@ public class PermissionServiceTest {
   }
 
   @Test
+  public void canSendTransfer() {
+    UUID supplyingFacilityId = order.getSupplyingFacilityId();
+    mockHasRight(SHIPMENTS_EDIT, null, null, supplyingFacilityId);
+
+    permissionService.canSendTransfer(supplyingFacilityId);
+
+    verifyRight(SHIPMENTS_EDIT, null, null, supplyingFacilityId);
+  }
+
+  @Test
+  public void cannotSendTransfer() {
+    expectException(SHIPMENTS_EDIT);
+
+    permissionService.canSendTransfer(order.getSupplyingFacilityId());
+  }
+
+  @Test
   public void canViewRequestTransferPartnersWithOrderCreate() {
     UUID facilityId = order.getRequestingFacilityId();
     mockHasRight(ORDER_CREATE, null, null, facilityId);

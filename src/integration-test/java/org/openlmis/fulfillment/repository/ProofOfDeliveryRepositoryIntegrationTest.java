@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,6 +36,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.Lists;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +51,7 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
@@ -287,7 +290,8 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
-          proofOfDelivery.getShipment().getId(), null, null, null, null, createPageable(10, 0));
+          proofOfDelivery.getShipment().getId(), null, null, null, null, null,
+          createPageable(10, 0));
 
       assertEquals(1, found.getTotalElements());
       assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
@@ -306,7 +310,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
-          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null,
+          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null, null,
           createPageable(10, 0));
 
       assertEquals(1, found.getTotalElements());
@@ -326,7 +330,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     for (ProofOfDelivery proofOfDelivery : list) {
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
-          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null,
+          null, proofOfDelivery.getShipment().getOrder().getId(), null, null, null, null,
           createPageable(10, 0));
 
       assertEquals(1, found.getTotalElements());
@@ -349,6 +353,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
           proofOfDelivery.getShipment().getId(),
           proofOfDelivery.getShipment().getOrder().getId(),
+          null,
           singleton(proofOfDelivery.getReceivingFacilityId()),
           singleton(proofOfDelivery.getSupplyingFacilityId()),
           singleton(proofOfDelivery.getProgramId()),
@@ -357,6 +362,33 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
       assertEquals(1, found.getTotalElements());
       assertThat(found, hasItem(hasProperty("id", is(proofOfDelivery.getId()))));
     }
+  }
+
+  @Test
+  public void shouldFindProofOfDeliveryByOrderType() {
+    ProofOfDelivery requisition = buildInstance(true, OrderType.REQUISITION);
+    ProofOfDelivery requisitionLess = buildInstance(true, OrderType.REQUISITION_LESS);
+    ProofOfDelivery transferRequest = buildInstance(true, OrderType.TRANSFER_REQUEST);
+    ProofOfDelivery transferPush = buildInstance(true, OrderType.TRANSFER_PUSH);
+    proofOfDeliveryRepository.saveAll(
+        Lists.newArrayList(requisition, requisitionLess, transferRequest, transferPush));
+
+    Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        null,
+        null,
+        EnumSet.of(OrderType.TRANSFER_REQUEST, OrderType.TRANSFER_PUSH),
+        emptySet(),
+        emptySet(),
+        emptySet(),
+        createPageable(Integer.MAX_VALUE, 0));
+
+    assertThat(found.getContent(), hasItems(
+        hasProperty("id", is(transferRequest.getId())),
+        hasProperty("id", is(transferPush.getId()))));
+    assertThat(found.getContent(), not(hasItem(hasProperty("id", is(requisition.getId())))));
+    assertThat(found.getContent(),
+        not(hasItem(hasProperty("id", is(requisitionLess.getId())))));
+    assertThat(found.getTotalElements(), is((long) found.getContent().size()));
   }
 
   @Test
@@ -370,6 +402,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.saveAll(list);
 
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        null,
         null,
         null,
         emptySet(),
@@ -396,6 +429,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
         UUID.randomUUID(),
         null,
+        null,
         emptySet(),
         emptySet(),
         emptySet(),
@@ -417,6 +451,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     proofOfDeliveryRepository.saveAll(list);
 
     Page<ProofOfDelivery> found = proofOfDeliveryRepository.search(
+        null,
         null,
         null,
         emptySet(),
@@ -448,6 +483,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
 
     for (int page = 0; page * PAGE_SIZE < total; ++page) {
       Page<ProofOfDelivery> result = proofOfDeliveryRepository.search(
+          null,
           null,
           null,
           emptySet(),
@@ -495,6 +531,10 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
   }
 
   private ProofOfDelivery buildInstance(boolean withLineItems) {
+    return buildInstance(withLineItems, OrderType.REQUISITION);
+  }
+
+  private ProofOfDelivery buildInstance(boolean withLineItems, OrderType orderType) {
     OrderableDto orderableDto = new OrderableDataBuilder()
         .withId(UUID.randomUUID())
         .withVersionNumber(1L)
@@ -502,6 +542,7 @@ public class ProofOfDeliveryRepositoryIntegrationTest extends
     Order order = new OrderDataBuilder()
         .withoutId()
         .withoutLineItems()
+        .withType(orderType)
         .build();
     Shipment shipment = new ShipmentDataBuilder()
         .withoutId()

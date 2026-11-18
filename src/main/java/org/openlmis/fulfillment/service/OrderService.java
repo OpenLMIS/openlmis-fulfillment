@@ -173,12 +173,28 @@ public class OrderService {
     return createManualOrder(orderDto, userId, OrderType.TRANSFER_REQUEST);
   }
 
+  /**
+   * Creates a transfer push: an order in which the supplying facility sends stock to a transfer
+   * partner without a prior request. The order is saved ORDERED, ready to be shipped right away;
+   * unlike the other manual orders its ordered quantities are already in packs.
+   *
+   * @param order new order to save, with its facilities, program, creator and line items set.
+   * @return saved Order.
+   */
+  public Order createTransferPush(Order order) {
+    return saveManualOrder(order, OrderType.TRANSFER_PUSH, ORDERED);
+  }
+
   private Order createManualOrder(OrderDto orderDto, UUID userId, OrderType type) {
     Order order = Order.newInstance(orderDto,
         new UpdateDetails(userId, dateHelper.getCurrentDateTimeWithSystemZone()));
 
+    return saveManualOrder(order, type, CREATING);
+  }
+
+  private Order saveManualOrder(Order order, OrderType type, OrderStatus status) {
     setOrderCode(order);
-    order.setStatus(CREATING);
+    order.setStatus(status);
     order.setType(type);
 
     entityManager.persist(order);

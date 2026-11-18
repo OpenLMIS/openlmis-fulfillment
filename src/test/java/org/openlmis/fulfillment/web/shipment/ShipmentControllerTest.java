@@ -15,19 +15,17 @@
 
 package org.openlmis.fulfillment.web.shipment;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -35,24 +33,14 @@ import org.openlmis.fulfillment.OrderDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.Shipment;
-import org.openlmis.fulfillment.domain.ShipmentDraft;
-import org.openlmis.fulfillment.extension.ExtensionManager;
-import org.openlmis.fulfillment.extension.point.ExtensionPointId;
-import org.openlmis.fulfillment.extension.point.ShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.repository.OrderRepository;
-import org.openlmis.fulfillment.repository.ShipmentDraftRepository;
 import org.openlmis.fulfillment.repository.ShipmentRepository;
-import org.openlmis.fulfillment.service.DefaultShipmentCreatePostProcessor;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.ShipmentService;
 import org.openlmis.fulfillment.service.referencedata.UserDto;
-import org.openlmis.fulfillment.service.stockmanagement.StockEventStockManagementService;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
 import org.openlmis.fulfillment.util.DateHelper;
 import org.openlmis.fulfillment.web.ValidationException;
-import org.openlmis.fulfillment.web.stockmanagement.StockEventDto;
-import org.openlmis.fulfillment.web.stockmanagement.StockEventDtoDataBuilder;
-import org.openlmis.fulfillment.web.util.StockEventBuilder;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
 public class ShipmentControllerTest {
@@ -62,9 +50,6 @@ public class ShipmentControllerTest {
 
   @Mock
   private ShipmentRepository shipmentRepository;
-
-  @Mock
-  private ShipmentDraftRepository shipmentDraftRepository;
 
   @Mock
   private ShipmentDtoBuilder shipmentDtoBuilder;
@@ -79,80 +64,46 @@ public class ShipmentControllerTest {
   private UserDto userDto;
 
   @Mock
-  private StockEventStockManagementService stockEventService;
-
-  @Mock
-  private StockEventBuilder stockEventBuilder;
-
-  @Mock
   private OrderRepository orderRepository;
 
   @Mock
   private ShipmentService shipmentService;
 
-  @Mock
-  private ExtensionManager extensionManager;
-
   @InjectMocks
   private ShipmentController shipmentController = new ShipmentController();
 
   private ShipmentDto shipmentDto = new ShipmentDtoDataBuilder().build();
-  private StockEventDto event = new StockEventDtoDataBuilder().build();
   private Order order = new OrderDataBuilder().withOrderedStatus().build();
-
-  private Shipment shipment = Shipment.newInstance(shipmentDto, order);
+  private UUID userId = UUID.randomUUID();
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
     when(dateHelper.getCurrentDateTimeWithSystemZone()).thenReturn(ZonedDateTime.now());
-    when(userDto.getId()).thenReturn(UUID.randomUUID());
+    when(userDto.getId()).thenReturn(userId);
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
 
     when(orderRepository.findById(shipmentDto.getOrder().getId()))
         .thenReturn(Optional.of(order));
-    when(stockEventBuilder.fromShipment(any(Shipment.class)))
-        .thenReturn(Optional.ofNullable(event));
-    when(shipmentService.create(any(Shipment.class)))
-        .thenReturn(shipment);
-
-    when(extensionManager.getExtension(ExtensionPointId.SHIPMENT_CREATE_POST_POINT_ID,
-        ShipmentCreatePostProcessor.class))
-        .thenReturn(new DefaultShipmentCreatePostProcessor(stockEventService, stockEventBuilder));
+    when(shipmentService.ship(any(Shipment.class), eq(userId)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
   }
 
   @Test
-  public void shouldUpdateOrderStatusToShipped() {
+  public void shouldShipOrderAsCurrentUser() {
     shipmentController.createShipment(shipmentDto);
 
-    ArgumentCaptor<Order> argument = ArgumentCaptor.forClass(Order.class);
-    verify(orderRepository).save(argument.capture());
-    assertEquals(OrderStatus.SHIPPED, argument.getValue().getStatus());
-  }
-
-  @Test
-  public void shouldRemoveDraftsWhenFinalShipmentIsCreated() {
-    ShipmentDraft draft = mock(ShipmentDraft.class);
-    when(shipmentDraftRepository.findByOrder(order)).thenReturn(Arrays.asList(draft));
-
-    shipmentController.createShipment(shipmentDto);
-
-    verify(shipmentDraftRepository).findByOrder(order);
-    verify(shipmentDraftRepository).delete(draft);
-  }
-
-  @Test
-  public void shouldSendStockEvent() {
-    shipmentController.createShipment(shipmentDto);
-
-    verify(stockEventBuilder).fromShipment(shipment);
-    verify(stockEventService).submit(event);
+    verify(shipmentService).ship(any(Shipment.class), eq(userId));
   }
 
   @Test(expected = ValidationException.class)
   public void shouldThrowExceptionIfOrderHasInvalidStatus() {
     order.setStatus(OrderStatus.IN_ROUTE);
-    shipmentController.createShipment(shipmentDto);
+    try {
+      shipmentController.createShipment(shipmentDto);
+    } finally {
+      verify(shipmentService, never()).ship(any(), any());
+    }
   }
 }

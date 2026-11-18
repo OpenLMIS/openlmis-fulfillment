@@ -28,14 +28,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_INVALID_PAIR;
+import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_INVALID_QUANTITY;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_NOTHING_TO_SEND;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_NOT_TRANSFER_REQUEST;
 import static org.openlmis.fulfillment.i18n.MessageKeys.TRANSFER_REQUIRED_FIELD;
 import static org.openlmis.fulfillment.service.PermissionService.ORDER_CREATE;
+import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
@@ -48,6 +51,7 @@ import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
 import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.repository.OrderRepository;
+import org.openlmis.fulfillment.service.ExternalApiException;
 import org.openlmis.fulfillment.service.OrderService;
 import org.openlmis.fulfillment.service.PermissionService;
 import org.openlmis.fulfillment.service.referencedata.FacilityDto;
@@ -57,13 +61,18 @@ import org.openlmis.fulfillment.service.referencedata.ProgramReferenceDataServic
 import org.openlmis.fulfillment.service.referencedata.UserDto;
 import org.openlmis.fulfillment.service.transfer.TransferDirection;
 import org.openlmis.fulfillment.service.transfer.TransferPartnerService;
+import org.openlmis.fulfillment.service.transfer.TransferSendService;
 import org.openlmis.fulfillment.testutils.FacilityDataBuilder;
 import org.openlmis.fulfillment.testutils.OrderableDataBuilder;
 import org.openlmis.fulfillment.testutils.ProgramDataBuilder;
 import org.openlmis.fulfillment.testutils.UserDataBuilder;
 import org.openlmis.fulfillment.util.AuthenticationHelper;
+import org.openlmis.fulfillment.web.util.LocalizedMessageDto;
 import org.openlmis.fulfillment.web.util.OrderDto;
 import org.openlmis.fulfillment.web.util.OrderLineItemDto;
+import org.openlmis.fulfillment.web.util.TransferSendDto;
+import org.openlmis.fulfillment.web.util.UserObjectReferenceDto;
+import org.openlmis.fulfillment.web.util.VersionIdentityDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 
@@ -74,6 +83,7 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
   private static final String REQUESTS_URL = "/api/transfers/requests";
   private static final String REQUEST_URL = REQUESTS_URL + "/{id}";
   private static final String SEND_URL = REQUEST_URL + "/send";
+  private static final String TRANSFER_SEND_URL = "/api/transfers/send";
 
   private static final String FACILITY_ID_PARAM = "facilityId";
   private static final String PROGRAM_ID_PARAM = "programId";
@@ -81,6 +91,9 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
 
   @MockBean
   private TransferPartnerService transferPartnerService;
+
+  @MockBean
+  private TransferSendService transferSendService;
 
   @MockBean
   private PermissionService permissionService;
@@ -489,6 +502,214 @@ public class TransferControllerIntegrationTest extends BaseWebIntegrationTest {
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  // POST /api/transfers/send
+
+  @Test
+  public void shouldSendTransfer() {
+    // the order is pushed from the supplying facility to the requesting (receiving) one
+    Order pushed = new OrderDataBuilder()
+        .withType(OrderType.TRANSFER_PUSH)
+        .withExternalId(null)
+        .withStatus(OrderStatus.SHIPPED)
+        .withProcessingPeriodId(null)
+        .withProgramId(program.getId())
+        .withSupplyingFacilityId(supplying.getId())
+        .withFacilityId(requesting.getId())
+        .withRequestingFacilityId(requesting.getId())
+        .withReceivingFacilityId(requesting.getId())
+        .withoutLineItems()
+        .build();
+    TransferSendDto transfer = transferSend(5L);
+    given(transferSendService.send(any(TransferSendDto.class), eq(user.getId())))
+        .willReturn(pushed);
+
+    OrderDto response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(transfer)
+        .when()
+        .post(TRANSFER_SEND_URL)
+        .then()
+        .statusCode(201)
+        .extract().as(OrderDto.class);
+
+    assertThat(response.getType(), is(OrderType.TRANSFER_PUSH));
+    assertThat(response.getStatus(), is(OrderStatus.SHIPPED));
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(permissionService).canSendTransfer(supplying.getId());
+    verify(transferPartnerService)
+        .isValidPair(supplying.getId(), requesting.getId(), program.getId());
+
+    ArgumentCaptor<TransferSendDto> captor = ArgumentCaptor.forClass(TransferSendDto.class);
+    verify(transferSendService).send(captor.capture(), eq(user.getId()));
+    assertThat(captor.getValue().getLineItems().get(0).getQuantity(), is(5L));
+    assertThat(captor.getValue().getLineItems().get(0).getLotId(),
+        is(transfer.getLineItems().get(0).getLotId()));
+  }
+
+  @Test
+  public void shouldNotSendTransferWhenUserHasNoShipmentsEditRight() {
+    doThrow(new MissingPermissionException(SHIPMENTS_EDIT))
+        .when(permissionService).canSendTransfer(supplying.getId());
+
+    String messageKey = postTransferSend(transferSend(5L), 403);
+
+    assertThat(messageKey, is(PERMISSION_MISSING));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferForInvalidPair() {
+    given(transferPartnerService
+        .isValidPair(supplying.getId(), requesting.getId(), program.getId()))
+        .willReturn(false);
+
+    String messageKey = postTransferSend(transferSend(5L), 400);
+
+    assertThat(messageKey, is(TRANSFER_INVALID_PAIR));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWithoutReceivingFacility() {
+    TransferSendDto transfer = transferSend(5L);
+    transfer.setReceivingFacilityId(null);
+
+    // the request breaks the RAML schema on purpose, so it is not checked against it
+    String messageKey = postTransferSend(transfer, 400, false);
+
+    assertThat(messageKey, is(TRANSFER_REQUIRED_FIELD));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldSendTransferAsShippedByUserForServiceToken() {
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+    UUID shippedById = UUID.randomUUID();
+    TransferSendDto transfer = transferSend(5L);
+    transfer.setShippedBy(UserObjectReferenceDto.create(shippedById, BASE_URL));
+    given(transferSendService.send(any(TransferSendDto.class), eq(shippedById)))
+        .willReturn(new OrderDataBuilder()
+            .withType(OrderType.TRANSFER_PUSH)
+            .withProgramId(program.getId())
+            .withSupplyingFacilityId(supplying.getId())
+            .withFacilityId(requesting.getId())
+            .withRequestingFacilityId(requesting.getId())
+            .withReceivingFacilityId(requesting.getId())
+            .withoutLineItems()
+            .build());
+
+    postTransferSend(transfer, 201);
+
+    verify(transferSendService).send(any(TransferSendDto.class), eq(shippedById));
+  }
+
+  @Test
+  public void shouldNotSendTransferForServiceTokenWithoutShippedBy() {
+    when(authenticationHelper.getCurrentUser()).thenReturn(null);
+
+    String messageKey = postTransferSend(transferSend(5L), 400);
+
+    assertThat(messageKey, is(TRANSFER_REQUIRED_FIELD));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWithoutLineItems() {
+    TransferSendDto transfer = transferSend(5L);
+    transfer.setLineItems(Collections.emptyList());
+
+    String messageKey = postTransferSend(transfer, 400);
+
+    assertThat(messageKey, is(TRANSFER_NOTHING_TO_SEND));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWithZeroQuantity() {
+    String messageKey = postTransferSend(transferSend(0L), 400);
+
+    assertThat(messageKey, is(TRANSFER_INVALID_QUANTITY));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWhenAnyLineHasNoQuantity() {
+    TransferSendDto transfer = transferSend(5L);
+    transfer.getLineItems().add(new TransferSendDto.LineItem(
+        new VersionIdentityDto(UUID.randomUUID(), 1L), null, null));
+
+    // a missing quantity breaks the RAML schema on purpose, so it is not checked against it
+    String messageKey = postTransferSend(transfer, 400, false);
+
+    assertThat(messageKey, is(TRANSFER_INVALID_QUANTITY));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWithNegativeQuantity() {
+    String messageKey = postTransferSend(transferSend(-3L), 400);
+
+    assertThat(messageKey, is(TRANSFER_INVALID_QUANTITY));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldNotSendTransferWithoutOrderableVersion() {
+    TransferSendDto transfer = transferSend(5L);
+    transfer.getLineItems().get(0).getOrderable().setVersionNumber(null);
+
+    // the request breaks the RAML schema on purpose, so it is not checked against it
+    String messageKey = postTransferSend(transfer, 400, false);
+
+    assertThat(messageKey, is(TRANSFER_REQUIRED_FIELD));
+    verify(transferSendService, never()).send(any(), any());
+  }
+
+  @Test
+  public void shouldReturnStockManagementErrorWhenStockEventIsRejected() {
+    LocalizedMessageDto stockError = new LocalizedMessageDto();
+    stockError.setMessageKey("stockmanagement.error.event.debit.quantity.exceed.soh");
+    stockError.setMessage("Quantity exceeds stock on hand");
+    given(transferSendService.send(any(TransferSendDto.class), eq(user.getId())))
+        .willThrow(new ExternalApiException(null, stockError));
+
+    String messageKey = postTransferSend(transferSend(5L), 400);
+
+    assertThat(messageKey, is(stockError.getMessageKey()));
+  }
+
+  private String postTransferSend(TransferSendDto transfer, int expectedStatus) {
+    return postTransferSend(transfer, expectedStatus, true);
+  }
+
+  private String postTransferSend(TransferSendDto transfer, int expectedStatus,
+      boolean checkRaml) {
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .body(transfer)
+        .when()
+        .post(TRANSFER_SEND_URL)
+        .then()
+        .statusCode(expectedStatus)
+        .extract().path(MESSAGE_KEY);
+
+    if (checkRaml) {
+      assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(),
+          RamlMatchers.hasNoViolations());
+    }
+    return messageKey;
+  }
+
+  private TransferSendDto transferSend(Long quantity) {
+    TransferSendDto.LineItem lineItem = new TransferSendDto.LineItem(
+        new VersionIdentityDto(UUID.randomUUID(), 1L), UUID.randomUUID(), quantity);
+    return new TransferSendDto(program.getId(), supplying.getId(), requesting.getId(), null,
+        new ArrayList<>(Collections.singletonList(lineItem)), null);
   }
 
   private OrderLineItemDto lineItem(Long orderedQuantity) {

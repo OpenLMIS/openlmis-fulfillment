@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.fulfillment.i18n.MessageKeys.MUST_CONTAIN_VALUE;
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_TYPE;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.openlmis.fulfillment.i18n.MessageKeys.PROOF_OF_DELIVERY_ALREADY_CONFIRMED;
@@ -39,6 +41,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import com.google.common.collect.ImmutableSet;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +54,7 @@ import org.openlmis.fulfillment.ProofOfDeliveryDataBuilder;
 import org.openlmis.fulfillment.ProofOfDeliveryLineItemDataBuilder;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
@@ -177,6 +181,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryService.search(
         isNull(),
         isNull(),
+        isNull(),
         any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
@@ -194,7 +199,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertTrue(response.getContent().iterator().hasNext());
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(proofOfDeliveryService).search(null, null, pageable);
+    verify(proofOfDeliveryService).search(null, null, null, pageable);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -229,6 +234,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryService.search(
         any(UUID.class),
         isNull(),
+        isNull(),
         any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
@@ -253,7 +259,8 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertEquals(createDto(), getPageContent(response, ProofOfDeliveryDto.class).get(0));
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(proofOfDeliveryService).search(proofOfDelivery.getShipment().getId(), null, pageable);
+    verify(proofOfDeliveryService)
+        .search(proofOfDelivery.getShipment().getId(), null, null, pageable);
   }
 
   @Test
@@ -261,6 +268,7 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
     given(proofOfDeliveryService.search(
         isNull(),
         any(UUID.class),
+        isNull(),
         any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
@@ -287,7 +295,50 @@ public class ProofOfDeliveryControllerIntegrationTest extends BaseWebIntegration
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verify(proofOfDeliveryService)
-        .search(null, proofOfDelivery.getShipment().getOrder().getId(), pageable);
+        .search(null, proofOfDelivery.getShipment().getOrder().getId(), null, pageable);
+  }
+
+  @Test
+  public void shouldFindProofsOfDeliveryByOrderType() {
+    given(proofOfDeliveryService.search(
+        isNull(),
+        isNull(),
+        eq(EnumSet.of(OrderType.TRANSFER_REQUEST, OrderType.TRANSFER_PUSH)),
+        any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
+
+    PageDto response = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("type", "transfer_request")
+        .queryParam("type", OrderType.TRANSFER_PUSH.name())
+        .queryParam(PARAM_PAGE, pageable.getPageNumber())
+        .queryParam(PARAM_SIZE, pageable.getPageSize())
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageDto.class);
+
+    assertEquals(1, response.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldRejectUnknownOrderTypeInProofOfDeliverySearch() {
+    String messageKey = restAssured.given()
+        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+        .contentType(APPLICATION_JSON_VALUE)
+        .queryParam("type", "TRANSFER")
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(400)
+        .extract().path(MESSAGE_KEY);
+
+    assertEquals(ORDER_INVALID_TYPE, messageKey);
+    verify(proofOfDeliveryService, never()).search(any(), any(), any(), any());
   }
 
   @Test

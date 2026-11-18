@@ -15,6 +15,15 @@
 
 package org.openlmis.fulfillment.domain;
 
+import static org.openlmis.fulfillment.i18n.MessageKeys.ORDER_INVALID_TYPE;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.openlmis.fulfillment.web.ValidationException;
+
 /**
  * How an order came to exist. Stored on {@link Order} so that consumers can tell transfers apart
  * from requisition-based and requisition-less orders without inspecting other fields.
@@ -27,5 +36,31 @@ public enum OrderType {
   /** A facility requests stock from a transfer partner. */
   TRANSFER_REQUEST,
   /** A facility pushes stock to a transfer partner without a prior request. */
-  TRANSFER_PUSH
+  TRANSFER_PUSH;
+
+  /**
+   * Converts each of the given names to an order type, ignoring case and blank values. Used by
+   * the search endpoints' <strong>type</strong> parameter.
+   *
+   * @param names order type names, may be null
+   * @return the order types, or {@code null} if no name was given
+   * @throws ValidationException if a name is not an order type.
+   */
+  public static Set<OrderType> fromNames(Collection<String> names) {
+    if (names == null || names.isEmpty()) {
+      return null;
+    }
+
+    return names.stream()
+        .filter(StringUtils::isNotBlank)
+        .map(OrderType::fromName)
+        .collect(Collectors.toSet());
+  }
+
+  private static OrderType fromName(String name) {
+    return Stream.of(values())
+        .filter(orderType -> orderType.name().equalsIgnoreCase(name.trim()))
+        .findFirst()
+        .orElseThrow(() -> new ValidationException(ORDER_INVALID_TYPE, name));
+  }
 }

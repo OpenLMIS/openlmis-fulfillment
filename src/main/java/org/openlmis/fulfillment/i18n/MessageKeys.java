@@ -118,6 +118,8 @@ public abstract class MessageKeys {
   public static final String TRANSFER_REQUIRED_FIELD = join(ERROR_PREFIX, TRANSFER, REQUIRED);
   public static final String TRANSFER_NOTHING_TO_SEND =
       join(ERROR_PREFIX, TRANSFER, "nothingToSend");
+  public static final String TRANSFER_INVALID_QUANTITY =
+      join(ERROR_PREFIX, TRANSFER, "invalidQuantity");
   public static final String TRANSFER_NOT_TRANSFER_REQUEST =
       join(ERROR_PREFIX, TRANSFER, "notTransferRequest");
 

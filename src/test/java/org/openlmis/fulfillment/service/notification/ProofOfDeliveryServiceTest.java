@@ -85,10 +85,11 @@ public class ProofOfDeliveryServiceTest {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
-        eq(null), eq(null), eq(emptySet()), eq(emptySet()), eq(emptySet()), eq(pageable)))
+        eq(null), eq(null), eq(null), eq(emptySet()), eq(emptySet()), eq(emptySet()),
+        eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
@@ -98,10 +99,11 @@ public class ProofOfDeliveryServiceTest {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
-        eq(shipmentId),  eq(null), eq(emptySet()), eq(emptySet()), eq(emptySet()), eq(pageable)))
+        eq(shipmentId), eq(null), eq(null), eq(emptySet()), eq(emptySet()), eq(emptySet()),
+        eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(shipmentId, null, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(shipmentId, null, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
@@ -111,10 +113,11 @@ public class ProofOfDeliveryServiceTest {
     when(authenticationHelper.getCurrentUser())
         .thenReturn(null);
     when(proofOfDeliveryRepository.search(
-        eq(null),  eq(orderId), eq(emptySet()), eq(emptySet()), eq(emptySet()), eq(pageable)))
+        eq(null), eq(orderId), eq(null), eq(emptySet()), eq(emptySet()), eq(emptySet()),
+        eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, orderId, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, orderId, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
@@ -126,7 +129,7 @@ public class ProofOfDeliveryServiceTest {
     when(permissionStringsHandler.get())
         .thenReturn(emptySet());
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, null, pageable);
 
     assertEquals(0, result.getContent().size());
     verifyNoMoreInteractions(proofOfDeliveryRepository);
@@ -145,13 +148,14 @@ public class ProofOfDeliveryServiceTest {
     when(proofOfDeliveryRepository.search(
         eq(null),
         eq(null),
+        eq(null),
         eq(singleton(proofOfDelivery.getReceivingFacilityId())),
         eq(singleton(proofOfDelivery.getSupplyingFacilityId())),
         eq(singleton(proofOfDelivery.getProgramId())),
         eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(null, null, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
@@ -169,13 +173,15 @@ public class ProofOfDeliveryServiceTest {
     when(proofOfDeliveryRepository.search(
         eq(orderId),
         eq(shipmentId),
+        eq(null),
         eq(singleton(proofOfDelivery.getReceivingFacilityId())),
         eq(singleton(proofOfDelivery.getSupplyingFacilityId())),
         eq(singleton(proofOfDelivery.getProgramId())),
         eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(orderId, shipmentId, pageable);
+    Page<ProofOfDelivery> result =
+        proofOfDeliveryService.search(orderId, shipmentId, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
@@ -195,13 +201,15 @@ public class ProofOfDeliveryServiceTest {
     when(proofOfDeliveryRepository.search(
         eq(orderId),
         eq(shipmentId),
+        eq(null),
         eq(singleton(proofOfDelivery.getReceivingFacilityId())),
         eq(singleton(proofOfDelivery.getSupplyingFacilityId())),
         eq(emptySet()),
         eq(pageable)))
         .thenReturn(Pagination.getPage(singletonList(proofOfDelivery), pageable, 1));
 
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(orderId, shipmentId, pageable);
+    Page<ProofOfDelivery> result =
+        proofOfDeliveryService.search(orderId, shipmentId, null, pageable);
 
     assertThat(result.getContent(), hasItems(proofOfDelivery));
   }
