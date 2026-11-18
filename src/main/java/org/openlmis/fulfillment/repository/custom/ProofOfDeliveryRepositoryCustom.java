@@ -17,12 +17,14 @@ package org.openlmis.fulfillment.repository.custom;
 
 import java.util.Set;
 import java.util.UUID;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProofOfDeliveryRepositoryCustom {
 
-  Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Set<UUID> receivingFacilityIds,
-      Set<UUID> supplyingFacilityIds, Set<UUID> programIds, Pageable pageable);
+  Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Set<OrderType> orderTypes,
+      Set<UUID> receivingFacilityIds, Set<UUID> supplyingFacilityIds, Set<UUID> programIds,
+      Pageable pageable);
 }

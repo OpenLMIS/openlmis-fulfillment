@@ -1005,6 +1005,14 @@ resourceTypes:
           type: string
           required: false
           repeat: false
+        type:
+          displayName: type
+          description: >
+            Type of the POD's order, may be repeated: REQUISITION, REQUISITION_LESS,
+            TRANSFER_REQUEST, TRANSFER_PUSH. Unknown values return 400.
+          type: string
+          required: false
+          repeat: true
       responses:
         200:
           headers:

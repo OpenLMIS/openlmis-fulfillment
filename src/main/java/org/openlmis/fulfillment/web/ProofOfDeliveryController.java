@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.openlmis.fulfillment.domain.Order;
 import org.openlmis.fulfillment.domain.OrderStatus;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryLineItem;
 import org.openlmis.fulfillment.domain.ProofOfDeliveryStatus;
@@ -149,6 +150,7 @@ public class ProofOfDeliveryController extends BaseController {
   /**
    * Get all proofs of delivery.
    *
+   * @param type order types of the PODs, may be repeated; all types when not given
    * @return proofs of delivery.
    */
   @RequestMapping(value = "/proofsOfDelivery", method = RequestMethod.GET)
@@ -156,13 +158,15 @@ public class ProofOfDeliveryController extends BaseController {
   public Page<ProofOfDeliveryDto> getAllProofsOfDelivery(
       @RequestParam(required = false) UUID orderId,
       @RequestParam(required = false) UUID shipmentId,
+      @RequestParam(required = false) Set<String> type,
       Pageable pageable) {
     XLOGGER.entry(shipmentId, pageable);
     Profiler profiler = new Profiler("GET_PODS");
     profiler.setLogger(XLOGGER);
 
     profiler.start("SEARCH_PODS_SERVICE");
-    Page<ProofOfDelivery> result = proofOfDeliveryService.search(shipmentId, orderId, pageable);
+    Page<ProofOfDelivery> result = proofOfDeliveryService.search(shipmentId, orderId,
+        OrderType.fromNames(type), pageable);
 
     profiler.start("BUILD_DTO_PAGE");
     Page<ProofOfDeliveryDto> dtoPage = Pagination.getPage(dtoBuilder.build(result.getContent()),

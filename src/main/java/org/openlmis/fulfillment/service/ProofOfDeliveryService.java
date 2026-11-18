@@ -24,6 +24,7 @@ import static org.openlmis.fulfillment.service.PermissionService.SHIPMENTS_EDIT;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.ProofOfDeliveryRepository;
 import org.openlmis.fulfillment.service.referencedata.PermissionStringDto;
@@ -64,10 +65,12 @@ public class ProofOfDeliveryService {
    *
    * @param shipmentId UUID of shipment associated with POD, optional
    * @param orderId    UUID of order associated with POD, optional
+   * @param types      types of the order associated with POD, optional
    * @param pageable   pagination parameters
    * @return page of filtered PODs.
    */
-  public Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Pageable pageable) {
+  public Page<ProofOfDelivery> search(UUID shipmentId, UUID orderId, Set<OrderType> types,
+      Pageable pageable) {
     Profiler profiler = new Profiler("SEARCH_PODS");
     profiler.setLogger(XLOGGER);
 
@@ -93,7 +96,7 @@ public class ProofOfDeliveryService {
     }
     profiler.start("FIND_PODS");
     Page<ProofOfDelivery> result = proofOfDeliveryRepository.search(shipmentId, orderId,
-        receivingFacilitiesIds, supplyingFacilitiesIds, programIds, pageable);
+        types, receivingFacilitiesIds, supplyingFacilitiesIds, programIds, pageable);
 
     profiler.stop().log();
     return result;

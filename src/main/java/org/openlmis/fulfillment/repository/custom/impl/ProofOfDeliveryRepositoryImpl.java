@@ -31,6 +31,7 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import org.openlmis.fulfillment.domain.OrderType;
 import org.openlmis.fulfillment.domain.ProofOfDelivery;
 import org.openlmis.fulfillment.repository.custom.ProofOfDeliveryRepositoryCustom;
 import org.openlmis.fulfillment.util.Pagination;
@@ -64,6 +65,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
   private static final String ORDER_BY = "ORDER BY";
   private static final String WITH_SHIPMENT_ID = "s.id = :shipmentId";
   private static final String WITH_ORDER_ID = "o.id = :orderId";
+  private static final String WITH_ORDER_TYPES = "o.type IN (:orderTypes)";
   private static final String WITH_RECEIVING_FACILITIES =
       "o.receivingFacilityId IN (:receivingFacilityIds)";
   private static final String WITH_SUPPLYING_FACILITIES =
@@ -81,6 +83,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
    *
    * @param shipmentId           UUID of the associated shipment.
    * @param orderId              UUID of the associated order.
+   * @param orderTypes           Types of the associated order.
    * @param receivingFacilityIds List of UUIDs of receiving facilities in the associated order.
    * @param supplyingFacilityIds List of UUIDs of supplying facilities in the associated order.
    * @param programIds           List of UUIDs of programs associated with the order.
@@ -90,20 +93,21 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
   public Page<ProofOfDelivery> search(
       UUID shipmentId,
       UUID orderId,
+      Set<OrderType> orderTypes,
       Set<UUID> receivingFacilityIds,
       Set<UUID> supplyingFacilityIds,
       Set<UUID> programIds,
       Pageable pageable
   ) {
     TypedQuery<Long> countQuery = prepareQuery(
-        POD_COUNT, shipmentId, orderId, receivingFacilityIds,
+        POD_COUNT, shipmentId, orderId, orderTypes, receivingFacilityIds,
         supplyingFacilityIds, programIds, pageable, Long.class
     );
     Long count = countQuery.getSingleResult();
 
     if (count > 0) {
       TypedQuery<UUID> idQuery = prepareQuery(
-          POD_ID_SELECT, shipmentId, orderId, receivingFacilityIds,
+          POD_ID_SELECT, shipmentId, orderId, orderTypes, receivingFacilityIds,
           supplyingFacilityIds, programIds, pageable, UUID.class
       );
 
@@ -143,6 +147,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
       String select,
       UUID shipmentId,
       UUID orderId,
+      Set<OrderType> orderTypes,
       Set<UUID> receivingFacilityIds,
       Set<UUID> supplyingFacilityIds,
       Set<UUID> programIds,
@@ -151,7 +156,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
   ) {
     Map<String, Object> params = new HashMap<>();
     List<String> whereClauses = buildWhereClauses(
-        shipmentId, orderId, receivingFacilityIds,
+        shipmentId, orderId, orderTypes, receivingFacilityIds,
         supplyingFacilityIds, programIds, params
     );
 
@@ -166,6 +171,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
   private List<String> buildWhereClauses(
       UUID shipmentId,
       UUID orderId,
+      Set<OrderType> orderTypes,
       Set<UUID> receivingFacilityIds,
       Set<UUID> supplyingFacilityIds,
       Set<UUID> programIds,
@@ -175,6 +181,7 @@ public class ProofOfDeliveryRepositoryImpl implements ProofOfDeliveryRepositoryC
 
     addCondition(whereClauses, params, shipmentId, "shipmentId", WITH_SHIPMENT_ID);
     addCondition(whereClauses, params, orderId, "orderId", WITH_ORDER_ID);
+    addCondition(whereClauses, params, orderTypes, "orderTypes", WITH_ORDER_TYPES);
 
     List<String> orConditions = new ArrayList<>();
     addCondition(orConditions, params, receivingFacilityIds,
